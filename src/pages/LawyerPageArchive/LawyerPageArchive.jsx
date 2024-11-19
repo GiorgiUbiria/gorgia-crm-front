@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Row, Col, Card, CardBody, CardTitle, CardSubtitle } from "reactstrap";
+import { Table, Button, Row, Col, Card, CardBody, CardTitle, CardSubtitle, Input } from "reactstrap";
 
 // Import Breadcrumb
 import Breadcrumbs from "../../components/Common/Breadcrumb";
@@ -11,6 +11,7 @@ const LawyerPageArchive = () => {
 
   const [agreements, setAgreements] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch the agreements from the API
   const fetchAgreements = async () => {
@@ -60,6 +61,10 @@ const LawyerPageArchive = () => {
     }
   };
 
+  // Add filtered agreements computation
+  const filteredAgreements = agreements.filter(agreement =>
+    agreement.performer_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   console.log(agreements);
   
@@ -67,7 +72,22 @@ const LawyerPageArchive = () => {
     <React.Fragment>
       <div className="page-content">
         <div className="container-fluid">
-          <Breadcrumbs title="ხელშეკრულებები" breadcrumbItem="არქივი" />
+          <Row className="mb-3">
+            <Col xl={12}>
+              <Breadcrumbs title="ხელშეკრულებები" breadcrumbItem="არქივი" />
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col xl={{ size: 4, offset: 8 }}>
+              <Input
+                type="search"
+                placeholder="ძებნა შემსრულებლის მიხედვით..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                bsSize="sm"
+              />
+            </Col>
+          </Row>
 
           <Row>
             <Col xl={12}>
@@ -90,7 +110,7 @@ const LawyerPageArchive = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {agreements.map((agreement, index) => (
+                        {filteredAgreements.map((agreement, index) => (
                           <React.Fragment key={agreement.id}>
                             <tr
                               className={getRowClass(agreement.status)}

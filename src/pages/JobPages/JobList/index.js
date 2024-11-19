@@ -41,6 +41,11 @@ const TaskList = () => {
     const [deleteModal, setDeleteModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [expandedRows, setExpandedRows] = useState([]);
+    const [sortConfig, setSortConfig] = useState({
+        key: 'due_date',
+        direction: 'desc'
+    });
 
     // Fetch tasks
     const fetchTasks = async () => {
@@ -139,6 +144,23 @@ const TaskList = () => {
         }
     };
 
+    const toggleRow = index => {
+        const isRowExpanded = expandedRows.includes(index);
+        if (isRowExpanded) {
+            setExpandedRows(expandedRows.filter(rowIndex => rowIndex !== index));
+        } else {
+            setExpandedRows([...expandedRows, index]);
+        }
+    };
+
+    // Add sorting function
+    const handleSort = () => {
+        setSortConfig(prevConfig => ({
+            key: 'due_date',
+            direction: prevConfig.direction === 'asc' ? 'desc' : 'asc'
+        }));
+    };
+
     // Define table columns
     const columns = useMemo(
         () => [
@@ -161,8 +183,19 @@ const TaskList = () => {
                 cell: (cellProps) => cellProps.row.original.ip_address || 'N/A'
             },
             {
-                header: 'თარიღი',
-                accessorKey: "due_date"
+                header: (
+                    <div 
+                        style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                        onClick={handleSort}
+                    >
+                        თარიღი
+                        <span style={{ marginLeft: '4px' }}>
+                            {sortConfig.direction === 'desc' ? '▼' : '▲'}
+                        </span>
+                    </div>
+                ),
+                accessorKey: "due_date",
+                cell: (cellProps) => cellProps.row.original.due_date
             },
             {
                 header: "პრიორიტეტი",
@@ -232,7 +265,7 @@ const TaskList = () => {
                 )
             },
         ],
-        []
+        [sortConfig.direction]
     );
 
     const totalPages = Math.ceil(tasks.length / itemsPerPage);
@@ -254,6 +287,20 @@ const TaskList = () => {
             setCurrentPage(currentPage + 1);
         }
     };
+
+    // Add sorting effect
+    useEffect(() => {
+        if (tasks.length > 0) {
+            const sortedTasks = [...tasks].sort((a, b) => {
+                const dateA = new Date(a.due_date);
+                const dateB = new Date(b.due_date);
+                return sortConfig.direction === 'asc' 
+                    ? dateA - dateB 
+                    : dateB - dateA;
+            });
+            setTasks(sortedTasks);
+        }
+    }, [sortConfig]);
 
     return (
         <React.Fragment>
@@ -292,14 +339,37 @@ const TaskList = () => {
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {tasks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((task) => (
-                                                                <tr key={task.id}>
-                                                                    {columns.map((column) => (
-                                                                        <td key={`${task.id}-${column.accessorKey}`}>
-                                                                            {column.cell ? column.cell({ row: { original: task } }) : task[column.accessorKey]}
-                                                                        </td>
-                                                                    ))}
-                                                                </tr>
+                                                            {tasks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((task, index) => (
+                                                                <React.Fragment key={task.id}>
+                                                                    <tr 
+                                                                        onClick={() => toggleRow(index)}
+                                                                        style={{ cursor: "pointer" }}
+                                                                    >
+                                                                        {columns.map((column) => (
+                                                                            <td key={`${task.id}-${column.accessorKey}`}>
+                                                                                {column.cell ? column.cell({ row: { original: task } }) : task[column.accessorKey]}
+                                                                            </td>
+                                                                        ))}
+                                                                    </tr>
+                                                                    {expandedRows.includes(index) && (
+                                                                        <tr>
+                                                                            <td colSpan={columns.length}>
+                                                                                <div className="p-3">
+                                                                                    <p>დეტალური ინფორმაცია</p>
+                                                                                    <ul>
+                                                                                        <li><strong>პრობლემის ტიპი:</strong> {task.task_title}</li>
+                                                                                        <li><strong>აღწერა:</strong> {task.description}</li>
+                                                                                        <li><strong>IP მისამართი:</strong> {task.ip_address}</li>
+                                                                                        <li><strong>თარიღი:</strong> {task.due_date}</li>
+                                                                                        <li><strong>პრიორიტეტი:</strong> {task.priority}</li>
+                                                                                        <li><strong>სტატუსი:</strong> {task.status}</li>
+                                                                                        <li><strong>პასუხისმგებელი პირი:</strong> {task.assigned_user ? `${task.assigned_user.name} ${task.assigned_user.sur_name}` : 'არ არის მითითებული'}</li>
+                                                                                    </ul>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    )}
+                                                                </React.Fragment>
                                                             ))}
                                                         </tbody>
                                                     </Table>
@@ -370,7 +440,7 @@ const TaskList = () => {
                                                 <option value="" disabled hidden>აირჩიეთ პრობლემის ტიპი</option>
                                                 <option value="პრინტერის პრობლემა">პრინტერის პრობლემა</option>
                                                 <option value="სერვისი">სერვისი</option>
-                                                <option value="პაროლის აღდგენა">პაროლის აღდგენა</option>
+                                                <option value="პაროლის აღდგენა">პარლის აღდგენა</option>
                                                 <option value="ელ-ფოსტის პრობლემა">ელ-ფოსტის პრობლემა</option>
                                                 <option value="ტექნიკური პრობლემა">ტექნიკური პრობლემა</option>
                                                 <option value="სერვისის პრობლემა">სერვისის პრობლემა</option>

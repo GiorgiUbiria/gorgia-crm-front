@@ -11,26 +11,26 @@ import {
 } from "reactstrap";
 
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import { getCurrentUserTrips } from "services/admin/business";
+import { getPurchaseList } from "services/purchase";
 
-const UserTrip = () => {
-  document.title = "მოგზაურობები | Gorgia LLC";
+const UserProcurement = () => {
+  document.title = "შესყიდვები | Gorgia LLC";
 
-  const [trips, setTrips] = useState([]);
+  const [procurements, setProcurements] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchTrips = async () => {
+  const fetchProcurements = async () => {
     try {
-      const response = await getCurrentUserTrips();
-      setTrips(response.data.data);
+      const response = await getPurchaseList();
+      setProcurements(response.data.internal_purchases);
     } catch (err) {
-      console.error("Error fetching trips:", err);
+      console.error("Error fetching purchases:", err);
     }
   };
 
   useEffect(() => {
-    fetchTrips();
+    fetchProcurements();
   }, []);
 
   const toggleRow = (index) => {
@@ -55,8 +55,8 @@ const UserTrip = () => {
     }
   };
 
-  const filteredTrips = trips.filter((trip) =>
-    `${trip.subtitle_user_name} ${trip.subtitle_user_sur_name}`
+  const filteredProcurements = procurements.filter((procurement) =>
+    `${procurement.user.name} ${procurement.user.sur_name}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
@@ -67,14 +67,14 @@ const UserTrip = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="მოგზაურობები" breadcrumbItem="ჩემი მოგზაურობები" />
+              <Breadcrumbs title="შესყიდვები" breadcrumbItem="ჩემი შესყიდვები" />
             </Col>
           </Row>
           <Row className="mb-3">
             <Col xl={{ size: 4, offset: 8 }}>
               <Input
                 type="search"
-                placeholder="ძებნა შემცვლელი პირის მიხედვით..."
+                placeholder="ძებნა თანამშრომლის მიხედვით..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 bsSize="sm"
@@ -85,61 +85,59 @@ const UserTrip = () => {
             <Col xl={12}>
               <Card>
                 <CardBody>
-                  <CardTitle className="h4">მოგზაურობების გვერდი</CardTitle>
+                  <CardTitle className="h4">შესყიდვების გვერდი</CardTitle>
                   <CardSubtitle className="card-title-desc">
-                    ქვემოთ მოცემულია თქვენი მოგზაურობების ისტორია
+                    ქვემოთ მოცემულია თქვენი შესყიდვების ისტორია
                   </CardSubtitle>
                   <div className="table-responsive">
                     <Table className="table mb-0">
                       <thead>
                         <tr>
                           <th>#</th>
-                          <th>მივლინების ტიპი</th>
-                          <th>დაწყების თარიღი</th>
-                          <th>დასრულების თარიღი</th>
-                          <th>შემცვლელი პირის სახელი/გვარი</th>
+                          <th>სახელი</th>
+                          <th>გვარი</th>
+                          <th>დეპარტამენტი</th>
+                          <th>პოზიცია</th>
+                          <th>შესყიდვის ტიპი</th>
+                          <th>თარიღი</th>
+                          <th>მომწოდებელი</th>
                           <th>სტატუსი</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredTrips?.map((trip, index) => (
-                          <React.Fragment key={trip.id}>
+                        {filteredProcurements?.map((procurement, index) => (
+                          <React.Fragment key={procurement.id}>
                             <tr
-                              className={getRowClass(trip.status)}
+                              className={getRowClass(procurement.status)}
                               onClick={() => toggleRow(index)}
                               style={{ cursor: "pointer" }}
                             >
                               <th scope="row">{index + 1}</th>
+                              <td>{procurement.user.name}</td>
+                              <td>{procurement.user.sur_name}</td>
+                              <td>{procurement.department_id}</td>
+                              <td>{procurement.user.position}</td>
+                              <td>{procurement.type}</td>
+                              <td>{procurement.created_at}</td>
+                              <td>{procurement.supplier}</td>
                               <td>
-                                {trip.trip_type === "regional"
-                                  ? "რეგიონალური"
-                                  : trip.trip_type === "international"
-                                  ? "საერთაშორისო"
-                                  : "უცნობი"}
-                              </td>
-                              <td>{trip?.start_date}</td>
-                              <td>{trip?.end_date}</td>
-                              <td>{trip?.subtitle_user_name
-                              } {trip?.subtitle_user_sur_name}</td>
-                              <td>
-                                {trip.status === "rejected"
+                                {procurement.status === "rejected"
                                   ? "უარყოფილია"
-                                  : trip.status === "approved"
+                                  : procurement.status === "approved"
                                   ? "დადასტურებულია"
                                   : "მოლოდინში"}
                               </td>
                             </tr>
                             {expandedRows.includes(index) && (
                               <tr>
-                                <td colSpan="4">
+                                <td colSpan="5">
                                   <div className="p-3">
                                     <p>დეტალური ინფორმაცია</p>
                                     <ul>
-                                      <li>მიზანი: {trip.objective}</li>
-                                      <li>სრული ხარჯი: {trip.total_expense}₾</li>
-                                      <li>ტრანსპორტის ხარჯი: {trip.expense_transport}₾</li>
-                                      <li>საცხოვრებელი: {trip.expense_living}₾</li>
-                                      <li>კვების ხარჯი: {trip.expense_meal}₾</li>
+                                      <li>აღწერა: {procurement.description}</li>
+                                      <li>რაოდენობა: {procurement.quantity}</li>
+                                      <li>ერთეულის ფასი: {procurement.unit_price}₾</li>
+                                      <li>ჯამური ღირებულება: {procurement.total_price}₾</li>
                                     </ul>
                                   </div>
                                 </td>
@@ -160,4 +158,4 @@ const UserTrip = () => {
   );
 };
 
-export default UserTrip;
+export default UserProcurement; 

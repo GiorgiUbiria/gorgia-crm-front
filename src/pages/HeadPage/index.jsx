@@ -68,11 +68,10 @@ const HeadPage = () => {
     <div className="page-content">
       <div className="container-fluid">
         <Breadcrumbs title="Admin" breadcrumbItem="Daily Report" />
+        
         <Container fluid>
           <div className="vacation-dashboard-container">
             <div className="container-fluid">
-              
-              {/* Full Width Tabs */}
               <Nav tabs className="nav-tabs-custom nav-justified w-100">
                 <NavItem>
                   <NavLink

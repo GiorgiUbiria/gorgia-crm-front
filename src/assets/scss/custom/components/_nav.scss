@@ -18,7 +18,6 @@
   }
 }
 
-
 .nav-tabs-custom {
   border-bottom: 2px solid var(--#{$prefix}border-color);
 
@@ -46,23 +45,65 @@
           transform: scale(1);
         }
       }
-
     }
   }
 }
 
-
 // vertical nav
-
-.vertical-nav{
-  .nav{
-      .nav-link{
-          padding: 24px 16px;
-          text-align: center;
-          margin-bottom: 8px;
-          .nav-icon{
-              font-size: 24px;
-          }
+.vertical-nav {
+  .nav {
+    height: 100%;
+    .nav-link {
+      padding: 24px 16px;
+      text-align: center;
+      margin-bottom: 8px;
+      .nav-icon {
+        font-size: 24px;
       }
+    }
+  }
+}
+
+// Fix for condensed sidebar
+body.vertical-collpsed {
+  .vertical-menu {
+    .simplebar-content-wrapper,
+    .simplebar-mask {
+      overflow: visible !important;
+      height: 100% !important;
+    }
+    
+    #sidebar-menu {
+      height: auto;
+      > ul {
+        height: auto;
+      }
+    }
+  }
+  
+  .main-content {
+    min-height: 100vh;
+    height: auto;
+  }
+}
+
+// Ensure proper height in all states
+#sidebar-menu {
+  height: calc(100vh - #{$header-height});
+  overflow-y: auto;
+  
+  ul {
+    height: 100%;
+  }
+}
+
+.simplebar-wrapper {
+  height: 100%;
+}
+
+.vertical-menu {
+  .simplebar-mask,
+  .simplebar-content-wrapper {
+    height: 100% !important;
   }
 }

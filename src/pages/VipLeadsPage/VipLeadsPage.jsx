@@ -32,6 +32,7 @@ const VipLeadsPage = () => {
   const fetchVipLeads = async () => {
     try {
       const response = await getVipLeads();
+      console.log(response);
       setVipLeads(response || []);
     } catch (error) {
       console.error('Error fetching VIP leads:', error);
@@ -60,7 +61,7 @@ const VipLeadsPage = () => {
     () => [
       { Header: 'სახელი', accessor: 'first_name' },
       { Header: 'გვარი', accessor: 'last_name' },
-      { Header: 'მოთხოვნა', accessor: 'request' },
+      { Header: 'ტელეფონის ნომერი', accessor: 'mobile_number' },
       { Header: 'პასუხისმგებელი პირი', accessor: 'responsible_person' },
       {
         Header: 'სტატუსი',
@@ -77,11 +78,18 @@ const VipLeadsPage = () => {
           </Input>
         ),
       },
-      { Header: 'კომენტარი', accessor: 'comment' },
+      { Header: 'მოთხოვნა', accessor: 'request' },
       {
-        Header: 'თარიღი', // Add the "Date Added" column header
-        accessor: 'created_at', // This is the created_at field from the database
-        Cell: ({ value }) => moment(value).format('YYYY-MM-DD'), // Format the date using moment.js
+        Header: ({ sorted, sortedDesc }) => (
+          <div>
+            თარიღი
+            <span>
+              {' ▼'}
+            </span>
+          </div>
+        ),
+        accessor: 'created_at',
+        Cell: ({ value }) => moment(value).format('YYYY-MM-DD'),
       },
       {
         Header: 'მოქმედება',
@@ -111,7 +119,22 @@ const VipLeadsPage = () => {
     headerGroups,
     rows,
     prepareRow,
-  } = useTable({ columns, data: vipLeads }, useSortBy, usePagination);
+  } = useTable(
+    {
+      columns,
+      data: vipLeads,
+      initialState: {
+        sortBy: [
+          {
+            id: 'created_at',
+            desc: true // true for descending order (newest first)
+          }
+        ]
+      }
+    },
+    useSortBy,
+    usePagination
+  );
 
   // Open modal for adding new VIP lead
   const handleAddClick = () => {
@@ -199,11 +222,14 @@ const VipLeadsPage = () => {
                       {headerGroups.map((headerGroup) => (
                         <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
                           {headerGroup.headers.map((column) => (
-                            <th {...column.getHeaderProps(column.getSortByToggleProps())} key={column.id}>
-                              {column.render('Header')}
-                              <span>
-                                {column.isSorted ? (column.isSortedDesc ? ' 🔽' : ' 🔼') : ''}
-                              </span>
+                            <th 
+                              {...column.getHeaderProps(column.getSortByToggleProps())} 
+                              key={column.id}
+                              style={{ verticalAlign: 'middle' }}
+                            >
+                              {column.id === 'created_at' 
+                                ? column.render('Header')
+                                : column.render('Header').props?.children || column.render('Header')}
                             </th>
                           ))}
                         </tr>
@@ -215,7 +241,11 @@ const VipLeadsPage = () => {
                         return (
                           <tr {...row.getRowProps()} key={row.id}>
                             {row.cells.map((cell) => (
-                              <td {...cell.getCellProps()} key={cell.column.id}>
+                              <td 
+                                {...cell.getCellProps()} 
+                                key={cell.column.id}
+                                style={{ verticalAlign: 'middle' }}
+                              >
                                 {cell.render('Cell')}
                               </td>
                             ))}
@@ -288,7 +318,7 @@ const VipLeadsPage = () => {
                 </FormGroup>
                 <Col style={{ textAlign: 'right' }}>
                   <Button type="submit" color="primary">
-                    {isEdit ? 'განახლება' : 'დამატება'}
+                    {isEdit ? 'გნახლება' : 'დამატება'}
                   </Button>
                 </Col>
               </Form>

@@ -59,8 +59,10 @@ const NotificationDropdown = (props) => {
           tag="button"
           id="page-header-notifications-dropdown"
         >
-          <i className="bx bx-bell bx-tada" />
-          <span className="badge bg-danger rounded-pill">{comments.length}</span>
+          <i className={`bx bx-bell ${comments.length > 0 ? 'bx-tada' : ''}`} />
+          <span className={`badge rounded-pill ${comments.length > 0 ? 'bg-danger' : 'bg-secondary'}`}>
+            {comments.length}
+          </span>
         </DropdownToggle>
 
         <DropdownMenu className="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0">
