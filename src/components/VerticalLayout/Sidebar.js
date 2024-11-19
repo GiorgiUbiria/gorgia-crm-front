@@ -20,14 +20,8 @@ const Sidebar = props => {
             <span className="logo-sm">
               <img src={logoDark} alt="" height="22" />
             </span>
-            <span className="logo-lg">
-              <img src={logoDark} alt="" height="50px" />
-            </span>
           </Link>
           <Link to="/" className="logo logo-light">
-            <span className="logo-sm">
-              <img src={logoLightPng} alt="" height="22" />
-            </span>
             <span className="logo-lg">
               <img src={logoLightPng} alt="" height="50px" />
             </span>
