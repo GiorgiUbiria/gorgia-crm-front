@@ -1,71 +1,121 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, TextField, IconButton, Breadcrumbs, Button, CircularProgress, Typography } from '@mui/material';
+import { Box, TextField, IconButton, Button, CircularProgress, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { createNote, updateNote, getNote } from '../../services/note';
-import deleteNoteIcon from '../../assets/images/delete-note.png';
 
 const NotesEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [formState, setFormState] = useState({
+    title: '',
+    content: '',
+    isDirty: false,
+  });
+  const [loadingState, setLoadingState] = useState({
+    isFetching: false,
+    isSaving: false,
+  });
   const [error, setError] = useState('');
-  const [isEdit, setIsEdit] = useState(false);
 
-
-  
-  
+  const fetchNote = useCallback(async (noteId) => {
+    setLoadingState(prev => ({ ...prev, isFetching: true }));
+    try {
+      const response = await getNote(noteId);
+      const { title, content } = response.data;
+      setFormState({
+        title: title || '',
+        content: content || '',
+        isDirty: false,
+      });
+    } catch (err) {
+      setError('Failed to load note data.');
+    } finally {
+      setLoadingState(prev => ({ ...prev, isFetching: false }));
+    }
+  }, []);
 
   useEffect(() => {
     if (id) {
-      setIsEdit(true);
-      const fetchNote = async () => {
-        try {
-          const response = await getNote(id);
-
-          console.log(response);
-          
-          setTitle(response.data.title)
-          setContent(response.data.content);
-        } catch (error) {
-          setError('Failed to load note data.');
-        }
-      };
-      fetchNote();
+      fetchNote(id);
     }
-  }, [id]);
+  }, [id, fetchNote]);
+
+  const validateForm = () => {
+    const errors = [];
+    if (!formState.title.trim()) {
+      errors.push('Title is required');
+    }
+    if (formState.title.length > 255) {
+      errors.push('Title must not exceed 255 characters');
+    }
+    if (!formState.content.trim()) {
+      errors.push('Content is required');
+    }
+    return errors;
+  };
 
   const handleSave = async () => {
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join(', '));
+      return;
+    }
+
+    setLoadingState(prev => ({ ...prev, isSaving: true }));
+    setError('');
+    
     try {
-      setLoading(true);
-      setError('');
-      const data = { title, content };
-      if (isEdit) {
+      const data = {
+        title: formState.title.trim(),
+        content: formState.content.trim()
+      };
+
+      if (id) {
         await updateNote(id, data);
       } else {
         await createNote(data);
       }
+      
+      setFormState(prev => ({ ...prev, isDirty: false }));
       navigate('/notes');
-    } catch (error) {
-      setError('Failed to save note. Please try again.');
+    } catch (err) {
+      const serverErrors = err.response?.data;
+      if (serverErrors) {
+        const errorMessages = Object.values(serverErrors)
+          .flat()
+          .filter(Boolean)
+          .join(', ');
+        setError(errorMessages || 'Failed to save note');
+      } else {
+        setError('Failed to save note. Please try again.');
+      }
     } finally {
-      setLoading(false);
+      setLoadingState(prev => ({ ...prev, isSaving: false }));
     }
   };
 
+  const handleChange = (field) => (value) => {
+    setFormState(prev => ({
+      ...prev,
+      [field]: value,
+      isDirty: true
+    }));
+    setError('');
+  };
 
-  console.log(content);
-  
+  const isFormValid = () => {
+    return formState.title.trim().length > 0 && 
+           formState.title.length <= 255 &&
+           formState.content.trim().length > 0;
+  };
 
   return (
     <div className="page-content">
       <div className="container-fluid">
-        <Breadcrumbs title="Admin" breadcrumbItem="Notes Editor" />
         <div className="notes-editor-container">
           <Box
             sx={{
@@ -86,7 +136,7 @@ const NotesEditor = () => {
               <Button
                 variant="contained"
                 onClick={handleSave}
-                disabled={loading}
+                disabled={loadingState.isSaving || !isFormValid()}
                 sx={{
                   backgroundColor: '#007dba',
                   color: '#ffffff',
@@ -99,8 +149,8 @@ const NotesEditor = () => {
                   gap: '8px',
                 }}
               >
-                {loading ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />}
-                {loading ? 'Saving...' : 'Save'}
+                {loadingState.isSaving ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />}
+                {loadingState.isSaving ? 'Saving...' : 'Save'}
               </Button>
             </Box>
 
@@ -109,8 +159,10 @@ const NotesEditor = () => {
               variant="standard"
               placeholder="Note Title..."
               fullWidth
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={formState.title}
+              onChange={(e) => handleChange('title')(e.target.value)}
+              error={!formState.title.trim() && formState.isDirty}
+              helperText={!formState.title.trim() && formState.isDirty ? 'Title is required' : ''}
               InputProps={{
                 disableUnderline: true,
                 sx: { fontSize: '24px', fontWeight: 'bold', color: '#007dba' },
@@ -118,20 +170,25 @@ const NotesEditor = () => {
               sx={{ mb: 3 }}
             />
 
-            {/* Rich Text Editor */}
-            <ReactQuill
-              value={content}
-              onChange={setContent}
-              placeholder="Type your note here..."
-              theme="snow"
-              style={{
-                height: '300px',
-                marginBottom: '50px',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '10px',
-                padding: '10px',
-              }}
-            />
+            {loadingState.isFetching ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <ReactQuill
+                value={formState.content}
+                onChange={handleChange('content')}
+                placeholder="Type your note here..."
+                theme="snow"
+                style={{
+                  height: '300px',
+                  marginBottom: '50px',
+                  backgroundColor: '#f9f9f9',
+                  borderRadius: '10px',
+                  padding: '10px',
+                }}
+              />
+            )}
 
             {/* Error Message */}
             {error && (

@@ -5,7 +5,10 @@ export const getNoteList = async () => {
 };
 
 export const createNote = async (data) => {
-    return defaultInstance.post('/api/notes/create', data);
+    return defaultInstance.post('/api/notes/create', {
+        title: data.title,
+        content: data.content
+    });
 };
 
 export const getNote = async (id) => {
@@ -13,7 +16,10 @@ export const getNote = async (id) => {
 };
 
 export const updateNote = async (id, data) => {
-    return defaultInstance.post(`/api/notes/${id}/update`, data);
+    return defaultInstance.post(`/api/notes/${id}/update`, {
+        title: data.title,
+        content: data.content
+    });
 };
 
 export const deleteNote = async (id) => {
