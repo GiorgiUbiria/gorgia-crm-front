@@ -19,6 +19,10 @@ const PurchasePageApprove = ({ filterStatus }) => {
   const [expandedRows, setExpandedRows] = useState([])
   const [purchases, setPurchases] = useState([])
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({
+    key: 'start_date',
+    direction: 'desc'
+  });
 
   const toggleRow = index => {
     const isRowExpanded = expandedRows.includes(index)
@@ -53,6 +57,26 @@ const PurchasePageApprove = ({ filterStatus }) => {
       console.error("Error updating purchase status:", err)
     }
   }
+
+  const handleSort = (key) => {
+    setSortConfig(prevConfig => ({
+      key,
+      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  useEffect(() => {
+    if (purchases.length > 0) {
+      const sortedPurchases = [...purchases].sort((a, b) => {
+        const dateA = new Date(sortConfig.key === 'start_date' ? a.start_date : a.deadline);
+        const dateB = new Date(sortConfig.key === 'start_date' ? b.start_date : b.deadline);
+        return sortConfig.direction === 'asc' 
+          ? dateA - dateB 
+          : dateB - dateA;
+      });
+      setPurchases(sortedPurchases);
+    }
+  }, [sortConfig]);
 
   const filteredPurchases = purchases
     .filter(purchase => 
@@ -97,8 +121,32 @@ const PurchasePageApprove = ({ filterStatus }) => {
                           <th>#</th>
                           <th>მომთხოვნი პირი</th>
                           <th>შესყიდვის ობიექტი</th>
-                          <th>დაწყების თარიღი</th>
-                          <th>დასრულების თარიღი</th>
+                          <th 
+                            onClick={() => handleSort('start_date')}
+                            style={{ cursor: 'pointer', userSelect: 'none' }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              დაწყების თარიღი
+                              {sortConfig.key === 'start_date' && (
+                                <span style={{ marginLeft: '4px' }}>
+                                  {sortConfig.direction === 'desc' ? '▼' : '▲'}
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                          <th 
+                            onClick={() => handleSort('deadline')}
+                            style={{ cursor: 'pointer', userSelect: 'none' }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              დასრულების თარიღი
+                              {sortConfig.key === 'deadline' && (
+                                <span style={{ marginLeft: '4px' }}>
+                                  {sortConfig.direction === 'desc' ? '▼' : '▲'}
+                                </span>
+                              )}
+                            </div>
+                          </th>
                           <th>სტატუსი</th>
                           <th>ვიზირება</th>
                         </tr>
