@@ -1,0 +1,7 @@
+.animate-link {
+    transition: all .3s;
+}
+
+.animate-link:hover {
+    transform: scale(1.2);
+}
