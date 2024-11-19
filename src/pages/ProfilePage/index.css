@@ -1,0 +1,130 @@
+.profile-dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4f5f7;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-main-content {
+  flex: 1;
+  padding: 2rem;
+}
+
+.profile {
+  /* background-color: #fff; */
+  padding: 2rem;
+  /* border-radius: 1.5rem; */
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+}
+
+.profile-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.section-header h2 {
+  color: #2a3042;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: left;
+
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.profile-form-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 48%;
+}
+
+.profile-form-wrapper label {
+  color: #495057;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.profile-form-wrapper input,
+.profile-form-wrapper select {
+  border-radius: 0.3rem;
+  border: 1px solid #ced4da;
+  padding: 0.8rem 1rem;
+}
+
+.save-button {
+  width: 10%;
+  padding: 0.8rem;
+  background-color: #556ee6;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  margin-bottom: 20px;
+}
+
+
+
+.error-text {
+  color: #D7443A;
+  font-size: 0.875rem;
+}
+
+.table-container {
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container th,
+.table-container td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.table-container th {
+  background-color: #f4f5f7;
+  color: #105D8D;
+}
+
+.table-container td {
+  color: #333;
+}
+
+.table-container th.sortable:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.export-button,
+.add-button {
+  padding: 0.5rem 1rem;
+  background-color: #009FE3;
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+.export-button:hover,
+.add-button:hover {
+  background-color: #007AD3;
+}
