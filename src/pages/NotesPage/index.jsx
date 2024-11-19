@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Container,
@@ -7,8 +7,6 @@ import {
   Card,
   CardBody,
   Button,
-  Breadcrumb,
-  BreadcrumbItem,
   Input,
   Modal,
   ModalHeader,
@@ -16,25 +14,89 @@ import {
   ModalFooter,
 } from "reactstrap";
 import { getNoteList, deleteNote } from "../../services/note";
-import SaveIcon from "../../assets/images/save.png";
+import Breadcrumbs from "components/Common/Breadcrumb";
+
+const NoteCard = ({ note, onDelete, onEdit }) => (
+  <Card
+    className="mb-4 note-card"
+    style={{
+      boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",
+      cursor: "pointer",
+    }}
+    onClick={() => onEdit(note.id)}
+  >
+    <CardBody>
+      <div className="d-flex justify-content-between">
+        <p className="text-muted small">
+          {new Date(note.created_at).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
+        </p>
+        <Button
+          color="danger"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(note);
+          }}
+        >
+          წაშლა
+        </Button>
+      </div>
+      <h6 className="font-weight-bold text-primary">{note.title}</h6>
+      <p
+        className="text-muted note-content"
+        dangerouslySetInnerHTML={{ __html: note.note }}
+      />
+    </CardBody>
+  </Card>
+);
+
+const MemoizedNoteCard = React.memo(NoteCard);
+MemoizedNoteCard.displayName = 'NoteCard';
+
+const DeleteModal = ({ isOpen, toggle, onDelete }) => (
+  <Modal isOpen={isOpen} toggle={toggle}>
+    <ModalHeader toggle={toggle}>ჩანაწერის წაშლა</ModalHeader>
+    <ModalBody>
+      დარწმუნებული ხართ, რომ გსურთ ამ ჩანაწერის წაშლა? ეს მოქმედება ვერ დაბრუნდება.
+    </ModalBody>
+    <ModalFooter>
+      <Button color="secondary" onClick={toggle}>
+        გაუქმება
+      </Button>
+      <Button color="danger" onClick={onDelete}>
+        წაშლა
+      </Button>
+    </ModalFooter>
+  </Modal>
+);
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
         const response = await getNoteList();
         const sortedNotes = response.data.notes.sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
         );
         setNotes(sortedNotes);
       } catch (error) {
-        console.log(error);
+        setError("Failed to load notes. Please try again later.");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -44,7 +106,7 @@ const NotesPage = () => {
     navigate("/notes-editor");
   };
 
-  const handleDeleteNote = async () => {
+  const handleDeleteNote = useCallback(async () => {
     if (noteToDelete) {
       try {
         await deleteNote(noteToDelete.id);
@@ -57,36 +119,53 @@ const NotesPage = () => {
         console.error("Error deleting note:", error);
       }
     }
-  };
+  }, [noteToDelete]);
 
   const handleEditNote = (noteId) => {
     navigate(`/notes-editor/${noteId}`);
   };
 
-  const filteredNotes = notes.filter((note) => {
+  const filteredNotes = useMemo(() => {
     const lowerCaseSearchQuery = searchQuery.toLowerCase();
-    const lowerCaseTitle = note.title ? note.title.toLowerCase() : "";
-    const lowerCaseNote = note.note
-      ? note.note.replace(/(<([^>]+)>)/gi, "").toLowerCase()
-      : "";
+    return notes.filter((note) => {
+      const lowerCaseTitle = (note.title || "").toLowerCase();
+      const lowerCaseNote = (note.note || "").replace(/(<([^>]+)>)/gi, "").toLowerCase();
+      return (
+        lowerCaseTitle.includes(lowerCaseSearchQuery) ||
+        lowerCaseNote.includes(lowerCaseSearchQuery)
+      );
+    });
+  }, [notes, searchQuery]);
+
+  if (isLoading) {
     return (
-      lowerCaseTitle.includes(lowerCaseSearchQuery) ||
-      lowerCaseNote.includes(lowerCaseSearchQuery)
+      <Container fluid className="page-content">
+        <div className="text-center pt-5">
+          <p>Loading notes...</p>
+        </div>
+      </Container>
     );
-  });
+  }
+
+  if (error) {
+    return (
+      <Container fluid className="page-content">
+        <div className="text-center pt-5">
+          <p className="text-danger">{error}</p>
+          <Button color="primary" onClick={() => window.location.reload()}>
+            Retry
+          </Button>
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container fluid className="page-content">
-      <Breadcrumb>
-        <BreadcrumbItem active>Admin</BreadcrumbItem>
-        <BreadcrumbItem active>My Notes</BreadcrumbItem>
-      </Breadcrumb>
+      <Breadcrumbs title="ადმინი" breadcrumbItem="ჩემი ჩანაწერები" />
 
       <Row className="mb-4">
-        <Col md="6">
-          <h4 className="font-weight-bold text-primary">Notes</h4>
-        </Col>
-        <Col md="6" className="text-right">
+        <Col md={{ size: 6, offset: 6 }} className="text-right">
           <div className="d-flex justify-content-end">
             <Input
               type="text"
@@ -97,7 +176,6 @@ const NotesPage = () => {
             />
             <Link to="/notes-editor">
               <Button color="primary" className="d-flex align-items-center">
-                {/* <img src={SaveIcon} alt="Save Icon" style={{ width: "16px" }} /> */}
                 დამატება
               </Button>
             </Link>
@@ -117,65 +195,24 @@ const NotesPage = () => {
         ) : (
           filteredNotes.map((note) => (
             <Col md="4" key={note.id}>
-              <Card
-                className="mb-4"
-                style={{
-                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",
-                  cursor: "pointer",
+              <MemoizedNoteCard
+                note={note}
+                onDelete={(note) => {
+                  setNoteToDelete(note);
+                  setDeleteModalOpen(true);
                 }}
-                onClick={() => handleEditNote(note.id)} // Navigate to the note editor when clicked
-              >
-                <CardBody>
-                  <div className="d-flex justify-content-between">
-                    <p className="text-muted small">
-                      {new Date(note.created_at).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </p>
-                    <Button
-                      color="danger"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent the note click from triggering when clicking delete
-                        setNoteToDelete(note);
-                        setDeleteModalOpen(true);
-                      }}
-                    >
-                      წაშლა
-                    </Button>
-                  </div>
-                  <h6 className="font-weight-bold text-primary">{note.title}</h6>
-                  <p
-                    className="text-muted"
-                    dangerouslySetInnerHTML={{ __html: note.note }}
-                  />
-                </CardBody>
-              </Card>
+                onEdit={handleEditNote}
+              />
             </Col>
           ))
         )}
       </Row>
 
-      <Modal
+      <DeleteModal
         isOpen={deleteModalOpen}
         toggle={() => setDeleteModalOpen(!deleteModalOpen)}
-      >
-        <ModalHeader toggle={() => setDeleteModalOpen(!deleteModalOpen)}>
-          Delete Note
-        </ModalHeader>
-        <ModalBody>
-          Are you sure you want to delete this note? This action cannot be undone.
-        </ModalBody>
-        <ModalFooter>
-          <Button color="secondary" onClick={() => setDeleteModalOpen(false)}>
-            Cancel
-          </Button>
-          <Button color="danger" onClick={handleDeleteNote}>
-            Delete
-          </Button>
-        </ModalFooter>
-      </Modal>
+        onDelete={handleDeleteNote}
+      />
     </Container>
   );
 };

@@ -17,5 +17,5 @@ export const updateNote = async (id, data) => {
 };
 
 export const deleteNote = async (id) => {
-    return defaultInstance.delete(`/api/notes/${id}/delete`);
+    return defaultInstance.post(`/api/notes/${id}/delete`);
 };
