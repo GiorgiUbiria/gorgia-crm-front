@@ -41,7 +41,7 @@ const ProfileMenu = props => {
 
   const profileImageSrc = user?.profile_image
     ? `${process.env.REACT_APP_BASE_URL}/${user.profile_image}`
-    : NoAvatarIcon // Fallback to NoAvatarIcon if no profile image
+    : NoAvatarIcon
 
   return (
     <React.Fragment>
@@ -67,11 +67,6 @@ const ProfileMenu = props => {
           <DropdownItem tag="a" href="/profile">
             <i className="bx bx-user font-size-16 align-middle me-1" />
             {props.t("Profile")}
-          </DropdownItem>
-          <DropdownItem tag="a" href="#">
-            <span className="badge bg-success float-end">11</span>
-            <i className="bx bx-wrench font-size-16 align-middle me-1" />
-            {props.t("Settings")}
           </DropdownItem>
           <div className="dropdown-divider" />
           <Link to="/logout" className="dropdown-item">

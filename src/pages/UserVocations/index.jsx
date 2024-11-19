@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Table, Row, Col, Card, CardBody } from "reactstrap";
+import {
+  Table,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  CardTitle,
+  CardSubtitle,
+  Input,
+} from "reactstrap";
 
 // Import Breadcrumb
 import Breadcrumbs from "../../components/Common/Breadcrumb";
@@ -10,6 +19,7 @@ const UserVocation = () => {
   document.title = "შვებულებები | Gorgia LLC";
 
   const [vocations, setVocations] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch the current user's vocations from the API
   const fetchVocations = async () => {
@@ -45,15 +55,38 @@ const UserVocation = () => {
   console.log(vocations);
   
 
+  const filteredVocations = vocations.filter(vocation => 
+    vocation.reason.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <React.Fragment>
       <div className="page-content">
         <div className="container-fluid">
-          <Breadcrumbs title="შვებულებები" breadcrumbItem="ჩემი შვებულებები" />
+          <Row className="mb-3">
+            <Col xl={12}>
+              <Breadcrumbs title="შვებულებები" breadcrumbItem="ჩემი შვებულებები" />
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col xl={{ size: 4, offset: 8 }}>
+              <Input
+                type="search"
+                placeholder="ძებნა მიზეზის მიხედვით..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                bsSize="sm"
+              />
+            </Col>
+          </Row>
           <Row>
             <Col xl={12}>
               <Card>
                 <CardBody>
+                  <CardTitle className="h4">შვებულებების გვერდი</CardTitle>
+                  <CardSubtitle className="card-title-desc">
+                    ქვემოთ მოცემულია თქვენი შვებულებების ისტორია
+                  </CardSubtitle>
                   <div className="table-responsive">
                     <Table className="table mb-0">
                       <thead>
@@ -66,7 +99,7 @@ const UserVocation = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {vocations?.map((vocation, index) => (
+                        {filteredVocations?.map((vocation, index) => (
                           <tr key={vocation.id} className={getRowClass(vocation.status)}>
                             <th scope="row">{index + 1}</th>
                             <td>{vocation.start_date}</td>

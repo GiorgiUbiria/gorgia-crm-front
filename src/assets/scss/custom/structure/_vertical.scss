@@ -43,6 +43,8 @@
   top: 0;
   padding-top: $header-height;
   box-shadow: $box-shadow;
+  transition: all 0.2s ease;
+  
   @media (max-width: 991.98px) {
     top: $header-height;
     padding-top: 0px;
@@ -52,6 +54,9 @@
     position: fixed;
     top: 0px;
     z-index: 99;
+    width: $sidebar-width;
+    transition: all 0.2s ease;
+    
     @media (max-width: 991.98px) {
       display: none;
     }
@@ -61,6 +66,7 @@
 .main-content {
     margin-left: $sidebar-width;
     overflow: hidden;
+    transition: all 0.2s ease;
 
     .content {
         padding: 0 15px 10px 15px;

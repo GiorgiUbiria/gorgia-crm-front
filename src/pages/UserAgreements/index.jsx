@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Row, Col, Card, CardBody } from "reactstrap";
+import { Table, Button, Row, Col, Card, CardBody, Input } from "reactstrap";
 
 // Import Breadcrumb
 import Breadcrumbs from "../../components/Common/Breadcrumb";
@@ -10,6 +10,7 @@ const UserAgreements = () => {
 
   const [agreements, setAgreements] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch the agreements from the API
   const fetchAgreements = async () => {
@@ -57,11 +58,31 @@ const UserAgreements = () => {
     }
   };
 
+  // Add filtered agreements computation
+  const filteredAgreements = agreements.filter(agreement =>
+    agreement.performer_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <React.Fragment>
       <div className="page-content">
         <div className="container-fluid">
-          <Breadcrumbs title="ხელშეკრულებები" breadcrumbItem="ჩემი ხელშეკრულებები" />
+          <Row className="mb-3">
+            <Col xl={12}>
+              <Breadcrumbs title="ხელშეკრულებები" breadcrumbItem="ჩემი ხელშეკრულებები" />
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col xl={{ size: 4, offset: 8 }}>
+              <Input
+                type="search"
+                placeholder="ძებნა შემსრულებლის მიხედვით..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                bsSize="sm"
+              />
+            </Col>
+          </Row>
           <Row>
             <Col xl={12}>
               <Card>
@@ -78,7 +99,7 @@ const UserAgreements = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {agreements.map((agreement, index) => (
+                        {filteredAgreements.map((agreement, index) => (
                           <React.Fragment key={agreement.id}>
                             <tr
                               className={getRowClass(agreement.status)}

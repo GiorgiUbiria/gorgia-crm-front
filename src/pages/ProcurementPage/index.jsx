@@ -84,11 +84,11 @@ const ProcurementPage = () => {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-  
+
     if (name === "department_purchase_id") {
       setFormData((prevData) => ({
         ...prevData,
-        department_id: value,  
+        department_id: value,
       }));
     } else {
       setFormData((prevData) => ({
@@ -131,13 +131,13 @@ const ProcurementPage = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid={true}>
-          <Breadcrumbs title="Admin" breadcrumbItem="Daily Report" />
+          <Breadcrumbs title="შიდა შესყიდვები" breadcrumbItem="დამატება" />
 
           <Row>
             <Col lg="12">
               <Card>
                 <CardBody>
-                  <h4>{t("internal purchasment")}</h4>
+                  <h4>შიდა შესყიდვები</h4>
                   <Form onSubmit={handleSubmit}>
                     <Row>
                       <Col lg="6">
@@ -343,36 +343,22 @@ const ProcurementPage = () => {
                       </Col>
                     </Row>
                     <div style={{
-                      width:"100%",
-                      display:"flex",
-                      justifyContent:"end"
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "end"
                     }}>
                       <Button type="submit" color="primary">
                         გაგზავნა
                       </Button>
                     </div>
-                    
-                  </Form>
 
-                  {/* Display the list of purchase requests */}
-                  <div className="w-[80%] flex flex-col justify-center items-center">
-                    {purchases.map((purchase, idx) => (
-                      <RequestCard
-                        key={idx}
-                        type={t("internal_purchasment")}
-                        location={purchase.delivery_address}
-                        endDay={purchase.deadline}
-                        status={purchase.status}
-                      />
-                    ))}
-                  </div>
+                  </Form>
                 </CardBody>
               </Card>
             </Col>
           </Row>
         </Container>
       </div>
-      {/* <SuccessPopup/> */}
     </React.Fragment>
   );
 };
