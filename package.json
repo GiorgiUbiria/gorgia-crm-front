@@ -112,6 +112,7 @@
     "yup": "^1.2.0"
   },
   "scripts": {
+    "preinstall": "npm install --legacy-peer-deps",
     "start": "react-scripts start",
     "build": "react-scripts build --max_old_space_size=8000 build",
     "lint": "eslint .",
