@@ -1,23 +1,255 @@
 import React, { useEffect, useState } from "react"
 import { toast } from "react-toastify"
 import { changePassword, updateUser } from "../../services/user"
-import useFetchUser from "../../hooks/useFetchUser"
 import { getDepartments } from "../../services/admin/department"
-import {
-  getDepartments as getDeps,
-  getPurchaseDepartments,
-} from "../../services/auth"
 import { useTranslation } from "react-i18next"
-import store from "../../store"
-import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-} from "reactstrap"
-import "./index.css"
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap"
 import { useSelector } from "react-redux"
+import { FiCamera, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiLock } from 'react-icons/fi'
+import styled from '@emotion/styled'
+import "./index.css"
+
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  padding-top: 80px;
+  background: var(--bg-primary);
+  min-height: 100vh;
+`;
+
+const PageHeader = styled.header`
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, #2a3f54 100%);
+  border-radius: 20px;
+  padding: 2.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+`;
+
+const HeaderContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  max-width: 1200px;
+  width: 100%;
+`;
+
+const ImageSection = styled.div`
+  position: relative;
+  margin-right: 20px;
+`;
+
+const ProfileImageWrapper = styled.div`
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
+const ProfileImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const UploadOverlay = styled.label`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1;
+  }
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const UserName = styled.h1`
+  font-size: 28px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const UserRole = styled.p`
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+`;
+
+const Badge = styled.span`
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+`;
+
+const RoleBadge = styled(Badge)`
+  background-color: #4CAF50;
+  color: white;
+`;
+
+const DepartmentBadge = styled(Badge)`
+  background-color: #2196F3;
+  color: white;
+`;
+
+const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding: 20px;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 3fr 2fr;
+    > * {
+      height: 100%;
+    }
+  }
+`;
+
+const Section = styled.div`
+  background-color: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+  }
+`;
+
+const SectionTitle = styled.h2`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+`;
+
+const PasswordFormGrid = styled(FormGrid)`
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FormField = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 1rem;
+`;
+
+const Label = styled.label`
+  font-weight: 500;
+  color: #4a5568;
+`;
+
+const Input = styled.input`
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+
+  &:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    outline: none;
+  }
+`;
+
+const Select = styled.select`
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    outline: none;
+  }
+`;
+
+const ErrorText = styled.p`
+  color: #dc3545;
+  font-size: 14px;
+`;
+
+const ActionButton = styled.button`
+  padding: 12px 24px;
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #3182ce;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const ButtonContainer = styled.div`
+  margin-top: auto;
+  padding-top: 1rem;
+`;
 
 const ProfilePage = () => {
   const { t } = useTranslation()
@@ -188,128 +420,153 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="profile-dashboard-container">
-      <div className="profile-main-content">
-        <div className="profile">
-          <main className="profile-content">
-            <div className="profile grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {/* Profile Section */}
-              <div className="profile-section">
-                <div className="section-header mb-6">
-                  <h2>{t("პროფილი")}</h2>
-                </div>
-                <form onSubmit={submitProfileForm}>
-                  <div className="form-row">
-                    <div className="profile-form-wrapper">
-                      <label>{t("სახელი")}</label>
-                      <input
-                        type="text"
-                        name="name"
-                        onChange={handleChangeProfile}
-                        value={profileForm.name}
-                        className="form-control"
-                      />
-                      <p className="error-text">{profileError?.name}</p>
-                    </div>
+    <Container>
+      <PageHeader>
+        <HeaderContent>
+          <ImageSection>
+            <ProfileImageWrapper>
+              <ProfileImage 
+                src={userData?.profile_image || '/default-avatar.png'} 
+                alt={`${userData?.name} ${userData?.sur_name}`}
+              />
+              <UploadOverlay htmlFor="profile-image-upload">
+                <FiCamera size={16} />
+              </UploadOverlay>
+              <input
+                id="profile-image-upload"
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={(e) => {
+                  setProfileForm({
+                    ...profileForm,
+                    profile_image: e.target.files[0]
+                  })
+                }}
+              />
+            </ProfileImageWrapper>
+          </ImageSection>
+          <UserInfo>
+            <UserName>{userData?.name} {userData?.sur_name}</UserName>
+            <UserRole>
+              <RoleBadge>{userData?.position}</RoleBadge>
+              <DepartmentBadge>{userData?.department?.name}</DepartmentBadge>
+            </UserRole>
+          </UserInfo>
+        </HeaderContent>
+      </PageHeader>
 
-                    <div className="profile-form-wrapper">
-                      <label>{t("გვარი")}</label>
-                      <input
-                        type="text"
-                        name="sur_name"
-                        onChange={handleChangeProfile}
-                        value={profileForm.sur_name}
-                        className="form-control"
-                      />
-                      <p className="error-text">{profileError?.sur_name}</p>
-                    </div>
-                  </div>
+      <ContentGrid>
+        <Section>
+          <SectionTitle>
+            <FiUser size={20} />
+            <span>{t("პირადი ინფორმაცია")}</span>
+          </SectionTitle>
+          <form onSubmit={submitProfileForm}>
+            <FormGrid>
+              <FormField>
+                <Label>{t("სახელი")}</Label>
+                <Input
+                  type="text"
+                  name="name"
+                  value={profileForm.name}
+                  onChange={handleChangeProfile}
+                />
+                {profileError?.name && <ErrorText>{profileError.name}</ErrorText>}
+              </FormField>
 
-                  <div className="form-row">
-                    <div className="profile-form-wrapper">
-                      <label>{t("დეპარტამენტი")}</label>
-                      <select
-                        name="department_id"
-                        onChange={handleChangeProfile}
-                        className="form-select"
-                        value={profileForm.department_id}
-                      >
-                        {departments.map((dep) => (
-                          <option
-                            key={dep.id}
-                            selected={dep.id === userData?.department_id}
-                            value={dep.id}
-                          >
-                            {dep?.name}
-                          </option>
-                        ))}
-                      </select>
-                      <p className="error-text">{profileError?.department}</p>
-                    </div>
-                  </div>
+              <FormField>
+                <Label>{t("გვარი")}</Label>
+                <Input
+                  type="text"
+                  name="sur_name"
+                  value={profileForm.sur_name}
+                  onChange={handleChangeProfile}
+                />
+                {profileError?.sur_name && <ErrorText>{profileError.sur_name}</ErrorText>}
+              </FormField>
 
-                  <button className="btn btn-primary save-button">
-                    {t("შენახვა")}
-                  </button>
-                </form>
-              </div>
+              <FormField>
+                <Label>{t("დეპარტამენტი")}</Label>
+                <Select
+                  name="department_id"
+                  value={profileForm.department_id}
+                  onChange={handleChangeProfile}
+                >
+                  {departments.map((dep) => (
+                    <option key={dep.id} value={dep.id}>
+                      {dep?.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormField>
 
-              {/* Password Change Section */}
-              <div className="profile-section">
-                <div className="section-header mb-6">
-                  <h2>{t("შეცვალე პაროლი")}</h2>
-                </div>
-                <form onSubmit={submitPassForm}>
-                  <div className="form-row">
-                    <div className="profile-form-wrapper">
-                      <label>{t("ძველი პაროლი")}</label>
-                      <input
-                        type="password"
-                        name="old_password"
-                        onChange={handleChangePass}
-                        className="form-control"
-                      />
-                      <p className="error-text">{passError?.old_password}</p>
-                    </div>
+              <FormField>
+                <Label>{t("ელ-ფოსტა")}</Label>
+                <Input
+                  type="email"
+                  name="email"
+                  value={profileForm.email}
+                  onChange={handleChangeProfile}
+                />
+              </FormField>
+            </FormGrid>
+            
+            <ButtonContainer>
+              <ActionButton type="submit">
+                {t("შენახვა")}
+              </ActionButton>
+            </ButtonContainer>
+          </form>
+        </Section>
 
-                    <div className="profile-form-wrapper">
-                      <label>{t("ახალი პაროლი")}</label>
-                      <input
-                        type="password"
-                        name="password"
-                        onChange={handleChangePass}
-                        className="form-control"
-                      />
-                      <p className="error-text">{passError?.password}</p>
-                    </div>
-                  </div>
+        <Section>
+          <SectionTitle>
+            <FiLock size={20} />
+            <span>{t("პაროლის შეცვლა")}</span>
+          </SectionTitle>
+          <form onSubmit={submitPassForm}>
+            <PasswordFormGrid>
+              <FormField>
+                <Label>{t("ძველი პაროლი")}</Label>
+                <Input
+                  type="password"
+                  name="old_password"
+                  onChange={handleChangePass}
+                />
+                {passError?.old_password && <ErrorText>{passError.old_password}</ErrorText>}
+              </FormField>
 
-                  <div className="form-row">
-                    <div className="profile-form-wrapper">
-                      <label>{t("გაიმეორე ახალი პაროლი")}</label>
-                      <input
-                        type="password"
-                        name="confirm_password"
-                        onChange={handleChangePass}
-                        className="form-control"
-                      />
-                      <p className="error-text">
-                        {passError?.confirm_password}
-                      </p>
-                    </div>
-                  </div>
+              <FormField>
+                <Label>{t("ახალი პაროლი")}</Label>
+                <Input
+                  type="password"
+                  name="password"
+                  onChange={handleChangePass}
+                />
+                {passError?.password && <ErrorText>{passError.password}</ErrorText>}
+              </FormField>
 
-                  <button className="btn btn-primary save-button">
-                    {t("შეცვლა")}
-                  </button>
-                </form>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
+              <FormField>
+                <Label>{t("გაიმეორე პაროლი")}</Label>
+                <Input
+                  type="password"
+                  name="confirm_password"
+                  onChange={handleChangePass}
+                />
+                {passError?.confirm_password && <ErrorText>{passError.confirm_password}</ErrorText>}
+              </FormField>
+            </PasswordFormGrid>
 
-      {/* Modal for Success Message */}
+            <ButtonContainer>
+              <ActionButton type="submit" variant="secondary">
+                {t("შეცვლა")}
+              </ActionButton>
+            </ButtonContainer>
+          </form>
+        </Section>
+      </ContentGrid>
+
       <Modal isOpen={modal} toggle={toggleModal} centered>
         <ModalHeader toggle={toggleModal}>
           {t("პროფილის განახლება")}
@@ -321,7 +578,7 @@ const ProfilePage = () => {
           </Button>
         </ModalFooter>
       </Modal>
-    </div>
+    </Container>
   )
 }
 
