@@ -14,8 +14,12 @@ import { Link } from "react-router-dom";
 //i18n
 import { withTranslation } from "react-i18next";
 
+import useIsAdmin from 'hooks/useIsAdmin';
+
 const SidebarContent = props => {
   const ref = useRef();
+  const isAdmin = useIsAdmin();
+
   const activateParentDropdown = useCallback((item) => {
     item.classList.add("active");
     const parent = item.parentElement;
@@ -182,11 +186,13 @@ const SidebarContent = props => {
                         <span>{props.t("დამატება")}</span>
                       </Link>
                     </li>
-                    <li>
-                      <Link to="/procurement/manage">
-                        <span>{props.t("ვიზირება")}</span>
-                      </Link>
-                    </li>
+                    {isAdmin && (
+                      <li>
+                        <Link to="/procurement/manage">
+                          <span>{props.t("ვიზირება")}</span>
+                        </Link>
+                      </li>
+                    )}
                     <li>
                       <Link to="/user-procurements">
                         <span>{props.t("გაგზავნილი")}</span>
@@ -204,11 +210,13 @@ const SidebarContent = props => {
                         <span>{props.t("დამატება")}</span>
                       </Link>
                     </li>
-                    <li>
-                      <Link to="/vacation/manage">
-                        <span>{props.t("ვიზირება")}</span>
-                      </Link>
-                    </li>
+                    {isAdmin && (
+                      <li>
+                        <Link to="/vacation/manage">
+                          <span>{props.t("ვიზირება")}</span>
+                        </Link>
+                      </li>
+                    )}
                     <li>
                       <Link to="/user-vocations">
                         <span>{props.t("გაგზავნილი")}</span>
@@ -226,11 +234,13 @@ const SidebarContent = props => {
                         <span>{props.t("დამატება")}</span>
                       </Link>
                     </li>
-                    <li>
-                      <Link to="/business/manage">
-                        <span>{props.t("ვიზირება")}</span>
-                      </Link>
-                    </li>
+                    {isAdmin && (
+                      <li>
+                        <Link to="/business/manage">
+                          <span>{props.t("ვიზირება")}</span>
+                        </Link>
+                      </li>
+                    )}
                     <li>
                       <Link to="/user-business">
                         <span>{props.t("გაგზავნილი")}</span>
@@ -252,9 +262,16 @@ const SidebarContent = props => {
                     <span>{props.t("ცნობები")}</span>
                   </Link>
                 </li>
+                {isAdmin && (
+                  <li>
+                    <Link to="/hr-approve">
+                      <span>{props.t("ვიზირება")}</span>
+                    </Link>
+                  </li>
+                )}
                 <li>
-                  <Link to="/hr-approve">
-                    <span>{props.t("ვიზირება")}</span>
+                  <Link to="/hr">
+                    <span>{props.t("გაგზავნილი")}</span>
                   </Link>
                 </li>
               </ul>
@@ -271,16 +288,20 @@ const SidebarContent = props => {
                     <span>{props.t("მოთხოვნა")}</span>
                   </Link>
                 </li>
-                <li>
-                  <Link to="/lawyer-approve">
-                    <span>{props.t("ვიზირება")}</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/lawyer-history">
-                    <span>{props.t("არქივი")}</span>
-                  </Link>
-                </li>
+                {isAdmin && (
+                  <>
+                    <li>
+                      <Link to="/lawyer-approve">
+                        <span>{props.t("ვიზირება")}</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/lawyer-history">
+                        <span>{props.t("არქივი")}</span>
+                      </Link>
+                    </li>
+                  </>
+                )}
                 <li>
                   <Link to="/user-agreements">
                     <span>{props.t("გაგზავნილი")}</span>
@@ -289,12 +310,14 @@ const SidebarContent = props => {
               </ul>
             </li>
 
-            <li>
-              <Link to="/head">
-                <i className="bx bx-check-shield"></i>
-                <span>{props.t("ვიზირება")}</span>
-              </Link>
-            </li>
+            {isAdmin && (
+              <li>
+                <Link to="/head">
+                  <i className="bx bx-check-shield"></i>
+                  <span>{props.t("ვიზირება")}</span>
+                </Link>
+              </li>
+            )}
 
             <li>
               <Link to="/it-tasks">

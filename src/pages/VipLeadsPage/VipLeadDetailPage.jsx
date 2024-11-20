@@ -53,16 +53,19 @@ const VipLeadDetailPage = () => {
               <Row>
                 <Col md="6">
                   <p><strong>სახელი:</strong> {vipLead.first_name} {vipLead.last_name}</p>
-                  <p><strong>მოთხოვნა:</strong> {vipLead.request}</p>
-                  <p><strong>სტატუსი:</strong> <span className={`badge ${vipLead.status === 'Closed' ? 'bg-success' : 'bg-warning'}`}>{vipLead.status}</span></p>
+                  <p><strong>ტელეფონის ნომერი:</strong> {vipLead.phone}</p>
+                  <p><strong>სტატუსი:</strong> 
+                    <span className={`badge ${vipLead.status === 'Active' ? 'bg-primary' : vipLead.status === 'Closed' ? 'bg-success' : 'bg-danger'}`}>
+                      {vipLead.status === 'Active' ? 'აქტიური' : vipLead.status === 'Closed' ? 'დახურული' : 'პრობლემური'}
+                    </span>
+                  </p>
                 </Col>
                 <Col md="6">
                   <p><strong>პასუხისმგებელი პირი:</strong> {vipLead.responsible_person}</p>
-                  <p><strong>კომენტარი:</strong> {vipLead.comment}</p>
                 </Col>
               </Row>
 
-              <h4 className="mt-4 mb-4">კომენტარები</h4>
+              <h4 className="mt-4 mb-4">მოთხოვნები</h4>
               <div className="comment-section">
                 {comments.length > 0 ? (
                   comments.map((comment, index) => (
@@ -88,7 +91,7 @@ const VipLeadDetailPage = () => {
               </div>
 
               <Form onSubmit={handleAddComment}>
-                <Label for="newComment" className="mt-4">კომენტარის დამატება</Label>
+                <Label for="newComment" className="mt-4">მოთხოვნის დამატება</Label>
                 <Input
                   id="newComment"
                   name="newComment"

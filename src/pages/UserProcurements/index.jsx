@@ -130,15 +130,60 @@ const UserProcurement = () => {
                             </tr>
                             {expandedRows.includes(index) && (
                               <tr>
-                                <td colSpan="5">
-                                  <div className="p-3">
-                                    <p>დეტალური ინფორმაცია</p>
-                                    <ul>
-                                      <li>აღწერა: {procurement.description}</li>
-                                      <li>რაოდენობა: {procurement.quantity}</li>
-                                      <li>ერთეულის ფასი: {procurement.unit_price}₾</li>
-                                      <li>ჯამური ღირებულება: {procurement.total_price}₾</li>
-                                    </ul>
+                                <td colSpan="9">
+                                  <div className="p-4">
+                                    <h5 className="mb-3">დეტალური ინფორმაცია</h5>
+                                    <Row>
+                                      <Col md={6}>
+                                        <div className="mb-3">
+                                          <h6 className="mb-2">თანამშრომლის ინფორმაცია:</h6>
+                                          <ul className="list-unstyled">
+                                            <li>სახელი: {procurement.user.name}</li>
+                                            <li>გვარი: {procurement.user.sur_name}</li>
+                                            <li>პოზიცია: {procurement.user.position}</li>
+                                            <li>დეპარტამენტი: {procurement.department_id}</li>
+                                          </ul>
+                                        </div>
+                                        <div className="mb-3">
+                                          <h6 className="mb-2">შესყიდვის დეტალები:</h6>
+                                          <ul className="list-unstyled">
+                                            <li>შესყიდვის ტიპი: {procurement.type}</li>
+                                            <li>მომწოდებელი: {procurement.supplier}</li>
+                                            <li>თარიღი: {procurement.created_at}</li>
+                                          </ul>
+                                        </div>
+                                      </Col>
+                                      <Col md={6}>
+                                        <div className="mb-3">
+                                          <h6 className="mb-2">ფინანსური ინფორმაცია:</h6>
+                                          <ul className="list-unstyled">
+                                            <li>რაოდენობა: {procurement.quantity}</li>
+                                            <li>ერთეულის ფასი: {procurement.unit_price}₾</li>
+                                            <li>ჯამური ღირებულება: {procurement.total_price}₾</li>
+                                          </ul>
+                                        </div>
+                                        <div className="mb-3">
+                                          <h6 className="mb-2">დამატებითი ინფორმაცია:</h6>
+                                          <p className="text-muted mb-0">
+                                            <strong>აღწერა:</strong> {procurement.description}
+                                          </p>
+                                          <p className="text-muted mb-0">
+                                            <strong>სტატუსი:</strong>{" "}
+                                            <span className={`badge ${
+                                              procurement.status === "rejected" ? "bg-danger" :
+                                              procurement.status === "approved" ? "bg-success" :
+                                              "bg-warning"
+                                            }`}>
+                                              {procurement.status === "rejected"
+                                                ? "უარყოფილია"
+                                                : procurement.status === "approved"
+                                                ? "დადასტურებულია"
+                                                : "მოლოდინში"}
+                                            </span>
+                                          </p>
+                                        </div>
+                                      </Col>
+                                    </Row>
                                   </div>
                                 </td>
                               </tr>

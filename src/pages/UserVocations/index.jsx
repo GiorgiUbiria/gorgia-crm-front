@@ -20,6 +20,7 @@ const UserVocation = () => {
 
   const [vocations, setVocations] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedRows, setExpandedRows] = useState([]);
 
   // Fetch the current user's vocations from the API
   const fetchVocations = async () => {
@@ -58,6 +59,14 @@ const UserVocation = () => {
   const filteredVocations = vocations.filter(vocation => 
     vocation.reason.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const toggleRow = (index) => {
+    if (expandedRows.includes(index)) {
+      setExpandedRows(expandedRows.filter((i) => i !== index));
+    } else {
+      setExpandedRows([...expandedRows, index]);
+    }
+  };
 
   return (
     <React.Fragment>
@@ -100,16 +109,63 @@ const UserVocation = () => {
                       </thead>
                       <tbody>
                         {filteredVocations?.map((vocation, index) => (
-                          <tr key={vocation.id} className={getRowClass(vocation.status)}>
-                            <th scope="row">{index + 1}</th>
-                            <td>{vocation.start_date}</td>
-                            <td>{vocation.end_date}</td>
-                            <td>{vocation.reason}</td>
-                            <td>
-                              {vocation.status === "rejected" ? "უარყოფილია" :
-                               vocation.status === "approved" ? "დადასტურებულია" : "მოლოდინში"}
-                            </td>
-                          </tr>
+                          <React.Fragment key={vocation.id}>
+                            <tr 
+                              className={`${getRowClass(vocation.status)} cursor-pointer`}
+                              onClick={() => toggleRow(index)}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <th scope="row">{index + 1}</th>
+                              <td>{vocation.start_date}</td>
+                              <td>{vocation.end_date}</td>
+                              <td>{vocation.reason}</td>
+                              <td>
+                                {vocation.status === "rejected" ? "უარყოფილია" :
+                                 vocation.status === "approved" ? "დადასტურებულია" : "მოლოდინში"}
+                              </td>
+                            </tr>
+                            {expandedRows.includes(index) && (
+                              <tr>
+                                <td colSpan="5">
+                                  <div className="p-4">
+                                    <h5 className="mb-3">დეტალური ინფორმაცია</h5>
+                                    <Row>
+                                      <Col md={6}>
+                                        <div className="mb-3">
+                                          <h6 className="mb-2">შვებულების დეტალები:</h6>
+                                          <ul className="list-unstyled">
+                                            <li><strong>შვებულების ტიპი:</strong> {
+                                              vocation.type_of_vocations === 'paid' ? 'ანაზღაურებადი' :
+                                              vocation.type_of_vocations === 'unpaid' ? 'ანაზღაურების გარეშე' :
+                                              vocation.type_of_vocations === 'maternity' ? 'დეკრეტული' :
+                                              vocation.type_of_vocations === 'administrative' ? 'ადმინისტრაციული' : 'არ არის მითითებული'
+                                            }</li>
+                                            <li><strong>დაწყების თარიღი:</strong> {vocation.start_date}</li>
+                                            <li><strong>დასრულების თარიღი:</strong> {vocation.end_date}</li>
+                                            <li><strong>მიზეზი:</strong> {vocation.reason}</li>
+                                          </ul>
+                                        </div>
+                                      </Col>
+                                      <Col md={6}>
+                                        <div className="mb-3">
+                                          <h6 className="mb-2">დასვენების დღეები:</h6>
+                                          <ul className="list-unstyled">
+                                            {vocation.monday === 'yes' && <li>ორშაბათი</li>}
+                                            {vocation.tuesday === 'yes' && <li>სამშაბათი</li>}
+                                            {vocation.wednesday === 'yes' && <li>ოთხშაბათი</li>}
+                                            {vocation.thursday === 'yes' && <li>ხუთშაბათი</li>}
+                                            {vocation.friday === 'yes' && <li>პარასკევი</li>}
+                                            {vocation.saturday === 'yes' && <li>შაბათი</li>}
+                                            {vocation.sunday === 'yes' && <li>კვირა</li>}
+                                          </ul>
+                                        </div>
+                                      </Col>
+                                    </Row>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
                         ))}
                       </tbody>
                     </Table>

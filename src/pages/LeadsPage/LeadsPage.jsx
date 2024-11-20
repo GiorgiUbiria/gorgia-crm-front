@@ -20,7 +20,7 @@ import {
   createLead,
   updateLead,
   deleteLead,
-} from '../../services/leadsService'; // Ensure these functions are implemented
+} from '../../services/leadsService';
 import Breadcrumbs from 'components/Common/Breadcrumb';
 
 const LeadsPage = () => {
@@ -29,6 +29,7 @@ const LeadsPage = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [modal, setModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchLeads = async () => {
     try {
@@ -46,20 +47,14 @@ const LeadsPage = () => {
 
   const handleStatusChange = async (leadId, newStatus) => {
     const leadToUpdate = leads.find(lead => lead.id === leadId);
-  
-    
-  
     const updatedLead = { ...leadToUpdate, status: newStatus };
-  
     try {
-      await updateLead(leadId, updatedLead); 
-      console.log('Updated Lead:', updatedLead);
-      fetchLeads(); 
+      await updateLead(leadId, updatedLead);
+      fetchLeads();
     } catch (error) {
       console.error('Error updating lead status:', error);
     }
   };
-  
 
   const columns = useMemo(() => [
     { Header: 'სახელი', accessor: 'first_name' },
@@ -73,7 +68,7 @@ const LeadsPage = () => {
         <Input
           type="select"
           value={row.original.status}
-          onChange={(e) => handleStatusChange(row.original.id, e.target.value)} 
+          onChange={(e) => handleStatusChange(row.original.id, e.target.value)}
         >
           <option value="Active">აქტიური</option>
           <option value="Closed">დახურული</option>
@@ -92,7 +87,7 @@ const LeadsPage = () => {
         </div>
       )
     }
-  ], []);
+  ], [leads]);
 
   const {
     getTableProps,
@@ -147,15 +142,17 @@ const LeadsPage = () => {
       } else {
         await createLead(leadData);
       }
-      fetchLeads(); 
+      fetchLeads();
       setModal(false);
     } catch (error) {
       console.error('Error saving lead:', error);
     }
   };
 
-  console.log(rows);
-  
+  const filteredLeads = leads.filter(lead =>
+    lead.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <React.Fragment>
@@ -164,6 +161,13 @@ const LeadsPage = () => {
         onDeleteClick={handleDeleteLead}
         onCloseClick={() => setDeleteModal(false)}
       />
+      <style>
+        {`
+          .vertical-center {
+            vertical-align: middle;
+          }
+        `}
+      </style>
       <div className="page-content">
         <Container fluid>
           <Breadcrumbs title="ლიდები" breadcrumbItem="კორპორატიული" />
@@ -175,6 +179,17 @@ const LeadsPage = () => {
                 onClick={handleAddClick}>
                 დამატება
               </Button>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col xl={{ size: 4, offset: 8 }}>
+              <Input
+                type="search"
+                placeholder="ძებნა სახელით ან გვარით..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                bsSize="sm"
+              />
             </Col>
           </Row>
           <Row>
@@ -202,7 +217,9 @@ const LeadsPage = () => {
                         return (
                           <tr {...row.getRowProps()} key={row.id}>
                             {row.cells.map(cell => (
-                              <td {...cell.getCellProps()} key={cell.column.id}>{cell.render('Cell')}</td>
+                              <td {...cell.getCellProps()} key={cell.column.id} className="vertical-center">
+                                {cell.render('Cell')}
+                              </td>
                             ))}
                           </tr>
                         );
@@ -226,11 +243,6 @@ const LeadsPage = () => {
                 <Label for="responsible_person">პასუხისმგებელი პირი</Label>
                 <Input id="responsible_person" name="responsible_person" defaultValue={lead ? lead.responsible_person : ''} required />
                 <Label for="status">სტატუსი</Label>
-                {/* <Input type="select" id="status" name="status" >
-                  <option>Active</option>
-                  <option>Closed</option>
-                  <option>Problem</option>
-                </Input> */}
                 <Input
                   type="select"
                   name='status'
@@ -243,7 +255,8 @@ const LeadsPage = () => {
                 <Label for="comment">კომენტარი</Label>
                 <Input type="textarea" id="comment" name="comment" defaultValue={lead ? lead.comment : ''} />
                 <Col style={{ textAlign: 'right' }}>
-                <Button style={{marginTop:"10px"}} type="submit" color="primary">{isEdit ? 'განახლება' : 'დამატება'}</Button></Col>
+                  <Button style={{marginTop:"10px"}} type="submit" color="primary">{isEdit ? 'განახლება' : 'დამატება'}</Button>
+                </Col>
               </Form>
             </ModalBody>
           </Modal>

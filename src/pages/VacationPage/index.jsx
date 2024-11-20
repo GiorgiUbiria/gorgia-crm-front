@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Card,
   CardBody,
@@ -18,6 +18,8 @@ import { toast } from 'react-toastify';
 import './index.css';
 import RequestCard from 'components/Vacation/RequestCard';
 import SuccessPopup from 'components/SuccessPopup';
+import { useTable, useSortBy } from 'react-table';
+import moment from 'moment';
 
 const VacationPage = () => {
   const { t } = useTranslation();
@@ -161,6 +163,64 @@ const VacationPage = () => {
     return totalDays;
   };
   
+
+  const columns = useMemo(
+    () => [
+      { Header: '#', accessor: 'id' },
+      {
+        Header: ({ sorted, sortedDesc }) => (
+          <div>
+            დაწყების თარიღი
+            <span>
+              {' ▼'}
+            </span>
+          </div>
+        ),
+        accessor: 'start_date',
+        Cell: ({ value }) => moment(value).format('YYYY-MM-DD'),
+        sortType: 'datetime'
+      },
+      {
+        Header: ({ sorted, sortedDesc }) => (
+          <div>
+            დასრულების თარიღი
+            <span>
+              {' ▼'}
+            </span>
+          </div>
+        ),
+        accessor: 'end_date',
+        Cell: ({ value }) => moment(value).format('YYYY-MM-DD'),
+        sortType: 'datetime'
+      },
+      { Header: 'მიზეზი', accessor: 'reason' },
+      { Header: 'სტატუსი', accessor: 'status' },
+      // ... other columns
+    ],
+    []
+  );
+
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = useTable(
+    {
+      columns,
+      data: vacations,
+      initialState: {
+        sortBy: [
+          {
+            id: 'start_date',
+            desc: true // true for descending order (newest first)
+          }
+        ]
+      }
+    },
+    useSortBy
+  );
 
   return (
     <React.Fragment>

@@ -1,11 +1,19 @@
 import axios from "axios";
 
 axios.defaults.withCredentials = true
-// axios.defaults.withXSRFToken = true
+
+// const baseURL = "http://127.0.0.1:8000"
+
+// const baseURL = process.env.NODE_ENV === 'production'
+//   ? process.env.REACT_APP_PROD_BASE_URL
+//   : process.env.REACT_APP_DEV_BASE_URL;
+
+const baseURL = process.env.REACT_APP_BASE_URL;
+
+// const baseURL = "back.gorgia.ge";
 
 const defaultInstance = axios.create({
-  baseURL: 'https://back.gorgia.ge',
-  // baseURL: 'http://127.0.0.1:8000',
+  baseURL,
   timeout: 10000,
   headers: {
     Accept: 'application/json',
@@ -25,12 +33,5 @@ defaultInstance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
-// defaultInstance.interceptors.request.use((config) => {
-//     const token = decodeURIComponent(document.cookie.replace('XSRF-TOKEN=', ''));
-//     defaultInstance.defaults.headers['X-XSRF-TOKEN'] = token;
-
-//     return config;
-// });
 
 export default defaultInstance

@@ -40,6 +40,7 @@ const ProcurementPage = () => {
     planned_next_month: '',
   });
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isShowSuccessPopup, setIsShowSuccessPopup] = useState(false);
 
 
   useEffect(() => {
@@ -84,18 +85,10 @@ const ProcurementPage = () => {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-
-    if (name === "department_purchase_id") {
-      setFormData((prevData) => ({
-        ...prevData,
-        department_id: value,
-      }));
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -104,6 +97,7 @@ const ProcurementPage = () => {
       const res = await createPurchase(formData);
 
       if (res) {
+        setIsShowSuccessPopup(true);
         toast.success('თქვენი მოთხოვნა წარმატებით გაიგზავნა!');
         setFormData({
           department_purchase_id: '',
@@ -272,7 +266,7 @@ const ProcurementPage = () => {
                       <Col lg="6">
                         <div className="mb-3">
                           <Label for="alternative">
-                            დასაშვებია თუ არა შესყიდვის ობიექტის ალტერნატივა?
+                            დასაშვებია თუ არა შესყიდის ობიექტის ალტერნატივა?
                           </Label>
                           <Input
                             type="text"
@@ -359,6 +353,7 @@ const ProcurementPage = () => {
           </Row>
         </Container>
       </div>
+      {isShowSuccessPopup && (<SuccessPopup />)}
     </React.Fragment>
   );
 };

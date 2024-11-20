@@ -176,13 +176,53 @@ const VacationPageApprove = ({ filterStatus }) => {
                               <tr>
                                 <td colSpan="6">
                                   <div className="p-3">
-                                    <p>დეტალური ინფორმაცია</p>
-                                    <ul>
-                                      <li>პოზიცია: {vacation.user.position}</li>
-                                      <li>ID: {vacation.user.id}</li>
-                                      <li>მისამართი: {vacation.user.location}</li>
-                                      <li>სულ დღეები: {vacation.total_days}</li>
-                                    </ul>
+                                    <h5 className="mb-3">დეტალური ინფორმაცია</h5>
+                                    <Row>
+                                      <Col md={6}>
+                                        <ul className="list-unstyled">
+                                          <li className="mb-2">
+                                            <strong>თანამშრომელი:</strong>
+                                            <ul>
+                                              <li>სახელი: {vacation.user.name}</li>
+                                              <li>პოზიცია: {vacation.user.position}</li>
+                                              <li>ID: {vacation.user.id}</li>
+                                              <li>მისამართი: {vacation.user.location}</li>
+                                            </ul>
+                                          </li>
+                                          <li className="mb-2">
+                                            <strong>შვებულების ტიპი:</strong>{' '}
+                                            {vacation.type_of_vocations === 'paid' ? 'ანაზღაურებადი' :
+                                             vacation.type_of_vocations === 'unpaid' ? 'ანაზღაურების გარეშე' :
+                                             vacation.type_of_vocations === 'maternity' ? 'დეკრეტული' :
+                                             vacation.type_of_vocations === 'administrative' ? 'ადმინისტრაციული' : 'არ არის მითითებული'}
+                                          </li>
+                                        </ul>
+                                      </Col>
+                                      <Col md={6}>
+                                        <ul className="list-unstyled">
+                                          <li className="mb-2">
+                                            <strong>პერიოდი:</strong>
+                                            <ul>
+                                              <li>დაწყება: {new Date(vacation.start_date).toLocaleDateString()}</li>
+                                              <li>დასრულება: {new Date(vacation.end_date).toLocaleDateString()}</li>
+                                              <li>სულ დღეები: {vacation.total_days}</li>
+                                            </ul>
+                                          </li>
+                                          <li className="mb-2">
+                                            <strong>დასვენების დღეები:</strong>
+                                            <ul>
+                                              {vacation.monday === 'yes' && <li>ორშაბათი</li>}
+                                              {vacation.tuesday === 'yes' && <li>სამშაბათი</li>}
+                                              {vacation.wednesday === 'yes' && <li>ოთხშაბათი</li>}
+                                              {vacation.thursday === 'yes' && <li>ხუთშაბათი</li>}
+                                              {vacation.friday === 'yes' && <li>პარასკევი</li>}
+                                              {vacation.saturday === 'yes' && <li>შაბათი</li>}
+                                              {vacation.sunday === 'yes' && <li>კვირა</li>}
+                                            </ul>
+                                          </li>
+                                        </ul>
+                                      </Col>
+                                    </Row>
                                   </div>
                                 </td>
                               </tr>

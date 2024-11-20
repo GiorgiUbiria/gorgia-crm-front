@@ -11,7 +11,7 @@ export const getTaskList = async (page = 1, limit = 10, sortBy = 'created_at', o
                 order
             }
         });
-        return response.data;  // Ensure you're returning the actual data
+        return response.data;
     } catch (error) {
         console.error('Error fetching task list:', error?.response?.data || error.message);
         throw error;
