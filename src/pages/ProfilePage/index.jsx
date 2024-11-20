@@ -8,6 +8,7 @@ import { useSelector } from "react-redux"
 import { FiCamera, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiLock } from 'react-icons/fi'
 import styled from '@emotion/styled'
 import "./index.css"
+import NoAvatarIcon from "../../assets/images/no-avatar.jpg"
 
 const Container = styled.div`
   max-width: 1200px;
@@ -419,6 +420,10 @@ const ProfilePage = () => {
     setModal(!modal)
   }
 
+  const profileImageSrc = userData?.profile_image
+    ? `${process.env.REACT_APP_BASE_URL}/${userData.profile_image}`
+    : NoAvatarIcon
+
   return (
     <Container>
       <PageHeader>
@@ -426,7 +431,7 @@ const ProfilePage = () => {
           <ImageSection>
             <ProfileImageWrapper>
               <ProfileImage 
-                src={userData?.profile_image || '/default-avatar.png'} 
+                src={profileImageSrc}
                 alt={`${userData?.name} ${userData?.sur_name}`}
               />
               <UploadOverlay htmlFor="profile-image-upload">
