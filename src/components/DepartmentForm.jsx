@@ -82,63 +82,82 @@ const DepartmentForm = ({
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>
-        {isEditMode ? "Edit Department" : "Add Department"}
+    <Modal isOpen={isOpen} toggle={toggle} className="modal-dialog-centered">
+      <ModalHeader toggle={toggle} className="border-bottom pb-3">
+        {isEditMode ? "დეპარტამენტის რედაქტირება" : "დეპარტამენტის დამატება"}
       </ModalHeader>
-      <ModalBody>
+      <ModalBody className="p-4">
         <Form onSubmit={handleSubmit}>
-          <Label for="name">Department Name</Label>
-          <Input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-          />
-          <Label for="description" className="mt-3">Department Description</Label>
-          <Input
-            type="textarea"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            required
-          />
+          <div className="mb-3">
+            <Label className="form-label">დეპარტამენტის დასახელება</Label>
+            <Input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              className="form-control"
+              placeholder="შეიყვანეთ დასახელება"
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <Label className="form-label">აღწერა</Label>
+            <Input
+              type="textarea"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              className="form-control"
+              placeholder="შეიყვანეთ აღწერა"
+              rows="3"
+              required
+            />
+          </div>
 
           {isEditMode && (
-            <>
-              <Label for="user_id" className="mt-3">Assign Department Head</Label>
+            <div className="mb-3">
+              <Label className="form-label">დეპარტამენტის ხელმძღვანელი</Label>
               <Input
                 type="select"
                 name="user_id"
                 value={formData.user_id}
                 onChange={handleInputChange}
+                className="form-control"
               >
-                <option value="">-- Select a User --</option>
+                <option value="">აირჩიეთ ხელმძღვანელი</option>
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.name} - {user.email}
+                    {user.name}
                   </option>
                 ))}
               </Input>
-            </>
+            </div>
           )}
 
-          {/* Type Checkbox */}
-          <div className="mt-3">
-            <Label check>
+          <div className="mb-4">
+            <div className="form-check">
               <Input
                 type="checkbox"
+                className="form-check-input"
+                id="purchaseHeadCheck"
                 onChange={handleCheckboxChange}
+                checked={formData.type === "purchase_head"}
               />
-              {" "}
-              Mark as Purchase Head
-            </Label>
+              <Label className="form-check-label" for="purchaseHeadCheck">
+                შესყიდვების განყოფილება
+              </Label>
+            </div>
           </div>
 
-          <Button type="submit" color="success" className="mt-3 ">
-            {isEditMode ? "Update Department" : "Add Department"}
-          </Button>
+          <div className="d-flex justify-content-end gap-2">
+            <Button type="button" color="light" onClick={toggle}>
+              გაუქმება
+            </Button>
+            <Button type="submit" color="primary">
+              {isEditMode ? "განახლება" : "დამატება"}
+            </Button>
+          </div>
         </Form>
       </ModalBody>
     </Modal>

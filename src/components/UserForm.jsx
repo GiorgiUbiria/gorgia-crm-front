@@ -70,133 +70,147 @@ const UserForm = ({
   }
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>
-        {isEditMode ? "Edit User" : "Add User"}
+    <Modal isOpen={isOpen} toggle={toggle} className="modal-dialog-centered modal-lg">
+      <ModalHeader toggle={toggle} className="border-bottom pb-3">
+        {isEditMode ? "მომხმარებლის რედაქტირება" : "მომხმარებლის დამატება"}
       </ModalHeader>
-      <ModalBody>
+      <ModalBody className="p-4">
         <Form onSubmit={handleSubmit}>
-          <Label for="name">Name</Label>
-          <Input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            
-          />
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">სახელი და გვარი</Label>
+              <Input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="form-control"
+                placeholder="შეიყვანეთ სახელი"
+                required
+              />
+            </div>
 
-          <Label for="email" className="mt-3">
-            Email
-          </Label>
-          <Input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            
-          />
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">ელ-ფოსტა</Label>
+              <Input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="form-control"
+                placeholder="შეიყვანეთ ელ-ფოსტა"
+                required
+              />
+            </div>
 
-          <Label for="id_number" className="mt-3">
-            ID Number
-          </Label>
-          <Input
-            type="text"
-            id="id_number"
-            name="id_number"
-            value={formData.id_number}
-            onChange={handleChange}
-            
-          />
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">პირადი ნომერი</Label>
+              <Input
+                type="text"
+                name="id_number"
+                value={formData.id_number}
+                onChange={handleChange}
+                className="form-control"
+                placeholder="შეიყვანეთ პირადი ნომერი"
+                required
+              />
+            </div>
 
-          <Label for="department_id" className="mt-3">
-            Department
-          </Label>
-          <Input
-            type="select"
-            id="department_id"
-            name="department_id"
-            value={formData.department_id}
-            onChange={handleChange}
-            
-          >
-            <option value="">Select Department</option>
-            {departments.map(dep => (
-              <option key={dep.id} value={dep.id}>
-                {dep.name}
-              </option>
-            ))}
-          </Input>
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">დეპარტამენტი</Label>
+              <Input
+                type="select"
+                name="department_id"
+                value={formData.department_id}
+                onChange={handleChange}
+                className="form-control"
+              >
+                <option value="">აირჩიეთ დეპარტამენტი</option>
+                {departments.map(dep => (
+                  <option key={dep.id} value={dep.id}>{dep.name}</option>
+                ))}
+              </Input>
+            </div>
 
-          <Label for="position" className="mt-3">
-            Position
-          </Label>
-          <Input
-            type="text"
-            id="position"
-            name="position"
-            value={formData.position}
-            onChange={handleChange}
-          />
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">პოზიცია</Label>
+              <Input
+                type="text"
+                name="position"
+                value={formData.position}
+                onChange={handleChange}
+                className="form-control"
+                placeholder="შეიყვანეთ პოზიცია"
+              />
+            </div>
 
-          <Label for="location" className="mt-3">
-            Location
-          </Label>
-          <Input
-            type="text"
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-          />
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">მობილური</Label>
+              <Input
+                type="text"
+                name="mobile_number"
+                value={formData.mobile_number}
+                onChange={handleChange}
+                className="form-control"
+                placeholder="შეიყვანეთ მობილური"
+              />
+            </div>
 
-          <Label for="working_start_date" className="mt-3">
-            Working Start Date
-          </Label>
-          <Input
-            type="date"
-            id="working_start_date"
-            name="working_start_date"
-            value={formData.working_start_date}
-            onChange={handleChange}
-          />
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">დაბადების თარიღი</Label>
+              <Input
+                type="date"
+                name="date_of_birth"
+                value={formData.date_of_birth}
+                onChange={handleChange}
+                className="form-control"
+                placeholder="შეიყვანეთ დაბადების თარიღი"
+              />
+            </div>
 
-          <Label for="date_of_birth" className="mt-3">
-            Date of Birth
-          </Label>
-          <Input
-            type="date"
-            id="date_of_birth"
-            name="date_of_birth"
-            value={formData.date_of_birth}
-            onChange={handleChange}
-          />
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">სრული სახელი</Label>
+              <Input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                className="form-control"
+                placeholder="შეიყვანეთ სრული სახელი"
+              />
+            </div>
 
-          <Label for="mobile_number" className="mt-3">
-            Mobile Number
-          </Label>
-          <Input
-            type="text"
-            id="mobile_number"
-            name="mobile_number"
-            value={formData.mobile_number}
-            onChange={handleChange}
-          />
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">სამუშაოის დაწყების თარიღი</Label>
+              <Input
+                type="date"
+                name="working_start_date"
+                value={formData.working_start_date}
+                onChange={handleChange}
+                className="form-control"
+                placeholder="შეიყვანეთ სამუშაოის დაწყების თარიღი"
+              />
+            </div>
 
-          <Label for="profile_image" className="mt-3">
-            Profile Image
-          </Label>
-          <Input
-            type="file"
-            id="profile_image"
-            name="profile_image"
-            onChange={handleFileChange}
-          />
+            <div className="col-md-6 mb-3">
+              <Label className="form-label">პროფილის სურათი</Label>
+              <Input
+                type="file"
+                name="profile_image"
+                onChange={handleFileChange}
+                className="form-control"
+              />
+            </div>
+          </div>
 
-          <Button color="success" type="submit" className="mt-3">
-            {isEditMode ? "Update User" : "Add User"}
-          </Button>
+          <div className="d-flex justify-content-end gap-2">
+            <Button type="button" color="light" onClick={toggle}>
+              გაუქმება
+            </Button>
+            <Button type="submit" color="primary">
+              {isEditMode ? "განახლება" : "დამატება"}
+            </Button>
+          </div>
         </Form>
       </ModalBody>
     </Modal>
