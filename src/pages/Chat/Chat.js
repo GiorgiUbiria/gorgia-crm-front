@@ -361,532 +361,146 @@ const onKeyPress = (e) => {
   
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <Container fluid>
-          {/* Render Breadcrumb */}
-          <Breadcrumbs title="Gorgia LLC" breadcrumbItem="Chat" />
+    <div className="chat-container">
+      <Container fluid>
+        <Row className="chat-wrapper">
+          {/* Simplified Sidebar */}
+          <Col lg={3} className="chat-sidebar">
+            <div className="sidebar-header">
+              <h4>Messages</h4>
+              <div className="search-box">
+                <Input
+                  type="text"
+                  placeholder="Search users..."
+                  onChange={searchUsers}
+                />
+                <i className="bx bx-search" />
+              </div>
+            </div>
 
-          <Row>
-            <Col lg="12">
-              <div className="d-lg-flex">
-                <div className="chat-leftsidebar me-lg-4">
-                  <div >
-                    <div className="py-4 border-bottom">
-                      <div className="d-flex">
-                        {/* <div className="align-self-center me-3">
-                          <img src={avatar1} className="avatar-xs rounded-circle" alt="" />
+            <div className="users-list">
+              <SimpleBar style={{ maxHeight: "calc(100vh - 180px)" }}>
+                <ul className="list-unstyled">
+                  {users && users.length > 0 ? (
+                    users.map((user) => (
+                      <li 
+                        key={user.id} 
+                        className={`user-item ${receiverId === user.id ? "active" : ""}`}
+                        onClick={() => handleUserSelect(user.id)}
+                      >
+                        <div className="user-avatar">
+                          {user.avatar ? (
+                            <img src={user.avatar} alt={user.name} />
+                          ) : (
+                            <span className="avatar-initial">
+                              {user.name ? user.name.charAt(0) : '?'}
+                            </span>
+                          )}
+                          <span className={`status-indicator ${user.status || 'offline'}`} />
                         </div>
-                        <div className="flex-grow-1">
-                          <h5 className="font-size-15 mt-0 mb-1">
-                            {currentUser.name}
-                          </h5>
-                          <p className="text-muted mb-0">
-                            <i className="mdi mdi-circle text-success align-middle me-2" />
-                            Active
-                          </p>
-                        </div> */}
-                        <div className="user-list w-100">
-                          <h5 className="font-size-14 mb-3">Users</h5>
-                          <SimpleBar style={{ maxHeight: "410px" }}>
-                            <ul className="list-unstyled chat-list">
-                              {users && users?.map((user) => (
-                                <li 
-                                  key={user.id} 
-                                  className={receiverId === user.id ? "active" : ""}
-                                  onClick={() => handleUserSelect(user.id)}  // Handle user click
-                                >
-                                  <Link to="#">
-                                    <div className="d-flex align-items-center">
-                                      <div className="avatar-xs me-3">
-                                        <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                          {/* {user.name[0]} */}
-                                        </span>
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        <h5 className="font-size-14 mb-0">{user.name}</h5>
-                                      </div>
-                                    </div>
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </SimpleBar>
+                        <div className="user-info">
+                          <h6>{user.name || 'Unknown User'}</h6>
+                          <small className="text-muted">
+                            {user.lastMessage || "No messages yet"}
+                          </small>
                         </div>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-center p-3">
+                      <small className="text-muted">No users available</small>
+                    </li>
+                  )}
+                </ul>
+              </SimpleBar>
+            </div>
+          </Col>
 
-                        <div>
-                          <Dropdown
-                            isOpen={menu1}
-                            toggle={() => setMenu1(!menu1)}
-                            className="chat-noti-dropdown active"
-                          >
-                            <DropdownToggle
-                              tag="a"
-                              className="btn dropdown-toggle"
-                            >
-                              <i className="bx bx-bell bx-tada"></i>
-                            </DropdownToggle>
-                            <DropdownMenu className="dropdown-menu-end">
-                              <DropdownItem href="#">Action</DropdownItem>
-                              <DropdownItem href="#">Another action</DropdownItem>
-                              <DropdownItem href="#">Something else</DropdownItem>
-                            </DropdownMenu>
-                          </Dropdown>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="search-box chat-search-box py-4">
-                      <div className="position-relative">
-                        <Input
-                          onKeyUp={searchUsers}
-                          id="search-user"
-                          type="text"
-                          className="form-control"
-                          placeholder="Search..."
-                        />
-                        <i className="bx bx-search-alt search-icon" />
-                      </div>
-                    </div>
-
-                    <div className="chat-leftsidebar-nav position-relative">
-                      <Nav pills justified>
-                        <NavItem>
-                          <NavLink
-                            className={classnames({
-                              active: activeTab === "1",
-                            })}
-                            onClick={() => {
-                              toggleTab("1");
-                            }}
-                          >
-                            <i className="bx bx-chat font-size-20 d-sm-none" />
-                            <span className="d-none d-sm-block">Chat</span>
-                          </NavLink>
-                        </NavItem>
-                        <NavItem>
-                          <NavLink
-                            className={classnames({
-                              active: activeTab === "2",
-                            })}
-                            onClick={() => {
-                              toggleTab("2");
-                            }}
-                          >
-                            <i className="bx bx-group font-size-20 d-sm-none" />
-                            <span className="d-none d-sm-block">Groups</span>
-                          </NavLink>
-                        </NavItem>
-                        <NavItem>
-                          <NavLink
-                            className={classnames({
-                              active: activeTab === "3",
-                            })}
-                            onClick={() => {
-                              toggleTab("3");
-                            }}
-                          >
-                            <i className="bx bx-book-content font-size-20 d-sm-none" />
-                            <span className="d-none d-sm-block">Contacts</span>
-                          </NavLink>
-                        </NavItem>
-                      </Nav>
-                      <TabContent activeTab={activeTab} className="py-4">
-                        <TabPane tabId="1">
-                          <div>
-                            <h5 className="font-size-14 mb-3">Recent</h5>
-                            <ul className="list-unstyled chat-list" id="recent-list">
-                              {
-                                isLoading ? <Spinners setLoading={setLoading} /> :
-                                  <SimpleBar style={{ maxHeight: "410px" }}>
-                                    {map(chats, chat => (
-                                      <li
-                                        key={chat.id + chat.status}
-                                        className={
-                                          currentRoomId === chat.roomId
-                                            ? "active"
-                                            : ""
-                                        }
-                                      >
-                                        <Link
-                                          to="#"
-                                          onClick={() => {
-                                            userChatOpen(chat);
-                                          }}
-                                        >
-                                          <div className="d-flex">
-                                            <div className="align-self-center me-3">
-                                              <i
-                                                className={
-                                                  chat.status === "online"
-                                                    ? "mdi mdi-circle text-success font-size-10"
-                                                    : chat.status === "intermediate"
-                                                      ? "mdi mdi-circle text-warning font-size-10"
-                                                      : "mdi mdi-circle font-size-10"
-                                                }
-                                              />
-                                            </div>
-                                            {chat.isImg ?
-                                              <div className="avatar-xs align-self-center me-3">
-                                                <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                                  {chat.profile}
-                                                </span>
-                                              </div>
-                                              :
-                                              <div className="align-self-center me-3">
-                                                <img
-                                                  src={chat.image}
-                                                  className="rounded-circle avatar-xs"
-                                                  alt=""
-                                                />
-                                              </div>
-                                            }
-
-                                            <div className="flex-grow-1 overflow-hidden">
-                                              <h5 className="text-truncate font-size-14 mb-1">
-                                                {chat.name}
-                                              </h5>
-                                              <p className="text-truncate mb-0">
-                                                {chat.description}
-                                              </p>
-                                            </div>
-                                            <div className="font-size-11">
-                                              {chat.time}
-                                            </div>
-                                          </div>
-                                        </Link>
-                                      </li>
-                                    ))}
-                                  </SimpleBar>
-                              }
-                            </ul>
-                          </div>
-                        </TabPane>
-
-                        {/* <TabPane tabId="2">
-                          <h5 className="font-size-14 mb-3">Group</h5>
-                          <ul className="list-unstyled chat-list">
-                            <SimpleBar style={{ height: "410px" }}>
-                              {groups &&
-                                groups.map(group => (
-                                  <li key={"test" + group.image} className={currentRoomId === group.roomId ? "active" : ""}>
-                                    <Link
-                                      to="#"
-                                      onClick={() => {
-                                        userChatOpen(
-                                          group
-                                        );
-                                      }}
-                                    >
-                                      <div className="d-flex align-items-center">
-                                        <div className="avatar-xs me-3">
-                                          <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                            {group.image}
-                                          </span>
-                                        </div>
-
-                                        <div className="flex-grow-1">
-                                          <h5 className="font-size-14 mb-0">
-                                            {group.name}
-                                          </h5>
-                                        </div>
-                                      </div>
-                                    </Link>
-                                  </li>
-                                ))}
-                            </SimpleBar>
-                          </ul>
-                        </TabPane> */}
-
-                        <TabPane tabId="3">
-                          <h5 className="font-size-14 mb-3">Contact</h5>
-
-                          <div>
-                            {/* <SimpleBar style={{ height: "410px" }}>
-                              {contacts &&
-                                contacts.map(contact => (
-                                  <div
-                                    key={"test_" + contact.category}
-                                    className={
-                                      contact.category === "A" ? "" : "mt-4"
-                                    }
-                                  >
-                                    <div className="avatar-xs mb-3">
-                                      <span className="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                        {contact.category}
-                                      </span>
-                                    </div>
-
-                                    <ul className="list-unstyled chat-list">
-                                      {contact.child.map(array => (
-                                        <li key={"test" + array.id} className={currentRoomId === array.roomId ? "active" : ""}>
-                                          <Link
-                                            to="#"
-                                            onClick={() => {
-                                              userChatOpen(
-                                                array
-                                              );
-                                            }}
-                                          >
-                                            <h5 className="font-size-14 mb-0">
-                                              {array.name}
-                                            </h5>
-                                          </Link>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                ))}
-                            </SimpleBar> */}
-                          </div>
-                        </TabPane>
-                      </TabContent>
-                    </div>
+          {/* Simplified Chat Area */}
+          <Col lg={9} className="chat-main">
+            {receiverId ? (
+              <>
+                <div className="chat-header">
+                  <div className="chat-user-info">
+                    <h5>{Chat_Box_Username}</h5>
+                    <small className={`status ${Chat_Box_User_Status}`}>
+                      {Chat_Box_User_Status === "online" ? "Active now" : "Offline"}
+                    </small>
+                  </div>
+                  <div className="chat-actions">
+                    <Button color="light" className="btn-icon">
+                      <i className="bx bx-search" />
+                    </Button>
+                    <Button color="light" className="btn-icon">
+                      <i className="bx bx-phone" />
+                    </Button>
+                    <Button color="light" className="btn-icon">
+                      <i className="bx bx-video" />
+                    </Button>
                   </div>
                 </div>
-                <div className="w-100 user-chat">
-                  <Card>
-                    <div className="p-4 border-bottom ">
-                      <Row>
-                        <Col md="4" xs="9">
-                          <h5 className="font-size-15 mb-1">
-                            {Chat_Box_Username}
-                          </h5>
 
-                          <p className="text-muted mb-0">
-                            <i
-                              className={
-                                Chat_Box_User_Status === "online"
-                                  ? "mdi mdi-circle text-success align-middle me-2"
-                                  : Chat_Box_User_Status === "intermediate"
-                                    ? "mdi mdi-circle text-warning align-middle me-1"
-                                    : "mdi mdi-circle align-middle me-1"
-                              }
-                            />
-                            {Chat_Box_User_Status === "online" ? "Active now" : "Offline"}
-                          </p>
-                        </Col>
-                        <Col md="8" xs="3">
-                          <ul className="list-inline user-chat-nav text-end mb-0">
-                            <li className="list-inline-item d-none d-sm-inline-block">
-                              <Dropdown
-                                className="me-1"
-                                isOpen={search_Menu}
-                                toggle={toggleSearch}
-                              >
-                                <DropdownToggle className="btn nav-btn" tag="a">
-                                  <i className="bx bx-search-alt-2" />
-                                </DropdownToggle>
-                                <DropdownMenu
-                                  className="dropdown-menu-md"
-                                >
-                                  <Form className="p-3">
-                                    <FormGroup className="m-0">
-                                      <InputGroup>
-                                        <Input
-                                          type="text"
-                                          className="form-control"
-                                          id="searchMessage"
-                                          placeholder="Search ..."
-                                          aria-label="Recipient's username"
-                                          onChange={handelSearch}
-                                        />
-                                        {/* <InputGroupAddon addonType="append"> */}
-                                        <Button color="primary" type="submit">
-                                          <i className="mdi mdi-magnify" />
-                                        </Button>
-                                        {/* </InputGroupAddon> */}
-                                      </InputGroup>
-                                    </FormGroup>
-                                  </Form>
-                                </DropdownMenu>
-                              </Dropdown>
-                            </li>
-                            <li className="list-inline-item d-none d-sm-inline-block">
-                              <Dropdown
-                                isOpen={settings_Menu}
-                                toggle={toggleSettings}
-                                className="me-1"
-                              >
-                                <DropdownToggle className="btn nav-btn" tag="a">
-                                  <i className="bx bx-cog" />
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                  <DropdownItem href="#">
-                                    View Profile
-                                  </DropdownItem>
-                                  <DropdownItem href="#">
-                                    Clear chat
-                                  </DropdownItem>
-                                  <DropdownItem href="#">Muted</DropdownItem>
-                                  <DropdownItem href="#">Delete</DropdownItem>
-                                </DropdownMenu>
-                              </Dropdown>
-                            </li>
-                            <li className="list-inline-item">
-                              <Dropdown
-                                isOpen={other_Menu}
-                                toggle={toggleOther}
-                              >
-                                <DropdownToggle className="btn nav-btn" tag="a">
-                                  <i className="bx bx-dots-horizontal-rounded" />
-                                </DropdownToggle>
-                                <DropdownMenu className="dropdown-menu-end">
-                                  <DropdownItem href="#">Action</DropdownItem>
-                                  <DropdownItem href="#">
-                                    Another Action
-                                  </DropdownItem>
-                                  <DropdownItem href="#">
-                                    Something else
-                                  </DropdownItem>
-                                </DropdownMenu>
-                              </Dropdown>
-                            </li>
-                          </ul>
-                        </Col>
-                      </Row>
-                    </div>
-
-                    <div>
-
-                      <div className="chat-conversation p-3">
-
-                      <SimpleBar ref={scrollRef} style={{ height: "486px" }}>
-                    {isLoading ? (
-                      <Spinners setLoading={setLoading} />
-                    ) : (
-                      <ul className="list-unstyled mb-0" id="users-conversation">
-                        {messagesData &&
-                          messagesData.map((message, index) => (
-                            <li
-                              key={index}
-                              className={message.sender_id === userId ? "right" : ""}
-                            >
-                              <div className="conversation-list">
-                                <UncontrolledDropdown>
-                                  <DropdownToggle href="#!" tag="a" className="dropdown-toggle">
-                                    <i className="bx bx-dots-vertical-rounded" />
-                                  </DropdownToggle>
-                                  <DropdownMenu>
-                                    <DropdownItem onClick={() => copyMsg(message)} href="#">
-                                      Copy
-                                    </DropdownItem>
-                                    <DropdownItem href="#">Save</DropdownItem>
-                                    <DropdownItem href="#">Forward</DropdownItem>
-                                    <DropdownItem
-                                      onClick={() => toggle_deleMsg(message.id)}
-                                      href="#"
-                                    >
-                                      Delete
-                                    </DropdownItem>
-                                  </DropdownMenu>
-                                </UncontrolledDropdown>
-                                <div className="ctext-wrap">
-                                  <div className="conversation-name">
-                                    {message.sender_id === userId ? "You" : "noone"}
-                                  </div>
-                                  <p>{message.message}</p>
-                                  <p className="chat-time mb-0">
-                                    <i className="bx bx-time-five align-middle me-1"></i>
-                                    {new Date(message.created_at).toLocaleTimeString()}
-                                  </p>
-                                </div>
-                              </div>
-                            </li>
-                          ))}
-                      </ul>
-                    )}
+                <div className="chat-messages">
+                  <SimpleBar 
+                    style={{ 
+                      height: "100%",
+                      maxHeight: "calc(100vh - 270px)"
+                    }}
+                  >
+                    <ul className="messages-list">
+                      {messagesData?.map((message, index) => (
+                        <li 
+                          key={index}
+                          className={`message ${message.sender_id === userId ? "sent" : "received"}`}
+                        >
+                          <div className="message-content">
+                            <p>{message.message}</p>
+                            <small className="message-time">
+                              {new Date(message.created_at).toLocaleTimeString()}
+                            </small>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   </SimpleBar>
-
-                      </div>
-                      {
-                        selectedImage &&
-                        <div className="replymessage-block mb-0 d-flex align-items-start">
-                          <div className="flex-grow-1">
-                            <img src={selectedImage} alt="select img" style={{ width: "150px", height: "auto" }} />
-                          </div>
-                          <div className="flex-shrink-0">
-                            <button type="button" id="close_toggle" className="btn btn-sm btn-link mt-n2 me-n3 fs-18" onClick={() => setSelectedImage(null)}>
-                              <i className="bx bx-x align-middle"></i>
-                            </button>
-                          </div>
-                        </div>
-                      }
-
-                      {copyMsgAlert && <UncontrolledAlert color='warning' role="alert">  Message copied</UncontrolledAlert>}
-                      {emoji && <EmojiPicker onEmojiClick={onEmojiClick} width={250} height={382} />}
-
-                      <div className="p-3 chat-input-section">
-                        <Row>
-                          <Col>
-                            <div className="position-relative">
-                              <input
-                                type="text"
-                                value={curMessage}
-                                onKeyPress={onKeyPress}
-                                onChange={e => { setCurMessage(e.target.value); setDisable(true) }}
-                                className="form-control chat-input"
-                                placeholder="Enter Message..."
-                              />
-                              <div className="chat-input-links">
-                                <ul className="list-inline mb-0">
-                                  <li className="list-inline-item" onClick={() => setEmoji(!emoji)}>
-                                    <Link to="#">
-                                      <i className="mdi mdi-emoticon-happy-outline me-1" id="Emojitooltip" />
-                                      <UncontrolledTooltip
-                                        placement="top"
-                                        target="Emojitooltip"
-                                      >
-                                        Emojis
-                                      </UncontrolledTooltip>
-                                    </Link>
-                                  </li>
-                                  <li className="list-inline-item">
-                                    <label htmlFor="imageInput" style={{ color: "#556ee6", fontSize: 16 }}>
-                                      <i className="mdi mdi-file-image-outline me-1" id="Imagetooltip" />
-                                      <UncontrolledTooltip placement="top" target="Imagetooltip">
-                                        Images
-                                      </UncontrolledTooltip>
-                                    </label>
-                                    <input type="file" id="imageInput" className="d-none" onChange={handleImageChange} />
-                                  </li>
-                                  <li className="list-inline-item">
-                                    <Link to="#">
-                                      <i className="mdi mdi-file-document-outline" id="Filetooltip" />
-                                      <UncontrolledTooltip placement="top" target="Filetooltip">
-                                        Add Files
-                                      </UncontrolledTooltip>
-                                    </Link>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </Col>
-                          <Col className="col-auto">
-                            <Button
-                              type="button"
-                              color="primary"
-                              disabled={!isdisable}
-                              onClick={() => addMessage()}
-                              className="btn btn-primary btn-rounded chat-send w-md "
-                            >
-                              <span className="d-none d-sm-inline-block me-2">
-                                Send
-                              </span>{" "}
-                              <i className="mdi mdi-send" />
-                            </Button>
-                          </Col>
-                        </Row>
-                      </div>
-                    </div>
-                  </Card>
                 </div>
+
+                <div className="chat-input">
+                  <InputGroup>
+                    <Button color="light" className="btn-icon">
+                      <i className="bx bx-smile" onClick={() => setEmoji(!emoji)} />
+                    </Button>
+                    <Input
+                      value={curMessage}
+                      onChange={e => setCurMessage(e.target.value)}
+                      onKeyPress={onKeyPress}
+                      placeholder="Type your message..."
+                    />
+                    <Button 
+                      color="primary"
+                      disabled={!curMessage.trim()}
+                      onClick={addMessage}
+                    >
+                      <i className="bx bx-send" />
+                    </Button>
+                  </InputGroup>
+                  {emoji && (
+                    <div className="emoji-picker-container">
+                      <EmojiPicker onEmojiClick={onEmojiClick} />
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="no-chat-selected">
+                <i className="bx bx-message-square-dots" />
+                <h4>Select a conversation to start messaging</h4>
               </div>
-            </Col>
-          </Row >
-        </Container >
-      </div >
-    </React.Fragment >
+            )}
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

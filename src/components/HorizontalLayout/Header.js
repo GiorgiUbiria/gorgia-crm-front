@@ -35,23 +35,18 @@ import { withTranslation } from "react-i18next";
 const Header = props => {
   const [menu, setMenu] = useState(false);
   const [isSearch, setSearch] = useState(false);
-  const [socialDrp, setsocialDrp] = useState(false);
+  const [socialDrp, setSocialDrp] = useState(false);
 
-  function toggleFullscreen() {
-    if (
-      !document.fullscreenElement &&
-      /* alternative standard method */ !document.mozFullScreenElement &&
-      !document.webkitFullscreenElement
-    ) {
-      // current working methods
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement && 
+        !document.mozFullScreenElement &&
+        !document.webkitFullscreenElement) {
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen();
       } else if (document.documentElement.mozRequestFullScreen) {
         document.documentElement.mozRequestFullScreen();
       } else if (document.documentElement.webkitRequestFullscreen) {
-        document.documentElement.webkitRequestFullscreen(
-          Element.ALLOW_KEYBOARD_INPUT
-        );
+        document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
       }
     } else {
       if (document.cancelFullScreen) {
@@ -62,7 +57,8 @@ const Header = props => {
         document.webkitCancelFullScreen();
       }
     }
-  }
+  };
+
   return (
     <React.Fragment>
       <header id="page-topbar">
@@ -303,7 +299,7 @@ const Header = props => {
               className="d-none d-lg-inline-block ms-1"
               isOpen={socialDrp}
               toggle={() => {
-                setsocialDrp(!socialDrp);
+                setSocialDrp(!socialDrp);
               }}
             >
               <DropdownToggle
@@ -395,11 +391,11 @@ const Header = props => {
 };
 
 Header.propTypes = {
-  leftMenu: PropTypes.any,
-  showRightSidebar: PropTypes.any,
-  showRightSidebarAction: PropTypes.func,
-  t: PropTypes.any,
-  toggleLeftmenu: PropTypes.func
+  leftMenu: PropTypes.bool,
+  showRightSidebar: PropTypes.bool,
+  showRightSidebarAction: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
+  toggleLeftmenu: PropTypes.func.isRequired
 };
 
 const mapStatetoProps = state => {
