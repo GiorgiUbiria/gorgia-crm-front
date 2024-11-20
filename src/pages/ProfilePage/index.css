@@ -1,29 +1,55 @@
 .profile-dashboard-container {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: #f4f5f7;
   justify-content: center;
   align-items: center;
+  padding: 15px;
+  width: 100%;
+  gap: 20px; /* Added gap between components */
+}
+
+@media (min-width: 992px) {
+  .profile-dashboard-container {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 30px; /* Adjusted gap for larger screens */
+  }
 }
 
 .profile-main-content {
   flex: 1;
   padding: 2rem;
+  margin: 0 auto;
+  max-width: 1200px;
+  width: 100%;
+  gap: 20px; /* Added gap between components */
 }
 
 .profile {
-  /* background-color: #fff; */
   padding: 2rem;
-  /* border-radius: 1.5rem; */
-  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+  width: 100%;
+  gap: 20px; /* Added gap between components */
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column; 
+  width: 100%;
+  gap: 20px; /* Added gap between components */
 }
 
 .profile-section {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
+  gap: 20px; /* Increased gap between components */
   width: 100%;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .section-header h2 {
@@ -31,19 +57,30 @@
   font-weight: bold;
   margin-bottom: 1rem;
   text-align: left;
-
+  font-size: 1.5rem;
 }
 
 .form-row {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  gap: 20px; /* Added gap between components */
 }
 
 .profile-form-wrapper {
-  display: flex;
-  flex-direction: column;
-  width: 48%;
+  flex: 1 1 100%;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .profile-form-wrapper {
+    flex: 1 1 48%;
+    margin-right: 4%;
+  }
+
+  .profile-form-wrapper:nth-child(2n) {
+    margin-right: 0;
+  }
 }
 
 .profile-form-wrapper label {
@@ -60,8 +97,8 @@
 }
 
 .save-button {
-  width: 10%;
-  padding: 0.8rem;
+  width: 100%;
+  padding: 0.75rem;
   background-color: #556ee6;
   color: white;
   font-weight: bold;
@@ -70,9 +107,14 @@
   cursor: pointer;
   margin-top: 1rem;
   margin-bottom: 20px;
+  font-size: 1rem;
 }
 
-
+@media (min-width: 768px) {
+  .save-button {
+    width: auto;
+  }
+}
 
 .error-text {
   color: #D7443A;
@@ -85,6 +127,7 @@
   border-radius: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin-top: 2rem;
+  gap: 20px; /* Added gap between components */
 }
 
 .table-container table {
@@ -127,4 +170,11 @@
 .export-button:hover,
 .add-button:hover {
   background-color: #007AD3;
+}
+
+@media only screen and (max-width: 600px) {
+  .profile-form-wrapper {
+    flex: 1 1 100%;
+    margin-right: 0;
+  }
 }

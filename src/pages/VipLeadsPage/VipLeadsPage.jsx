@@ -19,7 +19,7 @@ import { Link } from 'react-router-dom';
 import DeleteModal from 'components/Common/DeleteModal';
 import { getVipLeads, createVipLead, updateVipLead, deleteVipLead } from '../../services/vipLeadsService';
 import Breadcrumbs from 'components/Common/Breadcrumb';
-import moment from 'moment';  // Import moment.js for formatting dates
+import moment from 'moment';
 
 const VipLeadsPage = () => {
   const [vipLeads, setVipLeads] = useState([]);
@@ -27,12 +27,11 @@ const VipLeadsPage = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [modal, setModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch VIP leads from the server
   const fetchVipLeads = async () => {
     try {
       const response = await getVipLeads();
-      console.log(response);
       setVipLeads(response || []);
     } catch (error) {
       console.error('Error fetching VIP leads:', error);
@@ -44,7 +43,6 @@ const VipLeadsPage = () => {
     fetchVipLeads();
   }, []);
 
-  // Handle status change directly from the table
   const handleStatusChange = async (leadId, newStatus) => {
     const leadToUpdate = vipLeads.find((lead) => lead.id === leadId);
     const updatedLead = { ...leadToUpdate, status: newStatus };
@@ -56,12 +54,11 @@ const VipLeadsPage = () => {
     }
   };
 
-  // Define table columns and actions, including the status dropdown
   const columns = useMemo(
     () => [
       { Header: 'სახელი', accessor: 'first_name' },
       { Header: 'გვარი', accessor: 'last_name' },
-      { Header: 'ტელეფონის ნომერი', accessor: 'mobile_number' },
+      { Header: 'ტელეფონის ნომერი', accessor: 'phone' },
       { Header: 'პასუხისმგებელი პირი', accessor: 'responsible_person' },
       {
         Header: 'სტატუსი',
@@ -78,7 +75,6 @@ const VipLeadsPage = () => {
           </Input>
         ),
       },
-      { Header: 'მოთხოვნა', accessor: 'request' },
       {
         Header: ({ sorted, sortedDesc }) => (
           <div>
@@ -103,7 +99,7 @@ const VipLeadsPage = () => {
               წაშლა
             </Button>
             <Link to={`/vip-leads/${row.original.id}`}>
-              <Button color="info">კომენტარები</Button> {/* Link to the detail page */}
+              <Button color="info">მოთხოვნები</Button>
             </Link>
           </div>
         ),
@@ -112,7 +108,6 @@ const VipLeadsPage = () => {
     [vipLeads]
   );
 
-  // Initialize table with pagination and sorting
   const {
     getTableProps,
     getTableBodyProps,
@@ -127,7 +122,7 @@ const VipLeadsPage = () => {
         sortBy: [
           {
             id: 'created_at',
-            desc: true // true for descending order (newest first)
+            desc: true
           }
         ]
       }
@@ -136,21 +131,18 @@ const VipLeadsPage = () => {
     usePagination
   );
 
-  // Open modal for adding new VIP lead
   const handleAddClick = () => {
     setVipLead(null);
     setIsEdit(false);
     setModal(true);
   };
 
-  // Open modal for editing an existing VIP lead
   const handleEditClick = (leadData) => {
     setVipLead(leadData);
     setIsEdit(true);
     setModal(true);
   };
 
-  // Handle deletion of a VIP lead
   const handleDeleteClick = (leadData) => {
     setVipLead(leadData);
     setDeleteModal(true);
@@ -166,7 +158,6 @@ const VipLeadsPage = () => {
     }
   };
 
-  // Save new or edited VIP lead
   const handleSaveVipLead = async (event) => {
     event.preventDefault();
     const data = new FormData(event.target);
@@ -192,6 +183,11 @@ const VipLeadsPage = () => {
     }
   };
 
+  const filteredVipLeads = vipLeads.filter(lead =>
+    lead.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <React.Fragment>
       <DeleteModal
@@ -211,6 +207,17 @@ const VipLeadsPage = () => {
               >
                 დამატება
               </Button>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col xl={{ size: 4, offset: 8 }}>
+              <Input
+                type="search"
+                placeholder="ძებნა სახელით ან გვარით..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                bsSize="sm"
+              />
             </Col>
           </Row>
           <Row>
@@ -283,11 +290,12 @@ const VipLeadsPage = () => {
                   />
                 </FormGroup>
                 <FormGroup>
-                  <Label for="request">მოთხოვნა</Label>
+                  <Label for="phone">ტელეფონის ნომერი</Label>
                   <Input
-                    id="request"
-                    name="request"
-                    defaultValue={vipLead ? vipLead.request : ''}
+                    id="phone"
+                    name="phone"
+                    defaultValue={vipLead ? vipLead.phone : ''}
+                    maxLength={9}
                     required
                   />
                 </FormGroup>

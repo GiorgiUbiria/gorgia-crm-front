@@ -98,7 +98,7 @@ const Calender = props => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState();
   const [modalCategory, setModalCategory] = useState(false);
-  const [selectedDay, setSelectedDay] = useState(0);
+  const [selectedDay, setSelectedDay] = useState(null);
 
   useEffect(() => {
     dispatch(onGetCategories());
@@ -133,16 +133,21 @@ const Calender = props => {
   /**
    * Handling date click on calendar
    */
-  const handleDateClick = arg => {
-    const date = arg["date"];
+  const handleDateClick = (arg) => {
+    const date = arg.date;
+    if (!date) {
+      console.error("Date is undefined in handleDateClick");
+      return;
+    }
+
     const day = date.getDate();
     const month = date.getMonth();
     const year = date.getFullYear();
 
-    const currectDate = new Date();
-    const currentHour = currectDate.getHours();
-    const currentMin = currectDate.getMinutes();
-    const currentSec = currectDate.getSeconds();
+    const currentDate = new Date();
+    const currentHour = currentDate.getHours();
+    const currentMin = currentDate.getMinutes();
+    const currentSec = currentDate.getSeconds();
     const modifiedDate = new Date(
       year,
       month,
@@ -151,7 +156,7 @@ const Calender = props => {
       currentMin,
       currentSec
     );
-    // const modifiedData = { ...arg, date: modifiedDate };
+    const modifiedData = { ...arg, date: modifiedDate };
 
     setSelectedDay(modifiedData);
     toggle();
@@ -160,7 +165,7 @@ const Calender = props => {
   /**
    * Handling click on event on calendar
    */
-  const handleEventClick = arg => {
+  const handleEventClick = (arg) => {
     const event = arg.event;
     setEvent({
       id: event.id,
@@ -190,28 +195,43 @@ const Calender = props => {
   /**
    * On category darg event
    */
-  const onDrag = event => {
-    event.preventDefault();
+  const onDrag = (eventDraggable, category) => {
+    eventDraggable.preventDefault();
   };
 
   /**
    * On calendar drop event
    */
-  const onDrop = event => {
-    const date = event['date'];
+  const onDrop = (eventDrop) => {
+    const date = eventDrop.date;
+    if (!date) {
+      console.error("Date is undefined in onDrop");
+      return;
+    }
+
     const day = date.getDate();
     const month = date.getMonth();
     const year = date.getFullYear();
 
-    const currectDate = new Date();
-    const currentHour = currectDate.getHours();
-    const currentMin = currectDate.getMinutes();
-    const currentSec = currectDate.getSeconds();
-    const modifiedDate = new Date(year, month, day, currentHour, currentMin, currentSec);
+    const currentDate = new Date();
+    const currentHour = currentDate.getHours();
+    const currentMin = currentDate.getMinutes();
+    const currentSec = currentDate.getSeconds();
+    const modifiedDate = new Date(
+      year,
+      month,
+      day,
+      currentHour,
+      currentMin,
+      currentSec
+    );
 
-    const draggedEl = event.draggedEl;
+    const draggedEl = eventDrop.draggedEl;
     const draggedElclass = draggedEl.className;
-    if (draggedEl.classList.contains('external-event') && draggedElclass.indexOf("fc-event-draggable") == -1) {
+    if (
+      draggedEl.classList.contains('external-event') &&
+      draggedElclass.indexOf("fc-event-draggable") === -1
+    ) {
       const modifiedData = {
         id: Math.floor(Math.random() * 100),
         title: draggedEl.innerText,
@@ -221,6 +241,18 @@ const Calender = props => {
       dispatch(onAddNewEvent(modifiedData));
     }
   };
+
+  // Set Georgian locale
+  const [isLocal, setIsLocal] = useState(() => {
+    const kaLocale = allLocales.find((locale) => locale.code === "ka");
+    return kaLocale || allLocales[0]; // Fallback to first locale if Georgian not found
+  });
+
+  // Filter state
+  const [filterCategory, setFilterCategory] = useState('All');
+
+  // Filtered events based on selected category
+  const filteredEvents = filterCategory === 'All' ? events : events.filter(event => event.className.includes(filterCategory));
 
   //set the local language
   const enLocal = {
@@ -237,9 +269,12 @@ const Calender = props => {
     "viewHint": "$0 view",
     "navLinkHint": "Go to $0"
   };
-  const [isLocal, setIsLocal] = useState(enLocal);
-  const handleChangeLocals = (value) => {
-    setIsLocal(value);
+  const handleChangeLocals = (selectedLocale) => {
+    if (selectedLocale) {
+      setIsLocal(selectedLocale);
+    } else {
+      console.warn("Selected locale is undefined");
+    }
   };
 
   return (
@@ -259,58 +294,82 @@ const Calender = props => {
                 <Col xl={3}>
                   <Card>
                     <CardBody>
-                      <div className="d-flex gap-2">
-                        <div className="flex-grow-1">
-                          <select
-                            id="locale-selector"
-                            className="form-select"
-                            defaultValue={isLocal}
-                            onChange={(event) => {
-                              const selectedValue = event.target.value;
-                              const selectedLocale =
-                                allLocales.find((locale) => locale.code === selectedValue);
-                              handleChangeLocals(selectedLocale);
-                            }}
-                          >
-                            {/* {(allLocales || [])?.map((localeCode, key) => (
-                              <option key={key} value={localeCode.code}>
-                                {localeCode.code}
-                              </option>
-                            ))} */}
-                          </select>
-                        </div>
-                        <Button
-                          color="primary"
-                          className="font-16"
-                          onClick={toggle}
-                        >
-                          <i className="mdi mdi-plus-circle-outline me-1" />
-                          Create New Event
-                        </Button>
-                      </div>
-
-                      <div id="external-events" className="mt-2">
-                        <br />
-                        <p className="text-muted">
-                          Drag and drop your event or click in the calendar
-                        </p>
-                        {categories &&
-                          (categories || [])?.map((category) => (
-                            <div
-                              className={`${category.type} external-event fc-event text-white`}
-                              key={"cat-" + category.id}
-                              draggable
-                              onDrag={event => onDrag(event, category)}
+                      <div className="d-flex flex-column gap-3">
+                        {/* Locale Selector */}
+                        <div className="d-flex gap-2">
+                          <div className="flex-grow-1">
+                            <select
+                              id="locale-selector"
+                              className="form-select"
+                              value={isLocal.code}
+                              onChange={(event) => {
+                                const selectedValue = event.target.value;
+                                const selectedLocale = allLocales.find((locale) => locale.code === selectedValue);
+                                handleChangeLocals(selectedLocale);
+                              }}
                             >
-                              <i className="mdi mdi-checkbox-blank-circle font-size-11 me-2" />
-                              {category.title}
-                            </div>
-                          ))}
-                      </div>
+                              {allLocales.map((locale, key) => (
+                                <option key={key} value={locale.code}>
+                                  {locale.week?.dow === 1 ? "Monday Start" : "Sunday Start"} - {locale.code.toUpperCase()}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <Button
+                            color="primary"
+                            className="font-16"
+                            onClick={toggle}
+                          >
+                            <i className="mdi mdi-plus-circle-outline me-1" />
+                            Create New Event
+                          </Button>
+                        </div>
 
-                      <Row className="justify-content-center mt-5">
-                        <img src={verification} alt="" className="img-fluid d-block" />
-                      </Row>
+                        {/* Filter Selector */}
+                        <div className="d-flex gap-2">
+                          <div className="flex-grow-1">
+                            <select
+                              id="filter-selector"
+                              className="form-select"
+                              value={filterCategory}
+                              onChange={(e) => setFilterCategory(e.target.value)}
+                            >
+                              <option value="All">All Categories</option>
+                              {categories.map((category) => (
+                                <option key={category.id} value={category.type}>
+                                  {category.title}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* External Events */}
+                        <div id="external-events" className="mt-2">
+                          <br />
+                          <p className="text-muted">
+                            Drag and drop your event or click in the calendar
+                          </p>
+                          {categories &&
+                            categories.map((category) => (
+                              <div
+                                className={`${category.type} external-event fc-event text-white`}
+                                key={"cat-" + category.id}
+                                draggable
+                                onDrag={(eventDraggable) =>
+                                  onDrag(eventDraggable, category)
+                                }
+                              >
+                                <i className="mdi mdi-checkbox-blank-circle font-size-11 me-2" />
+                                {category.title}
+                              </div>
+                            ))}
+                        </div>
+
+                        <Row className="justify-content-center mt-5">
+                          <img src={verification} alt="" className="img-fluid d-block" />
+                        </Row>
+                      </div>
                     </CardBody>
                   </Card>
                 </Col>
@@ -318,7 +377,7 @@ const Calender = props => {
                 <Col xl={9}>
                   <Card>
                     <CardBody>
-                      {/* fullcalendar control */}
+                      {/* FullCalendar Control with Filtered Events */}
                       <FullCalendar
                         plugins={[
                           BootstrapTheme,
@@ -334,8 +393,8 @@ const Calender = props => {
                           center: "title",
                           right: "dayGridMonth,dayGridWeek,dayGridDay,listWeek",
                         }}
-                        locale={isLocal}
-                        events={events}
+                        locale={isLocal.code}
+                        events={filteredEvents}
                         editable={true}
                         droppable={true}
                         selectable={true}

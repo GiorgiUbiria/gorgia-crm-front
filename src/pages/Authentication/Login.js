@@ -37,16 +37,11 @@ const Login = (props) => {
       
         if (res.data.status !== 200) {
           toast.error(res.data.message);
-          
         } else {
           sessionStorage.setItem('token', res.data.token);          
           sessionStorage.setItem('authUser', JSON.stringify(res.data.user));
-
           console.log(res);
-          
           dispatch(fetchUserSuccess(res.data.user))
-          
-          toast.success(res.data.message);
         }
         navigate('/dashboard');
 

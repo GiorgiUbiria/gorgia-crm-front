@@ -16,8 +16,6 @@ const useFetchUser = () => {
         dispatch(fetchUserStart());
         try {
           const response = await fetchUser();
-          console.log("userrrrrrrrrrrrrr", response);
-          
           dispatch(fetchUserSuccess(response.data));
         } catch (error) {
           dispatch(fetchUserFailure(error.message));

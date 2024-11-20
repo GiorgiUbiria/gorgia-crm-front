@@ -2,13 +2,9 @@ import React from "react";
 
 import { Navigate } from "react-router-dom";
 
-
-
 // Pages Component
 
 import Chat from "../pages/Chat/Chat";
-
-
 
 // File Manager
 

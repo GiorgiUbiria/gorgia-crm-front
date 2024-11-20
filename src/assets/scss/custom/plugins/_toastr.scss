@@ -48,3 +48,35 @@
     margin-bottom: 0;
     border: 1px solid var(--#{$prefix}border-color);
 }
+
+// Add these styles to customize toast appearance
+.Toastify__toast {
+  border-radius: 4px;
+  padding: 15px;
+  
+  &--success {
+    background: rgba(52, 195, 143, 0.9);
+  }
+  
+  &--error {
+    background: rgba(244, 106, 106, 0.9);
+  }
+  
+  &--info {
+    background: rgba(80, 165, 241, 0.9);
+  }
+  
+  &--warning {
+    background: rgba(241, 180, 76, 0.9);
+  }
+}
+
+.Toastify__toast-body {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.Toastify__progress-bar {
+  height: 3px;
+}

@@ -4,18 +4,68 @@ import {
   Container,
   Grid,
   Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Select,
-  MenuItem
+  Paper,
+  Stack,
+  IconButton,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getInvoices, createInvoice, updateInvoice, deleteInvoice } from '../../services/invoiceService';
+import InvoiceForm from './InvoiceForm';
+import CommentModal from './CommentModal';
+import DownloadIcon from '@mui/icons-material/Download';
+import CommentIcon from '@mui/icons-material/Comment';
+import AddIcon from '@mui/icons-material/Add';
+import { getDepartments } from '../../services/admin/department';
+
+const styles = {
+  pageContainer: {
+    width: '100%',
+    padding: '24px',
+    backgroundColor: '#f7f9fc',
+  },
+  header: {
+    marginBottom: '24px',
+    color: '#1a237e',
+  },
+  addButton: {
+    marginBottom: '24px',
+    padding: '12px 24px',
+    backgroundColor: '#1a237e',
+    '&:hover': {
+      backgroundColor: '#0d47a1',
+    },
+  },
+  tableContainer: {
+    height: 600,
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  },
+  actionButton: {
+    minWidth: '40px',
+    padding: '8px',
+  },
+  downloadLink: {
+    color: '#1a237e',
+    textDecoration: 'none',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+  statusSelect: {
+    width: '100%',
+    padding: '8px',
+    borderRadius: '4px',
+    border: '1px solid #e0e0e0',
+    backgroundColor: '#fff',
+    '&:hover': {
+      borderColor: '#1a237e',
+    },
+  },
+};
 
 const InvoicePage = () => {
   const [invoices, setInvoices] = useState([]);
@@ -27,10 +77,24 @@ const InvoicePage = () => {
   const [selectedComment, setSelectedComment] = useState(''); // For storing and editing comments
   const [selectedInvoiceForComment, setSelectedInvoiceForComment] = useState(null); // Store the invoice for comment editing
   const [status, setStatus] = useState('pending'); // For editing status
+  const [departments, setDepartments] = useState([]);
 
   // Fetch invoices on component mount
   useEffect(() => {
     fetchInvoices();
+  }, []);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await getDepartments();
+        setDepartments(response.data.departments);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      }
+    };
+
+    fetchDepartments();
   }, []);
 
   const fetchInvoices = async () => {
@@ -77,21 +141,12 @@ const InvoicePage = () => {
   };
 
   // Handle file selection
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]); // Store the selected file
+  const handleFileChange = (file) => {
+    setSelectedFile(file); // Store the selected file
   };
 
   // Handle form submission to save a new or updated invoice
-  const handleSaveInvoice = async (event) => {
-    event.preventDefault();
-
-    const data = {
-      department: event.target.department.value,
-      invoice_file: selectedFile,
-      status: status,
-      comments: event.target.comments.value
-    };
-    
+  const handleSaveInvoice = async (data) => {
     try {
       if (isEdit) {
         await updateInvoice(invoice.id, data); // Use PUT or PATCH based on your API
@@ -106,11 +161,13 @@ const InvoicePage = () => {
   };
 
   // Handle status change
-  const handleStatusChange = (event, invoiceId) => {
-    const newStatus = event.target.value;
-    updateInvoice(invoiceId, { status: newStatus })
-      .then(fetchInvoices) // Refresh invoices after status update
-      .catch(error => console.error('Error updating status:', error));
+  const handleStatusChange = async (newStatus, invoiceId) => {
+    try {
+      await updateInvoice(invoiceId, { status: newStatus });
+      fetchInvoices(); // Refresh invoices after status update
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
   };
 
   // Open comment modal for editing
@@ -129,8 +186,8 @@ const InvoicePage = () => {
         
         // Update the local invoices state with the updated comment
         setInvoices(prevInvoices =>
-          prevInvoices.map(invoice =>
-            invoice.id === updatedInvoice.id ? updatedInvoice : invoice
+          prevInvoices.map(inv =>
+            inv.id === updatedInvoice.id ? updatedInvoice : inv
           )
         );
 
@@ -145,216 +202,188 @@ const InvoicePage = () => {
   // Table columns definition
   const columns = useMemo(
     () => [
-      { field: 'id', headerName: '#', width: 50 },
-      { field: 'department', headerName: 'Department', flex: 1 },
+      { field: 'id', headerName: '#', width: 70 },
+      { 
+        field: 'department', 
+        headerName: 'დეპარტამენტი', 
+        flex: 1,
+        minWidth: 150,
+      },
       {
         field: 'invoice_file',
-        headerName: 'Invoice File',
+        headerName: 'ინვოისის ფაილი',
         flex: 1,
+        minWidth: 130,
         renderCell: (params) => (
-          <a href={`http://your-backend-url.com/storage/${params.value}`} download style={{ color: '#2196F3' }}>
-            Download
-          </a>
+          <Button
+            variant="text"
+            href={`http://back.gorgia.ge/storage/${params.value}`}
+            download
+            sx={styles.downloadLink}
+            startIcon={<DownloadIcon />}
+          >
+            ჩამოტვირთვა
+          </Button>
         ),
       },
       {
         field: 'status',
-        headerName: 'Status',
-        width: 150,
+        headerName: 'სტატუსი',
+        width: 180,
         renderCell: (params) => (
-          <Select
+          <select
             value={params.row.status}
-            onChange={(event) => handleStatusChange(event, params.row.id)}
-            sx={{ width: '100%' }}
+            onChange={(e) => handleStatusChange(e.target.value, params.row.id)}
+            style={styles.statusSelect}
           >
-            <MenuItem value="pending">Pending</MenuItem>
-            <MenuItem value="in_process">In Process</MenuItem>
-            <MenuItem value="completed">Completed</MenuItem>
-            <MenuItem value="rejected">Rejected</MenuItem>
-          </Select>
+            <option value="pending">🕒 ლოდინის რეჟიმში</option>
+            <option value="in_process">⚙️ მიმდინარეობს</option>
+            <option value="completed">✅ დასრულებულია</option>
+            <option value="rejected">❌ უარყოფილია</option>
+          </select>
         ),
       },
       {
         field: 'comments',
-        headerName: 'Comments',
+        headerName: 'კომენტარი',
         flex: 1,
+        minWidth: 150,
         renderCell: (params) => (
           <Button
             variant="text"
-            style={{ color: '#4caf50', textDecoration: 'underline' }}
             onClick={() => handleCommentClick(params.row)}
+            startIcon={<CommentIcon />}
+            sx={{
+              color: params.row.comments ? '#1a237e' : '#66bb6a',
+              textTransform: 'none',
+            }}
           >
-            {params.row.comments || 'Add Comment'}
+            {params.row.comments ? 'კომენტარის რედაქტირება' : 'კომენტარის დამატება'}
           </Button>
         ),
       },
       {
         field: 'actions',
-        headerName: 'Actions',
-        width: 150,
+        headerName: 'მოქმედებები',
+        width: 120,
+        align: 'center',
+        headerAlign: 'center',
         renderCell: (params) => (
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <Button
-              variant="contained"
+          <Stack 
+            direction="row" 
+            spacing={1} 
+            alignItems="center"
+            justifyContent="center"
+            sx={{
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <IconButton
               color="primary"
               onClick={() => handleEditClick(params.row)}
+              size="small"
             >
-              <EditIcon /> {/* Edit Icon */}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
+              <EditIcon />
+            </IconButton>
+            <IconButton
+              color="error"
               onClick={() => handleDeleteClick(params.row.id)}
+              size="small"
             >
-              <DeleteIcon /> {/* Delete Icon */}
-            </Button>
-          </div>
+              <DeleteIcon />
+            </IconButton>
+          </Stack>
         ),
       },
     ],
-    []
+    [handleStatusChange, handleDeleteClick, handleEditClick, handleCommentClick]
   );
 
   return (
-    <Container maxWidth={false} style={{ width: '100%', paddingBottom: '40px' }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+    <Container maxWidth={false} sx={styles.pageContainer}>
+      <Typography variant="h4" component="h1" sx={styles.header}>
         Invoice Management
       </Typography>
       <Button
         variant="contained"
-        color="primary"
         onClick={handleAddClick}
-        style={{
-          marginBottom: '20px',
-          padding: '10px 30px',
-          display: 'block',
-          marginLeft: 'auto',
-          marginRight: 'auto', // Center the button horizontally
-        }}
+        sx={styles.addButton}
+        startIcon={<AddIcon />}
       >
-        ADD INVOICE
+        დაამატე ინვოისი
       </Button>
-      <div style={{ height: 400, width: '100%', marginBottom: '40px' }}>
+      <Paper sx={styles.tableContainer}>
         <DataGrid
           rows={invoices}
           columns={columns}
-          pageSize={5}
+          pageSize={10}
+          rowsPerPageOptions={[10, 25, 50]}
           checkboxSelection
           disableSelectionOnClick
+          localeText={{
+            MuiTablePagination: {
+              labelRowsPerPage: 'სტრიქონები გვერდზე:',
+              labelDisplayedRows: ({ from, to, count }) =>
+                `${from}-${to} ${count}-დან`,
+            }
+          }}
           sx={{
+            border: 'none',
             '& .MuiDataGrid-columnHeaders': {
               backgroundColor: '#f5f5f5',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              padding: '10px',
-              borderBottom: '2px solid #ccc',
+              fontSize: '14px',
+              fontWeight: 600,
+              borderBottom: '2px solid #e0e0e0',
             },
             '& .MuiDataGrid-cell': {
-              padding: '10px',
               fontSize: '14px',
+              borderBottom: '1px solid #f0f0f0',
             },
             '& .MuiDataGrid-row': {
               '&:hover': {
-                backgroundColor: '#f1f1f1',
+                backgroundColor: '#f8f9ff',
               },
             },
-            '& .MuiDataGrid-footerContainer': {
-              paddingTop: '10px',
+            '& .MuiCheckbox-root': {
+              color: '#1a237e',
             },
+            // Add pagination styling
+            '& .MuiTablePagination-root': {
+              alignItems: 'center',
+            },
+            '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+              margin: 0,
+            },
+            '& .MuiTablePagination-toolbar': {
+              minHeight: '48px',
+            }
           }}
         />
-      </div>
+      </Paper>
 
-      {/* Modal for Adding/Editing Invoice */}
-      <Dialog open={modalOpen} onClose={toggleModal} fullWidth>
-        <DialogTitle>{isEdit ? 'Edit Invoice' : 'Add Invoice'}</DialogTitle>
-        <DialogContent>
-          <form id="invoiceForm" onSubmit={handleSaveInvoice}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  name="department"
-                  label="Department"
-                  fullWidth
-                  required
-                  defaultValue={invoice ? invoice.department : ''}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  fullWidth
-                  style={{ textAlign: 'left', padding: '10px' }}
-                >
-                  {selectedFile ? selectedFile.name : 'Invoice File *'}
-                  <input
-                    type="file"
-                    name="invoice_file"
-                    hidden
-                    onChange={handleFileChange}
-                    accept="application/pdf,.doc,.docx,.xlsx"
-                    required={!isEdit}
-                  />
-                </Button>
-              </Grid>
-              <Grid item xs={12}>
-                <Select
-                  label="Status"
-                  value={status}
-                  onChange={(event) => setStatus(event.target.value)}
-                  fullWidth
-                >
-                  <MenuItem value="pending">Pending</MenuItem>
-                  <MenuItem value="in_process">In Process</MenuItem>
-                  <MenuItem value="completed">Completed</MenuItem>
-                  <MenuItem value="rejected">Rejected</MenuItem>
-                </Select>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  name="comments"
-                  label="Comments (optional)"
-                  multiline
-                  rows={4}
-                  fullWidth
-                  defaultValue={invoice ? invoice.comments : ''}
-                />
-              </Grid>
-            </Grid>
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={toggleModal} color="secondary">
-            Cancel
-          </Button>
-          <Button type="submit" form="invoiceForm" color="primary">
-            {isEdit ? 'Update' : 'Add'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Invoice Form Modal */}
+      <InvoiceForm
+        open={modalOpen}
+        onClose={toggleModal}
+        onSave={handleSaveInvoice}
+        invoice={invoice}
+        isEdit={isEdit}
+        selectedFile={selectedFile}
+        handleFileChange={handleFileChange}
+        status={status}
+        setStatus={setStatus}
+        departments={departments}
+      />
 
-      {/* Modal for Comment Editing */}
-      <Dialog open={commentModalOpen} onClose={toggleCommentModal} fullWidth>
-        <DialogTitle>Edit Comment</DialogTitle>
-        <DialogContent>
-          <TextField
-            value={selectedComment}
-            onChange={(e) => setSelectedComment(e.target.value)}
-            fullWidth
-            multiline
-            rows={4}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={toggleCommentModal} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSaveComment} color="primary">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Comment Editing Modal */}
+      <CommentModal
+        open={commentModalOpen}
+        onClose={toggleCommentModal}
+        comment={selectedComment}
+        setComment={setSelectedComment}
+        onSave={handleSaveComment}
+      />
     </Container>
   );
 };
