@@ -114,13 +114,11 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "GENERATE_SOURCEMAP=false react-scripts build --max_old_space_size=8000",
-    "build:prod": "npm run lint && GENERATE_SOURCEMAP=false react-scripts build --max_old_space_size=8000",
-    "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "lint": "eslint . --ext .js,.jsx",
-    "lint:fix": "eslint --fix . --ext .js,.jsx",
+    "build": "react-scripts build --max_old_space_size=8000 build",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "format": "prettier --write \"**/*.{js,jsx,json,md,html,css,less,scss}\"",
-    "test": "react-scripts test --passWithNoTests",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
