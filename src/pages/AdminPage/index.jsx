@@ -13,12 +13,14 @@ import {
   NavLink,
   TabContent,
   TabPane,
+  Badge,
 } from "reactstrap";
-import { FaTrash, FaPlus } from "react-icons/fa";
+import { FaTrash, FaPlus, FaSearch } from "react-icons/fa";
 import classnames from "classnames";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
+import Breadcrumbs from "../../components/Common/Breadcrumb";
 import {
   assignHead,
   createDepartment,
@@ -29,13 +31,12 @@ import {
   updateUserById,
 } from "../../services/admin/department";
 import DepartmentForm from "components/DepartmentForm";
-import UserForm from "components/UserForm"; 
-import { updateUser } from "services/user";
+import UserForm from "components/UserForm";
 
 const AdminPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("1"); 
+  const [activeTab, setActiveTab] = useState("1");
   const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -44,8 +45,10 @@ const AdminPage = () => {
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [departmentSearchTerm, setDepartmentSearchTerm] = useState("");
 
   useEffect(() => {
+    document.title = "ადმინისტრირება | Gorgia LLC";
     fetchDepartments();
     fetchUsers();
   }, []);
@@ -141,133 +144,191 @@ const AdminPage = () => {
     if (activeTab !== tab) setActiveTab(tab);
   };
 
+  const filteredDepartments = departments.filter(dep =>
+    dep.name.toLowerCase().includes(departmentSearchTerm.toLowerCase()) ||
+    (dep.head?.name || "").toLowerCase().includes(departmentSearchTerm.toLowerCase())
+  );
+
+  const filteredUsers = users.filter(user =>
+    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.department?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="page-content">
       <Container fluid>
+        <Breadcrumbs title="ადმინისტრირება" breadcrumbItem="მართვის პანელი" />
         <Row>
           <Col lg="12">
-            {/* Tab Navigation */}
-            <Nav tabs className="mb-3">
-              <NavItem>
-                <NavLink
-                  className={classnames({ active: activeTab === "1" })}
-                  onClick={() => toggle("1")}
-                >
-                  {t("დეპარტამენტები")}
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink
-                  className={classnames({ active: activeTab === "2" })}
-                  onClick={() => toggle("2")}
-                >
-                  {t("მომხმარებლები")}
-                </NavLink>
-              </NavItem>
-            </Nav>
-            <TabContent activeTab={activeTab}>
-              <TabPane tabId="1" >
-              <div className="d-flex justify-content-end mb-3">
-              <Button
-                  color="primary"
-                  onClick={() => openDepartmentModal(null)} 
-                  style={{
-                    display:"flex",
-                    alignItems:"center",
-                    gap:"5px",
-                    justifyContent:"end"
-                  }}
-                >
-                  <FaPlus /> {t("დეპარტამენტის დამატება")}
-                </Button>
-              </div>
-                <Card>
-                  <CardBody>
-                    <Table className="table table-bordered">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>{t("სახელი")}</th>
-                          <th>{t("დეპარტამენტის ჰედი")}</th>
-                          <th>{t("მოქმედება")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {departments.map((dep, index) => (
-                          <tr key={dep.id}>
-                            <td>{index + 1}</td>
-                            <td>{dep.name}</td>
-                            <td>{dep.head ? dep.head.name : "N/A"}</td>
-                            <td>
-                              <Button
-                                color="primary"
-                                size="sm"
-                                className="me-2"
-                                onClick={() => openDepartmentModal(dep)} // Open modal for editing department
-                              >
-                               რედაქტირება
-                              </Button>
-                              <Button
-                                color="danger"
-                                size="sm"
-                                onClick={() =>
-                                  handleDeleteDepartment(dep.id, dep.name)
-                                }
-                              >
-                                <FaTrash />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </CardBody>
-                </Card>
-              </TabPane>
+            <Card>
+              <CardBody>
+                <Nav tabs className="nav-tabs-custom nav-justified">
+                  <NavItem>
+                    <NavLink
+                      className={classnames({ active: activeTab === "1" })}
+                      onClick={() => toggle("1")}
+                    >
+                      <span className="d-none d-sm-block">დეპარტამენტები</span>
+                    </NavLink>
+                  </NavItem>
+                  <NavItem>
+                    <NavLink
+                      className={classnames({ active: activeTab === "2" })}
+                      onClick={() => toggle("2")}
+                    >
+                      <span className="d-none d-sm-block">მომხმარებლები</span>
+                    </NavLink>
+                  </NavItem>
+                </Nav>
 
-              {/* Users Tab */}
-              <TabPane tabId="2">
-                <Input
-                  type="text"
-                  placeholder={t("Search by name or email")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="mb-3"
-                />
-                <Card>
-                  <CardBody>
-                    <Table className="table table-bordered">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>{t("User Name")}</th>
-                          <th>{t("Email")}</th>
-                          <th>{t("Department")}</th>
-                          <th>{t("Action")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users
-                          .filter((user) =>
-                            (user?.name || "")
-                              .toLowerCase()
-                              .includes(searchTerm.toLowerCase()) ||
-                            (user?.email || "")
-                              .toLowerCase()
-                              .includes(searchTerm.toLowerCase())
-                          )
-                          .map((user, index) => (
-                            <tr key={user.id}>
-                              <td>{index + 1}</td>
-                              <td>{user?.name}</td>
-                              <td>{user?.email}</td>
-                              <td>{user?.department ? user.department.name : "N/A"}</td>
+                <TabContent activeTab={activeTab} className="p-3">
+                  <TabPane tabId="1">
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                      <div className="search-box">
+                        <div className="position-relative">
+                          <Input
+                            type="text"
+                            className="form-control"
+                            placeholder="მოძებნეთ დეპარტამენტი..."
+                            value={departmentSearchTerm}
+                            onChange={(e) => setDepartmentSearchTerm(e.target.value)}
+                          />
+                          <i className="bx bx-search-alt search-icon" />
+                        </div>
+                      </div>
+                      <Button
+                        color="primary"
+                        onClick={() => openDepartmentModal(null)}
+                        className="d-flex align-items-center"
+                      >
+                        <FaPlus className="me-1" /> დეპარტამენტის დამატება
+                      </Button>
+                    </div>
+
+                    <div className="table-responsive">
+                      <Table className="table-centered table-nowrap mb-0">
+                        <thead className="table-light">
+                          <tr>
+                            <th className="text-center">#</th>
+                            <th>დეპარტამენტი</th>
+                            <th>ხელმძღვანელი</th>
+                            <th className="text-center">მოქმედება</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredDepartments.map((dep, index) => (
+                            <tr key={dep.id}>
+                              <td className="text-center">{index + 1}</td>
+                              <td>{dep.name}</td>
                               <td>
+                                {dep.head ? (
+                                  <div className="d-flex align-items-center">
+                                    <div className="avatar-xs me-2">
+                                      <span className="avatar-title rounded-circle bg-primary text-white">
+                                        {dep.head.name.charAt(0)}
+                                      </span>
+                                    </div>
+                                    {dep.head.name}
+                                  </div>
+                                ) : (
+                                  <Badge color="warning" pill>
+                                    არ არის მითითებული
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="text-center">
                                 <Button
                                   color="primary"
-                                  className="me-2" 
                                   size="sm"
-                                  onClick={() => openUserModal(user)} // Open user modal for editing
+                                  className="me-2"
+                                  onClick={() => openDepartmentModal(dep)}
+                                >
+                                  რედაქტირება
+                                </Button>
+                                <Button
+                                  color="danger"
+                                  size="sm"
+                                  onClick={() => handleDeleteDepartment(dep.id, dep.name)}
+                                >
+                                  <FaTrash />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
+                  </TabPane>
+
+                  <TabPane tabId="2">
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                      <div className="search-box">
+                        <div className="position-relative">
+                          <Input
+                            type="text"
+                            className="form-control"
+                            placeholder="მოძებნეთ მომხმარებელი..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                          <i className="bx bx-search-alt search-icon" />
+                        </div>
+                      </div>
+                      <Button
+                        color="primary"
+                        onClick={() => openUserModal(null)}
+                        className="d-flex align-items-center"
+                      >
+                        <FaPlus className="me-1" /> მომხმარებლის დამატება
+                      </Button>
+                    </div>
+
+                    <div className="table-responsive">
+                      <Table className="table-centered table-nowrap mb-0">
+                        <thead className="table-light">
+                          <tr>
+                            <th className="text-center">#</th>
+                            <th>სახელი</th>
+                            <th>ელ-ფოსტა</th>
+                            <th>დეპარტამენტი</th>
+                            <th>როლი</th>
+                            <th className="text-center">მოქმედება</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredUsers.map((user, index) => (
+                            <tr key={user.id}>
+                              <td className="text-center">{index + 1}</td>
+                              <td>
+                                <div className="d-flex align-items-center">
+                                  <div className="avatar-xs me-2">
+                                    <span className="avatar-title rounded-circle bg-primary text-white">
+                                      {user.name?.charAt(0)}
+                                    </span>
+                                  </div>
+                                  {user.name}
+                                </div>
+                              </td>
+                              <td>{user.email}</td>
+                              <td>
+                                {user.department?.name || (
+                                  <Badge color="warning" pill>
+                                    არ არის მითითებული
+                                  </Badge>
+                                )}
+                              </td>
+                              <td>
+                                <Badge color="info" pill>
+                                  {user.role}
+                                </Badge>
+                              </td>
+                              <td className="text-center">
+                                <Button
+                                  color="primary"
+                                  size="sm"
+                                  className="me-2"
+                                  onClick={() => openUserModal(user)}
                                 >
                                   რედაქტირება
                                 </Button>
@@ -281,30 +342,30 @@ const AdminPage = () => {
                               </td>
                             </tr>
                           ))}
-                      </tbody>
-                    </Table>
-                  </CardBody>
-                </Card>
-              </TabPane>
-            </TabContent>
+                        </tbody>
+                      </Table>
+                    </div>
+                  </TabPane>
+                </TabContent>
+              </CardBody>
+            </Card>
 
-            {/* Department Form Modal */}
             <DepartmentForm
               isOpen={isDepartmentModalOpen}
               toggle={() => setIsDepartmentModalOpen(!isDepartmentModalOpen)}
-              isEditMode={isEditMode}
-              department={chosenDepartment}
-              onSave={handleAddDepartment}
+              onSubmit={handleAddDepartment}
               onAssignHead={handleAssignHead}
+              department={chosenDepartment}
+              isEditMode={isEditMode}
+              users={users}
             />
 
-            {/* User Form Modal */}
             <UserForm
               isOpen={isUserModalOpen}
               toggle={() => setIsUserModalOpen(!isUserModalOpen)}
-              isEditMode={isEditMode}
+              onSubmit={handleAddUser}
               user={chosenUser}
-              onSave={handleAddUser}
+              isEditMode={isEditMode}
               departments={departments}
             />
           </Col>
