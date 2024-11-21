@@ -4,17 +4,6 @@
 @import "./bootstrap.scss";
 @import "./app.scss";
 
-// RTL Mode
-// @import "./rtl/bootstrap-rtl";
-// @import "./rtl/components-rtl";
-// @import "./rtl/float-rtl";
-// @import "./rtl/general-rtl";
-// @import "./rtl/pages-rtl";
-// @import "./rtl/plugins-rtl";
-// @import "./rtl/spacing-rtl";
-// @import "./rtl/structure-rtl";
-// @import "./rtl/text-rtl";
-
 body {
   * {
     outline: none;
@@ -42,11 +31,6 @@ svg>rect:first-child {
   fill-opacity: 0 !important;
 }
 
-// .dataTables_filter,
-// .dataTables_paginate {
-//   float: right;
-// }
-
 .rdw-editor-main {
   border: 1px solid $gray-300;
   height: 239px;
@@ -58,7 +42,6 @@ svg>rect:first-child {
   padding: 30px;
 }
 
-// kanban board
 .react-kanban-board {
   display: inherit !important;
 
@@ -178,14 +161,12 @@ span.flatpickr-weekday {
   width: auto !important;
 }
 
-//File-manager
 .file-manager {
   .table td {
     padding: 0.35rem;
   }
 }
 
-//Authenication carousel
 .slider_css {
   .slide {
     background: none !important;
@@ -210,7 +191,6 @@ span.flatpickr-weekday {
   }
 }
 
-//Two verification Page
 .verification {
   input {
     &:focus {
@@ -238,7 +218,6 @@ span.flatpickr-weekday {
   }
 }
 
-//Two verification Page - 2
 .verification-2 {
   input {
     &:focus {
@@ -267,7 +246,6 @@ span.flatpickr-weekday {
   }
 }
 
-//Calendar
 .fc-direction-ltr .fc-daygrid-event.fc-event-end,
 .fc-direction-rtl .fc-daygrid-event.fc-event-start {
   padding: 5px !important;
@@ -461,30 +439,6 @@ span.flatpickr-weekday {
 .editor_email .ck-content {
   height: 200px;
 }
-
-// .my-masonry-grid {
-//   display: -webkit-box;
-//   /* Not needed if autoprefixing */
-//   display: -ms-flexbox;
-//   /* Not needed if autoprefixing */
-//   display: flex;
-//   margin-left: -25px;
-//   /* gutter size offset */
-//   width: auto;
-// }
-
-// .my-masonry-grid_column {
-//   padding-left: 25px;
-//   /* gutter size */
-//   background-clip: padding-box;
-// }
-
-// /* Style your items */
-// .my-masonry-grid_column>div {
-//   /* change div to reference your elements you put in <Masonry> */
-//   background: transparent;
-//   margin-bottom: 20px;
-// }
 
 .jobs-categories .card-body a:last-child {
   margin-bottom: 0 !important;

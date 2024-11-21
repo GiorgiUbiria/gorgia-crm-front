@@ -9,7 +9,6 @@ import SidebarContent from "./SidebarContent";
 import { Link } from "react-router-dom";
 
 import logoLightPng from "../../assets/images/logo-light.png";
-import logoDark from "../../assets/images/logo-dark.png";
 
 const Sidebar = props => {
   return (
@@ -18,7 +17,7 @@ const Sidebar = props => {
         <div className="navbar-brand-box">
           <Link to="/" className="logo logo-dark">
             <span className="logo-sm">
-              <img src={logoDark} alt="" height="22" />
+              <img src={logoLightPng} alt="" height="22" />
             </span>
           </Link>
           <Link to="/" className="logo logo-light">

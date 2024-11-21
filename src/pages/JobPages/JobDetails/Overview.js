@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Card, CardBody, Col, Button } from 'reactstrap';
 import { startTask, finishTask } from 'services/tasks';
 
-import adobephotoshop from "../../../assets/images/companies/adobe-photoshop.svg";
 import { fetchUser } from 'services/user';
 
 const Overview = ({ task }) => {
@@ -89,18 +88,6 @@ const Overview = ({ task }) => {
                                         <th scope="row">ბილეთი განახლებულია</th>
                                         <td><span className="badge badge-soft-success">{task?.end_time || 'N/A'}</span></td>
                                     </tr>
-                                    {/* <tr>
-                                        <th scope="row">Status</th>
-                                        <td><span className="badge badge-soft-info">{task?.status || 'N/A'}</span></td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Posted Date</th>
-                                        <td>{task?.posted_date || 'N/A'}</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Close Date</th>
-                                        <td>{task?.close_date || 'N/A'}</td>
-                                    </tr> */}
                                 </tbody>
                             </table>
                         </div>

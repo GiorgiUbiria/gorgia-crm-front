@@ -1,40 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import { Link, useFetcher, useFetchers } from "react-router-dom";
-import { map } from "lodash";
 import {
   Button,
   Card,
   Col,
   Container,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
-  Form,
-  FormGroup,
   Input,
   InputGroup,
-  Nav,
-  NavItem,
-  NavLink,
   Row,
-  TabContent,
-  TabPane,
-  UncontrolledAlert,
-  UncontrolledDropdown,
-  UncontrolledTooltip,
 } from "reactstrap";
-import classnames from "classnames";
 
-// emoji
 import EmojiPicker from 'emoji-picker-react';
 
-//Import Breadcrumb
-import Breadcrumbs from "components/Common/Breadcrumb";
-import avatar1 from "../../assets/images/users/avatar-1.jpg";
-
-// simple bar
 import SimpleBar from "simplebar-react";
 import 'simplebar-react/dist/simplebar.min.css';
 
@@ -55,7 +32,6 @@ import Spinners from "components/Common/Spinner";
 
 import { handleSearchData } from "components/Common/searchFile";
 import { sendMessage, getMessages } from "services/chat";
-import Echo from "laravel-echo";
 import useFetchUsers from "hooks/useFetchUsers";
 
 const Chat = () => {
@@ -89,7 +65,6 @@ const Chat = () => {
 
   const [messagesData, setMessagesData] = useState();
   const [isLoading, setLoading] = useState(loading)
-  // const Chat_Box_Username2 = "Henry Wells"
   const [currentRoomId, setCurrentRoomId] = useState(1);
   const currentUser = {
     name: "Henry Wells",

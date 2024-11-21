@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Card, CardBody, Col, Form, FormGroup, Input, Button } from 'reactstrap';
 
 // Import images
-import wechat from "../../../assets/images/companies/wechat.svg";
 import { createTaskComment } from 'services/taskComment';
 
 const DetailsSection = ({ task }) => {
