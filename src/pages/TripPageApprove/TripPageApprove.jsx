@@ -9,6 +9,13 @@ import {
   CardTitle,
   CardSubtitle,
   Input,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Form,
+  FormGroup,
+  Label,
 } from "reactstrap";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { getTripList, updateTripStatus } from "services/trip"; // Importing updateTripStatus
@@ -19,6 +26,9 @@ const TripPageApprove = ({ filterStatus }) => {
   const [expandedRows, setExpandedRows] = useState([]); // To handle expanded rows
   const [trips, setTrips] = useState([]); // To store the fetched trip requests
   const [searchTerm, setSearchTerm] = useState("");
+  const [rejectionModal, setRejectionModal] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState(null);
+  const [rejectionComment, setRejectionComment] = useState("");
 
   // Toggle row expansion to show detailed trip info
   const toggleRow = (index) => {
@@ -47,15 +57,39 @@ const TripPageApprove = ({ filterStatus }) => {
   // Handle status update (approve/reject)
   const handleUpdateStatus = async (tripId, status) => {
     try {
-      await updateTripStatus(tripId, status); // Call the API to update status
-      // Update the status in the local state
-      setTrips((prevTrips) =>
-        prevTrips.map((trip) =>
+      if (status === "rejected") {
+        setSelectedTrip(tripId);
+        setRejectionModal(true);
+        return;
+      }
+
+      await updateTripStatus(tripId, status);
+      setTrips(prevTrips =>
+        prevTrips.map(trip =>
           trip.id === tripId ? { ...trip, status } : trip
         )
       );
     } catch (err) {
       console.error("Error updating trip status:", err);
+    }
+  };
+
+  // Add this new handler
+  const handleRejectionSubmit = async () => {
+    try {
+      await updateTripStatus(selectedTrip, "rejected", rejectionComment);
+      setTrips(prevTrips =>
+        prevTrips.map(trip =>
+          trip.id === selectedTrip ? 
+          { ...trip, status: "rejected", comment: rejectionComment } : 
+          trip
+        )
+      );
+      setRejectionModal(false);
+      setRejectionComment("");
+      setSelectedTrip(null);
+    } catch (err) {
+      console.error("Error rejecting trip:", err);
     }
   };
 
@@ -69,6 +103,36 @@ const TripPageApprove = ({ filterStatus }) => {
     .filter(trip => 
       filterStatus ? filterStatus.includes(trip.status) : true
     );
+
+  // Add rejection info to expanded row
+  const expandedRowContent = (trip) => (
+    <tr>
+      <td colSpan="7">
+        <div className="p-3">
+          <p>დეტალური ინფორმაცია</p>
+          <ul>
+            <li>მიზანი: {trip.purpose_of_trip}</li>
+            <li>სრული ხარჯი: {trip.total_expense}₾</li>
+            <li>ტრანსპორტის ხარჯი: {trip.expense_transport}₾</li>
+            <li>საცხოვრებელი: {trip.expense_living}₾</li>
+            <li>კვების ხარჯი: {trip.expense_meal}₾</li>
+          </ul>
+          {trip.status === "rejected" && trip.comment && (
+            <div className="mt-3 p-3 bg-light rounded">
+              <h6 className="mb-2 text-danger">უარყოფის მიზეზი:</h6>
+              <p className="mb-1">{trip.comment}</p>
+              <small className="text-muted">
+                უარყო: {trip.reviewed_by?.name} {trip.reviewed_by?.sur_name}
+                {trip.reviewed_at && (
+                  <span> - {new Date(trip.reviewed_at).toLocaleString('ka-GE')}</span>
+                )}
+              </small>
+            </div>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
 
   return (
     <React.Fragment>
@@ -177,20 +241,7 @@ const TripPageApprove = ({ filterStatus }) => {
                               </td>
                             </tr>
                             {expandedRows.includes(index) && (
-                              <tr>
-                                <td colSpan="7">
-                                  <div className="p-3">
-                                    <p>დეტალური ინფორმაცია</p>
-                                    <ul>
-                                      <li>მიზანი: {trip.purpose_of_trip}</li>
-                                      <li>სრული ხარჯი: {trip.total_expense}₾</li>
-                                      <li>ტრანსპორტის ხარჯი: {trip.expense_transport}₾</li>
-                                      <li>საცხოვრებელი: {trip.expense_living}₾</li>
-                                      <li>კვების ხარჯი: {trip.expense_meal}₾</li>
-                                    </ul>
-                                  </div>
-                                </td>
-                              </tr>
+                              expandedRowContent(trip)
                             )}
                           </React.Fragment>
                         ))}
@@ -203,6 +254,41 @@ const TripPageApprove = ({ filterStatus }) => {
           </Row>
         </div>
       </div>
+      
+      {/* Add Modal at the end */}
+      <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
+        <ModalHeader toggle={() => setRejectionModal(false)}>
+          უარყოფის მიზეზი
+        </ModalHeader>
+        <ModalBody>
+          <Form>
+            <FormGroup>
+              <Label for="rejectionComment">გთხოვთ მიუთითოთ უარყოფის მიზეზი</Label>
+              <Input
+                type="textarea"
+                name="rejectionComment"
+                id="rejectionComment"
+                value={rejectionComment}
+                onChange={(e) => setRejectionComment(e.target.value)}
+                rows="4"
+                required
+              />
+            </FormGroup>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button 
+            color="danger" 
+            onClick={handleRejectionSubmit}
+            disabled={!rejectionComment.trim()}
+          >
+            უარყოფა
+          </Button>
+          <Button color="secondary" onClick={() => setRejectionModal(false)}>
+            გაუქმება
+          </Button>
+        </ModalFooter>
+      </Modal>
     </React.Fragment>
   );
 };

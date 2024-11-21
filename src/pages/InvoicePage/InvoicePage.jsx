@@ -69,17 +69,16 @@ const styles = {
 
 const InvoicePage = () => {
   const [invoices, setInvoices] = useState([]);
-  const [invoice, setInvoice] = useState(null); // For editing a specific invoice
-  const [isEdit, setIsEdit] = useState(false); // Determines if we're in edit mode
-  const [modalOpen, setModalOpen] = useState(false); // Controls the invoice modal visibility
-  const [commentModalOpen, setCommentModalOpen] = useState(false); // Controls the comment modal visibility
-  const [selectedFile, setSelectedFile] = useState(null); // Stores the selected file
-  const [selectedComment, setSelectedComment] = useState(''); // For storing and editing comments
-  const [selectedInvoiceForComment, setSelectedInvoiceForComment] = useState(null); // Store the invoice for comment editing
-  const [status, setStatus] = useState('pending'); // For editing status
+  const [invoice, setInvoice] = useState(null);
+  const [isEdit, setIsEdit] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedComment, setSelectedComment] = useState('');
+  const [selectedInvoiceForComment, setSelectedInvoiceForComment] = useState(null);
+  const [status, setStatus] = useState('pending');
   const [departments, setDepartments] = useState([]);
 
-  // Fetch invoices on component mount
   useEffect(() => {
     fetchInvoices();
   }, []);
@@ -106,92 +105,79 @@ const InvoicePage = () => {
     }
   };
 
-  // Toggle invoice modal visibility
   const toggleModal = () => setModalOpen(!modalOpen);
 
-  // Toggle comment modal visibility
   const toggleCommentModal = () => setCommentModalOpen(!commentModalOpen);
 
-  // Handle "Add Invoice" button click
   const handleAddClick = () => {
-    setInvoice(null); // Clear the invoice to ensure fresh data for adding
-    setSelectedFile(null); // Reset the file input
-    setIsEdit(false); // Set to 'Add' mode
-    setStatus('pending'); // Reset status
+    setInvoice(null);
+    setSelectedFile(null);
+    setIsEdit(false);
+    setStatus('pending');
     toggleModal();
   };
 
-  // Handle "Edit" button click
   const handleEditClick = (invoiceData) => {
     setInvoice(invoiceData);
     setSelectedFile(null); // Reset file when editing
-    setStatus(invoiceData.status || 'pending'); // Set status for editing
-    setIsEdit(true); // Set to 'Edit' mode
+    setStatus(invoiceData.status || 'pending');
+    setIsEdit(true);
     toggleModal();
   };
 
-  // Handle invoice deletion
   const handleDeleteClick = async (invoiceId) => {
     try {
       await deleteInvoice(invoiceId);
-      fetchInvoices(); // Refresh the invoices list after deletion
+      fetchInvoices();
     } catch (error) {
       console.error('Error deleting invoice:', error);
     }
   };
 
-  // Handle file selection
   const handleFileChange = (file) => {
-    setSelectedFile(file); // Store the selected file
+    setSelectedFile(file);
   };
 
-  // Handle form submission to save a new or updated invoice
   const handleSaveInvoice = async (data) => {
     try {
       if (isEdit) {
-        await updateInvoice(invoice.id, data); // Use PUT or PATCH based on your API
+        await updateInvoice(invoice.id, data);
       } else {
-        await createInvoice(data); // POST request
+        await createInvoice(data);
       }
-      fetchInvoices(); // Refresh invoices after creating/updating
-      toggleModal(); // Close the modal
+      fetchInvoices();
+      toggleModal();
     } catch (error) {
       console.error('Error saving invoice:', error);
     }
   };
 
-  // Handle status change
   const handleStatusChange = async (newStatus, invoiceId) => {
     try {
       await updateInvoice(invoiceId, { status: newStatus });
-      fetchInvoices(); // Refresh invoices after status update
+      fetchInvoices();
     } catch (error) {
       console.error('Error updating status:', error);
     }
   };
 
-  // Open comment modal for editing
   const handleCommentClick = (invoiceData) => {
-    setSelectedComment(invoiceData.comments || ''); // Set the current comment
-    setSelectedInvoiceForComment(invoiceData); // Set the selected invoice for comment editing
+    setSelectedComment(invoiceData.comments || '');
+    setSelectedInvoiceForComment(invoiceData);
     toggleCommentModal();
   };
 
-  // Handle comment save
   const handleSaveComment = async () => {
     if (selectedInvoiceForComment) {
       try {
-        // Update the invoice with the new comment
         const updatedInvoice = await updateInvoice(selectedInvoiceForComment.id, { comments: selectedComment });
         
-        // Update the local invoices state with the updated comment
         setInvoices(prevInvoices =>
           prevInvoices.map(inv =>
             inv.id === updatedInvoice.id ? updatedInvoice : inv
           )
         );
 
-        // Close the modal after success
         toggleCommentModal();
       } catch (error) {
         console.error('Error updating comment:', error);
@@ -199,7 +185,6 @@ const InvoicePage = () => {
     }
   };
 
-  // Table columns definition
   const columns = useMemo(
     () => [
       { field: 'id', headerName: '#', width: 70 },

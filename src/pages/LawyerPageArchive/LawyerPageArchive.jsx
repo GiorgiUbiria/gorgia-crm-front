@@ -1,22 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Row, Col, Card, CardBody, CardTitle, CardSubtitle, Input } from "reactstrap";
 
-// Import Breadcrumb
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import { getDepartmentAgreements } from "services/agreement"; // Import your service function
+import { getDepartmentAgreements } from "services/agreement";
 
 const LawyerPageArchive = () => {
-  // Meta title
   document.title = "ვიზირება | Gorgia LLC";
 
   const [agreements, setAgreements] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch the agreements from the API
   const fetchAgreements = async () => {
     try {
-      const response = await getDepartmentAgreements(); // Adjust this to your specific API call
+      const response = await getDepartmentAgreements();
       setAgreements(response.data.data);
     } catch (err) {
       console.error("Error fetching agreements:", err);
@@ -27,7 +24,6 @@ const LawyerPageArchive = () => {
     fetchAgreements();
   }, []);
 
-  // Handle row expansion toggle
   const toggleRow = (index) => {
     const isRowExpanded = expandedRows.includes(index);
     if (isRowExpanded) {
@@ -37,17 +33,13 @@ const LawyerPageArchive = () => {
     }
   };
 
-  // Handle downloading the Word document
   const downloadDocument = (fileUrl) => {
     const newWindow = window.open(fileUrl, '_blank');
 
-        newWindow.focus();  // Focus on the new window
-        newWindow.print();  // Trigger print dialog
-      };
-   
-  
+    newWindow.focus();
+    newWindow.print();
+  };
 
-  // Determine the row class based on the agreement status
   const getRowClass = (status) => {
     switch (status) {
       case "rejected":
@@ -61,13 +53,12 @@ const LawyerPageArchive = () => {
     }
   };
 
-  // Add filtered agreements computation
   const filteredAgreements = agreements.filter(agreement =>
     agreement.performer_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   console.log(agreements);
-  
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -125,8 +116,8 @@ const LawyerPageArchive = () => {
                                 {agreement.status === "rejected"
                                   ? "უარყოფილია"
                                   : agreement.status === "approved"
-                                  ? "დადასტურებულია"
-                                  : "მოლოდინში"}
+                                    ? "დადასტურებულია"
+                                    : "მოლოდინში"}
                               </td>
                             </tr>
                             {expandedRows.includes(index) && (
@@ -144,13 +135,13 @@ const LawyerPageArchive = () => {
                                     </ul>
                                     {agreement.status === "approved" && (
                                       <Button
-                                      color="primary"
-                                      onClick={() =>
-                                        downloadDocument(`${process.env.REACT_APP_BASE_URL}/${agreement.file_path}`)
-                                      }
-                                    >
-                                      ხელშეკრულების ჩამოტვირთვა
-                                    </Button>
+                                        color="primary"
+                                        onClick={() =>
+                                          downloadDocument(`${process.env.REACT_APP_BASE_URL}/${agreement.file_path}`)
+                                        }
+                                      >
+                                        ხელშეკრულების ჩამოტვირთვა
+                                      </Button>
                                     )}
                                   </div>
                                 </td>

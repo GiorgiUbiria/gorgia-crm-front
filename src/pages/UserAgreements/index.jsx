@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Row, Col, Card, CardBody, Input } from "reactstrap";
 
-// Import Breadcrumb
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { getUserAgreemnets } from "services/agreement";
 
@@ -12,10 +11,9 @@ const UserAgreements = () => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch the agreements from the API
   const fetchAgreements = async () => {
     try {
-      const response = await getUserAgreemnets(); // Fetch user agreements
+      const response = await getUserAgreemnets();
       setAgreements(response.data.data);
     } catch (err) {
       console.error("Error fetching agreements:", err);
@@ -26,7 +24,6 @@ const UserAgreements = () => {
     fetchAgreements();
   }, []);
 
-  // Handle row expansion toggle
   const toggleRow = (index) => {
     const isRowExpanded = expandedRows.includes(index);
     if (isRowExpanded) {
@@ -36,15 +33,13 @@ const UserAgreements = () => {
     }
   };
 
-  // Handle downloading the Word document
   const downloadDocument = (fileUrl) => {
-    const link = document.createElement("a");
-    link.href = fileUrl;
-    link.download = "agreement.docx"; // Set a default file name
-    link.click();
+    const newWindow = window.open(fileUrl, '_blank');
+
+    newWindow.focus();
+    newWindow.print();
   };
 
-  // Determine the row class based on the agreement status
   const getRowClass = (status) => {
     switch (status) {
       case "rejected":
@@ -58,10 +53,11 @@ const UserAgreements = () => {
     }
   };
 
-  // Add filtered agreements computation
   const filteredAgreements = agreements.filter(agreement =>
     agreement.performer_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  console.log(agreements);
 
   return (
     <React.Fragment>
@@ -114,8 +110,8 @@ const UserAgreements = () => {
                                 {agreement.status === "rejected"
                                   ? "უარყოფილია"
                                   : agreement.status === "approved"
-                                  ? "დადასტურებულია"
-                                  : "მოლოდინში"}
+                                    ? "დადასტურებულია"
+                                    : "მოლოდინში"}
                               </td>
                             </tr>
                             {expandedRows.includes(index) && (

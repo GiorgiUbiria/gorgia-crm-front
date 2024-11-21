@@ -9,17 +9,27 @@ import {
   CardTitle,
   CardSubtitle,
   Input,
+  Form,
+  FormGroup,
+  Label,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "reactstrap"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
-import { getVacations } from "services/admin/vacation" // Updated import for updateVacationStatus
+import { getVacations } from "services/admin/vacation"
 import { updateVacationStatus } from "services/vacation"
 
 const VacationPageApprove = ({ filterStatus }) => {
   document.title = "შვებულების ვიზირება | Gorgia LLC"
 
-  const [expandedRows, setExpandedRows] = useState([]) // State to track expanded rows
-  const [vacations, setVacations] = useState([]) // State to store vacation requests
+  const [expandedRows, setExpandedRows] = useState([])
+  const [vacations, setVacations] = useState([])
   const [searchTerm, setSearchTerm] = useState("");
+  const [rejectionModal, setRejectionModal] = useState(false);
+  const [selectedVacation, setSelectedVacation] = useState(null);
+  const [rejectionComment, setRejectionComment] = useState("");
 
   // Function to toggle row expansion
   const toggleRow = index => {
@@ -48,25 +58,46 @@ const VacationPageApprove = ({ filterStatus }) => {
   // Function to update vacation status (approve/reject)
   const handleUpdateStatus = async (vacationId, status) => {
     try {
-      // Update vacation status on the backend
-      await updateVacationStatus(vacationId, status)
+      if (status === "rejected") {
+        setSelectedVacation(vacationId);
+        setRejectionModal(true);
+        return;
+      }
 
-      // Update the vacation status in the frontend
+      await updateVacationStatus(vacationId, status);
       setVacations(prevVacations =>
         prevVacations.map(vacation =>
           vacation.id === vacationId ? { ...vacation, status } : vacation
         )
-      )
+      );
     } catch (err) {
-      console.error("Error updating vacation status:", err)
+      console.error("Error updating vacation status:", err);
     }
-  }
+  };
+
+  const handleRejectionSubmit = async () => {
+    try {
+      await updateVacationStatus(selectedVacation, "rejected", rejectionComment);
+      setVacations(prevVacations =>
+        prevVacations.map(vacation =>
+          vacation.id === selectedVacation ?
+            { ...vacation, status: "rejected", rejection_comment: rejectionComment } :
+            vacation
+        )
+      );
+      setRejectionModal(false);
+      setRejectionComment("");
+      setSelectedVacation(null);
+    } catch (err) {
+      console.error("Error rejecting vacation:", err);
+    }
+  };
 
   const filteredVacations = vacations
-    .filter(vacation => 
+    .filter(vacation =>
       vacation.user.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    .filter(vacation => 
+    .filter(vacation =>
       filterStatus ? filterStatus.includes(vacation.status) : true
     );
 
@@ -119,8 +150,8 @@ const VacationPageApprove = ({ filterStatus }) => {
                                 vacation.status === "rejected"
                                   ? "table-danger"
                                   : vacation.status === "approved"
-                                  ? "table-success"
-                                  : "table-warning"
+                                    ? "table-success"
+                                    : "table-warning"
                               }
                               onClick={() => toggleRow(index)}
                               style={{ cursor: "pointer" }}
@@ -192,9 +223,9 @@ const VacationPageApprove = ({ filterStatus }) => {
                                           <li className="mb-2">
                                             <strong>შვებულების ტიპი:</strong>{' '}
                                             {vacation.type_of_vocations === 'paid' ? 'ანაზღაურებადი' :
-                                             vacation.type_of_vocations === 'unpaid' ? 'ანაზღაურების გარეშე' :
-                                             vacation.type_of_vocations === 'maternity' ? 'დეკრეტული' :
-                                             vacation.type_of_vocations === 'administrative' ? 'ადმინისტრაციული' : 'არ არის მითითებული'}
+                                              vacation.type_of_vocations === 'unpaid' ? 'ანაზღაურების გარეშე' :
+                                                vacation.type_of_vocations === 'maternity' ? 'დეკრეტული' :
+                                                  vacation.type_of_vocations === 'administrative' ? 'ადმინისტრაციული' : 'არ არის მითითებული'}
                                           </li>
                                         </ul>
                                       </Col>
@@ -238,6 +269,40 @@ const VacationPageApprove = ({ filterStatus }) => {
           </Row>
         </div>
       </div>
+
+      <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
+        <ModalHeader toggle={() => setRejectionModal(false)}>
+          უარყოფის მიზეზი
+        </ModalHeader>
+        <ModalBody>
+          <Form>
+            <FormGroup>
+              <Label for="rejectionComment">გთხოვთ მიუთითოთ უარყოფის მიზეზი</Label>
+              <Input
+                type="textarea"
+                name="rejectionComment"
+                id="rejectionComment"
+                value={rejectionComment}
+                onChange={(e) => setRejectionComment(e.target.value)}
+                rows="4"
+                required
+              />
+            </FormGroup>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            color="danger"
+            onClick={handleRejectionSubmit}
+            disabled={!rejectionComment.trim()}
+          >
+            უარყოფა
+          </Button>
+          <Button color="secondary" onClick={() => setRejectionModal(false)}>
+            გაუქმება
+          </Button>
+        </ModalFooter>
+      </Modal>
     </React.Fragment>
   )
 }

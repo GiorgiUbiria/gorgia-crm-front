@@ -9,9 +9,16 @@ import {
   CardTitle,
   CardSubtitle,
   Input,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Form,
+  FormGroup,
+  Label,
 } from "reactstrap"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
-import { getPurchaseList } from "services/purchase"
+import { getPurchaseList, updatePurchaseStatus } from "services/purchase"
 
 const PurchasePageApprove = ({ filterStatus }) => {
   document.title = "შესყიდვების ვიზირება | Gorgia LLC"
@@ -23,6 +30,9 @@ const PurchasePageApprove = ({ filterStatus }) => {
     key: 'start_date',
     direction: 'desc'
   });
+  const [rejectionModal, setRejectionModal] = useState(false);
+  const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [rejectionComment, setRejectionComment] = useState("");
 
   const toggleRow = index => {
     const isRowExpanded = expandedRows.includes(index)
@@ -48,15 +58,42 @@ const PurchasePageApprove = ({ filterStatus }) => {
 
   const handleUpdateStatus = async (purchaseId, status) => {
     try {
-      setPurchases(prevPurchases =>
-        prevPurchases.map(purchase =>
-          purchase.id === purchaseId ? { ...purchase, status } : purchase
-        )
-      )
+      if (status === "rejected") {
+        setSelectedPurchase(purchaseId);
+        setRejectionModal(true);
+        return;
+      }
+
+      const response = await updatePurchaseStatus(purchaseId, status);
+      if (response.data.success) {
+        setPurchases(prevPurchases =>
+          prevPurchases.map(purchase =>
+            purchase.id === purchaseId ? { ...purchase, status } : purchase
+          )
+        );
+      }
     } catch (err) {
-      console.error("Error updating purchase status:", err)
+      console.error("Error updating purchase status:", err);
     }
-  }
+  };
+
+  const handleRejectionSubmit = async () => {
+    try {
+      const response = await updatePurchaseStatus(selectedPurchase, "rejected", rejectionComment);
+      if (response.data.success) {
+        setPurchases(prevPurchases =>
+          prevPurchases.map(purchase =>
+            purchase.id === selectedPurchase ? { ...purchase, status: "rejected" } : purchase
+          )
+        );
+        setRejectionModal(false);
+        setRejectionComment("");
+        setSelectedPurchase(null);
+      }
+    } catch (err) {
+      console.error("Error rejecting purchase:", err);
+    }
+  };
 
   const handleSort = (key) => {
     setSortConfig(prevConfig => ({
@@ -70,8 +107,8 @@ const PurchasePageApprove = ({ filterStatus }) => {
       const sortedPurchases = [...purchases].sort((a, b) => {
         const dateA = new Date(sortConfig.key === 'start_date' ? a.start_date : a.deadline);
         const dateB = new Date(sortConfig.key === 'start_date' ? b.start_date : b.deadline);
-        return sortConfig.direction === 'asc' 
-          ? dateA - dateB 
+        return sortConfig.direction === 'asc'
+          ? dateA - dateB
           : dateB - dateA;
       });
       setPurchases(sortedPurchases);
@@ -79,10 +116,10 @@ const PurchasePageApprove = ({ filterStatus }) => {
   }, [sortConfig]);
 
   const filteredPurchases = purchases
-    .filter(purchase => 
+    .filter(purchase =>
       purchase.user.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    .filter(purchase => 
+    .filter(purchase =>
       filterStatus ? filterStatus.includes(purchase.status) : true
     );
 
@@ -121,7 +158,7 @@ const PurchasePageApprove = ({ filterStatus }) => {
                           <th>#</th>
                           <th>მომთხოვნი პირი</th>
                           <th>შესყიდვის ობიექტი</th>
-                          <th 
+                          <th
                             onClick={() => handleSort('start_date')}
                             style={{ cursor: 'pointer', userSelect: 'none' }}
                           >
@@ -134,7 +171,7 @@ const PurchasePageApprove = ({ filterStatus }) => {
                               )}
                             </div>
                           </th>
-                          <th 
+                          <th
                             onClick={() => handleSort('deadline')}
                             style={{ cursor: 'pointer', userSelect: 'none' }}
                           >
@@ -159,8 +196,8 @@ const PurchasePageApprove = ({ filterStatus }) => {
                                 purchase.status === "rejected"
                                   ? "table-danger"
                                   : purchase.status === "approved"
-                                  ? "table-success"
-                                  : "table-warning"
+                                    ? "table-success"
+                                    : "table-warning"
                               }
                               onClick={() => toggleRow(index)}
                               style={{ cursor: "pointer" }}
@@ -241,6 +278,39 @@ const PurchasePageApprove = ({ filterStatus }) => {
           </Row>
         </div>
       </div>
+      <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
+        <ModalHeader toggle={() => setRejectionModal(false)}>
+          უარყოფის მიზეზი
+        </ModalHeader>
+        <ModalBody>
+          <Form>
+            <FormGroup>
+              <Label for="rejectionComment">გთხოვთ მიუთითოთ უარყოფის მიზეზი</Label>
+              <Input
+                type="textarea"
+                name="rejectionComment"
+                id="rejectionComment"
+                value={rejectionComment}
+                onChange={(e) => setRejectionComment(e.target.value)}
+                rows="4"
+                required
+              />
+            </FormGroup>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button 
+            color="danger" 
+            onClick={handleRejectionSubmit}
+            disabled={!rejectionComment.trim()}
+          >
+            უარყოფა
+          </Button>
+          <Button color="secondary" onClick={() => setRejectionModal(false)}>
+            გაუქმება
+          </Button>
+        </ModalFooter>
+      </Modal>
     </React.Fragment>
   )
 }

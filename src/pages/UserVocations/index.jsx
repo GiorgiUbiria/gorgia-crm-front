@@ -28,7 +28,7 @@ const UserVocation = () => {
       const response = await getCurrentUserVocations();
 
       console.log(response);
-      
+
       setVocations(response.data.data); // Assuming 'vocations' is the key holding the vocations
     } catch (err) {
       console.error("Error fetching vocations:", err);
@@ -54,9 +54,9 @@ const UserVocation = () => {
   };
 
   console.log(vocations);
-  
 
-  const filteredVocations = vocations.filter(vocation => 
+
+  const filteredVocations = vocations.filter(vocation =>
     vocation.reason.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -110,7 +110,7 @@ const UserVocation = () => {
                       <tbody>
                         {filteredVocations?.map((vocation, index) => (
                           <React.Fragment key={vocation.id}>
-                            <tr 
+                            <tr
                               className={`${getRowClass(vocation.status)} cursor-pointer`}
                               onClick={() => toggleRow(index)}
                               style={{ cursor: 'pointer' }}
@@ -121,7 +121,7 @@ const UserVocation = () => {
                               <td>{vocation.reason}</td>
                               <td>
                                 {vocation.status === "rejected" ? "უარყოფილია" :
-                                 vocation.status === "approved" ? "დადასტურებულია" : "მოლოდინში"}
+                                  vocation.status === "approved" ? "დადასტურებულია" : "მოლოდინში"}
                               </td>
                             </tr>
                             {expandedRows.includes(index) && (
@@ -136,9 +136,9 @@ const UserVocation = () => {
                                           <ul className="list-unstyled">
                                             <li><strong>შვებულების ტიპი:</strong> {
                                               vocation.type_of_vocations === 'paid' ? 'ანაზღაურებადი' :
-                                              vocation.type_of_vocations === 'unpaid' ? 'ანაზღაურების გარეშე' :
-                                              vocation.type_of_vocations === 'maternity' ? 'დეკრეტული' :
-                                              vocation.type_of_vocations === 'administrative' ? 'ადმინისტრაციული' : 'არ არის მითითებული'
+                                                vocation.type_of_vocations === 'unpaid' ? 'ანაზღაურების გარეშე' :
+                                                  vocation.type_of_vocations === 'maternity' ? 'დეკრეტული' :
+                                                    vocation.type_of_vocations === 'administrative' ? 'ადმინისტრაციული' : 'არ არის მითითებული'
                                             }</li>
                                             <li><strong>დაწყების თარიღი:</strong> {vocation.start_date}</li>
                                             <li><strong>დასრულების თარიღი:</strong> {vocation.end_date}</li>
@@ -161,6 +161,20 @@ const UserVocation = () => {
                                         </div>
                                       </Col>
                                     </Row>
+                                    {vocation.status === "rejected" && vocation.comment && (
+                                      <Col md={12}>
+                                        <div className="mt-3 p-3 bg-light rounded">
+                                          <h6 className="mb-2 text-danger">უარყოფის მიზეზი:</h6>
+                                          <p className="mb-1">{vocation.comment}</p>
+                                          <small className="text-muted">
+                                            უარყო: {vocation.reviewed_by?.name} {vocation.reviewed_by?.sur_name}
+                                            {vocation.reviewed_at && (
+                                              <span> - {new Date(vocation.reviewed_at).toLocaleString('ka-GE')}</span>
+                                            )}
+                                          </small>
+                                        </div>
+                                      </Col>
+                                    )}
                                   </div>
                                 </td>
                               </tr>
