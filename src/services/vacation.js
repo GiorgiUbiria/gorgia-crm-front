@@ -4,7 +4,7 @@ export const getVacationList = async () => {
     return defaultInstance.get('/api/vocation/list')
 }
 
-export const createPurchase = async (data) => {
+export const createVacation = async (data) => {
     return defaultInstance.post('/api/vocation/create', data)
 }
   
