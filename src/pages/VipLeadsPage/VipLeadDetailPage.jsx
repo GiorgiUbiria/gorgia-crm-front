@@ -2,19 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchCommentsForVipLead, addCommentToVipLead, getVipLeadById } from '../../services/vipLeadsService';
 import { Card, CardBody, Col, Container, Row, Label, Input, Form, Button } from 'reactstrap';
-import moment from 'moment'; // For formatting date
+import moment from 'moment';
 
 const VipLeadDetailPage = () => {
-  const { id } = useParams(); // Get the VIP lead ID from the URL
+  const { id } = useParams();
   const [vipLead, setVipLead] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
 
   useEffect(() => {
-    // Fetch VIP lead details and comments
     const fetchVipLeadData = async () => {
       try {
-        const leadData = await getVipLeadById(id); // Implement getVipLeadById in your services
+        const leadData = await getVipLeadById(id);
         setVipLead(leadData);
 
         const commentsData = await fetchCommentsForVipLead(id);
@@ -31,16 +30,16 @@ const VipLeadDetailPage = () => {
     e.preventDefault();
     try {
       await addCommentToVipLead(id, newComment);
-      setNewComment(''); // Clear the input field
-      const updatedComments = await fetchCommentsForVipLead(id); // Fetch updated comments
-      setComments(updatedComments); // Update the comments list
+      setNewComment('');
+      const updatedComments = await fetchCommentsForVipLead(id);
+      setComments(updatedComments);
     } catch (error) {
       console.error('Error adding comment:', error);
     }
   };
 
   if (!vipLead) {
-    return <div>Loading...</div>; // Handle loading state
+    return <div>Loading...</div>;
   }
 
   return (
@@ -54,7 +53,7 @@ const VipLeadDetailPage = () => {
                 <Col md="6">
                   <p><strong>სახელი:</strong> {vipLead.first_name} {vipLead.last_name}</p>
                   <p><strong>ტელეფონის ნომერი:</strong> {vipLead.phone}</p>
-                  <p><strong>სტატუსი:</strong> 
+                  <p><strong>სტატუსი:</strong>
                     <span className={`badge ${vipLead.status === 'Active' ? 'bg-primary' : vipLead.status === 'Closed' ? 'bg-success' : 'bg-danger'}`}>
                       {vipLead.status === 'Active' ? 'აქტიური' : vipLead.status === 'Closed' ? 'დახურული' : 'პრობლემური'}
                     </span>
@@ -75,12 +74,12 @@ const VipLeadDetailPage = () => {
                           <div>
                             <strong>
                               {comment.user ? `${comment.user.name} ${comment.user.sur_name}` : 'Unknown User'}
-                            </strong> {/* Check if the user object exists */}
-                            <p className="mb-0">{comment.comment}</p> {/* Comment text */}
+                            </strong>
+                            <p className="mb-0">{comment.comment}</p>
                           </div>
                           <small className="text-muted">
                             {moment(comment.created_at).format('YYYY-MM-DD HH:mm')}
-                          </small> {/* Display comment creation date */}
+                          </small>
                         </div>
                       </CardBody>
                     </Card>
@@ -103,7 +102,7 @@ const VipLeadDetailPage = () => {
                   style={{ minHeight: '100px' }}
                 />
                 <Button color="primary" type="submit" className="float-end">
-                 დამატება
+                  დამატება
                 </Button>
               </Form>
             </CardBody>
