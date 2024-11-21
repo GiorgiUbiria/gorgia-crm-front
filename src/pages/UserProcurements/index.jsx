@@ -124,8 +124,8 @@ const UserProcurement = () => {
                                 {procurement.status === "rejected"
                                   ? "უარყოფილია"
                                   : procurement.status === "approved"
-                                  ? "დადასტურებულია"
-                                  : "მოლოდინში"}
+                                    ? "დადასტურებულია"
+                                    : "მოლოდინში"}
                               </td>
                             </tr>
                             {expandedRows.includes(index) && (
@@ -169,18 +169,29 @@ const UserProcurement = () => {
                                           </p>
                                           <p className="text-muted mb-0">
                                             <strong>სტატუსი:</strong>{" "}
-                                            <span className={`badge ${
-                                              procurement.status === "rejected" ? "bg-danger" :
-                                              procurement.status === "approved" ? "bg-success" :
-                                              "bg-warning"
-                                            }`}>
+                                            <span className={`badge ${procurement.status === "rejected" ? "bg-danger" :
+                                                procurement.status === "approved" ? "bg-success" :
+                                                  "bg-warning"
+                                              }`}>
                                               {procurement.status === "rejected"
                                                 ? "უარყოფილია"
                                                 : procurement.status === "approved"
-                                                ? "დადასტურებულია"
-                                                : "მოლოდინში"}
+                                                  ? "დადასტურებულია"
+                                                  : "მოლოდინში"}
                                             </span>
                                           </p>
+                                          {procurement.status === "rejected" && procurement.comment && (
+                                            <div className="mt-3 p-3 bg-light rounded">
+                                              <h6 className="mb-2 text-danger">უარყოფის მიზეზი:</h6>
+                                              <p className="mb-1">{procurement.comment}</p>
+                                              <small className="text-muted">
+                                                უარყო: {procurement.reviewed_by?.name} {procurement.reviewed_by?.sur_name}
+                                                {procurement.reviewed_at && (
+                                                  <span> - {new Date(procurement.reviewed_at).toLocaleString('ka-GE')}</span>
+                                                )}
+                                              </small>
+                                            </div>
+                                          )}
                                         </div>
                                       </Col>
                                     </Row>

@@ -131,7 +131,7 @@ const UserTrip = () => {
                             </tr>
                             {expandedRows.includes(index) && (
                               <tr>
-                                <td colSpan="4">
+                                <td colSpan="6">
                                   <div className="p-3">
                                     <p>დეტალური ინფორმაცია</p>
                                     <ul>
@@ -141,6 +141,18 @@ const UserTrip = () => {
                                       <li>საცხოვრებელი: {trip.expense_living}₾</li>
                                       <li>კვების ხარჯი: {trip.expense_meal}₾</li>
                                     </ul>
+                                    {trip.status === "rejected" && trip.comment && (
+                                      <div className="mt-3 p-3 bg-light rounded">
+                                        <h6 className="mb-2 text-danger">უარყოფის მიზეზი:</h6>
+                                        <p className="mb-1">{trip.comment}</p>
+                                        <small className="text-muted">
+                                          უარყო: {trip.reviewed_by?.name} {trip.reviewed_by?.sur_name}
+                                          {trip.reviewed_at && (
+                                            <span> - {new Date(trip.reviewed_at).toLocaleString('ka-GE')}</span>
+                                          )}
+                                        </small>
+                                      </div>
+                                    )}
                                   </div>
                                 </td>
                               </tr>

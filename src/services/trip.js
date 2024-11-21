@@ -12,6 +12,10 @@ export const createTrip = async (data) => {
 //     return defaultInstance.get('/api/vocation/create', data)
 // }
 
-export const updateTripStatus = async (tripId, status) => {
-    return defaultInstance.put(`/api/business-trip/${tripId}/status`, { status });
+export const updateTripStatus = async (id, status, comment = null) => {
+    const data = {
+        status,
+        comment
+    };
+    return defaultInstance.put(`/api/business-trip/${id}/status`, data);
 }
