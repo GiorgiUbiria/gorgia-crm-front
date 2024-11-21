@@ -1,0 +1,50 @@
+.fc {
+  .fc-toolbar {
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    
+    .fc-button {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.875rem;
+      
+      &:focus {
+        box-shadow: none;
+      }
+    }
+  }
+  
+  .fc-daygrid-day {
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+  }
+  
+  .fc-event {
+    border: none;
+    padding: 2px 4px;
+    font-size: 0.875rem;
+    border-radius: 3px;
+    cursor: pointer;
+    
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+.modal {
+  .modal-header {
+    padding: 1rem;
+    background-color: #f8f9fa;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+}
