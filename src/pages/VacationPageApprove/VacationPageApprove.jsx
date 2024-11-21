@@ -236,7 +236,7 @@ const VacationPageApprove = ({ filterStatus }) => {
                                             <ul>
                                               <li>დაწყება: {new Date(vacation.start_date).toLocaleDateString()}</li>
                                               <li>დასრულება: {new Date(vacation.end_date).toLocaleDateString()}</li>
-                                              <li>სულ დღეები: {vacation.total_days}</li>
+                                              <li>სულ დღეები: {vacation.duration}</li>
                                             </ul>
                                           </li>
                                           <li className="mb-2">

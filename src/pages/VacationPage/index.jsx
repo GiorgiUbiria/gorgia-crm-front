@@ -10,20 +10,13 @@ import {
   Row,
   Button,
 } from 'reactstrap';
-import { useTranslation } from 'react-i18next';
 import Breadcrumbs from '../../components/Common/Breadcrumb';
-import { createPurchase } from '../../services/vacation';
+import { createVacation } from '../../services/vacation';
 import { getApprovalVacations, getVacations } from '../../services/admin/vacation';
-import { toast } from 'react-toastify';
 import './index.css';
-import RequestCard from 'components/Vacation/RequestCard';
 import SuccessPopup from 'components/SuccessPopup';
-import { useTable, useSortBy } from 'react-table';
-import moment from 'moment';
 
 const VacationPage = () => {
-  const { t } = useTranslation();
-  const [userData, setUserData] = useState({});
   const [approvalList, setApprovalList] = useState([]);
   const [vacations, setVacations] = useState([]);
   const [isShowSuccessPopup, setIsShowSuccessPopup] = useState(false);
@@ -56,8 +49,6 @@ const VacationPage = () => {
     const fetchVacations = async () => {
       try {
         const res = await getVacations();
-        console.log(res);
-        
         setVacations(res.data.vocations);
       } catch (err) {
         console.error(err);
@@ -97,7 +88,8 @@ const VacationPage = () => {
     event.preventDefault();
 
     try {
-      const res = await createPurchase(formData);
+      formData.duration = vacationDays;
+      const res = await createVacation(formData);
       if (res.status == 200) {
         setIsShowSuccessPopup(true)
         setFormData({
@@ -126,9 +118,8 @@ const VacationPage = () => {
     let totalDays = 0;
 
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      const dayOfWeek = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const dayOfWeek = d.getDay();
 
-      // Check if the current day is a rest day
       switch (dayOfWeek) {
         case 0:
           if (restDays.sunday !== 'yes') totalDays++;
@@ -156,78 +147,18 @@ const VacationPage = () => {
       }
     }
 
-    if (totalDays === 0) {
-      return 1;
-    }
-
-    return totalDays;
+    return totalDays === 0 ? 1 : totalDays;
   };
-  
 
-  const columns = useMemo(
-    () => [
-      { Header: '#', accessor: 'id' },
-      {
-        Header: ({ sorted, sortedDesc }) => (
-          <div>
-            დაწყების თარიღი
-            <span>
-              {' ▼'}
-            </span>
-          </div>
-        ),
-        accessor: 'start_date',
-        Cell: ({ value }) => moment(value).format('YYYY-MM-DD'),
-        sortType: 'datetime'
-      },
-      {
-        Header: ({ sorted, sortedDesc }) => (
-          <div>
-            დასრულების თარიღი
-            <span>
-              {' ▼'}
-            </span>
-          </div>
-        ),
-        accessor: 'end_date',
-        Cell: ({ value }) => moment(value).format('YYYY-MM-DD'),
-        sortType: 'datetime'
-      },
-      { Header: 'მიზეზი', accessor: 'reason' },
-      { Header: 'სტატუსი', accessor: 'status' },
-      // ... other columns
-    ],
-    []
-  );
-
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable(
-    {
-      columns,
-      data: vacations,
-      initialState: {
-        sortBy: [
-          {
-            id: 'start_date',
-            desc: true // true for descending order (newest first)
-          }
-        ]
-      }
-    },
-    useSortBy
-  );
+  const vacationDays = useMemo(() => {
+    return calculateDuration(formData.start_date, formData.end_date, formData);
+  }, [formData.start_date, formData.end_date, formData]);
 
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid={true}>
-          <Breadcrumbs title="Admin" breadcrumbItem="Vacation Request" />
-
+          <Breadcrumbs title="განცხადებები" breadcrumbItem="შვებულების მოთხოვნა" />
           <Row>
             <Col lg="12">
               <Card>
@@ -265,10 +196,9 @@ const VacationPage = () => {
                           </Input>
                         </div>
                       </Col>
-                      
                     </Row>
                     <Row>
-                    <Col lg="6">
+                      <Col lg="6">
                         <div className="mb-3">
                           <Label for="start_date">დაწყების თარიღი</Label>
                           <Input
@@ -292,7 +222,6 @@ const VacationPage = () => {
                           />
                         </div>
                       </Col>
-                      
                     </Row>
                     <Row>
                       <Col lg="12">
@@ -318,39 +247,36 @@ const VacationPage = () => {
                         </div>
                       </Col>
                     </Row>
+                    <Row>
+                      <Col lg="12">
+                        <div className="mb-3">
+                          <Label>შვებულების დღეების რაოდენობა</Label>
+                          <Input
+                            type="text"
+                            value={vacationDays}
+                            readOnly
+                          />
+                        </div>
+                      </Col>
+                    </Row>
                     <div style={{
-                      width:"100%",
-                      display:"flex",
-                      justifyContent:"end"
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "end"
 
                     }} >
                       <Button type="submit" color="primary">
                         გაგზავნა
                       </Button>
                     </div>
-                   
                   </Form>
-
-                  {/* Display the list of vacation requests */}
-                  {/* <div className="w-[80%] h-[600px] overflow-y-auto pt-2 flex flex-col items-center">
-                    {vacations.map((vacation, idx) => (
-                      <RequestCard
-                        key={idx}
-                        type="შვებულება"
-                        duration={calculateDuration(vacation.start_date, vacation.end_date, vacation) + ' დღე'}
-                        startDay={vacation.start_date}
-                        endDay={vacation.end_date}
-                        status={vacation.status}
-                      />
-                    ))}
-                  </div> */}
                 </CardBody>
               </Card>
             </Col>
           </Row>
         </Container>
       </div>
-      {isShowSuccessPopup && (<SuccessPopup/>) }
+      {isShowSuccessPopup && (<SuccessPopup />)}
     </React.Fragment>
   );
 };
