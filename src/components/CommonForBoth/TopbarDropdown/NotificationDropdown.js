@@ -8,17 +8,17 @@ import { getNotifications } from "services/notification";
 
 const NotificationDropdown = (props) => {
   const [menu, setMenu] = useState(false);
-  const [comments, setComments] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const userId = 1; 
+  const userId = 1; // Replace with dynamic user ID if needed
 
   // Fetch notifications on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await getNotifications();
-        setComments(response.data);
+        setNotifications(response.data);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
       } finally {
@@ -34,8 +34,8 @@ const NotificationDropdown = (props) => {
     if (window.Echo) {
       const channel = window.Echo.channel(`user.${userId}`);
       channel.listen('ReplyMade', (event) => {
-        setComments((prevComments) => [
-          ...prevComments,
+        setNotifications((prevNotifications) => [
+          ...prevNotifications,
           event.dailyComment
         ]);
       });
@@ -59,9 +59,9 @@ const NotificationDropdown = (props) => {
           tag="button"
           id="page-header-notifications-dropdown"
         >
-          <i className={`bx bx-bell ${comments.length > 0 ? 'bx-tada' : ''}`} />
-          <span className={`badge rounded-pill ${comments.length > 0 ? 'bg-danger' : 'bg-secondary'}`}>
-            {comments.length}
+          <i className={`bx bx-bell ${notifications.length > 0 ? 'bx-tada' : ''}`} />
+          <span className={`badge rounded-pill ${notifications.length > 0 ? 'bg-danger' : 'bg-secondary'}`}>
+            {notifications.length}
           </span>
         </DropdownToggle>
 
@@ -80,8 +80,8 @@ const NotificationDropdown = (props) => {
           <SimpleBar style={{ height: "230px" }}>
             {loading ? (
               <div className="text-center p-3">Loading notifications...</div>
-            ) : comments.length > 0 ? (
-              comments.map((comment, index) => (
+            ) : notifications.length > 0 ? (
+              notifications.map((notification, index) => (
                 <Link to="" className="text-reset notification-item" key={index}>
                   <div className="d-flex">
                     <div className="avatar-xs me-3">
@@ -95,7 +95,7 @@ const NotificationDropdown = (props) => {
                       </h6>
                       <div className="font-size-12 text-muted">
                         <p className="mb-1">
-                          {comment.message}
+                          {notification.message}
                         </p>
                         <p className="mb-0">
                           <i className="mdi mdi-clock-outline" />{" "}

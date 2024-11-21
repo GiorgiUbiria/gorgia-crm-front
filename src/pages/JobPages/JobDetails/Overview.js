@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardBody, Col, Button } from 'reactstrap';
-import { startTask, finishTask } from 'services/tasks'; // Import the API functions
+import { startTask, finishTask } from 'services/tasks';
 
-// Import images
 import adobephotoshop from "../../../assets/images/companies/adobe-photoshop.svg";
-import { use } from 'i18next';
 import { fetchUser } from 'services/user';
 
 const Overview = ({ task }) => {
@@ -16,7 +14,6 @@ const Overview = ({ task }) => {
     const [user, setUser] = useState({});
 
     useEffect(() => {
-        // Check if the task is already started when component mounts
         if (task && task.status === 'In Progress') {
             setIsTaskStarted(true);
             setStartTime(new Date(task.start_time)); 
