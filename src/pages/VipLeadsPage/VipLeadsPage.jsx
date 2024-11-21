@@ -61,21 +61,6 @@ const VipLeadsPage = () => {
       { Header: 'ტელეფონის ნომერი', accessor: 'phone' },
       { Header: 'პასუხისმგებელი პირი', accessor: 'responsible_person' },
       {
-        Header: 'სტატუსი',
-        accessor: 'status',
-        Cell: ({ row }) => (
-          <Input
-            type="select"
-            value={row.original.status}
-            onChange={(e) => handleStatusChange(row.original.id, e.target.value)}
-          >
-            <option value="Active">აქტიური</option>
-            <option value="Closed">დახურული</option>
-            <option value="Problem">პრობლემური</option>
-          </Input>
-        ),
-      },
-      {
         Header: ({ sorted, sortedDesc }) => (
           <div>
             თარიღი
@@ -229,12 +214,12 @@ const VipLeadsPage = () => {
                       {headerGroups.map((headerGroup) => (
                         <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
                           {headerGroup.headers.map((column) => (
-                            <th 
-                              {...column.getHeaderProps(column.getSortByToggleProps())} 
+                            <th
+                              {...column.getHeaderProps(column.getSortByToggleProps())}
                               key={column.id}
                               style={{ verticalAlign: 'middle' }}
                             >
-                              {column.id === 'created_at' 
+                              {column.id === 'created_at'
                                 ? column.render('Header')
                                 : column.render('Header').props?.children || column.render('Header')}
                             </th>
@@ -248,8 +233,8 @@ const VipLeadsPage = () => {
                         return (
                           <tr {...row.getRowProps()} key={row.id}>
                             {row.cells.map((cell) => (
-                              <td 
-                                {...cell.getCellProps()} 
+                              <td
+                                {...cell.getCellProps()}
                                 key={cell.column.id}
                                 style={{ verticalAlign: 'middle' }}
                               >

@@ -29,13 +29,14 @@ import {
 import Spinners from "components/Common/Spinner";
 import { ToastContainer } from "react-toastify";
 import { Link } from "react-router-dom";
+import useFetchUsers from '../../../hooks/useFetchUsers';
 
 const TaskList = () => {
     document.title = "Tasks List | Gorgia LLC";
 
     const [modal, setModal] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
-    const [task, setTask] = useState(null); // This stores the selected task for editing
+    const [task, setTask] = useState(null);
     const [tasks, setTasks] = useState([]);
     const [isLoading, setLoading] = useState(true);
     const [deleteModal, setDeleteModal] = useState(false);
@@ -46,8 +47,8 @@ const TaskList = () => {
         key: 'due_date',
         direction: 'desc'
     });
+    const { users: usersList, loading: usersLoading } = useFetchUsers();
 
-    // Fetch tasks
     const fetchTasks = async () => {
         setLoading(true);
         try {
@@ -65,15 +66,15 @@ const TaskList = () => {
         fetchTasks();
     }, []);
 
-    // Formik setup for task form
     const validation = useFormik({
         enableReinitialize: true,
         initialValues: {
-            task_title: task?.task_title || '',  // Prefill when editing
+            task_title: task?.task_title || '',
             description: task?.description || '',
-            priority: task?.priority || 'Medium', // Default to 'Medium'
-            status: task?.status || 'Pending',    // Default to 'Pending'
+            priority: task?.priority || 'Medium',
+            status: task?.status || 'Pending',
             ip_address: task?.ip_address || '',
+            assigned_to: task?.assigned_to || '',
         },
         validationSchema: Yup.object({
             task_title: Yup.string().required("Please Enter Your Task Title"),
@@ -86,6 +87,7 @@ const TaskList = () => {
                     /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
                     "Invalid IP address format"
                 ),
+            assigned_to: Yup.string().required("Please Select Assigned To"),
         }),
         onSubmit: async (values) => {
             try {
@@ -103,8 +105,8 @@ const TaskList = () => {
                 }
 
                 validation.resetForm();
-                toggleModal(); // Close the modal after submission
-                fetchTasks();  // Refresh the task list
+                toggleModal();
+                fetchTasks();
             } catch (error) {
                 console.error("Error submitting form:", error);
             }
@@ -114,19 +116,17 @@ const TaskList = () => {
     const toggleModal = () => {
         setModal(!modal);
         if (!modal) {
-            setTask(null);  // Reset task when closing modal
+            setTask(null);
             setIsEdit(false);
         }
     };
 
-    // Open the modal to edit a task
     const handleTaskClick = (task) => {
-        setTask(task);  // Set the selected task to edit
-        setIsEdit(true);  // Switch to edit mode
-        setModal(true);   // Open the modal
+        setTask(task);
+        setIsEdit(true);
+        setModal(true);
     };
 
-    // Open delete modal
     const onClickDelete = (task) => {
         setTask(task);
         setDeleteModal(true);
@@ -153,7 +153,6 @@ const TaskList = () => {
         }
     };
 
-    // Add sorting function
     const handleSort = () => {
         setSortConfig(prevConfig => ({
             key: 'due_date',
@@ -161,7 +160,6 @@ const TaskList = () => {
         }));
     };
 
-    // Define table columns
     const columns = useMemo(
         () => [
             {
@@ -184,7 +182,7 @@ const TaskList = () => {
             },
             {
                 header: (
-                    <div 
+                    <div
                         style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                         onClick={handleSort}
                     >
@@ -288,14 +286,13 @@ const TaskList = () => {
         }
     };
 
-    // Add sorting effect
     useEffect(() => {
         if (tasks.length > 0) {
             const sortedTasks = [...tasks].sort((a, b) => {
                 const dateA = new Date(a.due_date);
                 const dateB = new Date(b.due_date);
-                return sortConfig.direction === 'asc' 
-                    ? dateA - dateB 
+                return sortConfig.direction === 'asc'
+                    ? dateA - dateB
                     : dateB - dateA;
             });
             setTasks(sortedTasks);
@@ -341,7 +338,7 @@ const TaskList = () => {
                                                         <tbody>
                                                             {tasks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((task, index) => (
                                                                 <React.Fragment key={task.id}>
-                                                                    <tr 
+                                                                    <tr
                                                                         onClick={() => toggleRow(index)}
                                                                         style={{ cursor: "pointer" }}
                                                                     >
@@ -517,6 +514,27 @@ const TaskList = () => {
                                             />
                                             {validation.touched.ip_address && validation.errors.ip_address ? (
                                                 <FormFeedback type="invalid">{validation.errors.ip_address}</FormFeedback>
+                                            ) : null}
+                                        </div>
+                                        <div className="mb-3">
+                                            <Label>პასუხისმგებელი პირი</Label>
+                                            <Input
+                                                name="assigned_to"
+                                                type="select"
+                                                onChange={validation.handleChange}
+                                                onBlur={validation.handleBlur}
+                                                value={validation.values.assigned_to || ""}
+                                                invalid={validation.touched.assigned_to && validation.errors.assigned_to ? true : false}
+                                            >
+                                                <option value="" disabled>აირჩიეთ პასუხისმგებელი პირი</option>
+                                                {!usersLoading && usersList.map(user => (
+                                                    <option key={user.id} value={user.id}>
+                                                        {`${user.name} ${user.sur_name}`}
+                                                    </option>
+                                                ))}
+                                            </Input>
+                                            {validation.touched.assigned_to && validation.errors.assigned_to ? (
+                                                <FormFeedback type="invalid">{validation.errors.assigned_to}</FormFeedback>
                                             ) : null}
                                         </div>
                                     </Col>

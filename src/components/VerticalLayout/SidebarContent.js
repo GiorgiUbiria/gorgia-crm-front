@@ -156,12 +156,14 @@ const SidebarContent = props => {
               </Link>
             </li>
 
-            <li>
-              <Link to="/admin">
-                <i className="bx bx-cog"></i>
-                <span>{props.t("სამართავი პანელი")}</span>
-              </Link>
-            </li>
+            {isAdmin && (
+              <li>
+                <Link to="/admin">
+                  <i className="bx bx-cog"></i>
+                  <span>{props.t("სამართავი პანელი")}</span>
+                </Link>
+              </li>
+            )}
 
             <li>
               <Link to="/profile">
@@ -333,38 +335,42 @@ const SidebarContent = props => {
               </Link>
             </li>
 
-            <li>
-              <Link to="/visitors">
-                <i className="bx bx-group"></i>
-                <span>{props.t("ვიზიტორები")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/payment-monitoring">
-                <i className="bx bx-money"></i>
-                <span>{props.t("გადახდების მონიტორინგი")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/#" className="has-arrow">
-                <i className="bx bx-phone"></i>
-                <span>{props.t("ლიდები")}</span>
-              </Link>
-              <ul className="sub-menu">
+            {isAdmin && (
+              <>
                 <li>
-                  <Link to="/vip-leads">
-                    <span>{props.t("VIP")}</span>
+                  <Link to="/visitors">
+                    <i className="bx bx-group"></i>
+                    <span>{props.t("ვიზიტორები")}</span>
                   </Link>
                 </li>
+
                 <li>
-                  <Link to="/corporate-leads">
-                    <span>{props.t("კორპორატიული")}</span>
+                  <Link to="/payment-monitoring">
+                    <i className="bx bx-money"></i>
+                    <span>{props.t("გადახდების მონიტორინგი")}</span>
                   </Link>
                 </li>
-              </ul>
-            </li>
+
+                <li>
+                  <Link to="/#" className="has-arrow">
+                    <i className="bx bx-phone"></i>
+                    <span>{props.t("ლიდები")}</span>
+                  </Link>
+                  <ul className="sub-menu">
+                    <li>
+                      <Link to="/vip-leads">
+                        <span>{props.t("VIP")}</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/corporate-leads">
+                        <span>{props.t("კორპორატიული")}</span>
+                      </Link>
+                    </li>
+                  </ul>
+                </li>
+              </>
+            )}
 
             <li>
               <Link to="/calendar">
