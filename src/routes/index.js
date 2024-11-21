@@ -84,8 +84,4 @@ const publicRoutes = [
   { path: "/register", component: <Register /> },
 ];
 
-
-
 export { authProtectedRoutes, publicRoutes };
-
-
