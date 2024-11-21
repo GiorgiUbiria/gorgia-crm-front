@@ -35,7 +35,6 @@ import UserForm from "components/UserForm";
 
 const AdminPage = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("1");
   const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -96,7 +95,7 @@ const AdminPage = () => {
 
   const handleAddUser = async (data) => {
     try {
-      await updateUserById(chosenUser.id, data);  
+      await updateUserById(chosenUser.id, data);
       toast.success(t("User updated successfully"));
       fetchUsers();
       setIsUserModalOpen(false);
@@ -155,13 +154,28 @@ const AdminPage = () => {
     user.department?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const searchInputStyle = {
+    paddingRight: '2.5rem',
+    borderRadius: '4px',
+    border: '1px solid #e2e8f0',
+    backgroundColor: '#f8fafc',
+  };
+
+  const searchIconStyle = {
+    position: 'absolute',
+    right: '10px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#64748b',
+  };
+
   return (
     <div className="page-content">
       <Container fluid>
         <Breadcrumbs title="ადმინისტრირება" breadcrumbItem="მართვის პანელი" />
         <Row>
           <Col lg="12">
-            <Card>
+            <Card className="shadow-sm">
               <CardBody>
                 <Nav tabs className="nav-tabs-custom nav-justified">
                   <NavItem>
@@ -185,16 +199,16 @@ const AdminPage = () => {
                 <TabContent activeTab={activeTab} className="p-3">
                   <TabPane tabId="1">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                      <div className="search-box">
+                      <div className="search-box" style={{ minWidth: '300px' }}>
                         <div className="position-relative">
                           <Input
                             type="text"
-                            className="form-control"
-                            placeholder="მოძებნეთ დეპარტამენტი..."
                             value={departmentSearchTerm}
                             onChange={(e) => setDepartmentSearchTerm(e.target.value)}
+                            placeholder="მოძებნეთ დეპარტამენტი..."
+                            style={searchInputStyle}
                           />
-                          <i className="bx bx-search-alt search-icon" />
+                          <FaSearch style={searchIconStyle} />
                         </div>
                       </div>
                       <Button
@@ -207,13 +221,13 @@ const AdminPage = () => {
                     </div>
 
                     <div className="table-responsive">
-                      <Table className="table-centered table-nowrap mb-0">
-                        <thead className="table-light">
+                      <Table className="table-centered table-hover mb-0" bordered>
+                        <thead style={{ backgroundColor: '#f1f5f9' }}>
                           <tr>
-                            <th className="text-center">#</th>
-                            <th>დეპარტამენტი</th>
-                            <th>ხელმძღვანელი</th>
-                            <th className="text-center">მოქმედება</th>
+                            <th className="text-center" style={{ width: '5%' }}>#</th>
+                            <th style={{ width: '35%' }}>დეპარტამენტი</th>
+                            <th style={{ width: '40%' }}>ხელმძღვანელი</th>
+                            <th className="text-center" style={{ width: '20%' }}>მოქმედება</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -263,16 +277,16 @@ const AdminPage = () => {
 
                   <TabPane tabId="2">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                      <div className="search-box">
+                      <div className="search-box" style={{ minWidth: '300px' }}>
                         <div className="position-relative">
                           <Input
                             type="text"
-                            className="form-control"
-                            placeholder="მოძებნეთ მომხმარებელი..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="მოძებნეთ მომხმარებელი..."
+                            style={searchInputStyle}
                           />
-                          <i className="bx bx-search-alt search-icon" />
+                          <FaSearch style={searchIconStyle} />
                         </div>
                       </div>
                       <Button
@@ -285,15 +299,15 @@ const AdminPage = () => {
                     </div>
 
                     <div className="table-responsive">
-                      <Table className="table-centered table-nowrap mb-0">
-                        <thead className="table-light">
+                      <Table className="table-centered table-hover mb-0" bordered>
+                        <thead style={{ backgroundColor: '#f1f5f9' }}>
                           <tr>
-                            <th className="text-center">#</th>
-                            <th>სახელი</th>
-                            <th>ელ-ფოსტა</th>
-                            <th>დეპარტამენტი</th>
-                            <th>როლი</th>
-                            <th className="text-center">მოქმედება</th>
+                            <th className="text-center" style={{ width: '5%' }}>#</th>
+                            <th style={{ width: '25%' }}>სახელი</th>
+                            <th style={{ width: '25%' }}>ელ-ფოსტა</th>
+                            <th style={{ width: '20%' }}>დეპარტამენტი</th>
+                            <th style={{ width: '10%' }}>როლი</th>
+                            <th className="text-center" style={{ width: '15%' }}>მოქმედება</th>
                           </tr>
                         </thead>
                         <tbody>
