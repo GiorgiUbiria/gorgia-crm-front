@@ -16,7 +16,6 @@ import {
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
-import RightSidebar from "../CommonForBoth/RightSidebar";
 
 //redux
 import { useSelector, useDispatch } from "react-redux";
@@ -140,7 +139,6 @@ const Layout = props => {
         <div className="main-content">{props.children}</div>
         <Footer />
       </div>
-      {showRightSidebar ? <RightSidebar /> : null}
     </React.Fragment>
   );
 };

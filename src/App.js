@@ -9,7 +9,6 @@ import { authProtectedRoutes, publicRoutes } from "./routes";
 import Authmiddleware from "./routes/route";
 
 import VerticalLayout from "./components/VerticalLayout/";
-import HorizontalLayout from "./components/HorizontalLayout/";
 import NonAuthLayout from "./components/NonAuthLayout";
 
 import "./assets/scss/theme.scss";
@@ -20,9 +19,6 @@ const getLayout = (layoutType) => {
   switch (layoutType) {
     case layoutTypes.VERTICAL:
       Layout = VerticalLayout;
-      break;
-    case layoutTypes.HORIZONTAL:
-      Layout = HorizontalLayout;
       break;
     default:
       break;
