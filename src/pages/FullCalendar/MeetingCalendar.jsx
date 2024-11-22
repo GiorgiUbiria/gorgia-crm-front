@@ -16,6 +16,8 @@ import Select from 'react-select';
 
 import './MeetingCalendar.scss';
 import useFetchUsers from 'hooks/useFetchUsers';
+import ka from '@fullcalendar/core/locales/ka';
+import moment from 'moment-timezone';
 
 const MeetingCalendar = () => {
   const [modal, setModal] = useState(false);
@@ -50,13 +52,16 @@ const MeetingCalendar = () => {
 
   const handleDateClick = (arg) => {
     const startDate = new Date(arg.date);
-    const endDate = new Date(arg.date.getTime() + 3600000); // 1 hour later
+    const endDate = new Date(arg.date.getTime() + 3600000);
     
-    setSelectedDate(startDate);
+    resetForm();
     setCurrentMeeting({
-      ...currentMeeting,
+      title: '',
       start: startDate,
-      end: endDate
+      end: endDate,
+      invitees: [],
+      reason: '',
+      comments: ''
     });
     setModal(true);
   };
@@ -119,6 +124,7 @@ const MeetingCalendar = () => {
 
   const resetForm = () => {
     setCurrentMeeting({
+      id: null,
       title: '',
       start: '',
       end: '',
@@ -128,36 +134,149 @@ const MeetingCalendar = () => {
     });
   };
 
+  const formatDateTimeLocal = (date) => {
+    if (!date) return '';
+    return moment(date)
+      .tz('Asia/Tbilisi')
+      .format('YYYY-MM-DDTHH:mm');
+  };
+
+  const handleTimeChange = (e, field) => {
+    const newDate = moment.tz(e.target.value, 'Asia/Tbilisi').toDate();
+    if (!isNaN(newDate.getTime())) {
+      setCurrentMeeting(prev => ({
+        ...prev,
+        [field]: newDate
+      }));
+    }
+  };
+
+  const getTimeSlots = () => {
+    const slots = [];
+    for (let i = 0; i < 24; i++) {
+      for (let j = 0; j < 2; j++) {
+        const hour = i.toString().padStart(2, '0');
+        const minute = (j * 30).toString().padStart(2, '0');
+        slots.push(`${hour}:${minute}`);
+      }
+    }
+    return slots;
+  };
+
+  const slotDuration = '00:15:00';
+  
+  const renderToolbar = {
+    left: 'prev,next today',
+    center: 'title',
+    right: 'scheduleButton dayGridMonth,timeGridWeek,timeGridDay'
+  };
+
+  const customButtons = {
+    scheduleButton: {
+      text: 'შეხვედრის დაგეგმვა',
+      click: () => {
+        const now = new Date();
+        resetForm();
+        setCurrentMeeting({
+          title: '',
+          start: now,
+          end: new Date(now.getTime() + 60 * 60 * 1000),
+          invitees: [],
+          reason: '',
+          comments: ''
+        });
+        setModal(true);
+      }
+    }
+  };
+
+  const calendarOptions = {
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'scheduleButton dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    customButtons: {
+      scheduleButton: {
+        text: 'შეხვედრის დაგეგმვა',
+        click: () => {
+          const now = new Date();
+          resetForm();
+          setCurrentMeeting({
+            title: '',
+            start: now,
+            end: new Date(now.getTime() + 60 * 60 * 1000),
+            invitees: [],
+            reason: '',
+            comments: ''
+          });
+          setModal(true);
+        }
+      }
+    },
+    timeZone: 'Asia/Tbilisi',
+    locale: ka,
+    slotDuration: '00:15:00',
+    slotMinTime: '09:00:00',
+    slotMaxTime: '19:00:00',
+    slotLabelInterval: '01:00',
+    slotLabelFormat: {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      meridiem: false
+    },
+    eventTimeFormat: {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      meridiem: false
+    },
+    height: 'auto',
+    eventDisplay: 'block',
+    eventBackgroundColor: '#0056b3',
+    eventBorderColor: '#0056b3',
+    eventTextColor: '#ffffff',
+    dayCellClassNames: 'calendar-day',
+    nowIndicator: true,
+    views: {
+      timeGrid: {
+        slotDuration: '00:15:00',
+        slotLabelFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          meridiem: false
+        },
+        nowIndicator: true,
+        dayMaxEvents: true,
+      },
+      dayGrid: {
+        dayMaxEvents: true,
+      }
+    }
+  };
+
   return (
-    <Card>
+    <Card className="calendar-card">
       <CardBody>
         <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-          }}
-          height={600}
+          {...calendarOptions}
           events={meetings}
           dateClick={handleDateClick}
           eventClick={handleEventClick}
-          eventTimeFormat={{
-            hour: '2-digit',
-            minute: '2-digit',
-            meridiem: false
-          }}
         />
 
-        <Modal isOpen={modal} toggle={() => setModal(!modal)}>
+        <Modal isOpen={modal} toggle={() => setModal(!modal)} className="meeting-modal">
           <ModalHeader toggle={() => setModal(!modal)}>
-            {currentMeeting.id ? 'Edit Meeting' : 'New Meeting'}
+            {currentMeeting.id ? 'შეხვედრის რედაქტირება' : 'ახალი შეხვედრა'}
           </ModalHeader>
           <ModalBody>
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit} className="meeting-form">
               <FormGroup>
-                <Label>Title</Label>
+                <Label>სათაური</Label>
                 <Input
                   type="text"
                   value={currentMeeting.title}
@@ -167,27 +286,32 @@ const MeetingCalendar = () => {
                 />
               </FormGroup>
               <FormGroup>
-                <Label>Start Time</Label>
+                <Label>დაწყების დრო</Label>
                 <Input
                   type="datetime-local"
-                  value={currentMeeting.start ? new Date(currentMeeting.start).toISOString().slice(0, 16) : ''}
-                  onChange={(e) => setCurrentMeeting({...currentMeeting, start: new Date(e.target.value)})}
+                  value={formatDateTimeLocal(currentMeeting.start)}
+                  onChange={(e) => handleTimeChange(e, 'start')}
                   required
                   disabled={loading}
+                  step="900"
+                  className="time-input"
                 />
               </FormGroup>
               <FormGroup>
-                <Label>End Time</Label>
+                <Label>დასრულების დრო</Label>
                 <Input
                   type="datetime-local"
-                  value={currentMeeting.end ? new Date(currentMeeting.end).toISOString().slice(0, 16) : ''}
-                  onChange={(e) => setCurrentMeeting({...currentMeeting, end: new Date(e.target.value)})}
+                  value={formatDateTimeLocal(currentMeeting.end)}
+                  onChange={(e) => handleTimeChange(e, 'end')}
                   required
                   disabled={loading}
+                  step="900"
+                  min={formatDateTimeLocal(currentMeeting.start)}
+                  className="time-input"
                 />
               </FormGroup>
               <FormGroup>
-                <Label>Invitees</Label>
+                <Label>მონაწილეები</Label>
                 <Select
                   isMulti
                   value={currentMeeting.invitees}
@@ -200,12 +324,14 @@ const MeetingCalendar = () => {
                     label: user.name
                   }))}
                   isDisabled={loading || usersLoading}
+                  placeholder="აირჩიეთ მონაწილეები"
+                  noOptionsMessage={() => "მონაწილეები არ მოიძებნა"}
                   className="basic-multi-select"
                   classNamePrefix="select"
                 />
               </FormGroup>
               <FormGroup>
-                <Label>Reason</Label>
+                <Label>მიზეზი</Label>
                 <Input
                   type="textarea"
                   value={currentMeeting.reason}
@@ -214,7 +340,7 @@ const MeetingCalendar = () => {
                 />
               </FormGroup>
               <FormGroup>
-                <Label>Comments</Label>
+                <Label>კომენტარები</Label>
                 <Input
                   type="textarea"
                   value={currentMeeting.comments}
@@ -224,11 +350,11 @@ const MeetingCalendar = () => {
               </FormGroup>
               <div className="d-flex justify-content-between">
                 <Button color="primary" type="submit" disabled={loading}>
-                  {currentMeeting.id ? 'Update Meeting' : 'Create Meeting'}
+                  {currentMeeting.id ? 'განახლება' : 'შექმნა'}
                 </Button>
                 {currentMeeting.id && (
                   <Button color="danger" type="button" onClick={handleDelete} disabled={loading}>
-                    Delete Meeting
+                    წაშლა
                   </Button>
                 )}
               </div>

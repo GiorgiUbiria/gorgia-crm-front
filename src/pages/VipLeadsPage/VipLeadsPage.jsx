@@ -59,7 +59,6 @@ const VipLeadsPage = () => {
       { Header: 'სახელი', accessor: 'first_name' },
       { Header: 'გვარი', accessor: 'last_name' },
       { Header: 'ტელეფონის ნომერი', accessor: 'phone' },
-      { Header: 'პასუხისმგებელი პირი', accessor: 'responsible_person' },
       {
         Header: ({ sorted, sortedDesc }) => (
           <div>
@@ -283,31 +282,6 @@ const VipLeadsPage = () => {
                     maxLength={9}
                     required
                   />
-                </FormGroup>
-                <FormGroup>
-                  <Label for="responsible_person">პასუხისმგებელი პირი</Label>
-                  <Input
-                    id="responsible_person"
-                    name="responsible_person"
-                    defaultValue={vipLead ? vipLead.responsible_person : ''}
-                    required
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label for="status">სტატუსი</Label>
-                  <Input
-                    type="select"
-                    name="status"
-                    defaultValue={vipLead ? vipLead.status : 'Active'}
-                  >
-                    <option value="Active">აქტიური</option>
-                    <option value="Closed">დახურული</option>
-                    <option value="Problem">პრობლემური</option>
-                  </Input>
-                </FormGroup>
-                <FormGroup>
-                  <Label for="comment">კომენტარი</Label>
-                  <Input type="textarea" id="comment" name="comment" defaultValue={vipLead ? vipLead.comment : ''} />
                 </FormGroup>
                 <Col style={{ textAlign: 'right' }}>
                   <Button type="submit" color="primary">

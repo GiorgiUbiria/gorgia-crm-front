@@ -1,114 +1,169 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { fetchCommentsForVipLead, addCommentToVipLead, getVipLeadById } from '../../services/vipLeadsService';
-import { Card, CardBody, Col, Container, Row, Label, Input, Form, Button } from 'reactstrap';
+import React, { useState, useEffect, useCallback } from 'react';
+import { getAllLeadRequests } from '../../services/vipLeadRequestsService';
+import { Card, CardBody, Container, Table, Input, Button, Collapse } from 'reactstrap';
 import moment from 'moment';
+import Comment from '../../components/Comment';
+import { useComments } from '../../hooks/useComments';
+import useFetchUser from '../../hooks/useFetchUser';
 
 const VipLeadDetailPage = () => {
-  const { id } = useParams();
-  const [vipLead, setVipLead] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
+  const [requests, setRequests] = useState([]);
+  const [expandedRows, setExpandedRows] = useState({});
+  const [newComments, setNewComments] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const { comments, isLoading: commentsLoading, error, fetchComments, addComment, deleteComment } = useComments();
+  const { user: currentUser } = useFetchUser();
+
+  console.log('Current User:', currentUser);
 
   useEffect(() => {
-    const fetchVipLeadData = async () => {
-      try {
-        const leadData = await getVipLeadById(id);
-        setVipLead(leadData);
+    fetchRequests();
+  }, []);
 
-        const commentsData = await fetchCommentsForVipLead(id);
-        setComments(commentsData);
-      } catch (error) {
-        console.error('Error fetching VIP lead details:', error);
-      }
-    };
-
-    fetchVipLeadData();
-  }, [id]);
-
-  const handleAddComment = async (e) => {
-    e.preventDefault();
+  const fetchRequests = async () => {
+    setIsLoading(true);
     try {
-      await addCommentToVipLead(id, newComment);
-      setNewComment('');
-      const updatedComments = await fetchCommentsForVipLead(id);
-      setComments(updatedComments);
+      const { data } = await getAllLeadRequests();
+      setRequests(data.data || data);
     } catch (error) {
-      console.error('Error adding comment:', error);
+      console.error('Error fetching requests:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (!vipLead) {
-    return <div>Loading...</div>;
+  const toggleRow = useCallback(async (requestId) => {
+    setExpandedRows(prev => {
+      const isExpanding = !prev[requestId];
+      if (isExpanding && !comments[requestId]) {
+        fetchComments(requestId);
+      }
+      return { ...prev, [requestId]: !prev[requestId] };
+    });
+  }, [comments, fetchComments]);
+
+  const handleAddComment = useCallback(async (requestId, commentText, parentId = null) => {
+    try {
+      const success = await addComment(requestId, commentText, parentId);
+      if (success && !parentId) {
+        setNewComments(prev => ({ ...prev, [requestId]: '' }));
+      }
+      return success;
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      return false;
+    }
+  }, [addComment]);
+
+  const handleDeleteComment = useCallback(async (requestId, commentId) => {
+    try {
+      const success = await deleteComment(requestId, commentId);
+      if (!success) {
+        console.error('Failed to delete comment');
+      }
+      return success;
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      return false;
+    }
+  }, [deleteComment]);
+
+  const handleMainInputFocus = useCallback(() => {
+    // Only close reply inputs when focusing on the main comment input
+    const allReplyInputs = document.querySelectorAll('.reply-input');
+    allReplyInputs.forEach(input => {
+      const container = input.closest('.comment-container');
+      if (container) {
+        const commentComponent = container.__reactFiber$; // This is not recommended but works
+        if (commentComponent && commentComponent.stateNode) {
+          commentComponent.stateNode.setIsReplying(false);
+        }
+      }
+    });
+  }, []);
+
+  if (isLoading) {
+    return <div className="text-center mt-4">Loading...</div>;
   }
 
   return (
-    <Container fluid>
-      <Row className="justify-content-center" style={{ marginTop: '70px' }}>
-        <Col lg="10">
-          <Card className="mb-4 shadow-sm">
-            <CardBody>
-              <h3 className="text-primary mb-4">ლიდის შიდა გვერდი</h3>
-              <Row>
-                <Col md="6">
-                  <p><strong>სახელი:</strong> {vipLead.first_name} {vipLead.last_name}</p>
-                  <p><strong>ტელეფონის ნომერი:</strong> {vipLead.phone}</p>
-                  <p><strong>სტატუსი:</strong>
-                    <span className={`badge ${vipLead.status === 'Active' ? 'bg-primary' : vipLead.status === 'Closed' ? 'bg-success' : 'bg-danger'}`}>
-                      {vipLead.status === 'Active' ? 'აქტიური' : vipLead.status === 'Closed' ? 'დახურული' : 'პრობლემური'}
-                    </span>
-                  </p>
-                </Col>
-                <Col md="6">
-                  <p><strong>პასუხისმგებელი პირი:</strong> {vipLead.responsible_person}</p>
-                </Col>
-              </Row>
-
-              <h4 className="mt-4 mb-4">მოთხოვნები</h4>
-              <div className="comment-section">
-                {comments.length > 0 ? (
-                  comments.map((comment, index) => (
-                    <Card key={index} className="mb-3 border-0 shadow-sm">
-                      <CardBody className="bg-light">
-                        <div className="d-flex justify-content-between">
-                          <div>
-                            <strong>
-                              {comment.user ? `${comment.user.name} ${comment.user.sur_name}` : 'Unknown User'}
-                            </strong>
-                            <p className="mb-0">{comment.comment}</p>
+    <Container fluid className="mt-3">
+      <Card className="shadow-sm">
+        <CardBody className="p-3">
+          <h4 className="text-primary mb-3">მოთხოვნების სია</h4>
+          
+          <Table hover responsive size="sm" className="mb-0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>სახელი</th>
+                <th>სტატუსი</th>
+                <th>შექმნის თარიღი</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map(request => (
+                <React.Fragment key={request.id}>
+                  <tr onClick={() => toggleRow(request.id)} style={{ cursor: 'pointer' }}>
+                    <td>{request.id}</td>
+                    <td>{request.name}</td>
+                    <td>{request.request_status}</td>
+                    <td>{moment(request.created_at).format('YYYY-MM-DD HH:mm')}</td>
+                  </tr>
+                  <tr>
+                    <td colSpan="4" className="p-0">
+                      <Collapse isOpen={expandedRows[request.id]}>
+                        <div className="p-2 bg-light">
+                          {/* Comments section */}
+                          {(comments[request.id] || []).map(comment => (
+                            <Comment
+                              key={comment.id}
+                              comment={comment}
+                              requestId={request.id}
+                              onReply={handleAddComment}
+                              onDelete={handleDeleteComment}
+                              onMainInputFocus={handleMainInputFocus}
+                              currentUser={currentUser}
+                            />
+                          ))}
+                          
+                          {/* New comment input */}
+                          <div className="mt-2">
+                            <Input
+                              type="textarea"
+                              placeholder="დაამატეთ ახალი კომენტარი..."
+                              value={newComments[request.id] || ''}
+                              onChange={e => setNewComments(prev => ({
+                                ...prev,
+                                [request.id]: e.target.value
+                              }))}
+                              className="mb-1"
+                              onClick={e => e.stopPropagation()}
+                              onFocus={handleMainInputFocus}
+                              rows={1}
+                              bsSize="sm"
+                            />
+                            <Button
+                              color="primary"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddComment(request.id, newComments[request.id]);
+                              }}
+                            >
+                              დამატება
+                            </Button>
                           </div>
-                          <small className="text-muted">
-                            {moment(comment.created_at).format('YYYY-MM-DD HH:mm')}
-                          </small>
                         </div>
-                      </CardBody>
-                    </Card>
-                  ))
-                ) : (
-                  <p className="text-muted">არ არის კომენტარი.</p>
-                )}
-              </div>
-
-              <Form onSubmit={handleAddComment}>
-                <Label for="newComment" className="mt-4">მოთხოვნის დამატება</Label>
-                <Input
-                  id="newComment"
-                  name="newComment"
-                  type="textarea"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  required
-                  className="mb-3"
-                  style={{ minHeight: '100px' }}
-                />
-                <Button color="primary" type="submit" className="float-end">
-                  დამატება
-                </Button>
-              </Form>
-            </CardBody>
-          </Card>
-        </Col>
-      </Row>
+                      </Collapse>
+                    </td>
+                  </tr>
+                </React.Fragment>
+              ))}
+            </tbody>
+          </Table>
+        </CardBody>
+      </Card>
     </Container>
   );
 };
