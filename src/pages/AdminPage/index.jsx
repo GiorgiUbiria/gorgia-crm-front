@@ -15,9 +15,8 @@ import {
   TabPane,
   Badge,
 } from "reactstrap";
-import { FaTrash, FaPlus, FaSearch } from "react-icons/fa";
+import { FaTrash, FaPlus, FaSearch, FaFileDownload } from "react-icons/fa";
 import classnames from "classnames";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
@@ -32,9 +31,12 @@ import {
 } from "../../services/admin/department";
 import DepartmentForm from "components/DepartmentForm";
 import UserForm from "components/UserForm";
+import * as XLSX from 'xlsx';
+import useIsAdmin from 'hooks/useIsAdmin';
 
 const AdminPage = () => {
   const { t } = useTranslation();
+  const isAdmin = useIsAdmin();
   const [activeTab, setActiveTab] = useState("1");
   const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -169,6 +171,29 @@ const AdminPage = () => {
     color: '#64748b',
   };
 
+  const exportUsersToExcel = () => {
+    const data = [
+      ['გვარი', 'სახელი', 'ელ-ფოსტა', 'დეპარტამენტი', 'როლი'],
+      ...filteredUsers.map(user => [
+        user.sur_name,
+        user.name,
+        user.email,
+        user.department?.name || 'არ არის მითითებული',
+        user.role
+      ])
+    ];
+
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Users");
+
+    // Generate Excel file
+    XLSX.writeFile(wb, 'მომხმარებლები.xlsx');
+  };
+
   return (
     <div className="page-content">
       <Container fluid>
@@ -289,13 +314,24 @@ const AdminPage = () => {
                           <FaSearch style={searchIconStyle} />
                         </div>
                       </div>
-                      <Button
-                        color="primary"
-                        onClick={() => openUserModal(null)}
-                        className="d-flex align-items-center"
-                      >
-                        <FaPlus className="me-1" /> მომხმარებლის დამატება
-                      </Button>
+                      <div className="d-flex gap-2">
+                        {isAdmin && (
+                          <Button
+                            color="success"
+                            onClick={exportUsersToExcel}
+                            className="d-flex align-items-center"
+                          >
+                            <FaFileDownload className="me-1" /> ექსპორტი
+                          </Button>
+                        )}
+                        <Button
+                          color="primary"
+                          onClick={() => openUserModal(null)}
+                          className="d-flex align-items-center"
+                        >
+                          <FaPlus className="me-1" /> მომხმარებლის დამატება
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="table-responsive">
@@ -303,6 +339,7 @@ const AdminPage = () => {
                         <thead style={{ backgroundColor: '#f1f5f9' }}>
                           <tr>
                             <th className="text-center" style={{ width: '5%' }}>#</th>
+                            <th style={{ width: '25%' }}>გვარი</th>
                             <th style={{ width: '25%' }}>სახელი</th>
                             <th style={{ width: '25%' }}>ელ-ფოსტა</th>
                             <th style={{ width: '20%' }}>დეპარტამენტი</th>
@@ -323,6 +360,9 @@ const AdminPage = () => {
                                   </div>
                                   {user.name}
                                 </div>
+                              </td>
+                              <td>
+                                {user.sur_name}
                               </td>
                               <td>{user.email}</td>
                               <td>

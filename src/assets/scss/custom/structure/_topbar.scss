@@ -8,7 +8,7 @@
   right: 0;
   left: $sidebar-width;
   z-index: 1002;
-  background-color: var(--#{$prefix}header-bg);
+  background-color: #D3E9FF;
   box-shadow: $box-shadow;
   @media (max-width: 992.98px) {
     left: 0;
@@ -17,6 +17,7 @@
 
 .navbar-header {
     display: flex;
+    box-shadow: $box-shadow;
     -ms-flex-pack: justify;
     justify-content: space-between;
     align-items: center;
@@ -35,6 +36,8 @@
     padding: 0 1.5rem;
     text-align: center;
     width: $navbar-brand-box-width;
+    background-color: #D3E9FF;
+    box-shadow: $box-shadow;
 }
 
 .logo {
@@ -105,6 +108,7 @@
 
 .page-content {
     padding: calc(#{$header-height} + #{$grid-gutter-width}) calc(#{$grid-gutter-width} * 0.75) $footer-height calc(#{$grid-gutter-width} * 0.75);
+    background-color: #fff;
 }
 
 .header-item {
@@ -129,7 +133,7 @@
 .noti-icon {
     i {
         font-size: 22px;
-        color: var(--#{$prefix}header-item-color);
+        color: black;
     }
 
     .badge {

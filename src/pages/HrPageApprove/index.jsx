@@ -6,13 +6,17 @@ import {
   Col,
   Card,
   CardBody,
+  CardTitle,
+  CardSubtitle,
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
   Input,
 } from "reactstrap";
+import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { getHrDocuments, updateHrDocumentStatus } from "services/hrDocument";
+import "./HrPageApprove.scss";
 
 const HrPageApprove = ({ filterStatus }) => {
   document.title = "ვიზირება | Gorgia LLC";
@@ -25,6 +29,7 @@ const HrPageApprove = ({ filterStatus }) => {
   const [salaryText, setSalaryText] = useState("");
   const [isRejection, setIsRejection] = useState(false);
   const [comment, setComment] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const toggleRow = (index) => {
     const isRowExpanded = expandedRows.includes(index);
@@ -157,129 +162,158 @@ const HrPageApprove = ({ filterStatus }) => {
 
   return (
     <React.Fragment>
-      <Row>
-        <Col xl={12}>
-          <Card>
+      <div className="page-content">
+        <div className="container-fluid">
+          <Row className="mb-3">
+            <Col xl={12}>
+              <Breadcrumbs title="HR" breadcrumbItem="დოკუმენტების ვიზირება" />
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col xl={{ size: 4, offset: 8 }}>
+              <div className="search-box">
+                <Input
+                  type="search"
+                  className="form-control modern-search"
+                  placeholder="ძებნა თანამშრომლის მიხედვით..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <i className="bx bx-search-alt search-icon"></i>
+              </div>
+            </Col>
+          </Row>
+
+          <Card className="hr-approval-card">
             <CardBody>
-              <div className="table-responsive">
-                <Table className="table mb-0">
+              <CardTitle className="h4">HR დოკუმენტების ვიზირება</CardTitle>
+              <CardSubtitle className="mb-4">
+                თანამშრომლების მიერ მოთხოვნილი დოკუმენტების სია
+              </CardSubtitle>
+
+              <div className="hr-table-modern">
+                <Table className="table-modern">
                   <thead>
                     <tr>
                       <th>#</th>
                       <th>მომთხოვნი პირი</th>
                       <th>მოთხოვნილი ფორმის სტილი</th>
-                      <th>სამსახურის დაწყების თარიღი</th>
+                      <th>სარიღი</th>
+                      <th>სტატუსი</th>
                       <th>ვიზირება</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredDocuments.map((document, index) => (
+                    {documents.map((document, index) => (
                       <React.Fragment key={document.id}>
-                        <tr
-                          className={
-                            document.status === "rejected"
-                              ? "table-danger"
-                              : document.status === "approved"
-                              ? "table-success"
-                              : "table-warning"
-                          }
+                        <tr 
                           onClick={() => toggleRow(index)}
-                          style={{ cursor: "pointer" }}
+                          className={`status-${document.status}`}
                         >
-                          <th scope="row">{index + 1}</th>
-                          <td>{document.user.name}</td>
+                          <td>{index + 1}</td>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <div className="avatar-wrapper">
+                                <span className="avatar-initial">
+                                  {document.user?.name?.charAt(0) || "?"}
+                                </span>
+                              </div>
+                              <span className="user-name">{document.user.name}</span>
+                            </div>
+                          </td>
                           <td>{document.name}</td>
                           <td>
-                            {new Date(document.created_at).toLocaleDateString()}
+                            <div className="date-wrapper">
+                              <i className="bx bx-calendar me-2"></i>
+                              {new Date(document.created_at).toLocaleDateString()}
+                            </div>
                           </td>
                           <td>
-                            {document.status === "rejected" ? (
-                              <Button
-                                color="danger"
-                                disabled
-                                onClick={(e) =>
-                                  handleUpdateStatus(
-                                    document.id,
-                                    "rejected",
-                                    e
-                                  )
-                                }
-                              >
-                                უარყოფილია
-                              </Button>
-                            ) : document.status === "approved" ? (
-                              <Button
-                                color="success"
-                                disabled
-                                onClick={(e) =>
-                                  handleUpdateStatus(
-                                    document.id,
-                                    "approved",
-                                    e
-                                  )
-                                }
-                              >
-                                დადასტურებულია
-                              </Button>
-                            ) : (
-                              <>
-                                <Button
-                                  type="button"
-                                  color="success"
-                                  style={{ marginRight: "10px" }}
-                                  onClick={(e) =>
-                                    handleUpdateStatus(
-                                      document.id,
-                                      "approved",
-                                      e
-                                    )
-                                  }
+                            <span className={`status-badge status-${document.status}`}>
+                              <i className={`bx ${
+                                document.status === "rejected"
+                                  ? "bx-x-circle"
+                                  : document.status === "approved"
+                                  ? "bx-check-circle"
+                                  : "bx-time"
+                              } me-2`}></i>
+                              {document.status}
+                            </span>
+                          </td>
+                          <td>
+                            {document.status === "pending" && (
+                              <div className="d-flex">
+                                <button
+                                  className="btn-action btn-approve"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateStatus(document.id, "approved", e);
+                                  }}
                                 >
+                                  <i className="bx bx-check-double me-2"></i>
                                   დადასტურება
-                                </Button>
-                                <Button
-                                  type="button"
-                                  color="danger"
-                                  onClick={(e) =>
-                                    handleUpdateStatus(
-                                      document.id,
-                                      "rejected",
-                                      e
-                                    )
-                                  }
+                                </button>
+                                <button
+                                  className="btn-action btn-reject"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateStatus(document.id, "rejected", e);
+                                  }}
                                 >
+                                  <i className="bx bx-block me-2"></i>
                                   უარყოფა
-                                </Button>
-                              </>
+                                </button>
+                              </div>
                             )}
                           </td>
                         </tr>
                         {expandedRows.includes(index) && (
                           <tr>
-                            <td colSpan="5">
-                              <div className="p-3">
-                                <p>დეტალური ინფორმაცია</p>
-                                <ul>
-                                  <li>
-                                    მიმდინარე პოზიცია: {document.user.position}
-                                  </li>
-                                  <li>
-                                    საიდენტიფიკაციო კოდი ან პირადი ნომერი:{" "}
-                                    {document.user.id}
-                                  </li>
-                                  <li>
-                                    იურიდიული მისამართი / ფაქტიური მისამართი:{" "}
-                                    {document.user.location}
-                                  </li>
-                                  <li>
-                                    ხელფასი:{" "}
-                                    {document?.salary}
-                                  </li>
-                                  <li>
-                                    კომენტარი:{" "}
-                                    {document?.comment}
-                                  </li>
-                                </ul>
+                            <td colSpan="6">
+                              <div className="expanded-content">
+                                <Row>
+                                  <Col md={6}>
+                                    <div className="info-section">
+                                      <h6 className="info-title">
+                                        <i className="bx bx-user"></i>
+                                        თანამშრომლის ინფორმაცია
+                                      </h6>
+                                      <ul className="info-list">
+                                        <li>
+                                          <span className="label">პოზიცია:</span>
+                                          <span className="value">{document.user.position}</span>
+                                        </li>
+                                        <li>
+                                          <span className="label">პირადი ნომერი:</span>
+                                          <span className="value">{document.user.id}</span>
+                                        </li>
+                                        <li>
+                                          <span className="label">მისამართი:</span>
+                                          <span className="value">{document.user.location}</span>
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </Col>
+                                  <Col md={6}>
+                                    <div className="info-section">
+                                      <h6 className="info-title">
+                                        <i className="bx bx-file"></i>
+                                        დოკუმენტის დეტალები
+                                      </h6>
+                                      <ul className="info-list">
+                                        <li>
+                                          <span className="label">ხელფასი:</span>
+                                          <span className="value">{document.salary || "არ არის მითითებული"}</span>
+                                        </li>
+                                        <li>
+                                          <span className="label">კომენტარი:</span>
+                                          <span className="value">{document.comment || "არ არის მითითებული"}</span>
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </Col>
+                                </Row>
                               </div>
                             </td>
                           </tr>
@@ -291,8 +325,8 @@ const HrPageApprove = ({ filterStatus }) => {
               </div>
             </CardBody>
           </Card>
-        </Col>
-      </Row>
+        </div>
+      </div>
 
       <Modal isOpen={modal} toggle={() => setModal(false)}>
         <ModalHeader toggle={() => setModal(false)}>

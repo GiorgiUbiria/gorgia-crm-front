@@ -1,0 +1,150 @@
+.hr-approval-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+.hr-table-modern {
+  background: #fff;
+  border-radius: 0.5rem;
+  overflow: hidden;
+
+  .table-modern {
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    margin: -0.5rem 0;
+
+    thead tr {
+      background: #f8f9fa;
+
+      th {
+        padding: 1rem;
+        font-weight: 600;
+        color: #495057;
+        border: none;
+      }
+    }
+
+    tbody tr {
+      cursor: pointer;
+      transition: all 0.2s;
+
+      td {
+        padding: 1rem;
+        border: none;
+        background: #fff;
+        vertical-align: middle;
+
+        &:first-child {
+          border-radius: 8px 0 0 8px;
+        }
+
+        &:last-child {
+          border-radius: 0 8px 8px 0;
+        }
+      }
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      &.status-approved {
+        background-color: rgba(40, 199, 111, 0.1);
+      }
+
+      &.status-rejected {
+        background-color: rgba(234, 84, 85, 0.1);
+      }
+
+      &.status-pending {
+        background-color: rgba(255, 159, 67, 0.1);
+      }
+    }
+  }
+
+  .btn-action {
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: none;
+    margin-right: 0.5rem;
+
+    &.btn-approve {
+      background: rgba(40, 199, 111, 0.1);
+      color: #28c76f;
+
+      &:hover {
+        background: rgba(40, 199, 111, 0.2);
+      }
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+
+    &.btn-reject {
+      background: rgba(234, 84, 85, 0.1);
+      color: #ea5455;
+
+      &:hover {
+        background: rgba(234, 84, 85, 0.2);
+      }
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .expanded-content {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0 0 8px 8px;
+
+    .info-section {
+      margin-bottom: 1.5rem;
+
+      .info-title {
+        color: #495057;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+
+        i {
+          color: #8074d5;
+          margin-right: 0.5rem;
+        }
+      }
+
+      .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          margin-bottom: 0.5rem;
+          display: flex;
+
+          .label {
+            min-width: 200px;
+            color: #6c757d;
+            font-weight: 500;
+          }
+
+          .value {
+            color: #495057;
+          }
+        }
+      }
+    }
+  }
+} 

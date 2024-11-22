@@ -20,6 +20,7 @@ import DeleteModal from 'components/Common/DeleteModal';
 import { getVipLeads, createVipLead, updateVipLead, deleteVipLead } from '../../services/vipLeadsService';
 import Breadcrumbs from 'components/Common/Breadcrumb';
 import moment from 'moment';
+import useIsAdmin from 'hooks/useIsAdmin';
 
 const VipLeadsPage = () => {
   const [vipLeads, setVipLeads] = useState([]);
@@ -28,6 +29,7 @@ const VipLeadsPage = () => {
   const [modal, setModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const isAdmin = useIsAdmin();
 
   const fetchVipLeads = async () => {
     try {
@@ -76,12 +78,16 @@ const VipLeadsPage = () => {
         id: 'actions',
         Cell: ({ row }) => (
           <div className="d-flex gap-2">
-            <Button color="primary" onClick={() => handleEditClick(row.original)}>
-              რედაქტირება
-            </Button>
-            <Button color="danger" onClick={() => handleDeleteClick(row.original)}>
-              წაშლა
-            </Button>
+            {isAdmin && (
+              <>
+                <Button color="primary" onClick={() => handleEditClick(row.original)}>
+                  რედაქტირება
+                </Button>
+                <Button color="danger" onClick={() => handleDeleteClick(row.original)}>
+                  წაშლა
+                </Button>
+              </>
+            )}
             <Link to={`/vip-leads/${row.original.id}`}>
               <Button color="info">მოთხოვნები</Button>
             </Link>

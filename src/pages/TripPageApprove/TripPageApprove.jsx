@@ -19,6 +19,7 @@ import {
 } from "reactstrap";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { getTripList, updateTripStatus } from "services/trip"; // Importing updateTripStatus
+import "./TripPageApprove.scss"
 
 const TripPageApprove = ({ filterStatus }) => {
   document.title = "მივლინებების ვიზირება | Georgia LLC"; // Page title
@@ -134,6 +135,106 @@ const TripPageApprove = ({ filterStatus }) => {
     </tr>
   );
 
+  const renderTable = () => (
+    <div className="trip-table-modern">
+      <div className="table-container">
+        <Table hover className="align-middle table-modern mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>მომთხოვნი პირი</th>
+              <th>მივლინების ადგილი</th>
+              <th>დაწყების თარიღი</th>
+              <th>დასრულების თარიღი</th>
+              <th>სტატუსი</th>
+              <th>ვიზირება</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTrips.map((trip, index) => (
+              <React.Fragment key={trip.id}>
+                <tr
+                  className={`trip-row status-${trip.status}`}
+                  onClick={() => toggleRow(index)}
+                >
+                  <td>{index + 1}</td>
+                  <td>
+                    <div className="d-flex align-items-center">
+                      <div className="avatar-wrapper">
+                        <span className="avatar-initial">
+                          {trip.subtitle_user_name?.charAt(0) || "?"}
+                        </span>
+                      </div>
+                      <span className="user-name">
+                        {trip.subtitle_user_name} {trip.subtitle_user_sur_name}
+                      </span>
+                    </div>
+                  </td>
+                  <td>{trip.place_of_trip}</td>
+                  <td>
+                    <div className="date-wrapper">
+                      <i className="bx bx-calendar me-2"></i>
+                      {new Date(trip.start_date).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="date-wrapper">
+                      <i className="bx bx-calendar-check me-2"></i>
+                      {new Date(trip.end_date).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`status-badge status-${trip.status}`}>
+                      <i className={`bx ${
+                        trip.status === "rejected"
+                          ? "bx-x-circle"
+                          : trip.status === "approved"
+                          ? "bx-check-circle"
+                          : "bx-time"
+                      } me-1`}></i>
+                      {trip.status}
+                    </span>
+                  </td>
+                  <td>
+                    {trip.status === "pending" && (
+                      <div className="d-flex gap-2">
+                        <Button
+                          color="success"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleUpdateStatus(trip.id, "approved")
+                          }}
+                        >
+                          <i className="bx bx-check-double me-1"></i>
+                          დადასტურება
+                        </Button>
+                        <Button
+                          color="danger"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleUpdateStatus(trip.id, "rejected")
+                          }}
+                        >
+                          <i className="bx bx-x me-1"></i>
+                          უარყოფა
+                        </Button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+                {expandedRows.includes(index) && (
+                  expandedRowContent(trip)
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </Table>
+      </div>
+    </div>
+  )
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -164,89 +265,7 @@ const TripPageApprove = ({ filterStatus }) => {
                   </CardSubtitle>
 
                   <div className="table-responsive">
-                    <Table className="table mb-0">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>მომთხოვნი პირი</th>
-                          <th>მივლინების ადგილი</th>
-                          <th>დაწყების თარიღი</th>
-                          <th>დასრულების თარიღი</th>
-                          <th>სტატუსი</th>
-                          <th>ვიზირება</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredTrips.map((trip, index) => (
-                          <React.Fragment key={trip.id}>
-                            <tr
-                              className={
-                                trip.status === "rejected"
-                                  ? "table-danger"
-                                  : trip.status === "approved"
-                                  ? "table-success"
-                                  : "table-warning"
-                              }
-                              onClick={() => toggleRow(index)}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <th scope="row">{index + 1}</th>
-                              <td>
-                                {trip.subtitle_user_name} {trip.subtitle_user_sur_name}
-                              </td>
-                              <td>{trip.place_of_trip}</td>
-                              <td>
-                                {new Date(trip.start_date).toLocaleDateString()}
-                              </td>
-                              <td>
-                                {new Date(trip.end_date).toLocaleDateString()}
-                              </td>
-                              <td>{trip.status}</td>
-                              <td>
-                                {trip.status === "rejected" ? (
-                                  <Button color="danger" disabled>
-                                    <i className="bx bx-block font-size-10 align-right me-2"></i>{" "}
-                                    უარყოფილია
-                                  </Button>
-                                ) : trip.status === "approved" ? (
-                                  <Button color="success" disabled>
-                                    <i className="bx bx-check-double font-size-10 align-left me-2"></i>{" "}
-                                    დადასტურებულია
-                                  </Button>
-                                ) : (
-                                  <>
-                                    <Button
-                                      type="button"
-                                      color="success"
-                                      style={{ marginRight: "10px" }}
-                                      onClick={() =>
-                                        handleUpdateStatus(trip.id, "approved")
-                                      }
-                                    >
-                                      <i className="bx bx-check-double font-size-10 align-left me-2"></i>{" "}
-                                      დადასტურება
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      color="danger"
-                                      onClick={() =>
-                                        handleUpdateStatus(trip.id, "rejected")
-                                      }
-                                    >
-                                      <i className="bx bx-block font-size-10 align-right me-2"></i>{" "}
-                                      უარყოფა
-                                    </Button>
-                                  </>
-                                )}
-                              </td>
-                            </tr>
-                            {expandedRows.includes(index) && (
-                              expandedRowContent(trip)
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </tbody>
-                    </Table>
+                    {renderTable()}
                   </div>
                 </CardBody>
               </Card>

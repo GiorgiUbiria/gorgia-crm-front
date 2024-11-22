@@ -1,0 +1,122 @@
+.procurement-history-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+
+    .card-body {
+        padding: 1.5rem;
+    }
+}
+
+.modern-search {
+    padding-left: 2.5rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+
+    &:focus {
+        background-color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(98, 89, 202, 0.15);
+        border-color: #8074d5;
+    }
+}
+
+.search-box {
+    position: relative;
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+}
+
+.procurement-table-modern {
+    background: #fff;
+    border-radius: 0.5rem;
+    overflow: hidden;
+
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 0.5rem;
+        margin: -0.5rem 0;
+
+        thead tr {
+            background: #f8f9fa;
+
+            th {
+                padding: 1rem;
+                font-weight: 600;
+                color: #495057;
+                border: none;
+            }
+        }
+
+        .procurement-row {
+            cursor: pointer;
+            transition: all 0.2s;
+
+            td {
+                padding: 1rem;
+                border: none;
+                background: #fff;
+
+                &:first-child {
+                    border-radius: 8px 0 0 8px;
+                }
+
+                &:last-child {
+                    border-radius: 0 8px 8px 0;
+                }
+            }
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            }
+
+            &.status-approved {
+                background-color: rgba(40, 199, 111, 0.1);
+            }
+
+            &.status-rejected {
+                background-color: rgba(234, 84, 85, 0.1);
+            }
+
+            &.status-pending {
+                background-color: rgba(255, 159, 67, 0.1);
+            }
+        }
+    }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 30px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+
+        &.status-approved {
+            background: rgba(40, 199, 111, 0.1);
+            color: #28c76f;
+        }
+
+        &.status-rejected {
+            background: rgba(234, 84, 85, 0.1);
+            color: #ea5455;
+        }
+
+        &.status-pending {
+            background: rgba(255, 159, 67, 0.1);
+            color: #ff9f43;
+        }
+    }
+
+    .expanded-content {
+        background: #f8f9fa;
+        padding: 1.5rem;
+    }
+}
