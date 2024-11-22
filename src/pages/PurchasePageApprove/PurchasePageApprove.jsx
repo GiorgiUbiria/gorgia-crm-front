@@ -16,9 +16,13 @@ import {
   Form,
   FormGroup,
   Label,
+  Pagination,
+  PaginationItem,
+  PaginationLink,
 } from "reactstrap"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import { getPurchaseList, updatePurchaseStatus } from "services/purchase"
+import "./PurchasePageApprove.scss"
 
 const PurchasePageApprove = ({ filterStatus }) => {
   document.title = "შესყიდვების ვიზირება | Gorgia LLC"
@@ -33,6 +37,8 @@ const PurchasePageApprove = ({ filterStatus }) => {
   const [rejectionModal, setRejectionModal] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState(null);
   const [rejectionComment, setRejectionComment] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(7);
 
   const toggleRow = index => {
     const isRowExpanded = expandedRows.includes(index)
@@ -123,6 +129,13 @@ const PurchasePageApprove = ({ filterStatus }) => {
       filterStatus ? filterStatus.includes(purchase.status) : true
     );
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredPurchases.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredPurchases.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -151,126 +164,213 @@ const PurchasePageApprove = ({ filterStatus }) => {
                   <CardSubtitle className="card-title-desc">
                     ქვემოთ მოცემულია შესყიდვის მოთხოვნები
                   </CardSubtitle>
-                  <div className="table-responsive">
-                    <Table className="table mb-0">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>მომთხოვნი პირი</th>
-                          <th>შესყიდვის ობიექტი</th>
-                          <th
-                            onClick={() => handleSort('start_date')}
-                            style={{ cursor: 'pointer', userSelect: 'none' }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              დაწყების თარიღი
-                              {sortConfig.key === 'start_date' && (
-                                <span style={{ marginLeft: '4px' }}>
-                                  {sortConfig.direction === 'desc' ? '▼' : '▲'}
-                                </span>
-                              )}
-                            </div>
-                          </th>
-                          <th
-                            onClick={() => handleSort('deadline')}
-                            style={{ cursor: 'pointer', userSelect: 'none' }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              დასრულების თარიღი
-                              {sortConfig.key === 'deadline' && (
-                                <span style={{ marginLeft: '4px' }}>
-                                  {sortConfig.direction === 'desc' ? '▼' : '▲'}
-                                </span>
-                              )}
-                            </div>
-                          </th>
-                          <th>სტატუსი</th>
-                          <th>ვიზირება</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredPurchases.map((purchase, index) => (
-                          <React.Fragment key={purchase.id}>
-                            <tr
-                              className={
-                                purchase.status === "rejected"
-                                  ? "table-danger"
-                                  : purchase.status === "approved"
-                                    ? "table-success"
-                                    : "table-warning"
-                              }
-                              onClick={() => toggleRow(index)}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <th scope="row">{index + 1}</th>
-                              <td>{purchase.user.name}</td>
-                              <td>{purchase.objective}</td>
-                              <td>
-                                {new Date(purchase.start_date).toLocaleDateString()}
-                              </td>
-                              <td>
-                                {new Date(purchase.deadline).toLocaleDateString()}
-                              </td>
-                              <td>{purchase.status}</td>
-                              <td>
-                                {purchase.status === "rejected" ? (
-                                  <Button color="danger" disabled>
-                                    <i className="bx bx-block font-size-10 align-right me-2"></i>{" "}
-                                    უარყოფილია
-                                  </Button>
-                                ) : purchase.status === "approved" ? (
-                                  <Button color="success" disabled>
-                                    <i className="bx bx-check-double font-size-10 align-left me-2"></i>{" "}
-                                    დადასტურებულია
-                                  </Button>
-                                ) : (
-                                  <>
-                                    <Button
-                                      type="button"
-                                      color="success"
-                                      style={{ marginRight: "10px" }}
-                                      onClick={() =>
-                                        handleUpdateStatus(purchase.id, "approved")
-                                      }
-                                    >
-                                      <i className="bx bx-check-double font-size-10 align-left me-2"></i>{" "}
-                                      დადასტურება
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      color="danger"
-                                      onClick={() =>
-                                        handleUpdateStatus(purchase.id, "rejected")
-                                      }
-                                    >
-                                      <i className="bx bx-block font-size-10 align-right me-2"></i>{" "}
-                                      უარყოფა
-                                    </Button>
-                                  </>
+                  <div className="purchase-table-modern">
+                    <div className="table-container">
+                      <Table className="table-modern mb-0">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>მომთხოვნი პირი</th>
+                            <th>შესყიდვის ობიექტი</th>
+                            <th onClick={() => handleSort('start_date')}>
+                              <div className="d-flex align-items-center">
+                                დაწყების თარიღი
+                                {sortConfig.key === 'start_date' && (
+                                  <span className="sort-icon">
+                                    {sortConfig.direction === 'desc' ? '▼' : '▲'}
+                                  </span>
                                 )}
-                              </td>
-                            </tr>
-                            {expandedRows.includes(index) && (
-                              <tr>
-                                <td colSpan="7">
-                                  <div className="p-3">
-                                    <p>დეტალური ინფორმაცია</p>
-                                    <ul>
-                                      <li>პოზიცია: {purchase.user.position}</li>
-                                      <li>ID: {purchase.user.id}</li>
-                                      <li>
-                                        მისამართი: {purchase.delivery_address}
-                                      </li>
-                                      <li>სულ დღეები: {purchase.total_days}</li>
-                                    </ul>
+                              </div>
+                            </th>
+                            <th onClick={() => handleSort('deadline')}>
+                              <div className="d-flex align-items-center">
+                                დასრულების თარიღი
+                                {sortConfig.key === 'deadline' && (
+                                  <span className="sort-icon">
+                                    {sortConfig.direction === 'desc' ? '▼' : '▲'}
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                            <th>სტატუსი</th>
+                            <th>ვიზირება</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {currentItems.map((purchase, index) => (
+                            <React.Fragment key={purchase.id}>
+                              <tr onClick={() => toggleRow(index)}>
+                                <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                                <td>
+                                  <div className="d-flex align-items-center">
+                                    <div className="avatar-wrapper">
+                                      <span className="avatar-initial">
+                                        {purchase.user?.name?.charAt(0) || "?"}
+                                      </span>
+                                    </div>
+                                    <span className="user-name">{purchase.user.name}</span>
                                   </div>
                                 </td>
+                                <td>{purchase.objective}</td>
+                                <td>
+                                  <div className="date-wrapper">
+                                    <i className="bx bx-calendar me-2"></i>
+                                    {new Date(purchase.start_date).toLocaleDateString()}
+                                  </div>
+                                </td>
+                                <td>
+                                  <div className="date-wrapper">
+                                    <i className="bx bx-calendar-check me-2"></i>
+                                    {new Date(purchase.deadline).toLocaleDateString()}
+                                  </div>
+                                </td>
+                                <td>
+                                  <span className={`status-badge status-${purchase.status}`}>
+                                    <i className={`bx ${
+                                      purchase.status === "rejected"
+                                        ? "bx-x-circle"
+                                        : purchase.status === "approved"
+                                        ? "bx-check-circle"
+                                        : "bx-time"
+                                    } me-2`}></i>
+                                    {purchase.status}
+                                  </span>
+                                </td>
+                                <td>
+                                  {purchase.status === "rejected" ? (
+                                    <button className="btn-action btn-rejected" disabled>
+                                      <i className="bx bx-block me-2"></i>
+                                      უარყოფილია
+                                    </button>
+                                  ) : purchase.status === "approved" ? (
+                                    <button className="btn-action btn-approved" disabled>
+                                      <i className="bx bx-check-double me-2"></i>
+                                      დადასტურებულია
+                                    </button>
+                                  ) : (
+                                    <div className="d-flex gap-2">
+                                      <button
+                                        className="btn-action btn-approve"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleUpdateStatus(purchase.id, "approved");
+                                        }}
+                                      >
+                                        <i className="bx bx-check-double me-2"></i>
+                                        დადასტურება
+                                      </button>
+                                      <button
+                                        className="btn-action btn-reject"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleUpdateStatus(purchase.id, "rejected");
+                                        }}
+                                      >
+                                        <i className="bx bx-block me-2"></i>
+                                        უარყოფა
+                                      </button>
+                                    </div>
+                                  )}
+                                </td>
                               </tr>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </tbody>
-                    </Table>
+                              {expandedRows.includes(index) && (
+                                <tr>
+                                  <td colSpan="7">
+                                    <div className="expanded-content">
+                                      <Row>
+                                        <Col md={6}>
+                                          <div className="info-section">
+                                            <h6 className="info-title">
+                                              <i className="bx bx-user"></i>
+                                              თანამშრომლის ინფორმაცია
+                                            </h6>
+                                            <ul className="info-list">
+                                              <li>
+                                                <span className="label">პოზიცია:</span>
+                                                <span className="value">{purchase.user.position}</span>
+                                              </li>
+                                              <li>
+                                                <span className="label">ID:</span>
+                                                <span className="value">{purchase.user.id}</span>
+                                              </li>
+                                            </ul>
+                                          </div>
+                                        </Col>
+                                        <Col md={6}>
+                                          <div className="info-section">
+                                            <h6 className="info-title">
+                                              <i className="bx bx-package"></i>
+                                              შესყიდვის დეტალები
+                                            </h6>
+                                            <ul className="info-list">
+                                              <li>
+                                                <span className="label">მისამართი:</span>
+                                                <span className="value">{purchase.delivery_address}</span>
+                                              </li>
+                                              <li>
+                                                <span className="label">სულ დღეები:</span>
+                                                <span className="value">{purchase.total_days}</span>
+                                              </li>
+                                            </ul>
+                                          </div>
+                                        </Col>
+                                      </Row>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
+                  </div>
+                  <div className="d-flex justify-content-end mt-3">
+                    <Pagination>
+                      <PaginationItem disabled={currentPage === 1}>
+                        <PaginationLink previous onClick={() => paginate(currentPage - 1)} href="#" />
+                      </PaginationItem>
+                      {totalPages <= 5 ? (
+                        [...Array(totalPages)].map((_, index) => (
+                          <PaginationItem key={index + 1} active={currentPage === index + 1}>
+                            <PaginationLink onClick={() => paginate(index + 1)} href="#">
+                              {index + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))
+                      ) : (
+                        <>
+                          {[...Array(totalPages)].map((_, index) => {
+                            const pageNumber = index + 1;
+                            if (
+                              pageNumber === 1 ||
+                              pageNumber === totalPages ||
+                              (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                            ) {
+                              return (
+                                <PaginationItem key={pageNumber} active={currentPage === pageNumber}>
+                                  <PaginationLink onClick={() => paginate(pageNumber)} href="#">
+                                    {pageNumber}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              );
+                            } else if (pageNumber === currentPage - 2 || pageNumber === currentPage + 2) {
+                              return (
+                                <PaginationItem key={pageNumber}>
+                                  <PaginationLink disabled href="#">
+                                    ...
+                                  </PaginationLink>
+                                </PaginationItem>
+                              );
+                            }
+                            return null;
+                          })}
+                        </>
+                      )}
+                      <PaginationItem disabled={currentPage === totalPages}>
+                        <PaginationLink next onClick={() => paginate(currentPage + 1)} href="#" />
+                      </PaginationItem>
+                    </Pagination>
                   </div>
                 </CardBody>
               </Card>
@@ -299,8 +399,8 @@ const PurchasePageApprove = ({ filterStatus }) => {
           </Form>
         </ModalBody>
         <ModalFooter>
-          <Button 
-            color="danger" 
+          <Button
+            color="danger"
             onClick={handleRejectionSubmit}
             disabled={!rejectionComment.trim()}
           >

@@ -1,0 +1,118 @@
+.trip-table-modern {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+
+  .table-container {
+    padding: 1rem;
+  }
+
+  .table-modern {
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    margin: -0.5rem 0;
+
+    thead tr {
+      background: #f8f9fa;
+      
+      th {
+        padding: 1rem;
+        font-weight: 600;
+        color: #495057;
+        border: none;
+        white-space: nowrap;
+      }
+    }
+
+    tbody {
+      tr {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        td {
+          padding: 1rem;
+          border: none;
+          background: #fff;
+          vertical-align: middle;
+
+          &:first-child { border-radius: 8px 0 0 8px; }
+          &:last-child { border-radius: 0 8px 8px 0; }
+        }
+      }
+    }
+  }
+
+  .status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+
+    &.status-approved {
+      background: rgba(40, 199, 111, 0.1);
+      color: #28c76f;
+    }
+
+    &.status-rejected {
+      background: rgba(234, 84, 85, 0.1);
+      color: #ea5455;
+    }
+
+    &.status-pending {
+      background: rgba(255, 159, 67, 0.1);
+      color: #ff9f43;
+    }
+  }
+
+  .expanded-content {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0 0 8px 8px;
+
+    .info-section {
+      margin-bottom: 1.5rem;
+
+      .info-title {
+        color: #495057;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+
+        i {
+          color: #8074d5;
+          margin-right: 0.5rem;
+        }
+      }
+
+      .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          margin-bottom: 0.5rem;
+          display: flex;
+          
+          .label {
+            min-width: 150px;
+            color: #6c757d;
+            font-weight: 500;
+          }
+          
+          .value {
+            color: #495057;
+          }
+        }
+      }
+    }
+  }
+} 

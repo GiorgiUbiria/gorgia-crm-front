@@ -8,10 +8,14 @@ import {
   CardTitle,
   CardSubtitle,
   Input,
+  Pagination,
+  PaginationItem,
+  PaginationLink,
 } from "reactstrap";
 
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { getPurchaseList } from "services/purchase";
+import "./UserProcurements.scss";
 
 const UserProcurement = () => {
   document.title = "შესყიდვები | Gorgia LLC";
@@ -19,6 +23,8 @@ const UserProcurement = () => {
   const [procurements, setProcurements] = useState([]);
   const [expandedRows, setExpandedRows] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(7);
 
   const fetchProcurements = async () => {
     try {
@@ -42,24 +48,18 @@ const UserProcurement = () => {
     }
   };
 
-  const getRowClass = (status) => {
-    switch (status) {
-      case "rejected":
-        return "table-danger";
-      case "approved":
-        return "table-success";
-      case "pending":
-        return "table-warning";
-      default:
-        return "";
-    }
-  };
-
   const filteredProcurements = procurements.filter((procurement) =>
     `${procurement.user.name} ${procurement.user.sur_name}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredProcurements.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredProcurements.length / itemsPerPage);
 
   return (
     <React.Fragment>
@@ -70,144 +70,181 @@ const UserProcurement = () => {
               <Breadcrumbs title="შესყიდვები" breadcrumbItem="ჩემი შესყიდვები" />
             </Col>
           </Row>
-          <Row className="mb-3">
-            <Col xl={{ size: 4, offset: 8 }}>
-              <Input
-                type="search"
-                placeholder="ძებნა თანამშრომლის მიხედვით..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                bsSize="sm"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <CardTitle className="h4">შესყიდვების გვერდი</CardTitle>
-                  <CardSubtitle className="card-title-desc">
-                    ქვემოთ მოცემულია თქვენი შესყიდვების ისტორია
+
+          <Card className="procurement-history-card">
+            <CardBody>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                  <CardTitle className="h4 mb-1">შესყიდვების ისტორია</CardTitle>
+                  <CardSubtitle className="text-muted">
+                    თქვენი შესყიდვების სრული ისტორია
                   </CardSubtitle>
-                  <div className="table-responsive">
-                    <Table className="table mb-0">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>სახელი</th>
-                          <th>გვარი</th>
-                          <th>დეპარტამენტი</th>
-                          <th>პოზიცია</th>
-                          <th>შესყიდვის ტიპი</th>
-                          <th>თარიღი</th>
-                          <th>მომწოდებელი</th>
-                          <th>სტატუსი</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredProcurements?.map((procurement, index) => (
-                          <React.Fragment key={procurement.id}>
-                            <tr
-                              className={getRowClass(procurement.status)}
-                              onClick={() => toggleRow(index)}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <th scope="row">{index + 1}</th>
-                              <td>{procurement.user.name}</td>
-                              <td>{procurement.user.sur_name}</td>
-                              <td>{procurement.department_id}</td>
-                              <td>{procurement.user.position}</td>
-                              <td>{procurement.type}</td>
-                              <td>{procurement.created_at}</td>
-                              <td>{procurement.supplier}</td>
-                              <td>
+                </div>
+                <div className="search-box">
+                  <Input
+                    type="text"
+                    className="form-control modern-search"
+                    placeholder="ძებნა თანამშრომლის მიხედვით..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <i className="bx bx-search-alt search-icon"></i>
+                </div>
+              </div>
+
+              <div className="procurement-table-modern">
+                <div className="table-responsive">
+                  <Table className="table-modern mb-0">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>თანამშრომელი</th>
+                        <th>დეპარტამენტი</th>
+                        <th>შესყიდვის ტიპი</th>
+                        <th>თარიღი</th>
+                        <th>მომწოდებელი</th>
+                        <th>სტატუსი</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentItems.map((procurement, index) => (
+                        <React.Fragment key={procurement.id}>
+                          <tr
+                            onClick={() => toggleRow(index)}
+                            className={`procurement-row status-${procurement.status}`}
+                          >
+                            <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                            <td>
+                              <div className="d-flex align-items-center">
+                                <div className="avatar-wrapper">
+                                  <span className="avatar-initial">
+                                    {procurement.user?.name?.charAt(0) || "?"}
+                                  </span>
+                                </div>
+                                <span className="user-name">
+                                  {procurement.user.name} {procurement.user.sur_name}
+                                </span>
+                              </div>
+                            </td>
+                            <td>{procurement.department_id}</td>
+                            <td>{procurement.type}</td>
+                            <td>
+                              <div className="date-wrapper">
+                                <i className="bx bx-calendar me-2"></i>
+                                {procurement.created_at}
+                              </div>
+                            </td>
+                            <td>{procurement.supplier}</td>
+                            <td>
+                              <span className={`status-badge status-${procurement.status}`}>
+                                <i className={`bx ${procurement.status === "rejected"
+                                    ? "bx-x-circle"
+                                    : procurement.status === "approved"
+                                      ? "bx-check-circle"
+                                      : "bx-time"
+                                  } me-2`}></i>
                                 {procurement.status === "rejected"
                                   ? "უარყოფილია"
                                   : procurement.status === "approved"
                                     ? "დადასტურებულია"
                                     : "მოლოდინში"}
+                              </span>
+                            </td>
+                          </tr>
+                          {expandedRows.includes(index) && (
+                            <tr>
+                              <td colSpan="7">
+                                <div className="expanded-content">
+                                  <Row>
+                                    <Col md={6}>
+                                      <div className="info-section">
+                                        <h6 className="info-title">
+                                          <i className="bx bx-user"></i>
+                                          თანამშრომლის ინფორმაცია
+                                        </h6>
+                                        <ul className="info-list">
+                                          <li>სახელი: {procurement.user.name}</li>
+                                          <li>გვარი: {procurement.user.sur_name}</li>
+                                          <li>პოზიცია: {procurement.user.position}</li>
+                                          <li>დეპარტამენტი: {procurement.department_id}</li>
+                                        </ul>
+                                      </div>
+                                    </Col>
+                                    <Col md={6}>
+                                      <div className="info-section">
+                                        <h6 className="info-title">
+                                          <i className="bx bx-package"></i>
+                                          შესყიდვის დეტალები
+                                        </h6>
+                                        <ul className="info-list">
+                                          <li>რაოდენობა: {procurement.quantity}</li>
+                                          <li>ერთეულის ფასი: {procurement.unit_price}₾</li>
+                                          <li>ჯამური ღირებულება: {procurement.total_price}₾</li>
+                                          <li>აღწერა: {procurement.description}</li>
+                                        </ul>
+                                      </div>
+                                    </Col>
+                                  </Row>
+                                </div>
                               </td>
                             </tr>
-                            {expandedRows.includes(index) && (
-                              <tr>
-                                <td colSpan="9">
-                                  <div className="p-4">
-                                    <h5 className="mb-3">დეტალური ინფორმაცია</h5>
-                                    <Row>
-                                      <Col md={6}>
-                                        <div className="mb-3">
-                                          <h6 className="mb-2">თანამშრომლის ინფორმაცია:</h6>
-                                          <ul className="list-unstyled">
-                                            <li>სახელი: {procurement.user.name}</li>
-                                            <li>გვარი: {procurement.user.sur_name}</li>
-                                            <li>პოზიცია: {procurement.user.position}</li>
-                                            <li>დეპარტამენტი: {procurement.department_id}</li>
-                                          </ul>
-                                        </div>
-                                        <div className="mb-3">
-                                          <h6 className="mb-2">შესყიდვის დეტალები:</h6>
-                                          <ul className="list-unstyled">
-                                            <li>შესყიდვის ტიპი: {procurement.type}</li>
-                                            <li>მომწოდებელი: {procurement.supplier}</li>
-                                            <li>თარიღი: {procurement.created_at}</li>
-                                          </ul>
-                                        </div>
-                                      </Col>
-                                      <Col md={6}>
-                                        <div className="mb-3">
-                                          <h6 className="mb-2">ფინანსური ინფორმაცია:</h6>
-                                          <ul className="list-unstyled">
-                                            <li>რაოდენობა: {procurement.quantity}</li>
-                                            <li>ერთეულის ფასი: {procurement.unit_price}₾</li>
-                                            <li>ჯამური ღირებულება: {procurement.total_price}₾</li>
-                                          </ul>
-                                        </div>
-                                        <div className="mb-3">
-                                          <h6 className="mb-2">დამატებითი ინფორმაცია:</h6>
-                                          <p className="text-muted mb-0">
-                                            <strong>აღწერა:</strong> {procurement.description}
-                                          </p>
-                                          <p className="text-muted mb-0">
-                                            <strong>სტატუსი:</strong>{" "}
-                                            <span className={`badge ${procurement.status === "rejected" ? "bg-danger" :
-                                                procurement.status === "approved" ? "bg-success" :
-                                                  "bg-warning"
-                                              }`}>
-                                              {procurement.status === "rejected"
-                                                ? "უარყოფილია"
-                                                : procurement.status === "approved"
-                                                  ? "დადასტურებულია"
-                                                  : "მოლოდინში"}
-                                            </span>
-                                          </p>
-                                          {procurement.status === "rejected" && procurement.comment && (
-                                            <div className="mt-3 p-3 bg-light rounded">
-                                              <h6 className="mb-2 text-danger">უარყოფის მიზეზი:</h6>
-                                              <p className="mb-1">{procurement.comment}</p>
-                                              <small className="text-muted">
-                                                უარყო: {procurement.reviewed_by?.name} {procurement.reviewed_by?.sur_name}
-                                                {procurement.reviewed_at && (
-                                                  <span> - {new Date(procurement.reviewed_at).toLocaleString('ka-GE')}</span>
-                                                )}
-                                              </small>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </Col>
-                                    </Row>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </div>
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              </div>
+
+              <div className="d-flex justify-content-end mt-3">
+                <Pagination>
+                  <PaginationItem disabled={currentPage === 1}>
+                    <PaginationLink previous onClick={() => paginate(currentPage - 1)} href="#" />
+                  </PaginationItem>
+                  {totalPages <= 5 ? (
+                    [...Array(totalPages)].map((_, index) => (
+                      <PaginationItem key={index + 1} active={currentPage === index + 1}>
+                        <PaginationLink onClick={() => paginate(index + 1)} href="#">
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))
+                  ) : (
+                    <>
+                      {[...Array(totalPages)].map((_, index) => {
+                        const pageNumber = index + 1;
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === totalPages ||
+                          (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                        ) {
+                          return (
+                            <PaginationItem key={pageNumber} active={currentPage === pageNumber}>
+                              <PaginationLink onClick={() => paginate(pageNumber)} href="#">
+                                {pageNumber}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        } else if (pageNumber === currentPage - 2 || pageNumber === currentPage + 2) {
+                          return (
+                            <PaginationItem key={pageNumber}>
+                              <PaginationLink disabled href="#">
+                                ...
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        }
+                        return null;
+                      })}
+                    </>
+                  )}
+                  <PaginationItem disabled={currentPage === totalPages}>
+                    <PaginationLink next onClick={() => paginate(currentPage + 1)} href="#" />
+                  </PaginationItem>
+                </Pagination>
+              </div>
+            </CardBody>
+          </Card>
         </div>
       </div>
     </React.Fragment>

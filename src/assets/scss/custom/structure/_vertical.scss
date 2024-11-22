@@ -42,9 +42,9 @@
   position: fixed;
   top: 0;
   padding-top: $header-height;
-  box-shadow: $box-shadow;
   display: flex;
   flex-direction: column;
+  background-color: #EDF3FD;
   @media (max-width: 991.98px) {
     top: $header-height;
     padding-top: 0px;
@@ -80,6 +80,7 @@
 #sidebar-menu {
     padding: 10px 0 30px 0;
     height: 100%;
+    background-color: #D3E9FF;
 
     .mm-active {
         >.has-arrow {
@@ -142,7 +143,7 @@
                     a {
                         padding: .4rem 1.5rem .4rem 3.5rem;
                         font-size: 13px;
-                        color: $sidebar-menu-sub-item-color;
+                        color: black;
                         &:hover {
                             color: $sidebar-menu-item-hover-color;
                         }
