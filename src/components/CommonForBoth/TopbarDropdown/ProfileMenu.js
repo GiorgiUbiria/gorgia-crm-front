@@ -7,15 +7,11 @@ import {
   DropdownItem,
 } from "reactstrap"
 
-// i18n
-import { withTranslation } from "react-i18next"
-// Redux
 import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import withRouter from "components/Common/withRouter"
+import { withTranslation } from "react-i18next"
 
-// users
-import { fetchUser } from "services/user"
 import NoAvatarIcon from "../../../assets/images/no-avatar.jpg"
 
 const ProfileMenu = props => {
@@ -29,15 +25,6 @@ const ProfileMenu = props => {
       setUsername(obj.displayName || obj.username)
     }
   }, [props.success])
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const response = await fetchUser()
-  //     setUser(response.data)
-  //   }
-
-  //   fetchData()
-  // }, [])
 
   const profileImageSrc = user?.profile_image
     ? `${process.env.REACT_APP_BASE_URL}/${user.profile_image}`
@@ -90,5 +77,7 @@ const mapStatetoProps = state => {
 }
 
 export default withRouter(
-  connect(mapStatetoProps, {})(withTranslation()(ProfileMenu))
+  connect(mapStatetoProps, {})(
+    withTranslation()(ProfileMenu)
+  )
 )

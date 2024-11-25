@@ -1,44 +1,42 @@
-import PropTypes from 'prop-types';
-import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
-import { createSelector } from "reselect";
-import { Routes, Route } from "react-router-dom";
-import { layoutTypes } from "./constants/layout";
-import { authProtectedRoutes, publicRoutes } from "./routes";
+import PropTypes from "prop-types"
+import React, { useEffect } from "react"
+import { useSelector } from "react-redux"
+import { createSelector } from "reselect"
+import { Routes, Route } from "react-router-dom"
+import { layoutTypes } from "./constants/layout"
+import { authProtectedRoutes, publicRoutes } from "./routes"
 
-import Authmiddleware from "./routes/route";
+import Authmiddleware from "./routes/route"
 
-import VerticalLayout from "./components/VerticalLayout/";
-import NonAuthLayout from "./components/NonAuthLayout";
+import VerticalLayout from "./components/VerticalLayout/"
+import NonAuthLayout from "./components/NonAuthLayout"
 
-import "./assets/scss/theme.scss";
-import DataProvider from 'components/hoc/DataProvider';
+import "./assets/scss/theme.scss"
+import DataProvider from "components/hoc/DataProvider"
 
-const getLayout = (layoutType) => {
-  let Layout = VerticalLayout;
+const getLayout = layoutType => {
+  let Layout = VerticalLayout
   switch (layoutType) {
     case layoutTypes.VERTICAL:
-      Layout = VerticalLayout;
-      break;
+      Layout = VerticalLayout
+      break
     default:
-      break;
+      break
   }
-  return Layout;
-};
+  return Layout
+}
 
 const App = () => {
   const LayoutProperties = createSelector(
-    (state) => state.Layout,
-    (layout) => ({
+    state => state.Layout,
+    layout => ({
       layoutType: layout.layoutType,
     })
-  );
+  )
 
-  const {
-    layoutType
-  } = useSelector(LayoutProperties);
+  const { layoutType } = useSelector(LayoutProperties)
 
-  const Layout = getLayout(layoutType);
+  const Layout = getLayout(layoutType)
 
   return (
     <DataProvider>
@@ -46,11 +44,7 @@ const App = () => {
         {publicRoutes.map((route, idx) => (
           <Route
             path={route.path}
-            element={
-              <NonAuthLayout>
-                {route.component}
-              </NonAuthLayout>
-            }
+            element={<NonAuthLayout>{route.component}</NonAuthLayout>}
             key={idx}
             exact={true}
           />
@@ -62,18 +56,19 @@ const App = () => {
             element={
               <Authmiddleware>
                 <Layout>{route.component}</Layout>
-              </Authmiddleware>}
+              </Authmiddleware>
+            }
             key={idx}
             exact={true}
           />
         ))}
       </Routes>
     </DataProvider>
-  );
-};
+  )
+}
 
 App.propTypes = {
-  layout: PropTypes.any
-};
+  layout: PropTypes.any,
+}
 
-export default App;
+export default App
