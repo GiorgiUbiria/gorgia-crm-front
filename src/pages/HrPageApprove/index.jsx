@@ -22,17 +22,17 @@ const statusMap = {
   in_progress: {
     label: "განხილვაში",
     icon: "bx-time",
-    color: "#FFA500", // orange
+    color: "#FFA500",
   },
   approved: {
     label: "დამტკიცებული",
     icon: "bx-check-circle",
-    color: "#28a745", // green
+    color: "#28a745",
   },
   rejected: {
     label: "უარყოფილი",
     icon: "bx-x-circle",
-    color: "#dc3545", // red
+    color: "#dc3545",
   },
 }
 
