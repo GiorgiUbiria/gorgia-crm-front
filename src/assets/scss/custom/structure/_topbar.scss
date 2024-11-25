@@ -109,6 +109,11 @@
 .page-content {
     padding: calc(#{$header-height} + #{$grid-gutter-width}) calc(#{$grid-gutter-width} * 0.75) $footer-height calc(#{$grid-gutter-width} * 0.75);
     background-color: #fff;
+    min-height: calc(100vh);
+    height: auto;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .header-item {
@@ -276,23 +281,5 @@ body[data-sidebar="dark"] {
 @media (max-width: 380px) {
     .navbar-brand-box {
         display: none;
-    }
-}
-
-body[data-layout="horizontal"] {
-    .navbar-brand-box {
-        width: auto;
-    }
-    .page-content {
-        margin-top: $header-height;
-        padding: calc(55px + #{$grid-gutter-width}) calc(#{$grid-gutter-width} * 0.5) $footer-height calc(#{$grid-gutter-width} * 0.5);
-    }    
-}
-
-@media (max-width: 992px) { 
-    body[data-layout="horizontal"] {
-        .page-content {
-            margin-top: 15px;
-        }    
     }
 }

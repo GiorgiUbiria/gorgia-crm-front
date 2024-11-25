@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"
 import {
   Card,
   CardBody,
@@ -14,12 +14,12 @@ import {
   TabContent,
   TabPane,
   Badge,
-} from "reactstrap";
-import { FaTrash, FaPlus, FaSearch, FaFileDownload } from "react-icons/fa";
-import classnames from "classnames";
-import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
-import Breadcrumbs from "../../components/Common/Breadcrumb";
+} from "reactstrap"
+import { FaTrash, FaPlus, FaSearch, FaFileDownload } from "react-icons/fa"
+import classnames from "classnames"
+import { useTranslation } from "react-i18next"
+import { toast } from "react-toastify"
+import Breadcrumbs from "../../components/Common/Breadcrumb"
 import {
   assignHead,
   createDepartment,
@@ -28,171 +28,178 @@ import {
   getUsers,
   deleteUser,
   updateUserById,
-} from "../../services/admin/department";
-import DepartmentForm from "components/DepartmentForm";
-import UserForm from "components/UserForm";
-import * as XLSX from 'xlsx';
-import useIsAdmin from 'hooks/useIsAdmin';
+} from "../../services/admin/department"
+import DepartmentForm from "components/DepartmentForm"
+import UserForm from "components/UserForm"
+import * as XLSX from "xlsx"
+import useIsAdmin from "hooks/useIsAdmin"
+import UsersTab from "./UsersTab"
+import DepartmentsTab from "./DepartmentsTab"
 
 const AdminPage = () => {
-  const { t } = useTranslation();
-  const isAdmin = useIsAdmin();
-  const [activeTab, setActiveTab] = useState("1");
-  const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
-  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [chosenDepartment, setChosenDepartment] = useState(null);
-  const [chosenUser, setChosenUser] = useState(null);
-  const [departments, setDepartments] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [departmentSearchTerm, setDepartmentSearchTerm] = useState("");
+  const { t } = useTranslation()
+  const isAdmin = useIsAdmin()
+  const [activeTab, setActiveTab] = useState("1")
+  const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false)
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [chosenDepartment, setChosenDepartment] = useState(null)
+  const [chosenUser, setChosenUser] = useState(null)
+  const [departments, setDepartments] = useState([])
+  const [users, setUsers] = useState([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [departmentSearchTerm, setDepartmentSearchTerm] = useState("")
 
   useEffect(() => {
-    document.title = "ადმინისტრირება | Gorgia LLC";
-    fetchDepartments();
-    fetchUsers();
-  }, []);
+    document.title = "ადმინისტრირება | Gorgia LLC"
+    fetchDepartments()
+    fetchUsers()
+  }, [])
 
   const fetchDepartments = async () => {
     try {
-      const res = await getDepartments();
-      setDepartments(res.data.departments);
+      const res = await getDepartments()
+      setDepartments(res.data.departments)
     } catch (err) {
-      console.error(err);
+      console.error(err)
     }
-  };
+  }
 
   const fetchUsers = async () => {
     try {
-      const res = await getUsers();
-      setUsers(res.data.users);
+      const res = await getUsers()
+      setUsers(res.data.users)
     } catch (err) {
-      console.error(err);
+      console.error(err)
     }
-  };
+  }
 
   const openDepartmentModal = (department = null) => {
-    setChosenDepartment(department);
-    setIsEditMode(!!department);
-    setIsDepartmentModalOpen(true);
-  };
+    setChosenDepartment(department)
+    setIsEditMode(!!department)
+    setIsDepartmentModalOpen(true)
+  }
 
   const openUserModal = (user = null) => {
-    setChosenUser(user);
-    setIsEditMode(!!user);
-    setIsUserModalOpen(true);
-  };
+    setChosenUser(user)
+    setIsEditMode(!!user)
+    setIsUserModalOpen(true)
+  }
 
-  const handleAddDepartment = async (data) => {
+  const handleAddDepartment = async data => {
     try {
-      await createDepartment(data);
-      toast.success(t("Department added successfully"));
-      fetchDepartments();
-      setIsDepartmentModalOpen(false);
+      await createDepartment(data)
+      toast.success(t("Department added successfully"))
+      fetchDepartments()
+      setIsDepartmentModalOpen(false)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
-  const handleAddUser = async (data) => {
+  const handleAddUser = async data => {
     try {
-      await updateUserById(chosenUser.id, data);
-      toast.success(t("User updated successfully"));
-      fetchUsers();
-      setIsUserModalOpen(false);
+      await updateUserById(chosenUser.id, data)
+      toast.success(t("User updated successfully"))
+      fetchUsers()
+      setIsUserModalOpen(false)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
-  const handleAssignHead = async (data) => {
+  const handleAssignHead = async data => {
     try {
-      await assignHead(data);
-      toast.success(t("Department head assigned successfully"));
-      fetchDepartments();
-      setIsDepartmentModalOpen(false);
+      await assignHead(data)
+      toast.success(t("Department head assigned successfully"))
+      fetchDepartments()
+      setIsDepartmentModalOpen(false)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   const handleDeleteDepartment = async (id, name) => {
     if (window.confirm(`${t("Are you sure you want to delete")} ${name}?`)) {
       try {
-        await deleteDepartment(id);
-        toast.success(t("Department deleted successfully"));
-        fetchDepartments();
+        await deleteDepartment(id)
+        toast.success(t("Department deleted successfully"))
+        fetchDepartments()
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     }
-  };
+  }
 
-  const handleDeleteUser = async (user) => {
-    if (window.confirm(`${t("Are you sure you want to delete user")} ${user.name}?`)) {
+  const handleDeleteUser = async user => {
+    if (
+      window.confirm(
+        `${t("Are you sure you want to delete user")} ${user.name}?`
+      )
+    ) {
       try {
-        await deleteUser(user.id);
-        toast.success(t("User deleted successfully"));
-        fetchUsers();
+        await deleteUser(user.id)
+        toast.success(t("User deleted successfully"))
+        fetchUsers()
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     }
-  };
+  }
 
-  const toggle = (tab) => {
-    if (activeTab !== tab) setActiveTab(tab);
-  };
+  const toggle = tab => {
+    if (activeTab !== tab) setActiveTab(tab)
+  }
 
-  const filteredDepartments = departments.filter(dep =>
-    dep.name.toLowerCase().includes(departmentSearchTerm.toLowerCase()) ||
-    (dep.head?.name || "").toLowerCase().includes(departmentSearchTerm.toLowerCase())
-  );
+  const filteredDepartments = departments.filter(
+    dep =>
+      dep.name.toLowerCase().includes(departmentSearchTerm.toLowerCase()) ||
+      (dep.head?.name || "")
+        .toLowerCase()
+        .includes(departmentSearchTerm.toLowerCase())
+  )
 
-  const filteredUsers = users.filter(user =>
-    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.department?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(
+    user =>
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.department?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const searchInputStyle = {
-    paddingRight: '2.5rem',
-    borderRadius: '4px',
-    border: '1px solid #e2e8f0',
-    backgroundColor: '#f8fafc',
-  };
+    paddingRight: "2.5rem",
+    borderRadius: "4px",
+    border: "1px solid #e2e8f0",
+    backgroundColor: "#f8fafc",
+  }
 
   const searchIconStyle = {
-    position: 'absolute',
-    right: '10px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    color: '#64748b',
-  };
+    position: "absolute",
+    right: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    color: "#64748b",
+  }
 
   const exportUsersToExcel = () => {
     const data = [
-      ['გვარი', 'სახელი', 'ელ-ფოსტა', 'დეპარტამენტი', 'როლი'],
+      ["გვარი", "სახელი", "ელ-ფოსტა", "დეპარტამენტი", "როლი"],
       ...filteredUsers.map(user => [
         user.sur_name,
         user.name,
         user.email,
-        user.department?.name || 'არ არის მითითებული',
-        user.role
-      ])
-    ];
+        user.department?.name || "არ არის მითითებული",
+        user.role,
+      ]),
+    ]
 
-    // Create worksheet
-    const ws = XLSX.utils.aoa_to_sheet(data);
+    const ws = XLSX.utils.aoa_to_sheet(data)
 
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Users");
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Users")
 
-    // Generate Excel file
-    XLSX.writeFile(wb, 'მომხმარებლები.xlsx');
-  };
+    XLSX.writeFile(wb, "მომხმარებლები.xlsx")
+  }
 
   return (
     <div className="page-content">
@@ -223,182 +230,29 @@ const AdminPage = () => {
 
                 <TabContent activeTab={activeTab} className="p-3">
                   <TabPane tabId="1">
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                      <div className="search-box" style={{ minWidth: '300px' }}>
-                        <div className="position-relative">
-                          <Input
-                            type="text"
-                            value={departmentSearchTerm}
-                            onChange={(e) => setDepartmentSearchTerm(e.target.value)}
-                            placeholder="მოძებნეთ დეპარტამენტი..."
-                            style={searchInputStyle}
-                          />
-                          <FaSearch style={searchIconStyle} />
-                        </div>
-                      </div>
-                      <Button
-                        color="primary"
-                        onClick={() => openDepartmentModal(null)}
-                        className="d-flex align-items-center"
-                      >
-                        <FaPlus className="me-1" /> დეპარტამენტის დამატება
-                      </Button>
-                    </div>
-
-                    <div className="table-responsive">
-                      <Table className="table-centered table-hover mb-0" bordered>
-                        <thead style={{ backgroundColor: '#f1f5f9' }}>
-                          <tr>
-                            <th className="text-center" style={{ width: '5%' }}>#</th>
-                            <th style={{ width: '35%' }}>დეპარტამენტი</th>
-                            <th style={{ width: '40%' }}>ხელმძღვანელი</th>
-                            <th className="text-center" style={{ width: '20%' }}>მოქმედება</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredDepartments.map((dep, index) => (
-                            <tr key={dep.id}>
-                              <td className="text-center">{index + 1}</td>
-                              <td>{dep.name}</td>
-                              <td>
-                                {dep.head ? (
-                                  <div className="d-flex align-items-center">
-                                    <div className="avatar-xs me-2">
-                                      <span className="avatar-title rounded-circle bg-primary text-white">
-                                        {dep.head.name.charAt(0)}
-                                      </span>
-                                    </div>
-                                    {dep.head.name}
-                                  </div>
-                                ) : (
-                                  <Badge color="warning" pill>
-                                    არ არის მითითებული
-                                  </Badge>
-                                )}
-                              </td>
-                              <td className="text-center">
-                                <Button
-                                  color="primary"
-                                  size="sm"
-                                  className="me-2"
-                                  onClick={() => openDepartmentModal(dep)}
-                                >
-                                  რედაქტირება
-                                </Button>
-                                <Button
-                                  color="danger"
-                                  size="sm"
-                                  onClick={() => handleDeleteDepartment(dep.id, dep.name)}
-                                >
-                                  <FaTrash />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                    </div>
+                    <DepartmentsTab
+                      departmentSearchTerm={departmentSearchTerm}
+                      setDepartmentSearchTerm={setDepartmentSearchTerm}
+                      openDepartmentModal={openDepartmentModal}
+                      filteredDepartments={filteredDepartments}
+                      handleDeleteDepartment={handleDeleteDepartment}
+                      searchInputStyle={searchInputStyle}
+                      searchIconStyle={searchIconStyle}
+                    />
                   </TabPane>
 
                   <TabPane tabId="2">
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                      <div className="search-box" style={{ minWidth: '300px' }}>
-                        <div className="position-relative">
-                          <Input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="მოძებნეთ მომხმარებელი..."
-                            style={searchInputStyle}
-                          />
-                          <FaSearch style={searchIconStyle} />
-                        </div>
-                      </div>
-                      <div className="d-flex gap-2">
-                        {isAdmin && (
-                          <Button
-                            color="success"
-                            onClick={exportUsersToExcel}
-                            className="d-flex align-items-center"
-                          >
-                            <FaFileDownload className="me-1" /> ექსპორტი
-                          </Button>
-                        )}
-                        <Button
-                          color="primary"
-                          onClick={() => openUserModal(null)}
-                          className="d-flex align-items-center"
-                        >
-                          <FaPlus className="me-1" /> მომხმარებლის დამატება
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="table-responsive">
-                      <Table className="table-centered table-hover mb-0" bordered>
-                        <thead style={{ backgroundColor: '#f1f5f9' }}>
-                          <tr>
-                            <th className="text-center" style={{ width: '5%' }}>#</th>
-                            <th style={{ width: '25%' }}>გვარი</th>
-                            <th style={{ width: '25%' }}>სახელი</th>
-                            <th style={{ width: '25%' }}>ელ-ფოსტა</th>
-                            <th style={{ width: '20%' }}>დეპარტამენტი</th>
-                            <th style={{ width: '10%' }}>როლი</th>
-                            <th className="text-center" style={{ width: '15%' }}>მოქმედება</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredUsers.map((user, index) => (
-                            <tr key={user.id}>
-                              <td className="text-center">{index + 1}</td>
-                              <td>
-                                <div className="d-flex align-items-center">
-                                  <div className="avatar-xs me-2">
-                                    <span className="avatar-title rounded-circle bg-primary text-white">
-                                      {user.name?.charAt(0)}
-                                    </span>
-                                  </div>
-                                  {user.name}
-                                </div>
-                              </td>
-                              <td>
-                                {user.sur_name}
-                              </td>
-                              <td>{user.email}</td>
-                              <td>
-                                {user.department?.name || (
-                                  <Badge color="warning" pill>
-                                    არ არის მითითებული
-                                  </Badge>
-                                )}
-                              </td>
-                              <td>
-                                <Badge color="info" pill>
-                                  {user.role}
-                                </Badge>
-                              </td>
-                              <td className="text-center">
-                                <Button
-                                  color="primary"
-                                  size="sm"
-                                  className="me-2"
-                                  onClick={() => openUserModal(user)}
-                                >
-                                  რედაქტირება
-                                </Button>
-                                <Button
-                                  color="danger"
-                                  size="sm"
-                                  onClick={() => handleDeleteUser(user)}
-                                >
-                                  <FaTrash />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                    </div>
+                    <UsersTab
+                      searchTerm={searchTerm}
+                      setSearchTerm={setSearchTerm}
+                      openUserModal={openUserModal}
+                      filteredUsers={filteredUsers}
+                      handleDeleteUser={handleDeleteUser}
+                      exportUsersToExcel={exportUsersToExcel}
+                      isAdmin={isAdmin}
+                      searchInputStyle={searchInputStyle}
+                      searchIconStyle={searchIconStyle}
+                    />
                   </TabPane>
                 </TabContent>
               </CardBody>
@@ -426,7 +280,7 @@ const AdminPage = () => {
         </Row>
       </Container>
     </div>
-  );
-};
+  )
+}
 
-export default AdminPage;
+export default AdminPage

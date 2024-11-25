@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from "react"
 import {
   Card,
   CardBody,
@@ -13,77 +13,64 @@ import {
   Form,
   FormGroup,
   Button,
-} from 'reactstrap';
-import { useTable, usePagination, useSortBy } from 'react-table';
-import { Link } from 'react-router-dom';
-import DeleteModal from 'components/Common/DeleteModal';
-import { getVipLeads, createVipLead, updateVipLead, deleteVipLead } from '../../services/vipLeadsService';
-import Breadcrumbs from 'components/Common/Breadcrumb';
-import moment from 'moment';
-import useIsAdmin from 'hooks/useIsAdmin';
+} from "reactstrap"
+import { useTable, usePagination, useSortBy } from "react-table"
+import { Link } from "react-router-dom"
+import DeleteModal from "components/Common/DeleteModal"
+import {
+  getVipLeads,
+  createVipLead,
+  updateVipLead,
+  deleteVipLead,
+} from "../../services/vipLeadsService"
+import Breadcrumbs from "components/Common/Breadcrumb"
+import moment from "moment"
+import useIsAdmin from "hooks/useIsAdmin"
 
 const VipLeadsPage = () => {
-  const [vipLeads, setVipLeads] = useState([]);
-  const [vipLead, setVipLead] = useState(null);
-  const [isEdit, setIsEdit] = useState(false);
-  const [modal, setModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const isAdmin = useIsAdmin();
+  const [vipLeads, setVipLeads] = useState([])
+  const [vipLead, setVipLead] = useState(null)
+  const [isEdit, setIsEdit] = useState(false)
+  const [modal, setModal] = useState(false)
+  const [deleteModal, setDeleteModal] = useState(false)
+  const isAdmin = useIsAdmin()
 
   const fetchVipLeads = async () => {
     try {
-      const response = await getVipLeads();
-      setVipLeads(response || []);
+      const response = await getVipLeads()
+      setVipLeads(response || [])
     } catch (error) {
-      console.error('Error fetching VIP leads:', error);
-      setVipLeads([]);
+      console.error("Error fetching VIP leads:", error)
+      setVipLeads([])
     }
-  };
+  }
 
   useEffect(() => {
-    fetchVipLeads();
-  }, []);
-
-  const handleStatusChange = async (leadId, newStatus) => {
-    const leadToUpdate = vipLeads.find((lead) => lead.id === leadId);
-    const updatedLead = { ...leadToUpdate, status: newStatus };
-    try {
-      await updateVipLead(leadId, updatedLead);
-      fetchVipLeads();
-    } catch (error) {
-      console.error('Error updating lead status:', error);
-    }
-  };
+    fetchVipLeads()
+  }, [])
 
   const columns = useMemo(
     () => [
-      { Header: 'სახელი', accessor: 'first_name' },
-      { Header: 'გვარი', accessor: 'last_name' },
-      { Header: 'ტელეფონის ნომერი', accessor: 'phone' },
+      { Header: "სახელი", accessor: "first_name" },
+      { Header: "გვარი", accessor: "last_name" },
+      { Header: "ტელეფონის ნომერი", accessor: "phone" },
       {
-        Header: ({ sorted, sortedDesc }) => (
-          <div>
-            თარიღი
-            <span>
-              {' ▼'}
-            </span>
-          </div>
-        ),
-        accessor: 'created_at',
-        Cell: ({ value }) => moment(value).format('YYYY-MM-DD'),
-      },
-      {
-        Header: 'მოქმედება',
-        id: 'actions',
+        Header: "მოქმედება",
+        id: "actions",
         Cell: ({ row }) => (
           <div className="d-flex gap-2">
             {isAdmin && (
               <>
-                <Button color="primary" onClick={() => handleEditClick(row.original)}>
+                <Button
+                  color="primary"
+                  onClick={() => handleEditClick(row.original)}
+                >
                   რედაქტირება
                 </Button>
-                <Button color="danger" onClick={() => handleDeleteClick(row.original)}>
+                <Button
+                  color="danger"
+                  onClick={() => handleDeleteClick(row.original)}
+                >
                   წაშლა
                 </Button>
               </>
@@ -96,87 +83,68 @@ const VipLeadsPage = () => {
       },
     ],
     [vipLeads]
-  );
+  )
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable(
-    {
-      columns,
-      data: vipLeads,
-      initialState: {
-        sortBy: [
-          {
-            id: 'created_at',
-            desc: true
-          }
-        ]
-      }
-    },
-    useSortBy,
-    usePagination
-  );
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+    useTable(
+      {
+        columns,
+        data: vipLeads,
+      },
+      usePagination
+    )
 
   const handleAddClick = () => {
-    setVipLead(null);
-    setIsEdit(false);
-    setModal(true);
-  };
+    setVipLead(null)
+    setIsEdit(false)
+    setModal(true)
+  }
 
-  const handleEditClick = (leadData) => {
-    setVipLead(leadData);
-    setIsEdit(true);
-    setModal(true);
-  };
+  const handleEditClick = leadData => {
+    setVipLead(leadData)
+    setIsEdit(true)
+    setModal(true)
+  }
 
-  const handleDeleteClick = (leadData) => {
-    setVipLead(leadData);
-    setDeleteModal(true);
-  };
+  const handleDeleteClick = leadData => {
+    setVipLead(leadData)
+    setDeleteModal(true)
+  }
 
   const handleDeleteVipLead = async () => {
     try {
-      await deleteVipLead(vipLead.id);
-      fetchVipLeads();
-      setDeleteModal(false);
+      await deleteVipLead(vipLead.id)
+      fetchVipLeads()
+      setDeleteModal(false)
     } catch (error) {
-      console.error('Error deleting VIP lead:', error);
+      console.error("Error deleting VIP lead:", error)
     }
-  };
+  }
 
-  const handleSaveVipLead = async (event) => {
-    event.preventDefault();
-    const data = new FormData(event.target);
+  const handleSaveVipLead = async event => {
+    event.preventDefault()
+    const data = new FormData(event.target)
     const leadData = {
-      first_name: data.get('first_name'),
-      last_name: data.get('last_name'),
-      request: data.get('request'),
-      responsible_person: data.get('responsible_person'),
-      status: data.get('status'),
-      comment: data.get('comment'),
-    };
+      first_name: data.get("first_name"),
+      last_name: data.get("last_name"),
+      request: data.get("request"),
+      responsible_person: data.get("responsible_person"),
+      status: data.get("status"),
+      comment: data.get("comment"),
+    }
 
     try {
       if (isEdit) {
-        await updateVipLead(vipLead.id, leadData);
+        await updateVipLead(vipLead.id, leadData)
       } else {
-        await createVipLead(leadData);
+        await createVipLead(leadData)
       }
-      fetchVipLeads();
-      setModal(false);
+      fetchVipLeads()
+      setModal(false)
     } catch (error) {
-      console.error('Error saving VIP lead:', error);
+      console.error("Error saving VIP lead:", error)
     }
-  };
-
-  const filteredVipLeads = vipLeads.filter(lead =>
-    lead.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.last_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  }
 
   return (
     <React.Fragment>
@@ -189,7 +157,7 @@ const VipLeadsPage = () => {
         <Container fluid>
           <Breadcrumbs title="ლიდები" breadcrumbItem="VIP" />
           <Row className="mb-3">
-            <Col style={{ textAlign: 'right' }}>
+            <Col style={{ textAlign: "right" }}>
               <Button
                 color="success"
                 className="btn-rounded waves-effect waves-light mb-2"
@@ -199,55 +167,48 @@ const VipLeadsPage = () => {
               </Button>
             </Col>
           </Row>
-          <Row className="mb-3">
-            <Col xl={{ size: 4, offset: 8 }}>
-              <Input
-                type="search"
-                placeholder="ძებნა სახელით ან გვარით..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                bsSize="sm"
-              />
-            </Col>
-          </Row>
           <Row>
             <Col lg="12">
               <Card>
                 <CardBody>
                   <table {...getTableProps()} className="table">
                     <thead>
-                      {headerGroups.map((headerGroup) => (
-                        <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
-                          {headerGroup.headers.map((column) => (
+                      {headerGroups.map(headerGroup => (
+                        <tr
+                          {...headerGroup.getHeaderGroupProps()}
+                          key={headerGroup.id}
+                        >
+                          {headerGroup.headers.map(column => (
                             <th
-                              {...column.getHeaderProps(column.getSortByToggleProps())}
+                              {...column.getHeaderProps()}
                               key={column.id}
-                              style={{ verticalAlign: 'middle' }}
+                              style={{ verticalAlign: "middle" }}
                             >
-                              {column.id === 'created_at'
-                                ? column.render('Header')
-                                : column.render('Header').props?.children || column.render('Header')}
+                              {column.id === "created_at"
+                                ? column.render("Header")
+                                : column.render("Header").props?.children ||
+                                  column.render("Header")}
                             </th>
                           ))}
                         </tr>
                       ))}
                     </thead>
                     <tbody {...getTableBodyProps()}>
-                      {rows.map((row) => {
-                        prepareRow(row);
+                      {rows.map(row => {
+                        prepareRow(row)
                         return (
                           <tr {...row.getRowProps()} key={row.id}>
-                            {row.cells.map((cell) => (
+                            {row.cells.map(cell => (
                               <td
                                 {...cell.getCellProps()}
                                 key={cell.column.id}
-                                style={{ verticalAlign: 'middle' }}
+                                style={{ verticalAlign: "middle" }}
                               >
-                                {cell.render('Cell')}
+                                {cell.render("Cell")}
                               </td>
                             ))}
                           </tr>
-                        );
+                        )
                       })}
                     </tbody>
                   </table>
@@ -257,7 +218,7 @@ const VipLeadsPage = () => {
           </Row>
           <Modal isOpen={modal} toggle={() => setModal(!modal)}>
             <ModalHeader toggle={() => setModal(!modal)}>
-              {isEdit ? 'განახლება' : 'დამატება'}
+              {isEdit ? "განახლება" : "დამატება"}
             </ModalHeader>
             <ModalBody>
               <Form onSubmit={handleSaveVipLead}>
@@ -266,7 +227,7 @@ const VipLeadsPage = () => {
                   <Input
                     id="first_name"
                     name="first_name"
-                    defaultValue={vipLead ? vipLead.first_name : ''}
+                    defaultValue={vipLead ? vipLead.first_name : ""}
                     required
                   />
                 </FormGroup>
@@ -275,7 +236,7 @@ const VipLeadsPage = () => {
                   <Input
                     id="last_name"
                     name="last_name"
-                    defaultValue={vipLead ? vipLead.last_name : ''}
+                    defaultValue={vipLead ? vipLead.last_name : ""}
                     required
                   />
                 </FormGroup>
@@ -284,14 +245,14 @@ const VipLeadsPage = () => {
                   <Input
                     id="phone"
                     name="phone"
-                    defaultValue={vipLead ? vipLead.phone : ''}
+                    defaultValue={vipLead ? vipLead.phone : ""}
                     maxLength={9}
                     required
                   />
                 </FormGroup>
-                <Col style={{ textAlign: 'right' }}>
+                <Col style={{ textAlign: "right" }}>
                   <Button type="submit" color="primary">
-                    {isEdit ? 'გნახლება' : 'დამატება'}
+                    {isEdit ? "გნახლება" : "დამატება"}
                   </Button>
                 </Col>
               </Form>
@@ -300,7 +261,7 @@ const VipLeadsPage = () => {
         </Container>
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default VipLeadsPage;
+export default VipLeadsPage
