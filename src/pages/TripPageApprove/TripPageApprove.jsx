@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"
 import {
   Table,
   Button,
@@ -16,97 +16,111 @@ import {
   Form,
   FormGroup,
   Label,
-} from "reactstrap";
-import Breadcrumbs from "../../components/Common/Breadcrumb";
-import { getTripList, updateTripStatus } from "services/trip"; // Importing updateTripStatus
+} from "reactstrap"
+import Breadcrumbs from "../../components/Common/Breadcrumb"
+import { getTripList, updateTripStatus } from "services/trip" // Importing updateTripStatus
 import "./TripPageApprove.scss"
 
-const TripPageApprove = ({ filterStatus }) => {
-  document.title = "მივლინებების ვიზირება | Georgia LLC"; // Page title
+const TRIP_STATUSES = {
+  pending: {
+    label: "მიმდინარე",
+    color: "warning",
+  },
+  approved: {
+    label: "დადასტურებული",
+    color: "success",
+  },
+  rejected: {
+    label: "უარყოფილი",
+    color: "danger",
+  },
+}
 
-  const [expandedRows, setExpandedRows] = useState([]); // To handle expanded rows
-  const [trips, setTrips] = useState([]); // To store the fetched trip requests
-  const [searchTerm, setSearchTerm] = useState("");
-  const [rejectionModal, setRejectionModal] = useState(false);
-  const [selectedTrip, setSelectedTrip] = useState(null);
-  const [rejectionComment, setRejectionComment] = useState("");
+const TripPageApprove = ({ filterStatus }) => {
+  document.title = "მივლინებების ვიზირება | Georgia LLC" // Page title
+
+  const [expandedRows, setExpandedRows] = useState([]) // To handle expanded rows
+  const [trips, setTrips] = useState([]) // To store the fetched trip requests
+  const [searchTerm, setSearchTerm] = useState("")
+  const [rejectionModal, setRejectionModal] = useState(false)
+  const [selectedTrip, setSelectedTrip] = useState(null)
+  const [rejectionComment, setRejectionComment] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [sortDirection, setSortDirection] = useState("desc")
 
   // Toggle row expansion to show detailed trip info
-  const toggleRow = (index) => {
-    const isRowExpanded = expandedRows.includes(index);
+  const toggleRow = index => {
+    const isRowExpanded = expandedRows.includes(index)
     if (isRowExpanded) {
-      setExpandedRows(expandedRows.filter((rowIndex) => rowIndex !== index));
+      setExpandedRows(expandedRows.filter(rowIndex => rowIndex !== index))
     } else {
-      setExpandedRows([...expandedRows, index]);
+      setExpandedRows([...expandedRows, index])
     }
-  };
+  }
 
   // Fetch trip requests from the backend
   const fetchTrips = async () => {
     try {
-      const response = await getTripList();
-      setTrips(response.data.business);
+      const response = await getTripList()
+      setTrips(response.data.business)
     } catch (err) {
-      console.error("Error fetching trip requests:", err);
+      console.error("Error fetching trip requests:", err)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchTrips();
-  }, []);
+    fetchTrips()
+  }, [])
 
   // Handle status update (approve/reject)
   const handleUpdateStatus = async (tripId, status) => {
     try {
       if (status === "rejected") {
-        setSelectedTrip(tripId);
-        setRejectionModal(true);
-        return;
+        setSelectedTrip(tripId)
+        setRejectionModal(true)
+        return
       }
 
-      await updateTripStatus(tripId, status);
+      await updateTripStatus(tripId, status)
       setTrips(prevTrips =>
-        prevTrips.map(trip =>
-          trip.id === tripId ? { ...trip, status } : trip
-        )
-      );
+        prevTrips.map(trip => (trip.id === tripId ? { ...trip, status } : trip))
+      )
     } catch (err) {
-      console.error("Error updating trip status:", err);
+      console.error("Error updating trip status:", err)
     }
-  };
+  }
 
   // Add this new handler
   const handleRejectionSubmit = async () => {
     try {
-      await updateTripStatus(selectedTrip, "rejected", rejectionComment);
+      await updateTripStatus(selectedTrip, "rejected", rejectionComment)
       setTrips(prevTrips =>
         prevTrips.map(trip =>
-          trip.id === selectedTrip ? 
-          { ...trip, status: "rejected", comment: rejectionComment } : 
-          trip
+          trip.id === selectedTrip
+            ? { ...trip, status: "rejected", comment: rejectionComment }
+            : trip
         )
-      );
-      setRejectionModal(false);
-      setRejectionComment("");
-      setSelectedTrip(null);
+      )
+      setRejectionModal(false)
+      setRejectionComment("")
+      setSelectedTrip(null)
     } catch (err) {
-      console.error("Error rejecting trip:", err);
+      console.error("Error rejecting trip:", err)
     }
-  };
+  }
 
   // Filter trips based on filterStatus prop
   const filteredTrips = trips
-    .filter(trip => 
+    .filter(trip =>
       `${trip.subtitle_user_name} ${trip.subtitle_user_sur_name}`
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
     )
-    .filter(trip => 
-      filterStatus ? filterStatus.includes(trip.status) : true
-    );
+    .filter(trip => (filterStatus ? filterStatus.includes(trip.status) : true))
 
   // Add rejection info to expanded row
-  const expandedRowContent = (trip) => (
+  const expandedRowContent = trip => (
     <tr>
       <td colSpan="7">
         <div className="p-3">
@@ -116,7 +130,7 @@ const TripPageApprove = ({ filterStatus }) => {
             <li>სრული ხარჯი: {trip.total_expense}₾</li>
             <li>ტრანსპორტის ხარჯი: {trip.expense_transport}₾</li>
             <li>საცხოვრებელი: {trip.expense_living}₾</li>
-            <li>კვების ხარჯი: {trip.expense_meal}₾</li>
+            <li>კომუნალური ხარჯი: {trip.expense_meal}₾</li>
           </ul>
           {trip.status === "rejected" && trip.comment && (
             <div className="mt-3 p-3 bg-light rounded">
@@ -125,7 +139,10 @@ const TripPageApprove = ({ filterStatus }) => {
               <small className="text-muted">
                 უარყო: {trip.reviewed_by?.name} {trip.reviewed_by?.sur_name}
                 {trip.reviewed_at && (
-                  <span> - {new Date(trip.reviewed_at).toLocaleString('ka-GE')}</span>
+                  <span>
+                    {" "}
+                    - {new Date(trip.reviewed_at).toLocaleString("ka-GE")}
+                  </span>
                 )}
               </small>
             </div>
@@ -133,7 +150,7 @@ const TripPageApprove = ({ filterStatus }) => {
         </div>
       </td>
     </tr>
-  );
+  )
 
   const renderTable = () => (
     <div className="trip-table-modern">
@@ -185,14 +202,16 @@ const TripPageApprove = ({ filterStatus }) => {
                   </td>
                   <td>
                     <span className={`status-badge status-${trip.status}`}>
-                      <i className={`bx ${
-                        trip.status === "rejected"
-                          ? "bx-x-circle"
-                          : trip.status === "approved"
-                          ? "bx-check-circle"
-                          : "bx-time"
-                      } me-1`}></i>
-                      {trip.status}
+                      <i
+                        className={`bx ${
+                          trip.status === "rejected"
+                            ? "bx-x-circle"
+                            : trip.status === "approved"
+                            ? "bx-check-circle"
+                            : "bx-time"
+                        } me-1`}
+                      ></i>
+                      {TRIP_STATUSES[trip.status].label}
                     </span>
                   </td>
                   <td>
@@ -201,7 +220,7 @@ const TripPageApprove = ({ filterStatus }) => {
                         <Button
                           color="success"
                           size="sm"
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation()
                             handleUpdateStatus(trip.id, "approved")
                           }}
@@ -212,7 +231,7 @@ const TripPageApprove = ({ filterStatus }) => {
                         <Button
                           color="danger"
                           size="sm"
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation()
                             handleUpdateStatus(trip.id, "rejected")
                           }}
@@ -224,9 +243,7 @@ const TripPageApprove = ({ filterStatus }) => {
                     )}
                   </td>
                 </tr>
-                {expandedRows.includes(index) && (
-                  expandedRowContent(trip)
-                )}
+                {expandedRows.includes(index) && expandedRowContent(trip)}
               </React.Fragment>
             ))}
           </tbody>
@@ -234,6 +251,28 @@ const TripPageApprove = ({ filterStatus }) => {
       </div>
     </div>
   )
+
+  const handlePageChange = pageNumber => {
+    setCurrentPage(pageNumber)
+  }
+
+  const handleItemsPerPageChange = value => {
+    setItemsPerPage(value)
+    setCurrentPage(1)
+  }
+
+  const sortTrips = trips => {
+    return [...trips].sort((a, b) => {
+      const dateA = new Date(a.created_at)
+      const dateB = new Date(b.created_at)
+      return sortDirection === "desc" ? dateB - dateA : dateA - dateB
+    })
+  }
+
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const sortedTrips = sortTrips(filteredTrips)
+  const currentTrips = sortedTrips.slice(indexOfFirstItem, indexOfLastItem)
 
   return (
     <React.Fragment>
@@ -250,22 +289,85 @@ const TripPageApprove = ({ filterStatus }) => {
                 type="search"
                 placeholder="ძებნა თანამშრომლის მიხედვით..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 bsSize="sm"
               />
             </Col>
           </Row>
           <Row>
             <Col xl={12}>
-              <Card>
+              <Card className="hr-approval-card">
                 <CardBody>
-                  <CardTitle className="h4">მივლინებების ვიზირების გვერდი</CardTitle>
-                  <CardSubtitle className="card-title-desc">
-                    ქვემოთ მოცემულია მიმდინარე მივლინების მოთხოვნები
+                  <CardTitle className="h4">მივლინებების ვიზირება</CardTitle>
+                  <CardSubtitle className="mb-4">
+                    ვიზირების დადასტურების გვერდი ქვევით ნაჩვენებია მხოლოდ
+                    მიმდინარე მოთხოვნილი ვიზირებები
                   </CardSubtitle>
 
-                  <div className="table-responsive">
+                  <div className="hr-table-modern">
+                    <div className="table-controls mb-3">
+                      <div className="d-flex align-items-center">
+                        <span className="me-2">თითო გვერდზე:</span>
+                        <Input
+                          type="select"
+                          className="form-select w-auto"
+                          value={itemsPerPage}
+                          onChange={e =>
+                            handleItemsPerPageChange(Number(e.target.value))
+                          }
+                        >
+                          {[5, 10, 15, 20].map(value => (
+                            <option key={value} value={value}>
+                              {value}
+                            </option>
+                          ))}
+                        </Input>
+                      </div>
+                    </div>
+
                     {renderTable()}
+
+                    <div className="d-flex justify-content-between align-items-center mt-3">
+                      <div className="pagination-info">
+                        ნაჩვენებია {indexOfFirstItem + 1}-
+                        {Math.min(indexOfLastItem, sortedTrips.length)} /{" "}
+                        {sortedTrips.length}
+                      </div>
+                      <div className="pagination-controls">
+                        <Button
+                          color="light"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="me-2"
+                        >
+                          <i className="bx bx-chevron-left"></i>
+                        </Button>
+                        {Array.from({
+                          length: Math.ceil(sortedTrips.length / itemsPerPage),
+                        }).map((_, index) => (
+                          <Button
+                            key={index + 1}
+                            color={
+                              currentPage === index + 1 ? "primary" : "light"
+                            }
+                            onClick={() => handlePageChange(index + 1)}
+                            className="me-2"
+                          >
+                            {index + 1}
+                          </Button>
+                        ))}
+                        <Button
+                          color="light"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={
+                            currentPage ===
+                            Math.ceil(sortedTrips.length / itemsPerPage)
+                          }
+                        >
+                          <i className="bx bx-chevron-right"></i>
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </CardBody>
               </Card>
@@ -273,7 +375,7 @@ const TripPageApprove = ({ filterStatus }) => {
           </Row>
         </div>
       </div>
-      
+
       {/* Add Modal at the end */}
       <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
         <ModalHeader toggle={() => setRejectionModal(false)}>
@@ -282,13 +384,15 @@ const TripPageApprove = ({ filterStatus }) => {
         <ModalBody>
           <Form>
             <FormGroup>
-              <Label for="rejectionComment">გთხოვთ მიუთითოთ უარყოფის მიზეზი</Label>
+              <Label for="rejectionComment">
+                გთხოვთ მიუთითოთ უარყოფის მიზეზი
+              </Label>
               <Input
                 type="textarea"
                 name="rejectionComment"
                 id="rejectionComment"
                 value={rejectionComment}
-                onChange={(e) => setRejectionComment(e.target.value)}
+                onChange={e => setRejectionComment(e.target.value)}
                 rows="4"
                 required
               />
@@ -296,8 +400,8 @@ const TripPageApprove = ({ filterStatus }) => {
           </Form>
         </ModalBody>
         <ModalFooter>
-          <Button 
-            color="danger" 
+          <Button
+            color="danger"
             onClick={handleRejectionSubmit}
             disabled={!rejectionComment.trim()}
           >
@@ -309,7 +413,7 @@ const TripPageApprove = ({ filterStatus }) => {
         </ModalFooter>
       </Modal>
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default TripPageApprove;
+export default TripPageApprove

@@ -24,21 +24,40 @@ import Breadcrumbs from "../../components/Common/Breadcrumb"
 import { getPurchaseList, updatePurchaseStatus } from "services/purchase"
 import "./PurchasePageApprove.scss"
 
+const PURCHASE_STATUSES = {
+  pending: {
+    label: "მიმდინარე",
+    icon: "bx-time",
+    color: "#FFA500",
+  },
+  approved: {
+    label: "დამტკიცებული",
+    icon: "bx-check-circle",
+    color: "#28a745",
+  },
+  rejected: {
+    label: "უარყოფილი",
+    icon: "bx-x-circle",
+    color: "#dc3545",
+  },
+}
+
 const PurchasePageApprove = ({ filterStatus }) => {
   document.title = "შესყიდვების ვიზირება | Gorgia LLC"
 
   const [expandedRows, setExpandedRows] = useState([])
   const [purchases, setPurchases] = useState([])
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("")
   const [sortConfig, setSortConfig] = useState({
-    key: 'start_date',
-    direction: 'desc'
-  });
-  const [rejectionModal, setRejectionModal] = useState(false);
-  const [selectedPurchase, setSelectedPurchase] = useState(null);
-  const [rejectionComment, setRejectionComment] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(7);
+    key: "start_date",
+    direction: "desc",
+  })
+  const [rejectionModal, setRejectionModal] = useState(false)
+  const [selectedPurchase, setSelectedPurchase] = useState(null)
+  const [rejectionComment, setRejectionComment] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(7)
+  const [sortDirection, setSortDirection] = useState("desc")
 
   const toggleRow = index => {
     const isRowExpanded = expandedRows.includes(index)
@@ -65,61 +84,80 @@ const PurchasePageApprove = ({ filterStatus }) => {
   const handleUpdateStatus = async (purchaseId, status) => {
     try {
       if (status === "rejected") {
-        setSelectedPurchase(purchaseId);
-        setRejectionModal(true);
-        return;
+        setSelectedPurchase(purchaseId)
+        setRejectionModal(true)
+        return
       }
 
-      const response = await updatePurchaseStatus(purchaseId, status);
+      const response = await updatePurchaseStatus(purchaseId, status)
       if (response.data.success) {
         setPurchases(prevPurchases =>
           prevPurchases.map(purchase =>
             purchase.id === purchaseId ? { ...purchase, status } : purchase
           )
-        );
+        )
       }
     } catch (err) {
-      console.error("Error updating purchase status:", err);
+      console.error("Error updating purchase status:", err)
     }
-  };
+  }
 
   const handleRejectionSubmit = async () => {
     try {
-      const response = await updatePurchaseStatus(selectedPurchase, "rejected", rejectionComment);
+      const response = await updatePurchaseStatus(
+        selectedPurchase,
+        "rejected",
+        rejectionComment
+      )
       if (response.data.success) {
         setPurchases(prevPurchases =>
           prevPurchases.map(purchase =>
-            purchase.id === selectedPurchase ? { ...purchase, status: "rejected" } : purchase
+            purchase.id === selectedPurchase
+              ? { ...purchase, status: "rejected" }
+              : purchase
           )
-        );
-        setRejectionModal(false);
-        setRejectionComment("");
-        setSelectedPurchase(null);
+        )
+        setRejectionModal(false)
+        setRejectionComment("")
+        setSelectedPurchase(null)
       }
     } catch (err) {
-      console.error("Error rejecting purchase:", err);
+      console.error("Error rejecting purchase:", err)
     }
-  };
+  }
 
-  const handleSort = (key) => {
+  const handleSort = key => {
     setSortConfig(prevConfig => ({
       key,
-      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
-    }));
-  };
+      direction:
+        prevConfig.key === key && prevConfig.direction === "asc"
+          ? "desc"
+          : "asc",
+    }))
+  }
 
   useEffect(() => {
     if (purchases.length > 0) {
       const sortedPurchases = [...purchases].sort((a, b) => {
-        const dateA = new Date(sortConfig.key === 'start_date' ? a.start_date : a.deadline);
-        const dateB = new Date(sortConfig.key === 'start_date' ? b.start_date : b.deadline);
-        return sortConfig.direction === 'asc'
-          ? dateA - dateB
-          : dateB - dateA;
-      });
-      setPurchases(sortedPurchases);
+        const dateA = new Date(
+          sortConfig.key === "start_date" ? a.start_date : a.deadline
+        )
+        const dateB = new Date(
+          sortConfig.key === "start_date" ? b.start_date : b.deadline
+        )
+        return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA
+      })
+      setPurchases(sortedPurchases)
     }
-  }, [sortConfig]);
+  }, [sortConfig])
+
+  const sortPurchases = purchases => {
+    return [...purchases].sort((a, b) => {
+      const dateA = new Date(a.created_at)
+      const dateB = new Date(b.created_at)
+      return sortDirection === "desc" ? dateB - dateA : dateA - dateB
+    })
+  }
 
   const filteredPurchases = purchases
     .filter(purchase =>
@@ -127,14 +165,27 @@ const PurchasePageApprove = ({ filterStatus }) => {
     )
     .filter(purchase =>
       filterStatus ? filterStatus.includes(purchase.status) : true
-    );
+    )
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredPurchases.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredPurchases.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const sortedPurchases = sortPurchases(filteredPurchases)
+  const currentPurchases = sortedPurchases.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  )
+  const totalPages = Math.ceil(sortedPurchases.length / itemsPerPage)
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = pageNumber => setCurrentPage(pageNumber)
+
+  const handleItemsPerPageChange = value => {
+    setItemsPerPage(value)
+    setCurrentPage(1)
+  }
+
+  const handlePageChange = pageNumber => {
+    setCurrentPage(pageNumber)
+  }
 
   return (
     <React.Fragment>
@@ -142,7 +193,7 @@ const PurchasePageApprove = ({ filterStatus }) => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="შესყიდვები" breadcrumbItem="ვიზირება" />
+              <Breadcrumbs title="შესყიდვები" breadcrumbitem="ვიზირება" />
             </Col>
           </Row>
           <Row className="mb-3">
@@ -151,226 +202,238 @@ const PurchasePageApprove = ({ filterStatus }) => {
                 type="search"
                 placeholder="ძებნა თანამშრომლის მიხედვით..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 bsSize="sm"
               />
             </Col>
           </Row>
           <Row>
             <Col xl={12}>
-              <Card>
+              <Card className="hr-approval-card">
                 <CardBody>
-                  <CardTitle className="h4">შესყიდვების ვიზირების გვერდი</CardTitle>
-                  <CardSubtitle className="card-title-desc">
-                    ქვემოთ მოცემულია შესყიდვის მოთხოვნები
+                  <CardTitle className="h4">შესყიდვების ვიზირება</CardTitle>
+                  <CardSubtitle className="mb-4">
+                    ვიზირების დადასტურების გვერდი ქვევით ნაჩვენებია მხოლოდ
+                    მიმდინარე მოთხოვნილი ვიზირებები
                   </CardSubtitle>
-                  <div className="purchase-table-modern">
-                    <div className="table-container">
-                      <Table className="table-modern mb-0">
-                        <thead>
-                          <tr>
-                            <th>#</th>
-                            <th>მომთხოვნი პირი</th>
-                            <th>შესყიდვის ობიექტი</th>
-                            <th onClick={() => handleSort('start_date')}>
-                              <div className="d-flex align-items-center">
-                                დაწყების თარიღი
-                                {sortConfig.key === 'start_date' && (
-                                  <span className="sort-icon">
-                                    {sortConfig.direction === 'desc' ? '▼' : '▲'}
+
+                  <div className="hr-table-modern">
+                    <div className="table-controls mb-3">
+                      <div className="d-flex align-items-center">
+                        <span className="me-2">თითო გვერდზე:</span>
+                        <Input
+                          type="select"
+                          className="form-select w-auto"
+                          value={itemsPerPage}
+                          onChange={e =>
+                            handleItemsPerPageChange(Number(e.target.value))
+                          }
+                        >
+                          {[5, 10, 15, 20].map(value => (
+                            <option key={value} value={value}>
+                              {value}
+                            </option>
+                          ))}
+                        </Input>
+                      </div>
+                    </div>
+
+                    <Table className="table-modern">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>მომთხოვნი პირი</th>
+                          <th>შესყიდვის აღწერ</th>
+                          <th
+                            style={{ cursor: "pointer" }}
+                            onClick={() =>
+                              setSortDirection(prev =>
+                                prev === "desc" ? "asc" : "desc"
+                              )
+                            }
+                          >
+                            თარიღი{" "}
+                            <i
+                              className={`bx bx-sort-${
+                                sortDirection === "desc" ? "down" : "up"
+                              }`}
+                            ></i>
+                          </th>
+                          <th>სტატუსი</th>
+                          <th>ვიზირება</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentPurchases.map((purchase, index) => (
+                          <React.Fragment key={purchase.id}>
+                            <tr
+                              className={`purchase-row status-${purchase.status}`}
+                              onClick={() => toggleRow(index)}
+                            >
+                              <td>
+                                {(currentPage - 1) * itemsPerPage + index + 1}
+                              </td>
+                              <td>
+                                <div className="d-flex align-items-center">
+                                  <div className="avatar-wrapper">
+                                    <span className="avatar-initial">
+                                      {purchase.requester_name?.charAt(0) ||
+                                        "?"}
+                                    </span>
+                                  </div>
+                                  <span className="user-name">
+                                    {purchase.requester_name}
                                   </span>
+                                </div>
+                              </td>
+                              <td>{purchase.description}</td>
+                              <td>
+                                {new Date(
+                                  purchase.created_at
+                                ).toLocaleDateString()}
+                              </td>
+                              <td>
+                                <span
+                                  className={`status-badge status-${purchase.status}`}
+                                >
+                                  <i
+                                    className={`bx ${
+                                      PURCHASE_STATUSES[purchase.status].icon
+                                    } me-1`}
+                                  ></i>
+                                  {PURCHASE_STATUSES[purchase.status].label}
+                                </span>
+                              </td>
+                              <td>
+                                {purchase.status === "pending" && (
+                                  <div className="d-flex gap-2">
+                                    <Button
+                                      color="success"
+                                      size="sm"
+                                      onClick={e => {
+                                        e.stopPropagation()
+                                        handleUpdateStatus(
+                                          purchase.id,
+                                          "approved"
+                                        )
+                                      }}
+                                    >
+                                      <i className="bx bx-check-double me-1"></i>
+                                      დადასტურება
+                                    </Button>
+                                    <Button
+                                      color="danger"
+                                      size="sm"
+                                      onClick={e => {
+                                        e.stopPropagation()
+                                        handleUpdateStatus(
+                                          purchase.id,
+                                          "rejected"
+                                        )
+                                      }}
+                                    >
+                                      <i className="bx bx-x me-1"></i>
+                                      უარყოფა
+                                    </Button>
+                                  </div>
                                 )}
-                              </div>
-                            </th>
-                            <th onClick={() => handleSort('deadline')}>
-                              <div className="d-flex align-items-center">
-                                დასრულების თარიღი
-                                {sortConfig.key === 'deadline' && (
-                                  <span className="sort-icon">
-                                    {sortConfig.direction === 'desc' ? '▼' : '▲'}
-                                  </span>
-                                )}
-                              </div>
-                            </th>
-                            <th>სტატუსი</th>
-                            <th>ვიზირება</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {currentItems.map((purchase, index) => (
-                            <React.Fragment key={purchase.id}>
-                              <tr onClick={() => toggleRow(index)}>
-                                <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                                <td>
-                                  <div className="d-flex align-items-center">
-                                    <div className="avatar-wrapper">
-                                      <span className="avatar-initial">
-                                        {purchase.user?.name?.charAt(0) || "?"}
-                                      </span>
-                                    </div>
-                                    <span className="user-name">{purchase.user.name}</span>
+                              </td>
+                            </tr>
+                            {expandedRows.includes(index) && (
+                              <tr>
+                                <td colSpan="6">
+                                  <div className="expanded-content">
+                                    <Row>
+                                      <Col>
+                                        <div className="info-section">
+                                          <h6 className="info-title">
+                                            <i className="bx bx-info-circle me-2"></i>
+                                            დეტალრ ინფორმაცია
+                                          </h6>
+                                          <ul className="info-list">
+                                            <li>
+                                              <span className="label">
+                                                რაოდენობა:
+                                              </span>
+                                              <span className="value">
+                                                {purchase.quantity}
+                                              </span>
+                                            </li>
+                                            <li>
+                                              <span className="label">
+                                                ფასი:
+                                              </span>
+                                              <span className="value">
+                                                {purchase.price}₾
+                                              </span>
+                                            </li>
+                                            {purchase.status === "rejected" &&
+                                              purchase.comment && (
+                                                <li>
+                                                  <span className="label">
+                                                    უარყოფის მიზეზი:
+                                                  </span>
+                                                  <span className="value">
+                                                    {purchase.comment}
+                                                  </span>
+                                                </li>
+                                              )}
+                                          </ul>
+                                        </div>
+                                      </Col>
+                                    </Row>
                                   </div>
-                                </td>
-                                <td>{purchase.objective}</td>
-                                <td>
-                                  <div className="date-wrapper">
-                                    <i className="bx bx-calendar me-2"></i>
-                                    {new Date(purchase.start_date).toLocaleDateString()}
-                                  </div>
-                                </td>
-                                <td>
-                                  <div className="date-wrapper">
-                                    <i className="bx bx-calendar-check me-2"></i>
-                                    {new Date(purchase.deadline).toLocaleDateString()}
-                                  </div>
-                                </td>
-                                <td>
-                                  <span className={`status-badge status-${purchase.status}`}>
-                                    <i className={`bx ${
-                                      purchase.status === "rejected"
-                                        ? "bx-x-circle"
-                                        : purchase.status === "approved"
-                                        ? "bx-check-circle"
-                                        : "bx-time"
-                                    } me-2`}></i>
-                                    {purchase.status}
-                                  </span>
-                                </td>
-                                <td>
-                                  {purchase.status === "rejected" ? (
-                                    <button className="btn-action btn-rejected" disabled>
-                                      <i className="bx bx-block me-2"></i>
-                                      უარყოფილია
-                                    </button>
-                                  ) : purchase.status === "approved" ? (
-                                    <button className="btn-action btn-approved" disabled>
-                                      <i className="bx bx-check-double me-2"></i>
-                                      დადასტურებულია
-                                    </button>
-                                  ) : (
-                                    <div className="d-flex gap-2">
-                                      <button
-                                        className="btn-action btn-approve"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleUpdateStatus(purchase.id, "approved");
-                                        }}
-                                      >
-                                        <i className="bx bx-check-double me-2"></i>
-                                        დადასტურება
-                                      </button>
-                                      <button
-                                        className="btn-action btn-reject"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleUpdateStatus(purchase.id, "rejected");
-                                        }}
-                                      >
-                                        <i className="bx bx-block me-2"></i>
-                                        უარყოფა
-                                      </button>
-                                    </div>
-                                  )}
                                 </td>
                               </tr>
-                              {expandedRows.includes(index) && (
-                                <tr>
-                                  <td colSpan="7">
-                                    <div className="expanded-content">
-                                      <Row>
-                                        <Col md={6}>
-                                          <div className="info-section">
-                                            <h6 className="info-title">
-                                              <i className="bx bx-user"></i>
-                                              თანამშრომლის ინფორმაცია
-                                            </h6>
-                                            <ul className="info-list">
-                                              <li>
-                                                <span className="label">პოზიცია:</span>
-                                                <span className="value">{purchase.user.position}</span>
-                                              </li>
-                                              <li>
-                                                <span className="label">ID:</span>
-                                                <span className="value">{purchase.user.id}</span>
-                                              </li>
-                                            </ul>
-                                          </div>
-                                        </Col>
-                                        <Col md={6}>
-                                          <div className="info-section">
-                                            <h6 className="info-title">
-                                              <i className="bx bx-package"></i>
-                                              შესყიდვის დეტალები
-                                            </h6>
-                                            <ul className="info-list">
-                                              <li>
-                                                <span className="label">მისამართი:</span>
-                                                <span className="value">{purchase.delivery_address}</span>
-                                              </li>
-                                              <li>
-                                                <span className="label">სულ დღეები:</span>
-                                                <span className="value">{purchase.total_days}</span>
-                                              </li>
-                                            </ul>
-                                          </div>
-                                        </Col>
-                                      </Row>
-                                    </div>
-                                  </td>
-                                </tr>
-                              )}
-                            </React.Fragment>
-                          ))}
-                        </tbody>
-                      </Table>
-                    </div>
-                  </div>
-                  <div className="d-flex justify-content-end mt-3">
-                    <Pagination>
-                      <PaginationItem disabled={currentPage === 1}>
-                        <PaginationLink previous onClick={() => paginate(currentPage - 1)} href="#" />
-                      </PaginationItem>
-                      {totalPages <= 5 ? (
-                        [...Array(totalPages)].map((_, index) => (
-                          <PaginationItem key={index + 1} active={currentPage === index + 1}>
-                            <PaginationLink onClick={() => paginate(index + 1)} href="#">
-                              {index + 1}
-                            </PaginationLink>
-                          </PaginationItem>
-                        ))
-                      ) : (
-                        <>
-                          {[...Array(totalPages)].map((_, index) => {
-                            const pageNumber = index + 1;
-                            if (
-                              pageNumber === 1 ||
-                              pageNumber === totalPages ||
-                              (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
-                            ) {
-                              return (
-                                <PaginationItem key={pageNumber} active={currentPage === pageNumber}>
-                                  <PaginationLink onClick={() => paginate(pageNumber)} href="#">
-                                    {pageNumber}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              );
-                            } else if (pageNumber === currentPage - 2 || pageNumber === currentPage + 2) {
-                              return (
-                                <PaginationItem key={pageNumber}>
-                                  <PaginationLink disabled href="#">
-                                    ...
-                                  </PaginationLink>
-                                </PaginationItem>
-                              );
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </Table>
+
+                    <div className="d-flex justify-content-between align-items-center mt-3">
+                      <div className="pagination-info">
+                        ნაჩვენებია {indexOfFirstItem + 1}-
+                        {Math.min(indexOfLastItem, sortedPurchases.length)} /{" "}
+                        {sortedPurchases.length}
+                      </div>
+                      <div className="pagination-controls">
+                        <Button
+                          color="light"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="me-2"
+                        >
+                          <i className="bx bx-chevron-left"></i>
+                        </Button>
+                        {Array.from({
+                          length: Math.ceil(
+                            sortedPurchases.length / itemsPerPage
+                          ),
+                        }).map((_, index) => (
+                          <Button
+                            key={index + 1}
+                            color={
+                              currentPage === index + 1 ? "primary" : "light"
                             }
-                            return null;
-                          })}
-                        </>
-                      )}
-                      <PaginationItem disabled={currentPage === totalPages}>
-                        <PaginationLink next onClick={() => paginate(currentPage + 1)} href="#" />
-                      </PaginationItem>
-                    </Pagination>
+                            onClick={() => handlePageChange(index + 1)}
+                            className="me-2"
+                          >
+                            {index + 1}
+                          </Button>
+                        ))}
+                        <Button
+                          color="light"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={
+                            currentPage ===
+                            Math.ceil(sortedPurchases.length / itemsPerPage)
+                          }
+                        >
+                          <i className="bx bx-chevron-right"></i>
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </CardBody>
               </Card>
@@ -385,13 +448,15 @@ const PurchasePageApprove = ({ filterStatus }) => {
         <ModalBody>
           <Form>
             <FormGroup>
-              <Label for="rejectionComment">გთხოვთ მიუთითოთ უარყოფის მიზეზი</Label>
+              <Label for="rejectionComment">
+                გთხოვთ მიუთითოთ უარყოფის მიზეზი
+              </Label>
               <Input
                 type="textarea"
                 name="rejectionComment"
                 id="rejectionComment"
                 value={rejectionComment}
-                onChange={(e) => setRejectionComment(e.target.value)}
+                onChange={e => setRejectionComment(e.target.value)}
                 rows="4"
                 required
               />

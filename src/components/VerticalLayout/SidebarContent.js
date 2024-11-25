@@ -127,6 +127,19 @@ const SidebarContent = ({ t }) => {
     }
   }, [location.pathname, activateParentDropdown, removeActivation])
 
+  const handleMenuClick = useCallback(
+    item => {
+      if (!item.submenu) {
+        document.body.classList.remove("sidebar-enable")
+        document.dispatchEvent(new CustomEvent("closeSidebar"))
+      }
+      if (item.submenu) {
+        toggleMenu(item.key)
+      }
+    },
+    [toggleMenu]
+  )
+
   const renderSubmenu = useCallback(
     submenuItems => {
       return submenuItems.filter(Boolean).map((item, index) => (
@@ -136,13 +149,13 @@ const SidebarContent = ({ t }) => {
           label={item.label}
           hasSubmenu={!!item.submenu}
           isExpanded={item.submenu && expandedMenus[item.key]}
-          onClick={() => item.submenu && toggleMenu(item.key)}
+          onClick={() => handleMenuClick(item)}
         >
           {item.submenu && renderSubmenu(item.submenu)}
         </MenuItem>
       ))
     },
-    [expandedMenus, toggleMenu]
+    [expandedMenus, handleMenuClick]
   )
 
   const menuItems = useMemo(
@@ -155,12 +168,12 @@ const SidebarContent = ({ t }) => {
           label={item.label}
           hasSubmenu={!!item.submenu}
           isExpanded={item.submenu && expandedMenus[item.key]}
-          onClick={() => item.submenu && toggleMenu(item.key)}
+          onClick={() => handleMenuClick(item)}
         >
           {item.submenu && renderSubmenu(item.submenu)}
         </MenuItem>
       )),
-    [menuConfig, expandedMenus, toggleMenu, renderSubmenu]
+    [menuConfig, expandedMenus, handleMenuClick, renderSubmenu]
   )
 
   useEffect(() => {

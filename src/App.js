@@ -10,6 +10,7 @@ import NonAuthLayout from "./components/NonAuthLayout"
 
 import "./assets/scss/theme.scss"
 import DataProvider from "components/hoc/DataProvider"
+import 'boxicons/css/boxicons.min.css';
 
 const getLayout = () => {
   let Layout = VerticalLayout

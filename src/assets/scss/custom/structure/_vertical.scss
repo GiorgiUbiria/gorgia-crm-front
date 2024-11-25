@@ -35,9 +35,10 @@
       li {
         margin: 4px 0;
         padding: 0 12px;
+        margin-bottom: 8px;
 
-        &:not(:last-child) {
-          margin-bottom: 8px;
+        &:last-child {
+          margin-bottom: 4px;
         }
 
         a {
@@ -74,14 +75,33 @@
   background-color: #EDF3FD;
 
   @media (max-width: 991.98px) {
+    position: fixed;
     top: $header-height;
-    padding-top: 0px;
+    bottom: 0;
+    left: -$sidebar-width;
+    padding-top: 0;
+    transition: all 0.3s ease-in-out;
+    z-index: 1002;
+
+    &.show {
+      left: 0;
+    }
   }
 
   .navbar-brand-box {
-    position: fixed;
-    top: 0px;
-    z-index: 99;
+    padding: 0 1.5rem;
+    text-align: center;
+    width: $navbar-brand-box-width;
+    background-color: transparent;
+    box-shadow: none;
+    height: $header-height;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
 
     @media (max-width: 991.98px) {
       display: none;
@@ -120,15 +140,21 @@
     padding: 0 15px 10px 15px;
     margin-top: $header-height;
   }
+
+  @media (max-width: 991.98px) {
+    margin-left: 0;
+    padding-top: $header-height;
+  }
 }
 
 
 #sidebar-menu {
   padding: 10px 0 30px 0;
   height: calc(100vh - #{$header-height});
-  background-color: #D3E9FF;
   display: flex;
   flex-direction: column;
+
+  border-right: 1px solid #e5e5e5;
 
   .mm-active {
     >.has-arrow {
@@ -187,7 +213,6 @@
         padding: 0;
 
         li {
-
           a {
             padding: .4rem 1.5rem .4rem 3.5rem;
             font-size: 13px;
@@ -1217,5 +1242,74 @@ body[data-sidebar-image] {
 
   &::-webkit-scrollbar {
     display: none !important;
+  }
+}
+
+// Add/update body class for mobile sidebar
+body.sidebar-enable {
+  @media (max-width: 991.98px) {
+    overflow: hidden;
+
+    .vertical-menu {
+      left: 0;
+    }
+
+    // Add overlay
+    &:before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+    }
+  }
+}
+
+.logo {
+  line-height: $header-height;
+
+  img {
+    max-height: 32px;
+    width: auto;
+  }
+
+  .logo-sm {
+    display: none;
+
+    img {
+      max-height: 28px;
+    }
+  }
+}
+
+.sub-menu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metismenu {
+  li {
+    .sub-menu {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+
+      li {
+        a {
+          padding: 10px 16px;
+          display: block;
+          color: inherit;
+          text-decoration: none;
+          transition: background-color 0.3s ease;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+          }
+        }
+      }
+    }
   }
 }
