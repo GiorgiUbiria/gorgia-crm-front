@@ -1,60 +1,60 @@
-import React, { useState, useCallback, memo, useEffect } from 'react';
-import { Button, Input } from 'reactstrap';
-import moment from 'moment';
-import DeleteConfirmationModal from './DeleteConfirmationModal';
+import React, { useState, useCallback, memo, useEffect } from "react"
+import { Button, Input } from "reactstrap"
+import moment from "moment"
+import DeleteConfirmationModal from "./DeleteConfirmationModal"
 
-const Comment = memo(function Comment({ 
-  comment, 
-  requestId, 
-  onReply, 
-  onDelete, 
-  onMainInputFocus, 
+const Comment = memo(function Comment({
+  comment,
+  requestId,
+  onReply,
+  onDelete,
+  onMainInputFocus,
   currentUser,
-  depth = 0 
+  depth = 0,
 }) {
-  console.log('Current User:', currentUser);
-  console.log('Comment User:', comment.user);
-  
-  const canDelete = currentUser?.id === comment.user_id;
+  const canDelete = currentUser?.id === comment.user_id
 
-  const [isReplying, setIsReplying] = useState(false);
-  const [replyText, setReplyText] = useState('');
-  const [showDeepReplies, setShowDeepReplies] = useState(false);
-  const [deepReplies, setDeepReplies] = useState([]);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isReplying, setIsReplying] = useState(false)
+  const [replyText, setReplyText] = useState("")
+  const [showDeepReplies, setShowDeepReplies] = useState(false)
+  const [deepReplies, setDeepReplies] = useState([])
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
-  const handleReply = useCallback(async (e) => {
-    e.stopPropagation();
-    if (!replyText.trim()) return;
-    
-    try {
-      const success = await onReply(requestId, replyText, comment.id);
-      if (success) {
-        setReplyText('');
-        setIsReplying(false);
+  const handleReply = useCallback(
+    async e => {
+      e.stopPropagation()
+      if (!replyText.trim()) return
+
+      try {
+        const success = await onReply(requestId, replyText, comment.id)
+        if (success) {
+          setReplyText("")
+          setIsReplying(false)
+        }
+      } catch (error) {
+        console.error("Error sending reply:", error)
       }
-    } catch (error) {
-      console.error('Error sending reply:', error);
-    }
-  }, [replyText, requestId, comment.id, onReply]);
+    },
+    [replyText, requestId, comment.id, onReply]
+  )
 
   useEffect(() => {
     return () => {
       if (isReplying) {
-        setIsReplying(false);
-        setReplyText('');
+        setIsReplying(false)
+        setReplyText("")
       }
-    };
-  }, [isReplying]);
+    }
+  }, [isReplying])
 
   const loadDeepReplies = async () => {
     try {
-      const response = await fetchCommentsForLeadRequest(requestId, comment.id);
-      setDeepReplies(Array.isArray(response) ? response : (response.data || []));
+      const response = await fetchCommentsForLeadRequest(requestId, comment.id)
+      setDeepReplies(Array.isArray(response) ? response : response.data || [])
     } catch (error) {
-      console.error('Error loading deep replies:', error);
+      console.error("Error loading deep replies:", error)
     }
-  };
+  }
 
   const renderReplies = () => {
     if (comment.replies?.length > 0) {
@@ -69,10 +69,10 @@ const Comment = memo(function Comment({
           currentUser={currentUser}
           depth={depth + 1}
         />
-      ));
+      ))
     }
-    return null;
-  };
+    return null
+  }
 
   const renderDeepRepliesControl = () => {
     if (depth === 1 && comment.has_deep_replies) {
@@ -81,12 +81,12 @@ const Comment = memo(function Comment({
           size="sm"
           color="link"
           className="p-0 mb-2"
-          onClick={async (e) => {
-            e.stopPropagation();
+          onClick={async e => {
+            e.stopPropagation()
             if (!showDeepReplies && deepReplies.length === 0) {
-              await loadDeepReplies();
+              await loadDeepReplies()
             }
-            setShowDeepReplies(!showDeepReplies);
+            setShowDeepReplies(!showDeepReplies)
           }}
         >
           {showDeepReplies ? (
@@ -101,54 +101,57 @@ const Comment = memo(function Comment({
             </>
           )}
         </Button>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
-  const handleReplyClick = (e) => {
-    e.stopPropagation();
-    const allReplyInputs = document.querySelectorAll('.reply-input');
+  const handleReplyClick = e => {
+    e.stopPropagation()
+    const allReplyInputs = document.querySelectorAll(".reply-input")
     allReplyInputs.forEach(input => {
-      const container = input.closest('.comment-container');
-      if (container && container !== e.target.closest('.comment-container')) {
-        const replyButton = container.querySelector('.reply-button');
+      const container = input.closest(".comment-container")
+      if (container && container !== e.target.closest(".comment-container")) {
+        const replyButton = container.querySelector(".reply-button")
         if (replyButton) {
-          const currentIsReplying = container.querySelector('.reply-input') !== null;
+          const currentIsReplying =
+            container.querySelector(".reply-input") !== null
           if (currentIsReplying) {
-            setIsReplying(false);
-            setReplyText('');
+            setIsReplying(false)
+            setReplyText("")
           }
         }
       }
-    });
-    setIsReplying(!isReplying);
-  };
+    })
+    setIsReplying(!isReplying)
+  }
 
   const handleDelete = async () => {
     try {
-      const success = await onDelete(requestId, comment.id);
+      const success = await onDelete(requestId, comment.id)
       if (!success) {
-        console.error('Failed to delete comment');
+        console.error("Failed to delete comment")
       }
     } catch (error) {
-      console.error('Error deleting comment:', error);
+      console.error("Error deleting comment:", error)
     }
-  };
+  }
 
-  const toggleDeleteModal = () => setIsDeleteModalOpen(!isDeleteModalOpen);
+  const toggleDeleteModal = () => setIsDeleteModalOpen(!isDeleteModalOpen)
 
   return (
-    <div 
-      className={`comment-container mb-2 border-start ps-2 ${depth > 0 ? 'ms-2' : ''}`}
-      style={{ borderColor: '#dee2e6' }}
-      onClick={(e) => e.stopPropagation()}
+    <div
+      className={`comment-container mb-2 border-start ps-2 ${
+        depth > 0 ? "ms-2" : ""
+      }`}
+      style={{ borderColor: "#dee2e6" }}
+      onClick={e => e.stopPropagation()}
     >
       <div className="d-flex justify-content-between align-items-center mb-1">
         <div>
-          <strong className="me-2">{comment.user?.name || 'Unknown'}</strong>
+          <strong className="me-2">{comment.user?.name || "Unknown"}</strong>
           <small className="text-muted">
-            {moment(comment.created_at).format('MM/DD HH:mm')}
+            {moment(comment.created_at).format("MM/DD HH:mm")}
           </small>
         </div>
         <div className="d-flex gap-2">
@@ -158,7 +161,7 @@ const Comment = memo(function Comment({
               color="link"
               className="p-0 text-danger me-2"
               onClick={toggleDeleteModal}
-              style={{ textDecoration: 'none' }}
+              style={{ textDecoration: "none" }}
             >
               წაშლა
             </Button>
@@ -173,9 +176,11 @@ const Comment = memo(function Comment({
           </Button>
         </div>
       </div>
-      
-      <p className="mb-1" style={{ fontSize: '0.95rem' }}>{comment.comment}</p>
-      
+
+      <p className="mb-1" style={{ fontSize: "0.95rem" }}>
+        {comment.comment}
+      </p>
+
       {isReplying && (
         <div className="mb-2 reply-input">
           <Input
@@ -184,29 +189,29 @@ const Comment = memo(function Comment({
             onChange={e => setReplyText(e.target.value)}
             className="mb-1"
             onClick={e => e.stopPropagation()}
-            onFocus={(e) => {
-              e.stopPropagation();
-              onMainInputFocus?.();
+            onFocus={e => {
+              e.stopPropagation()
+              onMainInputFocus?.()
             }}
             rows={1}
             bsSize="sm"
           />
           <div className="d-flex gap-1">
-            <Button 
-              color="primary" 
-              size="sm" 
+            <Button
+              color="primary"
+              size="sm"
               onClick={handleReply}
               disabled={!replyText.trim()}
             >
               გაგზავნა
             </Button>
-            <Button 
-              color="secondary" 
-              size="sm" 
-              onClick={e => { 
-                e.stopPropagation(); 
-                setIsReplying(false); 
-                setReplyText(''); 
+            <Button
+              color="secondary"
+              size="sm"
+              onClick={e => {
+                e.stopPropagation()
+                setIsReplying(false)
+                setReplyText("")
               }}
             >
               გაუქმება
@@ -218,18 +223,19 @@ const Comment = memo(function Comment({
       <div className="replies">
         {renderReplies()}
         {renderDeepRepliesControl()}
-        {showDeepReplies && deepReplies.map(reply => (
-          <Comment
-            key={reply.id}
-            comment={reply}
-            requestId={requestId}
-            onReply={onReply}
-            onDelete={onDelete}
-            onMainInputFocus={onMainInputFocus}
-            currentUser={currentUser}
-            depth={depth + 1}
-          />
-        ))}
+        {showDeepReplies &&
+          deepReplies.map(reply => (
+            <Comment
+              key={reply.id}
+              comment={reply}
+              requestId={requestId}
+              onReply={onReply}
+              onDelete={onDelete}
+              onMainInputFocus={onMainInputFocus}
+              currentUser={currentUser}
+              depth={depth + 1}
+            />
+          ))}
       </div>
 
       <DeleteConfirmationModal
@@ -238,7 +244,7 @@ const Comment = memo(function Comment({
         onConfirm={handleDelete}
       />
     </div>
-  );
-});
+  )
+})
 
-export default Comment; 
+export default Comment
