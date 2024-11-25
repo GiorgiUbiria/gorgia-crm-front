@@ -178,7 +178,19 @@ const SidebarContent = ({ t }) => {
   }, [activeMenu])
 
   return (
-    <SimpleBar ref={ref}>
+    <SimpleBar
+      ref={ref}
+      className="custom-scrollbar"
+      style={{
+        maxHeight: "100%",
+        "--sb-track-color": "rgba(255, 255, 255, 0.1)",
+        "--sb-thumb-color": "rgba(255, 255, 255, 0.4)",
+        "--sb-size": "4px",
+      }}
+      autoHide={true}
+      timeout={400}
+      clickOnTrack={false}
+    >
       <div id="sidebar-menu">
         <ul className="metismenu list-unstyled" id="side-menu">
           {menuItems}

@@ -1,0 +1,111 @@
+.modern-table-wrapper {
+    .table-container {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .table-modern {
+        margin-bottom: 0;
+
+        thead {
+            background-color: #f8fafc;
+
+            th {
+                border-bottom: 2px solid #e2e8f0;
+                color: #475569;
+                font-weight: 600;
+                padding: 1rem;
+                position: relative;
+
+                &.sortable {
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: #f1f5f9;
+                    }
+                }
+
+                .sort-icon {
+                    margin-left: 0.5rem;
+                    font-size: 0.75rem;
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                transition: all 0.2s ease;
+
+                &:hover {
+                    background-color: #f8fafc;
+                }
+
+                &.expanded {
+                    background-color: #f1f5f9;
+                }
+
+                td {
+                    padding: 1rem;
+                    vertical-align: middle;
+                    border-bottom: 1px solid #e2e8f0;
+                }
+            }
+
+            .expanded-row {
+                background-color: #f8fafc;
+
+                td {
+                    padding: 1rem;
+                }
+            }
+        }
+    }
+
+    .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background-color: #fff;
+        border-top: 1px solid #e2e8f0;
+
+        .items-info {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+    }
+
+    .modern-pagination {
+        margin-bottom: 0;
+
+        .page-link {
+            border: none;
+            color: #64748b;
+            padding: 0.5rem 0.75rem;
+            margin: 0 0.25rem;
+            border-radius: 4px;
+
+            &:hover {
+                background-color: #f1f5f9;
+                color: #1e293b;
+            }
+        }
+
+        .active .page-link {
+            background-color: #3b82f6;
+            color: #fff;
+
+            &:hover {
+                background-color: #2563eb;
+            }
+        }
+    }
+
+    .loading-spinner {
+        padding: 2rem;
+        text-align: center;
+        color: #64748b;
+    }
+}
