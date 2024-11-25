@@ -1,15 +1,15 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+import React from "react"
+import { Navigate } from "react-router-dom"
+import useAuth from "hooks/useAuth"
 
-const Authmiddleware = (props) => {
-  if (!sessionStorage.getItem("authUser")) {
-    return (
-      <Navigate to={{ pathname: "/login", state: { from: props.location } }} />
-    );
+const Authmiddleware = props => {
+  const isAuth = useAuth()
+
+  if (!isAuth) {
+    return <Navigate to="/login" />
   }
-  return (<React.Fragment>
-    {props.children}
-  </React.Fragment>);
-};
 
-export default Authmiddleware;
+  return <React.Fragment>{props.children}</React.Fragment>
+}
+
+export default Authmiddleware
