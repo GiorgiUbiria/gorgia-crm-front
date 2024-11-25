@@ -14,11 +14,31 @@ import Comment from "../../components/Comment"
 import { useComments } from "../../hooks/useComments"
 import useFetchUser from "../../hooks/useFetchUser"
 
+const STATUS_CONFIG = {
+  PENDING: {
+    color: "warning",
+    label: "მოლოდინში",
+  },
+  IN_PROGRESS: {
+    color: "info",
+    label: "მიმდინარე",
+  },
+  COMPLETED: {
+    color: "success",
+    label: "დასრულებული",
+  },
+  REJECTED: {
+    color: "danger",
+    label: "უარყოფილი",
+  },
+}
+
 const VipLeadDetailPage = () => {
   const [requests, setRequests] = useState([])
   const [expandedRows, setExpandedRows] = useState({})
   const [newComments, setNewComments] = useState({})
   const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
   const {
     comments,
     isLoading: commentsLoading,
@@ -103,6 +123,10 @@ const VipLeadDetailPage = () => {
     })
   }, [])
 
+  const filteredRequests = requests.filter(request =>
+    request.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   if (isLoading) {
     return <div className="text-center mt-4">Loading...</div>
   }
@@ -112,36 +136,58 @@ const VipLeadDetailPage = () => {
       <Container fluid className="mt-3">
         <Card className="shadow-sm">
           <CardBody className="p-3">
-            <h4 className="text-primary mb-3">მოთხოვნების სია</h4>
-            <Table hover responsive size="sm" className="mb-0">
-              <thead>
+            <h4 className="text-primary mb-3">VIP მოთხოვნების სია</h4>
+            <Input
+              type="search"
+              placeholder="ძებნა სახელით..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="mb-3"
+              bsSize="sm"
+            />
+            <Table hover responsive size="sm" className="mb-0 align-middle">
+              <thead className="table-light">
                 <tr>
                   <th>ID</th>
-                  <th>სახელი</th>
+                  <th>სახელი გვარი</th>
                   <th>სტატუსი</th>
                   <th>შექმნის თარიღი</th>
                 </tr>
               </thead>
               <tbody>
-                {requests.map(request => (
+                {filteredRequests.map(request => (
                   <React.Fragment key={request.id}>
                     <tr
                       onClick={() => toggleRow(request.id)}
                       style={{ cursor: "pointer" }}
+                      className={expandedRows[request.id] ? "table-active" : ""}
+                      key={`row-${request.id}`}
                     >
-                      <td>{request.id}</td>
+                      <td className="fw-medium">#{request.id}</td>
                       <td>{request.name}</td>
-                      <td>{request.request_status}</td>
                       <td>
-                        {moment(request.creation_date).format("YYYY-MM-DD HH:mm")}
-                        {/* {JSON.stringify(request)} */}
+                        <span
+                          className={`badge bg-${
+                            STATUS_CONFIG[request.request_status]?.color ||
+                            "secondary"
+                          } rounded-pill`}
+                        >
+                          {STATUS_CONFIG[request.request_status]?.label ||
+                            request.request_status}
+                        </span>
+                      </td>
+                      <td>
+                        {moment(request.creation_date).format(
+                          "DD/MM/YYYY HH:mm"
+                        )}
                       </td>
                     </tr>
-                    <tr>
+                    <tr
+                      key={`collapse-${request.id}`}
+                    >
                       <td colSpan="4" className="p-0">
                         <Collapse isOpen={expandedRows[request.id]}>
                           <div className="p-2 bg-light">
-                            {/* Comments section */}
                             {(comments[request.id] || []).map(comment => (
                               <Comment
                                 key={comment.id}
@@ -153,8 +199,6 @@ const VipLeadDetailPage = () => {
                                 currentUser={currentUser}
                               />
                             ))}
-
-                            {/* New comment input */}
                             <div className="mt-2">
                               <Input
                                 type="textarea"
@@ -194,6 +238,11 @@ const VipLeadDetailPage = () => {
                 ))}
               </tbody>
             </Table>
+            {filteredRequests.length === 0 && (
+              <div className="text-center text-muted py-4">
+                მოთხოვნები ვერ მოიძებნა
+              </div>
+            )}
           </CardBody>
         </Card>
       </Container>

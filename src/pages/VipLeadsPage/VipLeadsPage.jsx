@@ -127,16 +127,14 @@ const VipLeadsPage = () => {
     const leadData = {
       first_name: data.get("first_name"),
       last_name: data.get("last_name"),
-      request: data.get("request"),
-      responsible_person: data.get("responsible_person"),
-      status: data.get("status"),
-      comment: data.get("comment"),
+      phone: data.get("phone"),
     }
 
     try {
       if (isEdit) {
         await updateVipLead(vipLead.id, leadData)
       } else {
+        console.log(leadData)
         await createVipLead(leadData)
       }
       fetchVipLeads()
@@ -176,12 +174,12 @@ const VipLeadsPage = () => {
                       {headerGroups.map(headerGroup => (
                         <tr
                           {...headerGroup.getHeaderGroupProps()}
-                          key={headerGroup.id}
+                          key={`header-${headerGroup.id}`}
                         >
                           {headerGroup.headers.map(column => (
                             <th
                               {...column.getHeaderProps()}
-                              key={column.id}
+                              key={`header-cell-${column.id}`}
                               style={{ verticalAlign: "middle" }}
                             >
                               {column.id === "created_at"
@@ -194,14 +192,19 @@ const VipLeadsPage = () => {
                       ))}
                     </thead>
                     <tbody {...getTableBodyProps()}>
-                      {rows.map(row => {
+                      {rows.map((row, index) => {
                         prepareRow(row)
                         return (
-                          <tr {...row.getRowProps()} key={row.id}>
+                          <tr
+                            {...row.getRowProps()}
+                            key={`row-${row.id || index}`}
+                          >
                             {row.cells.map(cell => (
                               <td
                                 {...cell.getCellProps()}
-                                key={cell.column.id}
+                                key={`cell-${row.id || index}-${
+                                  cell.column.id
+                                }`}
                                 style={{ verticalAlign: "middle" }}
                               >
                                 {cell.render("Cell")}
