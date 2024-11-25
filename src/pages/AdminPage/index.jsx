@@ -171,6 +171,7 @@ const AdminPage = () => {
     borderRadius: "4px",
     border: "1px solid #e2e8f0",
     backgroundColor: "#f8fafc",
+    width: "100%",
   }
 
   const searchIconStyle = {
@@ -208,14 +209,14 @@ const AdminPage = () => {
         <Row>
           <Col lg="12">
             <Card className="shadow-sm">
-              <CardBody>
+              <CardBody className="px-2 px-sm-3">
                 <Nav tabs className="nav-tabs-custom nav-justified">
                   <NavItem>
                     <NavLink
                       className={classnames({ active: activeTab === "1" })}
                       onClick={() => toggle("1")}
                     >
-                      <span className="d-none d-sm-block">დეპარტამენტები</span>
+                      <span>დეპარტამენტები</span>
                     </NavLink>
                   </NavItem>
                   <NavItem>
@@ -223,7 +224,7 @@ const AdminPage = () => {
                       className={classnames({ active: activeTab === "2" })}
                       onClick={() => toggle("2")}
                     >
-                      <span className="d-none d-sm-block">მომხმარებლები</span>
+                      <span>მომხმარებლები</span>
                     </NavLink>
                   </NavItem>
                 </Nav>

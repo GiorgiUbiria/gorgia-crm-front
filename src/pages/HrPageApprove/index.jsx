@@ -251,7 +251,7 @@ const HrPageApprove = ({ filterStatus }) => {
                   <thead>
                     <tr>
                       <th>#</th>
-                      <th>მომთხოვნი პირი</th>
+                      <th>მომთხოვნი ���ირი</th>
                       <th>მოთხოვნილი ფორმის სტილი</th>
                       <th
                         style={{ cursor: "pointer" }}

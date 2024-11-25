@@ -10,8 +10,7 @@ import { Dropdown } from "reactstrap"
 import NotificationDropdown from "../CommonForBoth/TopbarDropdown/NotificationDropdown"
 import ProfileMenu from "../CommonForBoth/TopbarDropdown/ProfileMenu"
 
-import logo from "../../assets/images/logo.svg"
-import logoLightSvg from "../../assets/images/logo-light.svg"
+import logoLight from "../../assets/images/logo-light.png"
 
 //i18n
 import { withTranslation } from "react-i18next"
@@ -23,112 +22,56 @@ import {
   changeSidebarType,
 } from "../../store/actions"
 
-const Header = props => {
-  const [search, setsearch] = useState(false)
-  const [megaMenu, setmegaMenu] = useState(false)
+import { HiMenuAlt2 } from "react-icons/hi"
 
-  function toggleFullscreen() {
-    if (
-      !document.fullscreenElement &&
-      !document.mozFullScreenElement &&
-      !document.webkitFullscreenElement
-    ) {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen()
-      } else if (document.documentElement.mozRequestFullScreen) {
-        document.documentElement.mozRequestFullScreen()
-      } else if (document.documentElement.webkitRequestFullscreen) {
-        document.documentElement.webkitRequestFullscreen(
-          Element.ALLOW_KEYBOARD_INPUT
-        )
-      }
-    } else {
-      if (document.cancelFullScreen) {
-        document.cancelFullScreen()
-      } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen()
-      } else if (document.webkitCancelFullScreen) {
-        document.webkitCancelFullScreen()
-      }
-    }
+const Header = props => {
+  const toggleMenu = () => {
+    document.body.classList.toggle("sidebar-enable")
+    props.toggleLeftmenu(!props.leftMenu)
   }
+
+  React.useEffect(() => {
+    const handleCloseSidebar = () => {
+      props.toggleLeftmenu(false)
+    }
+
+    document.addEventListener("closeSidebar", handleCloseSidebar)
+    return () =>
+      document.removeEventListener("closeSidebar", handleCloseSidebar)
+  }, [props.toggleLeftmenu])
 
   return (
     <React.Fragment>
       <header id="page-topbar">
         <div className="navbar-header">
-          <div className="d-flex">
+          <div className="d-flex align-items-center">
             <div className="navbar-brand-box d-block">
               <Link to="/" className="logo logo-dark">
                 <span className="logo-sm">
-                  <img src={logo} alt="" height="22" />
+                  <img src={logoLight} alt="" height="42" />
                 </span>
               </Link>
               <Link to="/" className="logo logo-light">
                 <span className="logo-sm">
-                  <img src={logoLightSvg} alt="" height="22" />
+                  <img src={logoLight} alt="" height="42" />
                 </span>
               </Link>
             </div>
-            <Dropdown
-              className="dropdown-mega d-none d-lg-block ms-2"
-              isOpen={megaMenu}
-              toggle={() => {
-                setmegaMenu(!megaMenu)
-              }}
-            ></Dropdown>
+
+            <button
+              type="button"
+              className="btn header-item d-lg-none"
+              onClick={toggleMenu}
+              data-testid="mobile-menu-btn"
+              style={{ fontSize: "1.75rem" }}
+            >
+              <HiMenuAlt2
+                className="hamburger-icon"
+                style={{ fontSize: "larger" }}
+              />
+            </button>
           </div>
           <div className="d-flex">
-            <div className="dropdown d-inline-block d-lg-none ms-2">
-              <button
-                onClick={() => {
-                  setsearch(!search)
-                }}
-                type="button"
-                className="btn header-item noti-icon "
-                id="page-header-search-dropdown"
-              >
-                <i className="mdi mdi-magnify" />
-              </button>
-              <div
-                className={
-                  search
-                    ? "dropdown-menu dropdown-menu-lg dropdown-menu-end p-0 show"
-                    : "dropdown-menu dropdown-menu-lg dropdown-menu-end p-0"
-                }
-                aria-labelledby="page-header-search-dropdown"
-              >
-                <form className="p-3">
-                  <div className="form-group m-0">
-                    <div className="input-group">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Search ..."
-                        aria-label="Recipient's username"
-                      />
-                      <div className="input-group-append">
-                        <button className="btn btn-primary" type="submit">
-                          <i className="mdi mdi-magnify" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
-            <div className="dropdown d-none d-lg-inline-block ms-1">
-              <button
-                type="button"
-                onClick={() => {
-                  toggleFullscreen()
-                }}
-                className="btn header-item noti-icon "
-                data-toggle="fullscreen"
-              >
-                <i className="bx bx-fullscreen" />
-              </button>
-            </div>
             <NotificationDropdown />
             <ProfileMenu />
           </div>

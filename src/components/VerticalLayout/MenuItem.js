@@ -6,6 +6,7 @@ const styles = {
   link: {
     display: "flex",
     alignItems: "center",
+    gap: "0.25rem",
   },
   icon: {
     fontSize: "1.25rem",
@@ -15,6 +16,18 @@ const styles = {
   arrow: {
     fontSize: "0.8rem",
     marginLeft: "auto",
+  },
+  submenu: {
+    overflow: "hidden",
+    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+    maxHeight: 0,
+    opacity: 0,
+    transform: "translateY(-10px)",
+  },
+  submenuExpanded: {
+    maxHeight: "500px",
+    opacity: 1,
+    transform: "translateY(0)",
   },
 }
 
@@ -42,7 +55,17 @@ const MenuItem = memo(
             <BsChevronDown style={styles.arrow} />
           ))}
       </Link>
-      {hasSubmenu && isExpanded && <ul className="sub-menu">{children}</ul>}
+      {hasSubmenu && (
+        <ul
+          className="sub-menu"
+          style={{
+            ...styles.submenu,
+            ...(isExpanded ? styles.submenuExpanded : {}),
+          }}
+        >
+          {children}
+        </ul>
+      )}
     </li>
   )
 )
