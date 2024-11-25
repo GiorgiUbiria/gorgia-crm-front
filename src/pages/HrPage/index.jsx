@@ -25,18 +25,19 @@ import Breadcrumbs from "../../components/Common/Breadcrumb"
 import {
   createHrDocument,
   getCurrentUserHrDocuments,
+  getHrDocuments,
 } from "services/hrDocument"
-import { updateUser } from "services/user" // Removed unused fetchUser import
-import { useSelector, useDispatch } from "react-redux"
+import { updateUser } from "services/user"
+import { useSelector } from "react-redux"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import * as Yup from "yup"
 import { useTable, useSortBy } from "react-table"
 import moment from "moment"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import classnames from "classnames"
-import useFetchUsers from "hooks/useFetchUsers" // Import the custom hook
-import "./HrPage.scss" // Create this new file for styles
+import useFetchUsers from "hooks/useFetchUsers"
+import "./HrPage.scss"
+import useIsAdmin from "hooks/useIsAdmin"
 
 const DOCUMENT_TYPES = {
   PAID_EMPLOYMENT: "შრომითი ხელფასიანი",
@@ -90,33 +91,33 @@ const HrPage = () => {
   const [modal, setModal] = useState(false)
   const [expandedRows, setExpandedRows] = useState([])
   const [activeTab, setActiveTab] = useState("1")
-  const dispatch = useDispatch()
 
   const reduxUser = useSelector(state => state.user.user)
   const [currentUser, setCurrentUser] = useState(reduxUser)
 
-  const [isAdmin, setIsAdmin] = useState(false)
-
-  const { users, loading: usersLoading, error: usersError } = useFetchUsers() // Use the custom hook
-  const [selectedUserId, setSelectedUserId] = useState("") // For "For User" tab
-  const [selectedUser, setSelectedUser] = useState(null) // Selected user data
+  const { users, loading: usersLoading, error: usersError } = useFetchUsers()
+  const [selectedUserId, setSelectedUserId] = useState("")
+  const [selectedUser, setSelectedUser] = useState(null)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [sortDirection, setSortDirection] = useState("desc")
 
+  const isAdmin = useIsAdmin()
+
   useEffect(() => {
     setCurrentUser(reduxUser)
   }, [reduxUser])
 
-  useEffect(() => {
-    setIsAdmin(currentUser?.type === "admin")
-  }, [currentUser])
-
   const fetchHrDocuments = async () => {
     try {
-      const response = await getCurrentUserHrDocuments()
-      setHrDocuments(response.data)
+      if (isAdmin) {
+        const response = await getHrDocuments()
+        setHrDocuments(response.data)
+      } else {
+        const response = await getCurrentUserHrDocuments()
+        setHrDocuments(response.data)
+      }
     } catch (err) {
       console.error("Error fetching HR documents:", err)
     }
@@ -144,7 +145,6 @@ const HrPage = () => {
 
   const handleDocumentSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      // Determine the context based on activeTab
       const contextUser = activeTab === "1" ? currentUser : selectedUser
 
       if (!contextUser) {
@@ -152,7 +152,6 @@ const HrPage = () => {
         return
       }
 
-      // Validate missing fields first
       const missingFields = validateRequiredFields(values, contextUser)
 
       if (missingFields.length > 0) {
@@ -162,16 +161,14 @@ const HrPage = () => {
         )
 
         if (shouldUpdate) {
-          // Update user profile with the new values
           const userData = {}
 
           missingFields.forEach(field => {
             userData[field] = values[field]
           })
 
-          await updateUser(contextUser.id, userData) // Assuming updateUser takes userId and data
+          await updateUser(contextUser.id, userData)
 
-          // Update user in state
           if (activeTab === "1") {
             setCurrentUser(prev => ({
               ...prev,
@@ -190,7 +187,6 @@ const HrPage = () => {
         }
       }
 
-      // Validate work duration
       if (
         !validateWorkDuration(
           values.documentType,
@@ -200,16 +196,15 @@ const HrPage = () => {
         return
       }
 
-      // Create document
       const documentData = {
         name: values.documentType,
-        user_id: contextUser.id, // Associate document with the user
+        user_id: contextUser.id,
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
 
       await createHrDocument(documentData)
       handleSuccess()
-      resetForm() // Reset the form after successful submission
+      resetForm()
     } catch (err) {
       handleError(err)
     } finally {
@@ -282,7 +277,6 @@ const HrPage = () => {
     }
   }
 
-  // Yup validation schema
   const validationSchema = Yup.object().shape({
     documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
     id_number: Yup.string().when("documentType", {
@@ -367,10 +361,8 @@ const HrPage = () => {
     if (activeTab !== tab) setActiveTab(tab)
   }
 
-  // Prepare Formik initial values based on active tab and selected user
   const getInitialValues = () => {
     if (activeTab === "1") {
-      // For "For Me" tab
       return {
         documentType: "",
         id_number: currentUser?.id_number || "",
@@ -379,7 +371,6 @@ const HrPage = () => {
         purpose: "",
       }
     } else if (activeTab === "2" && selectedUser) {
-      // For "For User" tab with selected user
       return {
         selectedUser: selectedUser.id,
         documentType: "",
@@ -389,7 +380,6 @@ const HrPage = () => {
         purpose: "",
       }
     } else {
-      // Default initial values
       return {
         documentType: "",
         id_number: "",

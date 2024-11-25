@@ -9,7 +9,7 @@ export const createHrDocument = async (data) => {
 export const updateHrDocumentStatus = async (hrDocumentId, status, data = {}) => {
     return defaultInstance.patch(`/api/hr-documents/${hrDocumentId}/status`, { 
         status, 
-        ...data  // Merge additional data like salary, salary_text, or comment
+        ...data 
     });
 };
 
