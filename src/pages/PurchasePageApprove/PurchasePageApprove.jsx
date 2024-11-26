@@ -117,8 +117,6 @@ const PurchasePageApprove = () => {
     }
   }
 
-  console.log(purchases)
-
   const columns = useMemo(
     () => [
       {
@@ -261,7 +259,7 @@ const PurchasePageApprove = () => {
 
   return (
     <React.Fragment>
-      <div className="page-content">
+      <div className="page-content mb-4">
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>

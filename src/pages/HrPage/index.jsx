@@ -341,6 +341,45 @@ const HrPage = () => {
         accessor: "id",
       },
       {
+        Header: "სახელი",
+        accessor: "user.name",
+        disableSortBy: true,
+      },
+      {
+        Header: "პირადი ნომერი",
+        accessor: "user.id",
+        disableSortBy: true,
+      },
+      {
+        Header: "პოზიცია",
+        accessor: "user.position",
+        disableSortBy: true,
+      },
+      {
+        Header: "დოკუმენტის ტიპი",
+        accessor: "name",
+        disableSortBy: true,
+      },
+      {
+        Header: "ხელფასი",
+        accessor: "salary",
+      },
+      {
+        Header: "მიზანი",
+        accessor: "purpose",
+        disableSortBy: true,
+      },
+      {
+        Header: "დამატების თარიღი",
+        accessor: "created_at",
+        Cell: ({ value }) => (
+          <div>
+            <i className="bx bx-calendar me-2"></i>
+            {new Date(value).toLocaleDateString()}
+          </div>
+        ),
+      },
+      {
         Header: "სტატუსი",
         accessor: "status",
         Cell: ({ value }) => (
@@ -375,23 +414,6 @@ const HrPage = () => {
           </span>
         ),
       },
-      {
-        Header: "დამატების თარიღი",
-        accessor: "created_at",
-        Cell: ({ value }) => (
-          <div>
-            <i className="bx bx-calendar me-2"></i>
-            {new Date(value).toLocaleDateString()}
-          </div>
-        ),
-      },
-      { Header: "სახელი", accessor: "user.name" },
-      { Header: "პირადი ნომერი", accessor: "user.id" },
-      { Header: "პოზიცია", accessor: "user.position" },
-      { Header: "დოკუმენტის ტიპი", accessor: "name" },
-      { Header: "ხელფასი", accessor: "salary" },
-      { Header: "მიზანი", accessor: "purpose" },
-      { Header: "კომენტარი", accessor: "comment" },
     ]
   }, [])
 
