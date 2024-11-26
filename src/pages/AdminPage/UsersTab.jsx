@@ -1,5 +1,5 @@
 import React from "react"
-import { Button, Input, Badge, Container, Row, Col } from "reactstrap"
+import { Button, Input } from "reactstrap"
 import {
   FaSearch,
   FaPlus,
@@ -7,8 +7,7 @@ import {
   FaFileDownload,
   FaEdit,
 } from "react-icons/fa"
-import ModernTable from "components/ModernTable"
-import Breadcrumbs from "components/Common/Breadcrumb"
+import MuiTable from "components/Mui/MuiTable"
 
 const UsersTab = ({
   searchTerm,
@@ -65,94 +64,7 @@ const UsersTab = ({
       </div>
 
       <div className="table-responsive">
-        <ModernTable
-          data={filteredUsers}
-          columns={[
-            {
-              header: "#",
-              field: "index",
-              render: (_, index) => index + 1,
-              style: { width: "5%" },
-              cellClassName: "text-center",
-            },
-            {
-              header: "გვარი",
-              field: "sur_name",
-              style: { width: "25%" },
-              render: item => (
-                <div className="d-flex align-items-center">
-                  <div className="avatar-xs me-2">
-                    <span className="avatar-title rounded-circle bg-info text-white">
-                      {item.sur_name?.charAt(0)}
-                    </span>
-                  </div>
-                  {item.sur_name}
-                </div>
-              ),
-            },
-            {
-              header: "სახელი",
-              field: "name",
-              style: { width: "25%" },
-            },
-            {
-              header: "ელ-ფოსტა",
-              field: "email",
-              style: { width: "25%" },
-            },
-            {
-              header: "დეპარტამენტი",
-              field: "department",
-              style: { width: "20%" },
-              className: "d-none d-md-table-cell",
-              render: item =>
-                item.department?.name || (
-                  <Badge color="warning" pill>
-                    არ არის მითითებული
-                  </Badge>
-                ),
-            },
-            {
-              header: "როლი",
-              field: "role",
-              style: { width: "10%" },
-              className: "d-none d-md-table-cell",
-              render: item => (
-                <Badge color="info" pill>
-                  {item.role}
-                </Badge>
-              ),
-            },
-            {
-              header: "მოქმედება",
-              style: { width: "15%" },
-              cellClassName: "text-center",
-              render: item => (
-                <div className="d-flex justify-content-center">
-                  <Button
-                    color="primary"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => openUserModal(item)}
-                  >
-                    <FaEdit />
-                  </Button>
-                  <Button
-                    color="danger"
-                    size="sm"
-                    onClick={() => handleDeleteUser(item)}
-                  >
-                    <FaTrash />
-                  </Button>
-                </div>
-              ),
-            },
-          ]}
-          currentPage={1}
-          itemsPerPage={10}
-          totalItems={filteredUsers.length}
-          onPageChange={() => {}}
-        />
+        <MuiTable />
       </div>
     </>
   )

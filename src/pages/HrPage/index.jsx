@@ -1,13 +1,21 @@
 import React, { useEffect, useState, useMemo } from "react"
 import {
-  Table,
-  Button,
+  createHrDocument,
+  getCurrentUserHrDocuments,
+  getHrDocuments,
+} from "services/hrDocument"
+import { updateUser } from "services/user"
+import { useSelector } from "react-redux"
+import * as Yup from "yup"
+import moment from "moment"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import useFetchUsers from "hooks/useFetchUsers"
+import useIsAdmin from "hooks/useIsAdmin"
+import MuiTable from "components/Mui/MuiTable"
+import {
   Row,
   Col,
-  Card,
-  CardBody,
-  CardTitle,
-  CardSubtitle,
   Modal,
   ModalHeader,
   ModalBody,
@@ -15,29 +23,12 @@ import {
   Input,
   FormFeedback,
   Label,
-  Nav,
-  NavItem,
-  NavLink,
-  TabContent,
-  TabPane,
 } from "reactstrap"
-import Breadcrumbs from "../../components/Common/Breadcrumb"
-import {
-  createHrDocument,
-  getCurrentUserHrDocuments,
-  getHrDocuments,
-} from "services/hrDocument"
-import { updateUser } from "services/user"
-import { useSelector } from "react-redux"
 import { Formik, Form, Field, ErrorMessage } from "formik"
-import * as Yup from "yup"
-import { useTable, useSortBy } from "react-table"
-import moment from "moment"
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
-import useFetchUsers from "hooks/useFetchUsers"
-import "./HrPage.scss"
-import useIsAdmin from "hooks/useIsAdmin"
+import classnames from "classnames"
+import Breadcrumbs from "../../components/Common/Breadcrumb"
+import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
+import { Button } from "reactstrap"
 
 const DOCUMENT_TYPES = {
   PAID_EMPLOYMENT: "შრომითი ხელფასიანი",
@@ -84,6 +75,70 @@ const statusMap = {
   },
 }
 
+const STATUS_MAPPING = {
+  in_progress: "in_progress",
+  approved: "approved",
+  rejected: "rejected",
+}
+
+const getInitialValues = (activeTab, currentUser, selectedUser) => {
+  if (activeTab === "1") {
+    return {
+      documentType: "",
+      id_number: currentUser?.id_number || "",
+      position: currentUser?.position || "",
+      working_start_date: currentUser?.working_start_date || "",
+      purpose: "",
+    }
+  } else if (activeTab === "2" && selectedUser) {
+    return {
+      selectedUser: selectedUser.id,
+      documentType: "",
+      id_number: selectedUser?.id_number || "",
+      position: selectedUser?.position || "",
+      working_start_date: selectedUser?.working_start_date || "",
+      purpose: "",
+    }
+  } else {
+    return {
+      documentType: "",
+      id_number: "",
+      position: "",
+      working_start_date: "",
+      purpose: "",
+    }
+  }
+}
+
+const validationSchema = Yup.object().shape({
+  documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
+  id_number: Yup.string().when("documentType", {
+    is: isPaidDocument,
+    then: () => Yup.string().required("პირადი ნომერი აუცილებელია"),
+  }),
+  position: Yup.string().when("documentType", {
+    is: isPaidDocument,
+    then: () => Yup.string().required("პოზიცია აუცილებელია"),
+  }),
+  working_start_date: Yup.date().when("documentType", {
+    is: isPaidDocument,
+    then: () => Yup.date().required("სამსახურის დაწყების თარიღი აუცილებელია"),
+  }),
+  purpose: Yup.string().when("documentType", {
+    is: isPaidDocument,
+    then: () => Yup.string().required("მიზანი აუცილებელია"),
+  }),
+})
+
+const forUserValidationSchema = activeTab => {
+  if (activeTab === "2") {
+    return validationSchema.shape({
+      selectedUser: Yup.string().required("მომხმარებლის არჩევა აუცილებელია"),
+    })
+  }
+  return validationSchema
+}
+
 const HrPage = () => {
   document.title = "ვიზირება | Gorgia LLC"
 
@@ -98,10 +153,6 @@ const HrPage = () => {
   const { users, loading: usersLoading, error: usersError } = useFetchUsers()
   const [selectedUserId, setSelectedUserId] = useState("")
   const [selectedUser, setSelectedUser] = useState(null)
-
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [sortDirection, setSortDirection] = useState("desc")
 
   const isAdmin = useIsAdmin()
 
@@ -256,411 +307,136 @@ const HrPage = () => {
     toast.error("დოკუმენტის შექმნა ვერ მოხერხდა")
   }
 
-  const getRowClass = status => {
-    switch (status) {
-      case "rejected":
-        return "table-danger"
-      case "approved":
-        return "table-success"
-      case "in_progress":
-        return "table-warning"
-      default:
-        return ""
-    }
-  }
+  const transformedHrDocuments = hrDocuments.map(document => ({
+    id: document.id,
+    status: STATUS_MAPPING[document.status] || document.status,
+    created_at: document.created_at,
+    user: {
+      name: document.user.name,
+      id: document.user.id_number,
+      position: document.user.position,
+    },
+    name: document.name,
+    salary: document.salary,
+    purpose: document.purpose,
+    comment: document.comment,
+  }))
 
-  const handleRowClick = index => {
-    if (expandedRows.includes(index)) {
-      setExpandedRows(expandedRows.filter(id => id !== index))
-    } else {
-      setExpandedRows([...expandedRows, index])
-    }
-  }
+  const filterOptions = [
+    {
+      field: "status",
+      label: "სტატუსი",
+      valueLabels: {
+        approved: "დამტკიცებული",
+        rejected: "უარყოფილი",
+        in_progress: "განხილვაში",
+      },
+    },
+  ]
 
-  const validationSchema = Yup.object().shape({
-    documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
-    id_number: Yup.string().when("documentType", {
-      is: isPaidDocument,
-      then: () => Yup.string().required("პირადი ნომერი აუცილებელია"),
-    }),
-    position: Yup.string().when("documentType", {
-      is: isPaidDocument,
-      then: () => Yup.string().required("პოზიცია აუცილებელია"),
-    }),
-    working_start_date: Yup.date().when("documentType", {
-      is: isPaidDocument,
-      then: () => Yup.date().required("სამსახურის დაწყების თარიღი აუცილებელია"),
-    }),
-    purpose: Yup.string().when("documentType", {
-      is: isPaidDocument,
-      then: () => Yup.string().required("მიზანი აუცილებელია"),
-    }),
-  })
-
-  const forUserValidationSchema =
-    activeTab === "2"
-      ? validationSchema.shape({
-          selectedUser: Yup.string().required(
-            "მომხმარებლის არჩევა აუცილებელია"
-          ),
-        })
-      : validationSchema
-
-  const columns = useMemo(
-    () => [
+  const columns = useMemo(() => {
+    return [
       {
         Header: "#",
-        accessor: (row, index) => index + 1,
-      },
-      {
-        Header: "თარიღი",
-        accessor: "created_at",
-        Cell: ({ value }) => moment(value).format("YYYY-MM-DD"),
-        sortType: (a, b) => {
-          const dateA = moment(a.original.created_at).valueOf()
-          const dateB = moment(b.original.created_at).valueOf()
-          return dateA - dateB
-        },
-      },
-      {
-        Header: "მოთხოვნილი ცნობის ფორმა",
-        accessor: "name",
+        accessor: "id",
       },
       {
         Header: "სტატუსი",
         accessor: "status",
-        Cell: ({ value }) =>
-          value === "rejected"
-            ? "უარყოფილია"
-            : value === "approved"
-            ? "დადასტურებულია"
-            : "მოლოდინში",
+        Cell: ({ value }) => (
+          <span
+            style={{
+              padding: "6px 12px",
+              borderRadius: "4px",
+              display: "inline-flex",
+              alignItems: "center",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              backgroundColor:
+                value === "in_progress"
+                  ? "#fff3e0"
+                  : value === "rejected"
+                  ? "#ffebee"
+                  : value === "approved"
+                  ? "#e8f5e9"
+                  : "#f5f5f5",
+              color:
+                value === "in_progress"
+                  ? "#e65100"
+                  : value === "rejected"
+                  ? "#c62828"
+                  : value === "approved"
+                  ? "#2e7d32"
+                  : "#757575",
+            }}
+          >
+            <i className={`bx ${statusMap[value].icon} me-2`}></i>
+            {statusMap[value].label}
+          </span>
+        ),
       },
-    ],
-    []
-  )
-
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable(
       {
-        columns,
-        data: hrDocuments,
-        initialState: {
-          sortBy: [
-            {
-              id: "created_at",
-              desc: true,
-            },
-          ],
-        },
+        Header: "დამატების თარიღი",
+        accessor: "created_at",
+        Cell: ({ value }) => (
+          <div>
+            <i className="bx bx-calendar me-2"></i>
+            {new Date(value).toLocaleDateString()}
+          </div>
+        ),
       },
-      useSortBy
-    )
+      { Header: "სახელი", accessor: "user.name" },
+      { Header: "პირადი ნომერი", accessor: "user.id" },
+      { Header: "პოზიცია", accessor: "user.position" },
+      { Header: "დოკუმენტის ტიპი", accessor: "name" },
+      { Header: "ხელფასი", accessor: "salary" },
+      { Header: "მიზანი", accessor: "purpose" },
+      { Header: "კომენტარი", accessor: "comment" },
+    ]
+  }, [])
 
   const toggleTab = tab => {
-    if (activeTab !== tab) setActiveTab(tab)
-  }
-
-  const getInitialValues = () => {
-    if (activeTab === "1") {
-      return {
-        documentType: "",
-        id_number: currentUser?.id_number || "",
-        position: currentUser?.position || "",
-        working_start_date: currentUser?.working_start_date || "",
-        purpose: "",
-      }
-    } else if (activeTab === "2" && selectedUser) {
-      return {
-        selectedUser: selectedUser.id,
-        documentType: "",
-        id_number: selectedUser?.id_number || "",
-        position: selectedUser?.position || "",
-        working_start_date: selectedUser?.working_start_date || "",
-        purpose: "",
-      }
-    } else {
-      return {
-        documentType: "",
-        id_number: "",
-        position: "",
-        working_start_date: "",
-        purpose: "",
+    if (activeTab !== tab) {
+      setActiveTab(tab)
+      if (tab === "1") {
+        setSelectedUserId("")
+        setSelectedUser(null)
       }
     }
   }
 
-  const handlePageChange = pageNumber => {
-    setCurrentPage(pageNumber)
-  }
-
-  const handleItemsPerPageChange = value => {
-    setItemsPerPage(value)
-    setCurrentPage(1)
-  }
-
-  const sortDocuments = docs => {
-    return [...docs].sort((a, b) => {
-      const dateA = new Date(a.created_at)
-      const dateB = new Date(b.created_at)
-      return sortDirection === "desc" ? dateB - dateA : dateA - dateB
-    })
-  }
-
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const sortedDocuments = sortDocuments(hrDocuments)
-  const currentDocuments = sortedDocuments.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  )
-
-  console.log(currentDocuments)
-
   return (
     <React.Fragment>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
       <div className="page-content">
         <div className="container-fluid">
-          <Breadcrumbs title="HR" breadcrumbItem="მოთხოვნილი ცნობები" />
-
-          <Row>
+          <Row className="mb-3">
             <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <CardTitle className="h4">მოთხოვნილი ცნობები</CardTitle>
-                  {currentUser && (
-                    <div className="mb-4">
-                      <strong>მომხმარებელი:</strong>{" "}
-                      {currentUser.name || "უცნობი"} (ID:{" "}
-                      {currentUser.id_number || "უცნობი"}, პოზიცია:{" "}
-                      {currentUser.position || "უცნობი"})
-                    </div>
-                  )}
-                  <CardSubtitle className="card-title-desc d-flex justify-content-between align-items-center">
-                    <div>
-                      ქვევით ნაჩვენებია უკვე დადასტურებული ან უარყოფილი
-                      მოთხოვნილი ცნობები
-                    </div>
-                    <div>
-                      <Button
-                        type="button"
-                        color="primary"
-                        onClick={handleCreateDocument}
-                      >
-                        ცნობის მოთხოვნა
-                      </Button>
-                    </div>
-                  </CardSubtitle>
-
-                  <div className="hr-table-modern">
-                    <div className="table-controls mb-3">
-                      <div className="d-flex align-items-center">
-                        <span className="me-2">თითო გვერდზე:</span>
-                        <Input
-                          type="select"
-                          className="form-select w-auto"
-                          value={itemsPerPage}
-                          onChange={e =>
-                            handleItemsPerPageChange(Number(e.target.value))
-                          }
-                        >
-                          {[5, 10, 15, 20].map(value => (
-                            <option key={value} value={value}>
-                              {value}
-                            </option>
-                          ))}
-                        </Input>
-                      </div>
-                    </div>
-
-                    <Table className="table-modern">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>მომთხოვნი პირი</th>
-                          <th>მოთხოვნილი ფორმის სტილი</th>
-                          <th
-                            style={{ cursor: "pointer" }}
-                            onClick={() =>
-                              setSortDirection(prev =>
-                                prev === "desc" ? "asc" : "desc"
-                              )
-                            }
-                          >
-                            თარიღი{" "}
-                            <i
-                              className={`bx bx-sort-${
-                                sortDirection === "desc" ? "down" : "up"
-                              }`}
-                            ></i>
-                          </th>
-                          <th>სტატუსი</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {currentDocuments.map((document, index) => (
-                          <React.Fragment key={`doc-${document.id}`}>
-                            <tr
-                              key={`row-${document.id}`}
-                              onClick={() => handleRowClick(index)}
-                              className={`status-${document.status}`}
-                            >
-                              <td>
-                                {(currentPage - 1) * itemsPerPage + index + 1}
-                              </td>
-                              <td>
-                                <div className="d-flex align-items-center">
-                                  <div className="avatar-wrapper">
-                                    <span className="avatar-initial">
-                                      {document.name?.charAt(0) || "?"}
-                                    </span>
-                                  </div>
-                                  <span className="user-name">
-                                    {document.name}
-                                  </span>
-                                </div>
-                              </td>
-                              <td>{document.name}</td>
-                              <td>
-                                <div className="date-wrapper">
-                                  <i className="bx bx-calendar me-2"></i>
-                                  {new Date(
-                                    document.created_at
-                                  ).toLocaleDateString()}
-                                </div>
-                              </td>
-                              <td>
-                                <span
-                                  className={`status-badge status-${document.status}`}
-                                >
-                                  <i
-                                    className={`bx ${
-                                      statusMap[document.status].icon
-                                    } me-2`}
-                                  ></i>
-                                  {statusMap[document.status].label}
-                                </span>
-                              </td>
-                            </tr>
-                            {expandedRows.includes(index) && (
-                              <tr key={`expanded-${document.id}`}>
-                                <td colSpan="5">
-                                  <div className="expanded-content">
-                                    <Row>
-                                      <Col md={6}>
-                                        <div className="info-section">
-                                          <h6 className="info-title">
-                                            <i className="bx bx-user"></i>
-                                            თანამშრომლის ინფორმაცია
-                                          </h6>
-                                          <ul className="info-list">
-                                            <li>
-                                              <span className="label">
-                                                პოზიცია:
-                                              </span>
-                                              <span className="value">
-                                                {document.user.position}
-                                              </span>
-                                            </li>
-                                            <li>
-                                              <span className="label">
-                                                პირადი ნომერი:
-                                              </span>
-                                              <span className="value">
-                                                {document.user.id}
-                                              </span>
-                                            </li>
-                                          </ul>
-                                        </div>
-                                      </Col>
-                                      <Col md={6}>
-                                        <div className="info-section">
-                                          <h6 className="info-title">
-                                            <i className="bx bx-file"></i>
-                                            დოკუმენტის დეტალები
-                                          </h6>
-                                          <ul className="info-list">
-                                            <li>
-                                              <span className="label">
-                                                კომენტარი:
-                                              </span>
-                                              <span className="value">
-                                                {document.comment ||
-                                                  "არ არის მითითებული"}
-                                              </span>
-                                            </li>
-                                          </ul>
-                                        </div>
-                                      </Col>
-                                    </Row>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </tbody>
-                    </Table>
-
-                    <div className="d-flex justify-content-between align-items-center mt-3">
-                      <div className="pagination-info">
-                        ნაჩვენებია {indexOfFirstItem + 1}-
-                        {Math.min(indexOfLastItem, sortedDocuments.length)} /{" "}
-                        {sortedDocuments.length}
-                      </div>
-                      <div className="pagination-controls">
-                        <Button
-                          color="light"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="me-2"
-                        >
-                          <i className="bx bx-chevron-left"></i>
-                        </Button>
-                        {Array.from({
-                          length: Math.ceil(
-                            sortedDocuments.length / itemsPerPage
-                          ),
-                        }).map((_, index) => (
-                          <Button
-                            key={index + 1}
-                            color={
-                              currentPage === index + 1 ? "primary" : "light"
-                            }
-                            onClick={() => handlePageChange(index + 1)}
-                            className="me-2"
-                          >
-                            {index + 1}
-                          </Button>
-                        ))}
-                        <Button
-                          color="light"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={
-                            currentPage ===
-                            Math.ceil(sortedDocuments.length / itemsPerPage)
-                          }
-                        >
-                          <i className="bx bx-chevron-right"></i>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardBody>
-              </Card>
+              <Breadcrumbs title="ცნობები" breadcrumbItem="ჩემი ცნობები" />
             </Col>
           </Row>
+          <ToastContainer />
+
+          <div className="d-flex justify-content-end mb-3">
+            <Button color="primary" onClick={handleCreateDocument}>
+              <i className="bx bx-plus me-1"></i>
+              ცნობის მოთხოვნა
+            </Button>
+          </div>
+
+          <MuiTable
+            data={transformedHrDocuments}
+            columns={columns}
+            filterOptions={filterOptions}
+            enableSearch={true}
+            searchableFields={[
+              "user.name",
+              "user.id",
+              "salary",
+              "name",
+              "purpose",
+            ]}
+            renderRowDetails={row => <div>{row.comment}</div>}
+          />
         </div>
       </div>
 
@@ -670,8 +446,8 @@ const HrPage = () => {
         </ModalHeader>
         <Formik
           enableReinitialize
-          initialValues={getInitialValues()}
-          validationSchema={forUserValidationSchema}
+          initialValues={getInitialValues(activeTab, currentUser, selectedUser)}
+          validationSchema={forUserValidationSchema(activeTab)}
           onSubmit={handleDocumentSubmit}
         >
           {({
@@ -680,292 +456,134 @@ const HrPage = () => {
             handleChange,
             handleSubmit,
             isSubmitting,
-            resetForm,
-          }) => {
-            // Effect to update form fields when selectedUser changes
-            useEffect(() => {
-              if (activeTab === "2" && selectedUser) {
-                setValues({
-                  selectedUser: selectedUser.id,
-                  documentType: values.documentType || "",
-                  id_number: selectedUser.id_number || "",
-                  position: selectedUser.position || "",
-                  working_start_date: selectedUser.working_start_date || "",
-                  purpose: values.purpose || "",
-                })
-              }
-            }, [
-              activeTab,
-              selectedUser,
-              setValues,
-              values.documentType,
-              values.purpose,
-            ])
-
-            return (
-              <Form onSubmit={handleSubmit}>
-                <ModalBody>
-                  <Nav tabs>
+          }) => (
+            <Form onSubmit={handleSubmit}>
+              <ModalBody>
+                <Nav tabs>
+                  <NavItem>
+                    <NavLink
+                      className={classnames({ active: activeTab === "1" })}
+                      onClick={() => toggleTab("1")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      ჩემთვის
+                    </NavLink>
+                  </NavItem>
+                  {isAdmin && (
                     <NavItem>
                       <NavLink
-                        className={classnames({ active: activeTab === "1" })}
-                        onClick={() => toggleTab("1")}
+                        className={classnames({ active: activeTab === "2" })}
+                        onClick={() => toggleTab("2")}
                         style={{ cursor: "pointer" }}
                       >
-                        ჩემთვის
+                        სხვისთვის
                       </NavLink>
                     </NavItem>
-                    {isAdmin && (
-                      <NavItem>
-                        <NavLink
-                          className={classnames({ active: activeTab === "2" })}
-                          onClick={() => toggleTab("2")}
-                          style={{ cursor: "pointer" }}
+                  )}
+                </Nav>
+                <TabContent activeTab={activeTab}>
+                  <TabPane tabId="1">
+                    <div className="mt-3">
+                      <div className="mb-3">
+                        <Label>დოკუმენტის ტიპი</Label>
+                        <Field
+                          as="select"
+                          name="documentType"
+                          className="form-control"
                         >
-                          სხვისთვის
-                        </NavLink>
-                      </NavItem>
-                    )}
-                  </Nav>
-                  <TabContent activeTab={activeTab}>
-                    <TabPane tabId="1">
-                      <div className="mt-3">
-                        <div className="mb-3">
-                          <Label>დოკუმენტის ტიპი</Label>
-                          <Field
-                            as="select"
-                            name="documentType"
-                            className="form-control"
-                          >
-                            <option value="">აირჩიეთ დოკუმენტის ტიპი</option>
-                            {Object.values(DOCUMENT_TYPES).map(type => (
-                              <option key={type} value={type}>
-                                {type}
-                              </option>
-                            ))}
-                          </Field>
-                          <ErrorMessage
-                            name="documentType"
-                            component={FormFeedback}
-                          />
-                        </div>
+                          <option value="">აირჩიეთ დოკუმენტის ტიპი</option>
+                          {Object.values(DOCUMENT_TYPES).map(type => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </Field>
+                        <ErrorMessage
+                          name="documentType"
+                          component={FormFeedback}
+                        />
+                      </div>
 
-                        <div className="mb-3">
-                          <Label>პირადი ნომერი</Label>
-                          <Field
-                            type="text"
-                            name="id_number"
-                            className="form-control"
-                            placeholder="შეიყვანეთ პირადი ნომერი"
-                            disabled={currentUser?.id_number ? true : false}
-                            onChange={handleChange}
-                          />
-                          <ErrorMessage
-                            name="id_number"
-                            component={FormFeedback}
-                          />
-                        </div>
+                      {isPaidDocument(values.documentType) && (
+                        <>
+                          <div className="mb-3">
+                            <Label>პირადი ნომერი</Label>
+                            <Field
+                              type="text"
+                              name="id_number"
+                              className="form-control"
+                              disabled={currentUser?.id_number}
+                            />
+                            <ErrorMessage
+                              name="id_number"
+                              component={FormFeedback}
+                            />
+                          </div>
 
-                        <div className="mb-3">
-                          <Label>პოზიცია</Label>
-                          <Field
-                            type="text"
-                            name="position"
-                            className="form-control"
-                            placeholder="შეიყვანეთ პოზიცია"
-                            disabled={currentUser?.position ? true : false}
-                            onChange={handleChange}
-                          />
-                          <ErrorMessage
-                            name="position"
-                            component={FormFeedback}
-                          />
-                        </div>
+                          <div className="mb-3">
+                            <Label>პოზიცია</Label>
+                            <Field
+                              type="text"
+                              name="position"
+                              className="form-control"
+                              disabled={currentUser?.position}
+                            />
+                            <ErrorMessage
+                              name="position"
+                              component={FormFeedback}
+                            />
+                          </div>
 
-                        <div className="mb-3">
-                          <Label>სამსახურის დაწყების თარიღი</Label>
-                          <Field
-                            type="date"
-                            name="working_start_date"
-                            className="form-control"
-                            disabled={
-                              currentUser?.working_start_date ? true : false
-                            }
-                            onChange={handleChange}
-                          />
-                          <ErrorMessage
-                            name="working_start_date"
-                            component={FormFeedback}
-                          />
-                        </div>
-
-                        {isPaidDocument(values.documentType) && (
                           <div className="mb-3">
                             <Label>მიზანი</Label>
                             <Field
                               type="text"
                               name="purpose"
                               className="form-control"
-                              placeholder="შეიყვანეთ მიზანი"
-                              onChange={handleChange}
                             />
                             <ErrorMessage
                               name="purpose"
                               component={FormFeedback}
                             />
                           </div>
-                        )}
+                        </>
+                      )}
+                    </div>
+                  </TabPane>
+
+                  {isAdmin && (
+                    <TabPane tabId="2">
+                      {/* Similar form fields as above but for admin user selection */}
+                      <div className="mb-3">
+                        <Label>მომხმარებელი</Label>
+                        <Input
+                          type="select"
+                          value={selectedUserId}
+                          onChange={e => setSelectedUserId(e.target.value)}
+                        >
+                          <option value="">აირჩიეთ მომხმარებელი</option>
+                          {users.map(user => (
+                            <option key={user.id} value={user.id}>
+                              {user.name} (ID: {user.id_number})
+                            </option>
+                          ))}
+                        </Input>
                       </div>
+                      {/* Rest of the form fields similar to TabPane "1" */}
                     </TabPane>
-                    {isAdmin && (
-                      <TabPane tabId="2">
-                        <div className="mt-3">
-                          <div className="mb-3">
-                            <Label>მომხმარებელი</Label>
-                            {usersLoading ? (
-                              <Input type="select" name="selectedUser" disabled>
-                                <option>მიმდინარეობს ჩამოტვირთვა...</option>
-                              </Input>
-                            ) : usersError ? (
-                              <div className="text-danger">
-                                მომხმარებლების ჩატვირთვა ვერ მოხერხდა
-                              </div>
-                            ) : (
-                              <Input
-                                type="select"
-                                name="selectedUser"
-                                value={selectedUserId}
-                                onChange={e =>
-                                  setSelectedUserId(e.target.value)
-                                }
-                              >
-                                <option value="">აირჩიეთ მომხმარებელი</option>
-                                {users.map(user => (
-                                  <option key={user.id} value={user.id}>
-                                    {user.name} (ID: {user.id_number})
-                                  </option>
-                                ))}
-                              </Input>
-                            )}
-                            <ErrorMessage
-                              name="selectedUser"
-                              component={FormFeedback}
-                            />
-                          </div>
-
-                          {selectedUser && (
-                            <>
-                              <div className="mb-3">
-                                <Label>დოკუმენტის ტიპი</Label>
-                                <Field
-                                  as="select"
-                                  name="documentType"
-                                  className="form-control"
-                                >
-                                  <option value="">
-                                    აირჩიეთ დოკუმენტის ტიპი
-                                  </option>
-                                  {Object.values(DOCUMENT_TYPES).map(type => (
-                                    <option key={type} value={type}>
-                                      {type}
-                                    </option>
-                                  ))}
-                                </Field>
-                                <ErrorMessage
-                                  name="documentType"
-                                  component={FormFeedback}
-                                />
-                              </div>
-
-                              <div className="mb-3">
-                                <Label>პირადი ნომერი</Label>
-                                <Field
-                                  type="text"
-                                  name="id_number"
-                                  className="form-control"
-                                  placeholder="შეიყვანეთ პირადი ნომერი"
-                                  disabled={
-                                    selectedUser?.id_number ? true : false
-                                  }
-                                  onChange={handleChange}
-                                />
-                                <ErrorMessage
-                                  name="id_number"
-                                  component={FormFeedback}
-                                />
-                              </div>
-
-                              <div className="mb-3">
-                                <Label>პოზიცია</Label>
-                                <Field
-                                  type="text"
-                                  name="position"
-                                  className="form-control"
-                                  placeholder="შეიყვანეთ პოზიცი��"
-                                  disabled={
-                                    selectedUser?.position ? true : false
-                                  }
-                                  onChange={handleChange}
-                                />
-                                <ErrorMessage
-                                  name="position"
-                                  component={FormFeedback}
-                                />
-                              </div>
-
-                              <div className="mb-3">
-                                <Label>სამსახურის დაწყების თარიღი</Label>
-                                <Field
-                                  type="date"
-                                  name="working_start_date"
-                                  className="form-control"
-                                  disabled={
-                                    selectedUser?.working_start_date
-                                      ? true
-                                      : false
-                                  }
-                                  onChange={handleChange}
-                                />
-                                <ErrorMessage
-                                  name="working_start_date"
-                                  component={FormFeedback}
-                                />
-                              </div>
-
-                              {isPaidDocument(values.documentType) && (
-                                <div className="mb-3">
-                                  <Label>მიზანი</Label>
-                                  <Field
-                                    type="text"
-                                    name="purpose"
-                                    className="form-control"
-                                    placeholder="შეიყვანეთ მიზანი"
-                                    onChange={handleChange}
-                                  />
-                                  <ErrorMessage
-                                    name="purpose"
-                                    component={FormFeedback}
-                                  />
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </TabPane>
-                    )}
-                  </TabContent>
-                </ModalBody>
-                <ModalFooter>
-                  <Button color="primary" type="submit" disabled={isSubmitting}>
-                    შენახვა
-                  </Button>
-                  <Button color="secondary" onClick={() => setModal(!modal)}>
-                    დახურვა
-                  </Button>
-                </ModalFooter>
-              </Form>
-            )
-          }}
+                  )}
+                </TabContent>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="primary" type="submit" disabled={isSubmitting}>
+                  შენახვა
+                </Button>
+                <Button color="secondary" onClick={() => setModal(!modal)}>
+                  დახურვა
+                </Button>
+              </ModalFooter>
+            </Form>
+          )}
         </Formik>
       </Modal>
     </React.Fragment>

@@ -1,7 +1,7 @@
-import React from "react"
-import { Button, Input, Badge, Container, Row, Col } from "reactstrap"
-import { FaSearch, FaPlus, FaTrash, FaEdit } from "react-icons/fa"
-import ModernTable from "components/ModernTable"
+import React, { useMemo } from "react"
+import MuiTable from "components/Mui/MuiTable"
+import { Button, Input } from "reactstrap"
+import { FaSearch, FaPlus } from "react-icons/fa"
 
 const DepartmentsTab = ({
   departmentSearchTerm,
@@ -12,6 +12,46 @@ const DepartmentsTab = ({
   searchInputStyle,
   searchIconStyle,
 }) => {
+  const columns = useMemo(
+    () => [
+      {
+        Header: "#",
+        accessor: "id",
+      },
+      {
+        Header: "დეპარტამენტის სახელი",
+        accessor: "name",
+      },
+      {
+        Header: "მენეჯერი",
+        accessor: "manager",
+      },
+      {
+        Header: "აქცია",
+        accessor: "actions",
+        Cell: ({ row }) => (
+          <div>
+            <Button
+              color="primary"
+              size="sm"
+              onClick={() => openDepartmentModal(row.original)}
+            >
+              რედაქტირება
+            </Button>
+            <Button
+              color="danger"
+              size="sm"
+              onClick={() => handleDeleteDepartment(row.original)}
+            >
+              წაშლა
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [openDepartmentModal, handleDeleteDepartment]
+  );
+
   return (
     <>
       <div className="page-title-box">
@@ -44,72 +84,13 @@ const DepartmentsTab = ({
       </div>
 
       <div className="table-responsive">
-        <ModernTable
+        <MuiTable
+          columns={columns}
           data={filteredDepartments}
-          columns={[
-            {
-              header: "#",
-              field: "index",
-              render: (_, index) => index + 1,
-              style: { width: "5%" },
-              cellClassName: "text-center",
-            },
-            {
-              header: "დეპარტამენტი",
-              field: "name",
-              style: { width: "25%" },
-            },
-            {
-              header: "ხელმძღვანელი",
-              field: "head",
-              style: { width: "50%" },
-              className: "d-md-table-cell",
-              render: item =>
-                item.head ? (
-                  <div className="d-flex align-items-center">
-                    <div className="avatar-xs me-2">
-                      <span className="avatar-title rounded-circle bg-info text-white">
-                        {item.head.name.charAt(0)}
-                      </span>
-                    </div>
-                    {item.head.name}
-                  </div>
-                ) : (
-                  <Badge color="warning" pill>
-                    არ არის მითითებული
-                  </Badge>
-                ),
-            },
-            {
-              header: "მოქმედება",
-              style: { width: "20%" },
-              cellClassName: "text-center",
-              render: item => (
-                <div className="d-flex justify-content-center">
-                  <Button
-                    color="info"
-                    style={{ backgroundColor: "#105D8D", borderColor: "#105D8D" }}
-                    size="sm"
-                    className="me-2"
-                    onClick={() => openDepartmentModal(item)}
-                  >
-                    <FaEdit />
-                  </Button>
-                  <Button
-                    color="danger"
-                    size="sm"
-                    onClick={() => handleDeleteDepartment(item.id, item.name)}
-                  >
-                    <FaTrash />
-                  </Button>
-                </div>
-              ),
-            },
-          ]}
-          currentPage={1}
-          itemsPerPage={10}
-          totalItems={filteredDepartments.length}
-          onPageChange={() => {}}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          onRowClick={(row) => {}}
         />
       </div>
     </>
