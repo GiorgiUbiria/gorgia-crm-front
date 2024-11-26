@@ -130,7 +130,7 @@ export const getMenuConfig = (t, isAdmin) =>
     {
       to: "/notes",
       icon: BsJournal,
-      label: t("შეტყობინებები"),
+      label: t("ჩანაწერები"),
     },
     {
       to: "/chat",

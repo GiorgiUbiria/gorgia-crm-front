@@ -429,7 +429,7 @@ const HrPage = () => {
 
   return (
     <React.Fragment>
-      <div className="page-content">
+      <div className="page-content mb-4">
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
