@@ -1,13 +1,7 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import {
-  Table,
-  Button,
   Row,
   Col,
-  Card,
-  CardBody,
-  CardTitle,
-  CardSubtitle,
   Input,
   Modal,
   ModalHeader,
@@ -18,48 +12,44 @@ import {
   Label,
 } from "reactstrap"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
-import { getTripList, updateTripStatus } from "services/trip" // Importing updateTripStatus
-import "./TripPageApprove.scss"
+import { getTripList, updateTripStatus } from "services/trip"
+import MuiTable from "components/Mui/MuiTable"
+import Button from "@mui/material/Button"
 
-const TRIP_STATUSES = {
+const statusMap = {
   pending: {
-    label: "მიმდინარე",
-    color: "warning",
+    label: "განხილვაში",
+    icon: "bx-time",
+    color: "#FFA500",
   },
   approved: {
-    label: "დადასტურებული",
-    color: "success",
+    label: "დამტკიცებული",
+    icon: "bx-check-circle",
+    color: "#28a745",
   },
   rejected: {
     label: "უარყოფილი",
-    color: "danger",
+    icon: "bx-x-circle",
+    color: "#dc3545",
   },
 }
 
-const TripPageApprove = ({ filterStatus }) => {
-  document.title = "მივლინებების ვიზირება | Georgia LLC" // Page title
+const STATUS_MAPPING = {
+  pending: "pending",
+  approved: "approved",
+  rejected: "rejected",
+}
 
-  const [expandedRows, setExpandedRows] = useState([]) // To handle expanded rows
-  const [trips, setTrips] = useState([]) // To store the fetched trip requests
-  const [searchTerm, setSearchTerm] = useState("")
+const TripPageApprove = () => {
+  document.title = "მივლინებების ვიზირება | Georgia LLC"
+
+  const [trips, setTrips] = useState([])
   const [rejectionModal, setRejectionModal] = useState(false)
   const [selectedTrip, setSelectedTrip] = useState(null)
   const [rejectionComment, setRejectionComment] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [sortDirection, setSortDirection] = useState("desc")
+  const [confirmModal, setConfirmModal] = useState(false)
+  const [actionType, setActionType] = useState(null)
 
-  // Toggle row expansion to show detailed trip info
-  const toggleRow = index => {
-    const isRowExpanded = expandedRows.includes(index)
-    if (isRowExpanded) {
-      setExpandedRows(expandedRows.filter(rowIndex => rowIndex !== index))
-    } else {
-      setExpandedRows([...expandedRows, index])
-    }
-  }
-
-  // Fetch trip requests from the backend
   const fetchTrips = async () => {
     try {
       const response = await getTripList()
@@ -73,310 +63,231 @@ const TripPageApprove = ({ filterStatus }) => {
     fetchTrips()
   }, [])
 
-  // Handle status update (approve/reject)
-  const handleUpdateStatus = async (tripId, status) => {
-    try {
-      if (status === "rejected") {
-        setSelectedTrip(tripId)
-        setRejectionModal(true)
-        return
-      }
+  const handleModalOpen = (action, tripId) => {
+    setSelectedTrip(tripId)
+    setActionType(action)
+    if (action === "rejected") {
+      setRejectionModal(true)
+    } else {
+      setConfirmModal(true)
+    }
+  }
 
-      await updateTripStatus(tripId, status)
-      setTrips(prevTrips =>
-        prevTrips.map(trip => (trip.id === tripId ? { ...trip, status } : trip))
-      )
+  const handleConfirmAction = async () => {
+    try {
+      const response = await updateTripStatus(selectedTrip, actionType)
+      if (response.status === 200) {
+        setTrips(prevTrips =>
+          prevTrips.map(trip =>
+            trip.id === selectedTrip ? { ...trip, status: actionType } : trip
+          )
+        )
+        setConfirmModal(false)
+        setSelectedTrip(null)
+        setActionType(null)
+      }
     } catch (err) {
       console.error("Error updating trip status:", err)
     }
   }
 
-  // Add this new handler
   const handleRejectionSubmit = async () => {
     try {
-      await updateTripStatus(selectedTrip, "rejected", rejectionComment)
-      setTrips(prevTrips =>
-        prevTrips.map(trip =>
-          trip.id === selectedTrip
-            ? { ...trip, status: "rejected", comment: rejectionComment }
-            : trip
-        )
+      const response = await updateTripStatus(
+        selectedTrip,
+        "rejected",
+        rejectionComment
       )
-      setRejectionModal(false)
-      setRejectionComment("")
-      setSelectedTrip(null)
+      if (response.status === 200) {
+        setTrips(prevTrips =>
+          prevTrips.map(trip =>
+            trip.id === selectedTrip ? { ...trip, status: "rejected" } : trip
+          )
+        )
+        setRejectionModal(false)
+        setRejectionComment("")
+        setSelectedTrip(null)
+      }
     } catch (err) {
       console.error("Error rejecting trip:", err)
     }
   }
 
-  // Filter trips based on filterStatus prop
-  const filteredTrips = trips
-    .filter(trip =>
-      `${trip.subtitle_user_name} ${trip.subtitle_user_sur_name}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    )
-    .filter(trip => (filterStatus ? filterStatus.includes(trip.status) : true))
-
-  // Add rejection info to expanded row
-  const expandedRowContent = trip => (
-    <tr>
-      <td colSpan="7">
-        <div className="p-3">
-          <p>დეტალური ინფორმაცია</p>
-          <ul>
-            <li>მიზანი: {trip.purpose_of_trip}</li>
-            <li>სრული ხარჯი: {trip.total_expense}₾</li>
-            <li>ტრანსპორტის ხარჯი: {trip.expense_transport}₾</li>
-            <li>საცხოვრებელი: {trip.expense_living}₾</li>
-            <li>კომუნალური ხარჯი: {trip.expense_meal}₾</li>
-          </ul>
-          {trip.status === "rejected" && trip.comment && (
-            <div className="mt-3 p-3 bg-light rounded">
-              <h6 className="mb-2 text-danger">უარყოფის მიზეზი:</h6>
-              <p className="mb-1">{trip.comment}</p>
-              <small className="text-muted">
-                უარყო: {trip.reviewed_by?.name} {trip.reviewed_by?.sur_name}
-                {trip.reviewed_at && (
-                  <span>
-                    {" "}
-                    - {new Date(trip.reviewed_at).toLocaleString("ka-GE")}
-                  </span>
-                )}
-              </small>
-            </div>
-          )}
-        </div>
-      </td>
-    </tr>
-  )
-
-  const renderTable = () => (
-    <div className="trip-table-modern">
-      <div className="table-container">
-        <Table hover className="align-middle table-modern mb-0">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>მომთხოვნი პირი</th>
-              <th>მივლინების ადგილი</th>
-              <th>დაწყების თარიღი</th>
-              <th>დასრულების თარიღი</th>
-              <th>სტატუსი</th>
-              <th>ვიზირება</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTrips.map((trip, index) => (
-              <React.Fragment key={trip.id}>
-                <tr
-                  className={`trip-row status-${trip.status}`}
-                  onClick={() => toggleRow(index)}
+  const columns = useMemo(
+    () => [
+      {
+        Header: "#",
+        accessor: "id",
+      },
+      {
+        Header: "სახელი",
+        accessor: "user.name",
+      },
+      {
+        Header: "ადგილი",
+        accessor: "place_of_trip",
+      },
+      {
+        Header: "მიზეზი",
+        accessor: "purpose_of_trip",
+      },
+      {
+        Header: "დაწყების თარიღი",
+        accessor: "start_date",
+      },
+      {
+        Header: "დასრულების თარიღი",
+        accessor: "end_date",
+      },
+      {
+        Header: "ტიპი",
+        accessor: "trip_type",
+      },
+      {
+        Header: "სტატუსი",
+        accessor: "status",
+        disableSortBy: true,
+        Cell: ({ value }) => (
+          <span
+            style={{
+              padding: "6px 12px",
+              borderRadius: "4px",
+              display: "inline-flex",
+              alignItems: "center",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              backgroundColor:
+                value === "pending"
+                  ? "#fff3e0"
+                  : value === "rejected"
+                  ? "#ffebee"
+                  : value === "approved"
+                  ? "#e8f5e9"
+                  : "#f5f5f5",
+              color:
+                value === "pending"
+                  ? "#e65100"
+                  : value === "rejected"
+                  ? "#c62828"
+                  : value === "approved"
+                  ? "#2e7d32"
+                  : "#757575",
+            }}
+          >
+            <i className={`bx ${statusMap[value].icon} me-2`}></i>
+            {statusMap[value].label}
+          </span>
+        ),
+      },
+      {
+        Header: "მოქმედებები",
+        accessor: "actions",
+        disableSortBy: true,
+        Cell: ({ row }) =>
+          row.original.status === "pending" && (
+            <div className="d-flex gap-2">
+              <div className="d-flex align-items-center">
+                <Button
+                  onClick={() => handleModalOpen("approved", row.original.id)}
+                  color="success"
+                  variant="contained"
                 >
-                  <td>{index + 1}</td>
-                  <td>
-                    <div className="d-flex align-items-center">
-                      <div className="avatar-wrapper">
-                        <span className="avatar-initial">
-                          {trip.subtitle_user_name?.charAt(0) || "?"}
-                        </span>
-                      </div>
-                      <span className="user-name">
-                        {trip.subtitle_user_name} {trip.subtitle_user_sur_name}
-                      </span>
-                    </div>
-                  </td>
-                  <td>{trip.place_of_trip}</td>
-                  <td>
-                    <div className="date-wrapper">
-                      <i className="bx bx-calendar me-2"></i>
-                      {new Date(trip.start_date).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="date-wrapper">
-                      <i className="bx bx-calendar-check me-2"></i>
-                      {new Date(trip.end_date).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`status-badge status-${trip.status}`}>
-                      <i
-                        className={`bx ${
-                          trip.status === "rejected"
-                            ? "bx-x-circle"
-                            : trip.status === "approved"
-                            ? "bx-check-circle"
-                            : "bx-time"
-                        } me-1`}
-                      ></i>
-                      {TRIP_STATUSES[trip.status].label}
-                    </span>
-                  </td>
-                  <td>
-                    {trip.status === "pending" && (
-                      <div className="d-flex gap-2">
-                        <Button
-                          color="success"
-                          size="sm"
-                          onClick={e => {
-                            e.stopPropagation()
-                            handleUpdateStatus(trip.id, "approved")
-                          }}
-                        >
-                          <i className="bx bx-check-double me-1"></i>
-                          დადასტურება
-                        </Button>
-                        <Button
-                          color="danger"
-                          size="sm"
-                          onClick={e => {
-                            e.stopPropagation()
-                            handleUpdateStatus(trip.id, "rejected")
-                          }}
-                        >
-                          <i className="bx bx-x me-1"></i>
-                          უარყოფა
-                        </Button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-                {expandedRows.includes(index) && expandedRowContent(trip)}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-    </div>
+                  დამტკიცება
+                </Button>
+              </div>
+              <div className="d-flex align-items-center">
+                <Button
+                  onClick={() => handleModalOpen("rejected", row.original.id)}
+                  color="error"
+                  variant="contained"
+                >
+                  უარყოფა
+                </Button>
+              </div>
+            </div>
+          ),
+      },
+    ],
+    []
   )
 
-  const handlePageChange = pageNumber => {
-    setCurrentPage(pageNumber)
-  }
+  const transformedTrips = trips.map(trip => ({
+    id: trip.id,
+    trip_type: trip.trip_type,
+    status: STATUS_MAPPING[trip.status] || trip.status,
+    place_of_trip: trip.place_of_trip,
+    purpose_of_trip: trip.purpose_of_trip,
+    start_date: new Date(trip.start_date).toLocaleDateString(),
+    end_date: new Date(trip.end_date).toLocaleDateString(),
+    user: {
+      name: trip.performer_name,
+      id: trip.id_code_or_personal_number,
+      position: trip.service_description,
+      location: trip.legal_or_actual_address,
+    },
+    comment: trip.comment,
+  }))
 
-  const handleItemsPerPageChange = value => {
-    setItemsPerPage(value)
-    setCurrentPage(1)
-  }
-
-  const sortTrips = trips => {
-    return [...trips].sort((a, b) => {
-      const dateA = new Date(a.created_at)
-      const dateB = new Date(b.created_at)
-      return sortDirection === "desc" ? dateB - dateA : dateA - dateB
-    })
-  }
-
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const sortedTrips = sortTrips(filteredTrips)
-  const currentTrips = sortedTrips.slice(indexOfFirstItem, indexOfLastItem)
+  const filterOptions = [
+    {
+      field: "status",
+      label: "სტატუსი",
+      valueLabels: {
+        approved: "დამტკიცებული",
+        rejected: "უარყოფილი",
+        pending: "განხილვაში",
+      },
+    },
+  ]
 
   return (
     <React.Fragment>
-      <div className="page-content">
+      <div className="page-content mb-4">
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
               <Breadcrumbs title="მივლინებები" breadcrumbItem="ვიზირება" />
             </Col>
           </Row>
-          <Row className="mb-3">
-            <Col xl={{ size: 4, offset: 8 }}>
-              <Input
-                type="search"
-                placeholder="ძებნა თანამშრომლის მიხედვით..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                bsSize="sm"
-              />
-            </Col>
-          </Row>
           <Row>
             <Col xl={12}>
-              <Card className="hr-approval-card">
-                <CardBody>
-                  <CardTitle className="h4">მივლინებების ვიზირება</CardTitle>
-                  <CardSubtitle className="mb-4">
-                    ვიზირების დადასტურების გვერდი ქვევით ნაჩვენებია მხოლოდ
-                    მიმდინარე მოთხოვნილი ვიზირებები
-                  </CardSubtitle>
-
-                  <div className="hr-table-modern">
-                    <div className="table-controls mb-3">
-                      <div className="d-flex align-items-center">
-                        <span className="me-2">თითო გვერდზე:</span>
-                        <Input
-                          type="select"
-                          className="form-select w-auto"
-                          value={itemsPerPage}
-                          onChange={e =>
-                            handleItemsPerPageChange(Number(e.target.value))
-                          }
-                        >
-                          {[5, 10, 15, 20].map(value => (
-                            <option key={value} value={value}>
-                              {value}
-                            </option>
-                          ))}
-                        </Input>
-                      </div>
-                    </div>
-
-                    {renderTable()}
-
-                    <div className="d-flex justify-content-between align-items-center mt-3">
-                      <div className="pagination-info">
-                        ნაჩვენებია {indexOfFirstItem + 1}-
-                        {Math.min(indexOfLastItem, sortedTrips.length)} /{" "}
-                        {sortedTrips.length}
-                      </div>
-                      <div className="pagination-controls">
-                        <Button
-                          color="light"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="me-2"
-                        >
-                          <i className="bx bx-chevron-left"></i>
-                        </Button>
-                        {Array.from({
-                          length: Math.ceil(sortedTrips.length / itemsPerPage),
-                        }).map((_, index) => (
-                          <Button
-                            key={index + 1}
-                            color={
-                              currentPage === index + 1 ? "primary" : "light"
-                            }
-                            onClick={() => handlePageChange(index + 1)}
-                            className="me-2"
-                          >
-                            {index + 1}
-                          </Button>
-                        ))}
-                        <Button
-                          color="light"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={
-                            currentPage ===
-                            Math.ceil(sortedTrips.length / itemsPerPage)
-                          }
-                        >
-                          <i className="bx bx-chevron-right"></i>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardBody>
-              </Card>
+              <MuiTable
+                columns={columns}
+                data={transformedTrips}
+                filterOptions={filterOptions}
+                initialPageSize={10}
+                searchableFields={["user.name", "user.id"]}
+                enableSearch={true}
+                renderRowDetails={row => <div>{row.comment}</div>}
+              />
             </Col>
           </Row>
         </div>
       </div>
-
-      {/* Add Modal at the end */}
+      <Modal isOpen={confirmModal} toggle={() => setConfirmModal(false)}>
+        <ModalHeader toggle={() => setConfirmModal(false)}>
+          დაადასტურეთ მოქმედება
+        </ModalHeader>
+        <ModalBody>
+          დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleConfirmAction}
+          >
+            დადასტურება
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setConfirmModal(false)}
+          >
+            გაუქმება
+          </Button>
+        </ModalFooter>
+      </Modal>
       <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
         <ModalHeader toggle={() => setRejectionModal(false)}>
           უარყოფის მიზეზი
@@ -401,13 +312,18 @@ const TripPageApprove = ({ filterStatus }) => {
         </ModalBody>
         <ModalFooter>
           <Button
-            color="danger"
+            variant="contained"
+            color="error"
             onClick={handleRejectionSubmit}
             disabled={!rejectionComment.trim()}
           >
             უარყოფა
           </Button>
-          <Button color="secondary" onClick={() => setRejectionModal(false)}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setRejectionModal(false)}
+          >
             გაუქმება
           </Button>
         </ModalFooter>

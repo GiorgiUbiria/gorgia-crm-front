@@ -1,13 +1,7 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import {
-  Table,
-  Button,
   Row,
   Col,
-  Card,
-  CardBody,
-  CardTitle,
-  CardSubtitle,
   Input,
   Form,
   FormGroup,
@@ -16,42 +10,50 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Pagination,
-  PaginationItem,
-  PaginationLink,
 } from "reactstrap"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import { getVacations } from "services/admin/vacation"
 import { updateVacationStatus } from "services/vacation"
-import "./VacationPageApprove.scss"
+import MuiTable from "components/Mui/MuiTable"
+import Button from "@mui/material/Button"
 
-const VacationPageApprove = ({ filterStatus }) => {
+const statusMap = {
+  pending: {
+    label: "განხილვაში",
+    icon: "bx-time",
+    color: "#FFA500",
+  },
+  approved: {
+    label: "დამტკიცებული",
+    icon: "bx-check-circle",
+    color: "#28a745",
+  },
+  rejected: {
+    label: "უარყოფილი",
+    icon: "bx-x-circle",
+    color: "#dc3545",
+  },
+}
+
+const STATUS_MAPPING = {
+  pending: "pending",
+  approved: "approved",
+  rejected: "rejected",
+}
+
+const VacationPageApprove = () => {
   document.title = "შვებულების ვიზირება | Gorgia LLC"
 
-  const [expandedRows, setExpandedRows] = useState([])
   const [vacations, setVacations] = useState([])
-  const [searchTerm, setSearchTerm] = useState("");
-  const [rejectionModal, setRejectionModal] = useState(false);
-  const [selectedVacation, setSelectedVacation] = useState(null);
-  const [rejectionComment, setRejectionComment] = useState("");
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(20)
+  const [rejectionModal, setRejectionModal] = useState(false)
+  const [selectedVacation, setSelectedVacation] = useState(null)
+  const [rejectionComment, setRejectionComment] = useState("")
+  const [confirmModal, setConfirmModal] = useState(false)
+  const [actionType, setActionType] = useState(null)
 
-  // Function to toggle row expansion
-  const toggleRow = index => {
-    const isRowExpanded = expandedRows.includes(index)
-    if (isRowExpanded) {
-      setExpandedRows(expandedRows.filter(rowIndex => rowIndex !== index))
-    } else {
-      setExpandedRows([...expandedRows, index])
-    }
-  }
-
-  // Function to fetch vacation data
   const fetchVacations = async () => {
     try {
       const response = await getVacations()
-      console.log("Fetched vacations:", response.data.vocations.length)
       setVacations(response.data.vocations)
     } catch (err) {
       console.error("Error fetching vacation requests:", err)
@@ -62,306 +64,225 @@ const VacationPageApprove = ({ filterStatus }) => {
     fetchVacations()
   }, [])
 
-  const handleUpdateStatus = async (vacationId, status) => {
-    try {
-      if (status === "rejected") {
-        setSelectedVacation(vacationId);
-        setRejectionModal(true);
-        return;
-      }
-
-      await updateVacationStatus(vacationId, status);
-      setVacations(prevVacations =>
-        prevVacations.map(vacation =>
-          vacation.id === vacationId ? { ...vacation, status } : vacation
-        )
-      );
-    } catch (err) {
-      console.error("Error updating vacation status:", err);
+  const handleModalOpen = (action, vacationId) => {
+    setSelectedVacation(vacationId)
+    setActionType(action)
+    if (action === "rejected") {
+      setRejectionModal(true)
+    } else {
+      setConfirmModal(true)
     }
-  };
+  }
+
+  const handleConfirmAction = async () => {
+    try {
+      const response = await updateVacationStatus(selectedVacation, actionType)
+      if (response.status === 200) {
+        setVacations(prevVacations =>
+          prevVacations.map(vacation =>
+            vacation.id === selectedVacation
+              ? { ...vacation, status: actionType }
+              : vacation
+          )
+        )
+        setConfirmModal(false)
+        setSelectedVacation(null)
+        setActionType(null)
+      }
+    } catch (err) {
+      console.error("Error updating vacation status:", err)
+    }
+  }
 
   const handleRejectionSubmit = async () => {
     try {
-      await updateVacationStatus(selectedVacation, "rejected", rejectionComment);
-      setVacations(prevVacations =>
-        prevVacations.map(vacation =>
-          vacation.id === selectedVacation ?
-            { ...vacation, status: "rejected", rejection_comment: rejectionComment } :
-            vacation
+      const response = await updateVacationStatus(
+        selectedVacation,
+        "rejected",
+        rejectionComment
+      )
+      if (response.status === 200) {
+        setVacations(prevVacations =>
+          prevVacations.map(vacation =>
+            vacation.id === selectedVacation
+              ? { ...vacation, status: "rejected" }
+              : vacation
+          )
         )
-      );
-      setRejectionModal(false);
-      setRejectionComment("");
-      setSelectedVacation(null);
+        setRejectionModal(false)
+        setRejectionComment("")
+        setSelectedVacation(null)
+      }
     } catch (err) {
-      console.error("Error rejecting vacation:", err);
+      console.error("Error rejecting vacation:", err)
     }
-  };
+  }
 
-  const filteredVacations = vacations
-    .filter(vacation => 
-      vacation.user && vacation.user.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(vacation =>
-      filterStatus ? filterStatus.includes(vacation.status) : true
-    );
-
-  console.log("Vacations in state:", vacations.length)
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredVacations.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredVacations.length / itemsPerPage)
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber)
-
-  // Replace the existing table with this modern version
-  const renderTable = () => (
-    <div className="vacation-table-modern">
-      <div className="table-container">
-        <Table hover className="align-middle table-modern mb-0">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>მომთხოვნი პირი</th>
-              <th>დაწყების თარიღი</th>
-              <th>დასრულების თარიღი</th>
-              <th>სტატუსი</th>
-              <th>ვიზირება</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map((vacation, index) => (
-              <React.Fragment key={vacation.id}>
-                <tr
-                  className={`vacation-row ${
-                    vacation.status === "rejected"
-                      ? "status-rejected"
-                      : vacation.status === "approved"
-                      ? "status-approved"
-                      : "status-pending"
-                  }`}
-                  onClick={() => toggleRow(indexOfFirstItem + index)}
-                >
-                  <td className="index-column">{indexOfFirstItem + index + 1}</td>
-                  <td>
-                    <div className="d-flex align-items-center">
-                      <div className="avatar-wrapper">
-                        <span className="avatar-initial">
-                          {vacation.user?.name?.charAt(0) || "?"}
-                        </span>
-                      </div>
-                      <span className="user-name">{vacation.user?.name}</span>
-                    </div>
-                  </td>
-                  <td className="date-column">
-                    <div className="date-wrapper">
-                      <i className="bx bx-calendar me-2"></i>
-                      {new Date(vacation.start_date).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td className="date-column">
-                    <div className="date-wrapper">
-                      <i className="bx bx-calendar-check me-2"></i>
-                      {new Date(vacation.end_date).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`status-badge status-${vacation.status}`}>
-                      <i className={`bx ${
-                        vacation.status === "rejected"
-                          ? "bx-x-circle"
-                          : vacation.status === "approved"
-                          ? "bx-check-circle"
-                          : "bx-time"
-                      } me-1`}></i>
-                      {vacation.status}
-                    </span>
-                  </td>
-                  <td>
-                    {vacation.status === "rejected" ? (
-                      <Button color="none" className="btn-action btn-rejected" disabled>
-                        <i className="bx bx-block me-1"></i>
-                        უარყოფილია
-                      </Button>
-                    ) : vacation.status === "approved" ? (
-                      <Button color="none" className="btn-action btn-approved" disabled>
-                        <i className="bx bx-check-double me-1"></i>
-                        დადასტურებულია
-                      </Button>
-                    ) : (
-                      <div className="action-buttons">
-                        <Button
-                          color="none"
-                          className="btn-action btn-approve"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUpdateStatus(vacation.id, "approved");
-                          }}
-                        >
-                          <i className="bx bx-check-double me-1"></i>
-                          დადასტურება
-                        </Button>
-                        <Button
-                          color="none"
-                          className="btn-action btn-reject"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUpdateStatus(vacation.id, "rejected");
-                          }}
-                        >
-                          <i className="bx bx-block me-1"></i>
-                          უარყოფა
-                        </Button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-                {expandedRows.includes(indexOfFirstItem + index) && (
-                  <tr>
-                    <td colSpan="6">
-                      <div className="p-3">
-                        <h5 className="mb-3">დეტალური ინფორმაცია</h5>
-                        <Row>
-                          <Col md={6}>
-                            <ul className="list-unstyled">
-                              <li className="mb-2">
-                                <strong>თანამშრომელი:</strong>
-                                <ul>
-                                  <li>სახელი: {vacation.user.name}</li>
-                                  <li>პოზიცია: {vacation.user.position}</li>
-                                  <li>ID: {vacation.user.id}</li>
-                                  <li>მისამართი: {vacation.user.location}</li>
-                                </ul>
-                              </li>
-                              <li className="mb-2">
-                                <strong>შვებულების ტიპი:</strong>{' '}
-                                {vacation.type_of_vocations === 'paid' ? 'ანაზღაურებადი' :
-                                  vacation.type_of_vocations === 'unpaid' ? 'ანაზღაურების გარეშე' :
-                                    vacation.type_of_vocations === 'maternity' ? 'დეკრეტული' :
-                                      vacation.type_of_vocations === 'administrative' ? 'ადმინისტრაციული' : 'არ არის მითითებული'}
-                              </li>
-                            </ul>
-                          </Col>
-                          <Col md={6}>
-                            <ul className="list-unstyled">
-                              <li className="mb-2">
-                                <strong>პერიოდი:</strong>
-                                <ul>
-                                  <li>დაწყება: {new Date(vacation.start_date).toLocaleDateString()}</li>
-                                  <li>დასრულება: {new Date(vacation.end_date).toLocaleDateString()}</li>
-                                  <li>სულ დღეები: {vacation.duration}</li>
-                                </ul>
-                              </li>
-                              <li className="mb-2">
-                                <strong>დასვენების დღეები:</strong>
-                                <ul>
-                                  {vacation.monday === 'yes' && <li>ორშაბათი</li>}
-                                  {vacation.tuesday === 'yes' && <li>სამშაბათი</li>}
-                                  {vacation.wednesday === 'yes' && <li>ოთხშაბათი</li>}
-                                  {vacation.thursday === 'yes' && <li>ხუთშაბათი</li>}
-                                  {vacation.friday === 'yes' && <li>პარასკევი</li>}
-                                  {vacation.saturday === 'yes' && <li>შაბათი</li>}
-                                  {vacation.sunday === 'yes' && <li>კვირა</li>}
-                                </ul>
-                              </li>
-                            </ul>
-                          </Col>
-                        </Row>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-
-      <div className="table-footer">
-        <div className="items-per-page">
-          <select
-            className="form-select form-select-sm"
-            value={itemsPerPage}
-            onChange={(e) => {
-              setItemsPerPage(Number(e.target.value));
-              setCurrentPage(1);
+  const columns = useMemo(
+    () => [
+      {
+        Header: "#",
+        accessor: "id",
+      },
+      {
+        Header: "სახელი",
+        accessor: "user.name",
+      },
+      {
+        Header: "შვებულების ტიპი",
+        accessor: "type_of_vacations",
+      },
+      {
+        Header: "თარიღი",
+        accessor: "created_at",
+        sortType: "basic",
+        Cell: ({ value }) => (
+          <div className="date-wrapper">
+            <i className="bx bx-calendar me-2"></i>
+            {new Date(value).toLocaleDateString()}
+          </div>
+        ),
+      },
+      {
+        Header: "სტატუსი",
+        accessor: "status",
+        disableSortBy: true,
+        Cell: ({ value }) => (
+          <span
+            style={{
+              padding: "6px 12px",
+              borderRadius: "4px",
+              display: "inline-flex",
+              alignItems: "center",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              backgroundColor:
+                value === "pending"
+                  ? "#fff3e0"
+                  : value === "rejected"
+                  ? "#ffebee"
+                  : value === "approved"
+                  ? "#e8f5e9"
+                  : "#f5f5f5",
+              color:
+                value === "pending"
+                  ? "#e65100"
+                  : value === "rejected"
+                  ? "#c62828"
+                  : value === "approved"
+                  ? "#2e7d32"
+                  : "#757575",
             }}
           >
-            <option value="10">10 rows</option>
-            <option value="20">20 rows</option>
-            <option value="50">50 rows</option>
-            <option value="100">100 rows</option>
-          </select>
-          <span className="items-info">
-            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredVacations.length)} of{" "}
-            {filteredVacations.length} entries
+            <i className={`bx ${statusMap[value].icon} me-2`}></i>
+            {statusMap[value].label}
           </span>
-        </div>
-
-        <Pagination className="modern-pagination">
-          <PaginationItem disabled={currentPage === 1}>
-            <PaginationLink previous onClick={() => paginate(currentPage - 1)}>
-              <i className="bx bx-chevron-left"></i>
-            </PaginationLink>
-          </PaginationItem>
-          
-          {[...Array(totalPages)].map((_, i) => (
-            <PaginationItem active={currentPage === i + 1} key={i}>
-              <PaginationLink onClick={() => paginate(i + 1)}>
-                {i + 1}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-          
-          <PaginationItem disabled={currentPage === totalPages}>
-            <PaginationLink next onClick={() => paginate(currentPage + 1)}>
-              <i className="bx bx-chevron-right"></i>
-            </PaginationLink>
-          </PaginationItem>
-        </Pagination>
-      </div>
-    </div>
+        ),
+      },
+      {
+        Header: "მოქმედებები",
+        accessor: "actions",
+        disableSortBy: true,
+        Cell: ({ row }) =>
+          row.original.status === "pending" && (
+            <div className="d-flex gap-2">
+              <div className="d-flex align-items-center">
+                <Button
+                  onClick={() => handleModalOpen("approved", row.original.id)}
+                  color="success"
+                  variant="contained"
+                >
+                  დამტკიცება
+                </Button>
+              </div>
+              <div className="d-flex align-items-center">
+                <Button
+                  onClick={() => handleModalOpen("rejected", row.original.id)}
+                  color="error"
+                  variant="contained"
+                >
+                  უარყოფა
+                </Button>
+              </div>
+            </div>
+          ),
+      },
+    ],
+    []
   )
+
+  const transformedVacations = vacations.map(vacation => ({
+    id: vacation.id,
+    status: STATUS_MAPPING[vacation.status] || vacation.status,
+    created_at: vacation.created_at,
+    user: {
+      name: vacation.performer_name,
+      id: vacation.id_code_or_personal_number,
+      position: vacation.service_description,
+      location: vacation.legal_or_actual_address,
+    },
+    comment: vacation.comment,
+    type_of_vacations: vacation.type_of_vocations,
+  }))
+
+  const filterOptions = [
+    {
+      field: "status",
+      label: "სტატუსი",
+      valueLabels: {
+        approved: "დამტკიცებული",
+        rejected: "უარყოფილი",
+        pending: "განხილვაში",
+      },
+    },
+  ]
 
   return (
     <React.Fragment>
-      <div className="page-content">
+      <div className="page-content mb-4">
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
               <Breadcrumbs title="შვებულებები" breadcrumbItem="ვიზირება" />
             </Col>
           </Row>
-          <Row className="mb-3">
-            <Col xl={{ size: 4, offset: 8 }}>
-              <Input
-                type="search"
-                placeholder="ძებნა თანამშრომლის მიხედვით..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                bsSize="sm"
-              />
-            </Col>
-          </Row>
           <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <CardTitle className="h4">შვებულების ვიზირების გვერდი</CardTitle>
-                  <CardSubtitle className="card-title-desc">
-                    ქვემოთ მოცემულია შვებულების მოთხოვნები
-                  </CardSubtitle>
-                  {renderTable()}
-                </CardBody>
-              </Card>
-            </Col>
+            <MuiTable
+              data={transformedVacations}
+              columns={columns}
+              filterOptions={filterOptions}
+              enableSearch={true}
+              searchableFields={["user.name", "user.id"]}
+              initialPageSize={10}
+              renderRowDetails={row => <div>{row.comment}</div>}
+            />
           </Row>
         </div>
       </div>
-
+      <Modal isOpen={confirmModal} toggle={() => setConfirmModal(false)}>
+        <ModalHeader toggle={() => setConfirmModal(false)}>
+          დაადასტურეთ მოქმედება
+        </ModalHeader>
+        <ModalBody>
+          დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleConfirmAction}
+          >
+            დადასტურება
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setConfirmModal(false)}
+          >
+            გაუქმება
+          </Button>
+        </ModalFooter>
+      </Modal>
       <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
         <ModalHeader toggle={() => setRejectionModal(false)}>
           უარყოფის მიზეზი
@@ -369,13 +290,15 @@ const VacationPageApprove = ({ filterStatus }) => {
         <ModalBody>
           <Form>
             <FormGroup>
-              <Label for="rejectionComment">გთხოვთ მიუთითოთ უარყოფის მიზეზი</Label>
+              <Label for="rejectionComment">
+                გთხოვთ მიუთითოთ უარყოფის მიზეზი
+              </Label>
               <Input
                 type="textarea"
                 name="rejectionComment"
                 id="rejectionComment"
                 value={rejectionComment}
-                onChange={(e) => setRejectionComment(e.target.value)}
+                onChange={e => setRejectionComment(e.target.value)}
                 rows="4"
                 required
               />
@@ -384,13 +307,18 @@ const VacationPageApprove = ({ filterStatus }) => {
         </ModalBody>
         <ModalFooter>
           <Button
-            color="danger"
+            variant="contained"
+            color="error"
             onClick={handleRejectionSubmit}
             disabled={!rejectionComment.trim()}
           >
             უარყოფა
           </Button>
-          <Button color="secondary" onClick={() => setRejectionModal(false)}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setRejectionModal(false)}
+          >
             გაუქმება
           </Button>
         </ModalFooter>
