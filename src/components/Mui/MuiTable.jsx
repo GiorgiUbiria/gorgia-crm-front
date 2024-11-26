@@ -1,4 +1,4 @@
-import * as React from "react"
+import React, { useState, useMemo, useCallback, useEffect } from "react"
 import PropTypes from "prop-types"
 import Box from "@mui/material/Box"
 import Collapse from "@mui/material/Collapse"
@@ -9,7 +9,6 @@ import TableCell from "@mui/material/TableCell"
 import TableContainer from "@mui/material/TableContainer"
 import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
-import Typography from "@mui/material/Typography"
 import Paper from "@mui/material/Paper"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp"
@@ -25,16 +24,79 @@ import {
   TablePagination,
   TextField,
   InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material"
 import SearchIcon from "@mui/icons-material/Search"
-import Select from "@mui/material/Select"
-import MenuItem from "@mui/material/MenuItem"
-import FormControl from "@mui/material/FormControl"
-import InputLabel from "@mui/material/InputLabel"
 import FirstPageIcon from "@mui/icons-material/FirstPage"
 import LastPageIcon from "@mui/icons-material/LastPage"
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft"
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight"
+
+const CustomPaginationActions = React.memo(function CustomPaginationActions(
+  props
+) {
+  const { count, page, rowsPerPage, onPageChange } = props
+
+  const handleFirstPageButtonClick = useCallback(() => {
+    onPageChange(null, 0)
+  }, [onPageChange])
+
+  const handleBackButtonClick = useCallback(() => {
+    onPageChange(null, page - 1)
+  }, [onPageChange, page])
+
+  const handleNextButtonClick = useCallback(() => {
+    onPageChange(null, page + 1)
+  }, [onPageChange, page])
+
+  const handleLastPageButtonClick = useCallback(() => {
+    onPageChange(null, Math.max(0, Math.ceil(count / rowsPerPage) - 1))
+  }, [onPageChange, count, rowsPerPage])
+
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <IconButton
+        onClick={handleFirstPageButtonClick}
+        disabled={page === 0}
+        aria-label="Go to first page"
+        size="small"
+        sx={{ color: "primary.main" }}
+      >
+        <FirstPageIcon />
+      </IconButton>
+      <IconButton
+        onClick={handleBackButtonClick}
+        disabled={page === 0}
+        aria-label="Go to previous page"
+        size="small"
+        sx={{ color: "primary.main" }}
+      >
+        <KeyboardArrowLeft />
+      </IconButton>
+      <IconButton
+        onClick={handleNextButtonClick}
+        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        aria-label="Go to next page"
+        size="small"
+        sx={{ color: "primary.main" }}
+      >
+        <KeyboardArrowRight />
+      </IconButton>
+      <IconButton
+        onClick={handleLastPageButtonClick}
+        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        aria-label="Go to last page"
+        size="small"
+        sx={{ color: "primary.main" }}
+      >
+        <LastPageIcon />
+      </IconButton>
+    </Box>
+  )
+})
 
 const MuiTable = ({
   columns = [],
@@ -48,20 +110,19 @@ const MuiTable = ({
   renderRowDetails,
   filterOptions = [],
 }) => {
-  const [openRows, setOpenRows] = React.useState({})
-  const [filterValue, setFilterValue] = React.useState("")
-  const [filterField, setFilterField] = React.useState("")
-  const [currentFilters, setCurrentFilters] = React.useState([])
-  const [globalFilterValue, setGlobalFilterValue] = React.useState("")
-  const [searchTerm, setSearchTerm] = React.useState("")
-  const [selectedSearchField, setSelectedSearchField] = React.useState(
+  const [openRows, setOpenRows] = useState({})
+  const [filterField, setFilterField] = useState("")
+  const [filterValue, setFilterValue] = useState("")
+  const [currentFilters, setCurrentFilters] = useState([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedSearchField, setSelectedSearchField] = useState(
     searchableFields[0] || ""
   )
 
-  const memoizedData = React.useMemo(() => data, [data])
-  const memoizedColumns = React.useMemo(() => columns, [columns])
+  const memoizedData = useMemo(() => data, [data])
+  const memoizedColumns = useMemo(() => columns, [columns])
 
-  const customGlobalFilter = React.useCallback(
+  const customGlobalFilter = useCallback(
     (rows, columnIds, filterValue) => {
       if (!filterValue || !selectedSearchField) return rows
 
@@ -98,32 +159,35 @@ const MuiTable = ({
     usePagination
   )
 
-  React.useEffect(() => {
-    if (tableInstance.state.filters) {
-      setCurrentFilters(tableInstance.state.filters)
-    }
-  }, [tableInstance.state.filters])
-
-  React.useEffect(() => {
-    if (tableInstance.state.globalFilter !== undefined) {
-      setGlobalFilterValue(tableInstance.state.globalFilter)
-    }
-  }, [tableInstance.state.globalFilter])
-
   const {
     gotoPage,
     setPageSize,
     state: { pageIndex, pageSize },
+    setGlobalFilter,
+    setFilter,
+    headerGroups,
+    prepareRow,
+    page,
+    rows,
   } = tableInstance
 
-  const handlePageChange = React.useCallback(
+  useEffect(() => {
+    if (tableInstance.state.filters) {
+      setCurrentFilters(tableInstance.state.filters)
+    }
+    if (tableInstance.state.globalFilter !== undefined) {
+      setSearchTerm(tableInstance.state.globalFilter)
+    }
+  }, [tableInstance.state.filters, tableInstance.state.globalFilter])
+
+  const handlePageChange = useCallback(
     (event, newPage) => {
       gotoPage(newPage)
     },
     [gotoPage]
   )
 
-  const handleChangeRowsPerPage = React.useCallback(
+  const handleChangeRowsPerPage = useCallback(
     event => {
       const newSize = parseInt(event.target.value, 10)
       setPageSize(newSize)
@@ -132,16 +196,15 @@ const MuiTable = ({
     [setPageSize, gotoPage]
   )
 
-  const handleFilterChange = React.useCallback(
+  const handleFilterChange = useCallback(
     event => {
       const { name, value } = event.target
       if (name === "field") {
         setFilterField(value)
         setFilterValue("")
         if (!value) {
-          const newFilters = []
-          setCurrentFilters(newFilters)
-          tableInstance.setAllFilters(newFilters)
+          setCurrentFilters([])
+          tableInstance.setAllFilters([])
         }
       } else {
         setFilterValue(value)
@@ -155,14 +218,14 @@ const MuiTable = ({
     [filterField, tableInstance]
   )
 
-  const handleToggleRow = rowId => {
+  const handleToggleRow = useCallback(rowId => {
     setOpenRows(prev => ({
       ...prev,
       [rowId]: !prev[rowId],
     }))
-  }
+  }, [])
 
-  const getFilterValues = () => {
+  const getFilterValues = useCallback(() => {
     if (!filterField || !data) return []
 
     const selectedFilter = filterOptions.find(
@@ -186,94 +249,55 @@ const MuiTable = ({
       value,
       label: value,
     }))
-  }
+  }, [filterField, data, filterOptions])
 
-  const handleSearch = React.useCallback(
+  const handleSearch = useCallback(
     value => {
       setSearchTerm(value)
-      tableInstance.setGlobalFilter(value)
+      setGlobalFilter(value)
     },
-    [tableInstance]
+    [setGlobalFilter]
   )
 
-  const CustomPaginationActions = React.memo(function CustomPaginationActions(
-    props
-  ) {
-    const { count, page, rowsPerPage, onPageChange } = props
-
-    const handleFirstPageButtonClick = React.useCallback(() => {
-      onPageChange(null, 0)
-    }, [onPageChange])
-
-    const handleBackButtonClick = React.useCallback(() => {
-      onPageChange(null, page - 1)
-    }, [onPageChange, page])
-
-    const handleNextButtonClick = React.useCallback(() => {
-      onPageChange(null, page + 1)
-    }, [onPageChange, page])
-
-    const handleLastPageButtonClick = React.useCallback(() => {
-      onPageChange(null, Math.max(0, Math.ceil(count / rowsPerPage) - 1))
-    }, [onPageChange, count, rowsPerPage])
-
-    return (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <IconButton
-          onClick={handleFirstPageButtonClick}
-          disabled={page === 0}
-          aria-label="პირველ გვერდზე გადასვლა"
-          size="small"
-        >
-          <FirstPageIcon />
-        </IconButton>
-        <IconButton
-          onClick={handleBackButtonClick}
-          disabled={page === 0}
-          aria-label="წინა გვერდზე გადასვლა"
-          size="small"
-        >
-          <KeyboardArrowLeft />
-        </IconButton>
-        <IconButton
-          onClick={handleNextButtonClick}
-          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-          aria-label="შემდეგ გვერდზე გადასვლა"
-          size="small"
-        >
-          <KeyboardArrowRight />
-        </IconButton>
-        <IconButton
-          onClick={handleLastPageButtonClick}
-          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-          aria-label="ბოლო გვერდზე გადასვლა"
-          size="small"
-        >
-          <LastPageIcon />
-        </IconButton>
-      </Box>
-    )
-  })
-
   return (
-    <Paper elevation={2} sx={{ borderRadius: 2, overflow: "hidden" }}>
+    <Paper
+      elevation={4}
+      sx={{
+        borderRadius: 2,
+        overflow: "hidden",
+        backgroundColor: "background.paper",
+        color: "text.primary",
+      }}
+    >
       {(enableSearch || filterOptions.length > 0) && (
         <Box
           sx={{
             p: 2,
-            borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
             display: "flex",
             gap: 2,
+            backgroundColor: "background.default",
           }}
         >
           {enableSearch && searchableFields.length > 0 && (
             <Box sx={{ display: "flex", gap: 2, flex: 1 }}>
               <FormControl size="small" sx={{ minWidth: 200 }}>
-                <InputLabel>ძიების ველი</InputLabel>
+                <InputLabel sx={{ color: "text.secondary" }}>
+                  საძიებო ველი
+                </InputLabel>
                 <Select
                   value={selectedSearchField}
                   onChange={e => setSelectedSearchField(e.target.value)}
-                  label="ძიების ველი"
+                  label="საძიებო ველი"
+                  sx={{
+                    "& .MuiSelect-icon": { color: "text.secondary" },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "divider",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "primary.main",
+                    },
+                  }}
                 >
                   {searchableFields.map(field => (
                     <MenuItem key={field} value={field}>
@@ -293,23 +317,37 @@ const MuiTable = ({
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon />
+                      <SearchIcon sx={{ color: "text.secondary" }} />
                     </InputAdornment>
                   ),
+                  sx: { backgroundColor: "background.paper", borderRadius: 1 },
                 }}
-                sx={{ flex: 1 }}
+                sx={{
+                  flex: 1,
+                  backgroundColor: "background.paper",
+                  borderRadius: 1,
+                }}
               />
             </Box>
           )}
           {filterOptions.length > 0 && (
             <Box sx={{ display: "flex", gap: 1, minWidth: 300 }}>
               <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>ფილტრაცია</InputLabel>
+                <InputLabel sx={{ color: "text.secondary" }}>ფილტრი</InputLabel>
                 <Select
                   name="field"
                   value={filterField}
                   onChange={handleFilterChange}
-                  label="ფილტრაცია"
+                  label="გაფილტრე"
+                  sx={{
+                    "& .MuiSelect-icon": { color: "text.secondary" },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "divider",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "primary.main",
+                    },
+                  }}
                 >
                   <MenuItem value="">
                     <em>არცერთი</em>
@@ -323,12 +361,23 @@ const MuiTable = ({
               </FormControl>
               {filterField && (
                 <FormControl size="small" sx={{ minWidth: 140 }}>
-                  <InputLabel>მნიშვნელობა</InputLabel>
+                  <InputLabel sx={{ color: "text.secondary" }}>
+                    ფილტრი
+                  </InputLabel>
                   <Select
                     name="value"
                     value={filterValue}
                     onChange={handleFilterChange}
                     label="მნიშვნელობა"
+                    sx={{
+                      "& .MuiSelect-icon": { color: "text.secondary" },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "divider",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "primary.main",
+                      },
+                    }}
                   >
                     <MenuItem value="">
                       <em>ყველა</em>
@@ -348,14 +397,24 @@ const MuiTable = ({
       <TableContainer>
         <MuiTableComponent
           {...tableInstance.getTableProps()}
-          sx={{ minWidth: 650 }}
+          sx={{
+            minWidth: 650,
+            backgroundColor: "background.paper",
+            "& .MuiTableCell-head": {
+              backgroundColor: "#105d8d",
+              color: "primary.contrastText",
+              fontWeight: 700,
+            },
+            "& .MuiTableRow-hover:hover": {
+              backgroundColor: "action.hover",
+            },
+          }}
         >
           <TableHead>
-            {tableInstance.headerGroups.map(headerGroup => (
+            {headerGroups.map(headerGroup => (
               <TableRow
                 {...headerGroup.getHeaderGroupProps()}
                 key={headerGroup.id}
-                sx={{ backgroundColor: "rgba(0, 0, 0, 0.02)" }}
               >
                 {renderRowDetails && (
                   <TableCell sx={{ width: 48, padding: "0 4px" }} />
@@ -363,26 +422,21 @@ const MuiTable = ({
                 {headerGroup.headers.map((column, index) => (
                   <TableCell
                     {...column.getHeaderProps(column.getSortByToggleProps())}
+                    key={index}
                     sx={{
-                      fontWeight: 600,
                       cursor: column.canSort ? "pointer" : "default",
                       "&:hover": column.canSort
-                        ? {
-                            backgroundColor: "rgba(0, 0, 0, 0.04)",
-                          }
+                        ? { backgroundColor: "primary.light" }
                         : {},
                       transition: "background-color 0.2s",
                     }}
-                    key={index}
                   >
                     <Box
                       sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
                     >
                       {column.render("Header")}
                       {column.canSort && (
-                        <Box
-                          sx={{ color: "text.secondary", fontSize: "1.1rem" }}
-                        >
+                        <Box sx={{ color: "text.secondary", fontSize: "1rem" }}>
                           {column.isSorted
                             ? column.isSortedDesc
                               ? "↓"
@@ -397,8 +451,8 @@ const MuiTable = ({
             ))}
           </TableHead>
           <TableBody {...tableInstance.getTableBodyProps()}>
-            {tableInstance.page.map(row => {
-              tableInstance.prepareRow(row)
+            {page.map(row => {
+              prepareRow(row)
               const isOpen = openRows[row.original.id] || false
 
               return (
@@ -413,7 +467,7 @@ const MuiTable = ({
                     sx={{
                       cursor: onRowClick ? "pointer" : "default",
                       "&:hover": {
-                        backgroundColor: "rgba(0, 0, 0, 0.04) !important",
+                        backgroundColor: "action.hover",
                       },
                       transition: "background-color 0.2s",
                     }}
@@ -425,6 +479,7 @@ const MuiTable = ({
                           aria-label="expand row"
                           size="small"
                           onClick={() => handleToggleRow(row.original.id)}
+                          sx={{ color: "primary.main" }}
                         >
                           {isOpen ? (
                             <KeyboardArrowUpIcon />
@@ -450,7 +505,7 @@ const MuiTable = ({
                         sx={{
                           py: 0,
                           borderBottom: isOpen
-                            ? "1px solid rgba(224, 224, 224, 1)"
+                            ? "1px solid rgba(255, 255, 255, 0.2)"
                             : "none",
                         }}
                         colSpan={columns.length + 1}
@@ -475,20 +530,21 @@ const MuiTable = ({
           display: "flex",
           justifyContent: "flex-end",
           alignItems: "center",
-          borderTop: "1px solid rgba(224, 224, 224, 1)",
+          borderTop: "1px solid rgba(255, 255, 255, 0.12)",
+          backgroundColor: "background.default",
         }}
       >
         <TablePagination
           component="div"
-          count={tableInstance.rows.length}
+          count={rows.length}
           page={pageIndex}
           onPageChange={handlePageChange}
           rowsPerPage={pageSize}
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={pageSizeOptions}
-          labelRowsPerPage="სტრიქონები გვერდზე:"
+          labelRowsPerPage="Rows per page:"
           labelDisplayedRows={({ from, to, count }) =>
-            `${from}–${to} ${count}-დან`
+            `${from}–${to} of ${count}`
           }
           ActionsComponent={CustomPaginationActions}
           sx={{
@@ -502,15 +558,18 @@ const MuiTable = ({
               margin: 0,
               display: "flex",
               alignItems: "center",
+              color: "text.secondary",
             },
             ".MuiTablePagination-displayedRows": {
               margin: 0,
               display: "flex",
               alignItems: "center",
+              color: "text.secondary",
             },
             ".MuiTablePagination-select": {
               paddingTop: 0,
               paddingBottom: 0,
+              color: "text.primary",
             },
             ".MuiTablePagination-actions": {
               marginLeft: 2,
@@ -543,4 +602,4 @@ MuiTable.propTypes = {
   ),
 }
 
-export default MuiTable
+export default React.memo(MuiTable)

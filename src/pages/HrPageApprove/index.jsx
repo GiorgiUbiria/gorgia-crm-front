@@ -2,7 +2,14 @@ import React, { useEffect, useState, useMemo } from "react"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import { getHrDocuments, updateHrDocumentStatus } from "services/hrDocument"
 import MuiTable from "../../components/Mui/MuiTable"
-import { Button } from "@mui/material"
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+} from "@mui/material"
 import { Row, Col } from "reactstrap"
 
 const statusMap = {
@@ -32,6 +39,10 @@ const STATUS_MAPPING = {
 const HrPageApprove = () => {
   document.title = "ვიზირება | Gorgia LLC"
   const [documents, setDocuments] = useState([])
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedStatus, setSelectedStatus] = useState(null)
+  const [selectedDocumentId, setSelectedDocumentId] = useState(null)
+  const [comment, setComment] = useState("")
 
   const fetchDocuments = async () => {
     try {
@@ -218,9 +229,27 @@ const HrPageApprove = () => {
     ]
   }, [])
 
+  const handleModalOpen = (status, documentId) => {
+    setSelectedStatus(status)
+    setSelectedDocumentId(documentId)
+    setModalOpen(true)
+  }
+
+  const handleModalClose = () => {
+    setModalOpen(false)
+    setSelectedStatus(null)
+    setSelectedDocumentId(null)
+    setComment("")
+  }
+
+  const handleConfirm = () => {
+    handleUpdateStatus(selectedDocumentId, selectedStatus, { comment })
+    handleModalClose()
+  }
+
   return (
     <React.Fragment>
-      <div className="page-content">
+      <div className="page-content mb-4">
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
@@ -241,6 +270,34 @@ const HrPageApprove = () => {
             ]}
             renderRowDetails={row => <div>{row.comment}</div>}
           />
+          <Dialog open={modalOpen} onClose={handleModalClose}>
+            <DialogTitle>
+              {selectedStatus === "approved"
+                ? "დოკუმენტის დამტკიცება"
+                : "დოკუმენტის უარყოფა"}
+            </DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="კომენტარი"
+                type="text"
+                fullWidth
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleModalClose}>გაუქმება</Button>
+              <Button
+                onClick={handleConfirm}
+                variant="contained"
+                color={selectedStatus === "approved" ? "success" : "error"}
+              >
+                {selectedStatus === "approved" ? "დამტკიცება" : "უარყოფა"}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </div>
       </div>
     </React.Fragment>
