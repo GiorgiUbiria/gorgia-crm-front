@@ -14,7 +14,6 @@ import {
   TabPane,
 } from "reactstrap"
 import classnames from "classnames"
-import { Link } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
@@ -29,6 +28,7 @@ const LawyerPage = () => {
   const [passedSteps, setPassedSteps] = useState([1])
   const [errors, setErrors] = useState({})
   const [selectedFile, setSelectedFile] = useState(null)
+  const [type, setType] = useState("იურიდიული დეპარტამენტი")
 
   const [formData, setFormData] = useState({
     user_id: "",
@@ -42,6 +42,11 @@ const LawyerPage = () => {
     service_description: "",
     service_price: "",
     service_location: "",
+    contract_duration: "",
+    contract_responsible_person: "",
+    created_at: "",
+    updated_at: "",
+    status: "",
     limit_type: "",
     limit_amount: "",
     consignment_term: "",
@@ -51,6 +56,8 @@ const LawyerPage = () => {
     means_of_securing_obligation: "",
     notary_agreement: false,
     file_path: null,
+    initiator_name_signature: "",
+    manager_name_signature: "",
   })
 
   const handleInputChange = e => {
@@ -93,20 +100,16 @@ const LawyerPage = () => {
             errorMsg =
               "ხელშეკრულების მოქმედების ვადის ათვლის პერიოდი აუცილებელია"
           break
-        case "service_description":
-          if (!value) errorMsg = "მომსახურების საგანი აუცილებელია"
-          break
-        case "service_price":
-          if (!value || isNaN(value))
-            errorMsg = "მომსახურების ფასი უნდა იყოს ციფრი"
-          break
-        case "service_location":
-          if (!value) errorMsg = "მომსახურების გაწევის ადგილი აუცილებელია"
-          break
         case "file_path":
           if (!value && !selectedFile) errorMsg = "ფაილის ატვირთვა აუცილებელია"
           else if (selectedFile && selectedFile.size > 5 * 1024 * 1024)
             errorMsg = "ფაილის ზომა არ უნდა აღემატებოდეს 5MB-ს"
+          break
+        case "initiator_name_signature":
+          if (!value) errorMsg = "ინიციატორის სახელი და გვარი აუცილებელია"
+          break
+        case "manager_name_signature":
+          if (!value) errorMsg = "ხელმძღვანელის სახელი და გვარი აუცილებელია"
           break
         default:
           break
@@ -119,7 +122,6 @@ const LawyerPage = () => {
 
       return !errorMsg
     } catch (error) {
-      console.error(`Validation error for field ${field}:`, error)
       toast.error("შეცდომა ველის ვალიდაციისას")
       return false
     }
@@ -137,13 +139,12 @@ const LawyerPage = () => {
       })
 
       if (!isValid) {
-        console.log(errors)
+        console.log("Errors:", errors)
         toast.error("გთხოვთ შეავსოთ ყველა სავალდებულო ველი")
       }
 
       return isValid
     } catch (error) {
-      console.error("Form validation error:", error)
       toast.error("შეცდომა ფორმის ვალიდაციისას")
       return false
     }
@@ -165,10 +166,16 @@ const LawyerPage = () => {
       Object.keys(formData).forEach(key => {
         if (key === "file_path" && selectedFile) {
           formDataToSend.append("file_path", selectedFile)
-        } else {
+        } else if (key === "notary_agreement") {
+          formDataToSend.append("notary_agreement", formData[key] ? 1 : 0)
+        } else if (formData[key] !== "") {
           formDataToSend.append(key, formData[key])
         }
       })
+
+      formDataToSend.append("status", "pending")
+      formDataToSend.append("created_at", new Date().toISOString())
+      formDataToSend.append("updated_at", new Date().toISOString())
 
       const response = await createAgreement(formDataToSend)
 
@@ -198,6 +205,8 @@ const LawyerPage = () => {
           means_of_securing_obligation: "",
           notary_agreement: false,
           file_path: null,
+          initiator_name_signature: "",
+          manager_name_signature: "",
         })
         setSelectedFile(null)
         setactiveTab(4)
@@ -207,13 +216,11 @@ const LawyerPage = () => {
     } catch (error) {
       toast.dismiss("submitProgress")
 
-      console.error("Error creating agreement:", error)
-
       if (error.response) {
         switch (error.response.status) {
           case 400:
             toast.error(
-              "არასწორი მონაცემები. გთხოვთ შეამოწმოთ შეყვანილი ინფორმაცია"
+              "არასწორი მოაცემები. გთხოვთ შეამოწმოთ შეყვანილი ინფორმაცია"
             )
             break
           case 401:
@@ -235,7 +242,6 @@ const LawyerPage = () => {
             toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
         }
       } else if (error.request) {
-        // Handle network errors
         toast.error("კავშირის შეცდომა. გთხოვთ შეამოწმოთ ინტერნეტ კავშირი")
       } else {
         toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
@@ -290,7 +296,6 @@ const LawyerPage = () => {
         file_path: "",
       }))
     } catch (error) {
-      console.error("File handling error:", error)
       toast.error("შეცდომა ფაილის დამუშავებისას")
     }
   }
@@ -318,7 +323,6 @@ const LawyerPage = () => {
 
           <Card>
             <CardBody>
-              {/* Progress Steps */}
               <div className="progress-steps">
                 {[
                   { label: "ძირითადი ინფორმაცია", icon: "bx-user" },
@@ -344,7 +348,6 @@ const LawyerPage = () => {
                 ))}
               </div>
 
-              {/* Form Content */}
               <div className="form-content">
                 <TabContent activeTab={activeTab}>
                   <TabPane tabId={1}>

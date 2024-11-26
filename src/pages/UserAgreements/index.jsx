@@ -1,63 +1,148 @@
-import React, { useEffect, useState } from "react";
-import { Table, Button, Row, Col, Card, CardBody, Input } from "reactstrap";
+import React, { useEffect, useState, useMemo } from "react"
+import { Row, Col, Card, CardBody, CardTitle, CardSubtitle } from "reactstrap"
+import Breadcrumbs from "../../components/Common/Breadcrumb"
+import MuiTable from "../../components/Mui/MuiTable"
+import { getUserAgreemnets } from "services/agreement"
 
-import Breadcrumbs from "../../components/Common/Breadcrumb";
-import { getUserAgreemnets } from "services/agreement";
+const statusMap = {
+  pending: {
+    label: "განხილვაში",
+    icon: "bx-time",
+    color: "#FFA500",
+  },
+  approved: {
+    label: "დამტკიცებული",
+    icon: "bx-check-circle",
+    color: "#28a745",
+  },
+  rejected: {
+    label: "უარყოფილი",
+    icon: "bx-x-circle",
+    color: "#dc3545",
+  },
+}
+
+const STATUS_MAPPING = {
+  pending: "pending",
+  approved: "approved",
+  rejected: "rejected",
+}
 
 const UserAgreements = () => {
-  document.title = "ხელშეკრულებები | Gorgia LLC";
-
-  const [agreements, setAgreements] = useState([]);
-  const [expandedRows, setExpandedRows] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  document.title = "ხელშეკრულებები | Gorgia LLC"
+  const [agreements, setAgreements] = useState([])
 
   const fetchAgreements = async () => {
     try {
-      const response = await getUserAgreemnets();
-      setAgreements(response.data.data);
+      const response = await getUserAgreemnets()
+      setAgreements(response.data.data)
     } catch (err) {
-      console.error("Error fetching agreements:", err);
+      console.error("Error fetching agreements:", err)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchAgreements();
-  }, []);
+    fetchAgreements()
+  }, [])
 
-  const toggleRow = (index) => {
-    const isRowExpanded = expandedRows.includes(index);
-    if (isRowExpanded) {
-      setExpandedRows(expandedRows.filter((rowIndex) => rowIndex !== index));
-    } else {
-      setExpandedRows([...expandedRows, index]);
-    }
-  };
+  const transformedAgreements = agreements.map(agreement => ({
+    id: agreement.id,
+    status: STATUS_MAPPING[agreement.status] || agreement.status,
+    created_at: agreement.created_at,
+    user: {
+      name: agreement.performer_name,
+      id: agreement.id_code_or_personal_number,
+      position: agreement.service_description,
+      location: agreement.legal_or_actual_address,
+    },
+    name: agreement.service_description,
+    salary: agreement.service_price,
+    comment: agreement.payment_terms,
+  }))
 
-  const downloadDocument = (fileUrl) => {
-    const newWindow = window.open(fileUrl, '_blank');
+  const columns = useMemo(
+    () => [
+      {
+        Header: "#",
+        accessor: "id",
+      },
+      {
+        Header: "მომთხოვნი სახელი",
+        accessor: "user.name",
+        Cell: ({ value }) => (
+          <div className="d-flex align-items-center">
+            <div className="avatar-wrapper">
+              <span className="avatar-initial">{value.charAt(0) || "?"}</span>
+            </div>
+            <span className="user-name">{value}</span>
+          </div>
+        ),
+      },
+      {
+        Header: "მოთხოვნილი ფორმის სტილი",
+        accessor: "name",
+      },
+      {
+        Header: "თარიღი",
+        accessor: "created_at",
+        sortType: "basic",
+        Cell: ({ value }) => (
+          <div className="date-wrapper">
+            <i className="bx bx-calendar me-2"></i>
+            {new Date(value).toLocaleDateString()}
+          </div>
+        ),
+      },
+      {
+        Header: "სტატუსი",
+        accessor: "status",
+        Cell: ({ value }) => (
+          <span
+            style={{
+              padding: "6px 12px",
+              borderRadius: "4px",
+              display: "inline-flex",
+              alignItems: "center",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              backgroundColor:
+                value === "pending"
+                  ? "#fff3e0"
+                  : value === "rejected"
+                  ? "#ffebee"
+                  : value === "approved"
+                  ? "#e8f5e9"
+                  : "#f5f5f5",
+              color:
+                value === "pending"
+                  ? "#e65100"
+                  : value === "rejected"
+                  ? "#c62828"
+                  : value === "approved"
+                  ? "#2e7d32"
+                  : "#757575",
+            }}
+          >
+            <i className={`bx ${statusMap[value].icon} me-2`}></i>
+            {statusMap[value].label}
+          </span>
+        ),
+      },
+    ],
+    []
+  )
 
-    newWindow.focus();
-    newWindow.print();
-  };
-
-  const getRowClass = (status) => {
-    switch (status) {
-      case "rejected":
-        return "table-danger";
-      case "approved":
-        return "table-success";
-      case "pending":
-        return "table-warning";
-      default:
-        return "";
-    }
-  };
-
-  const filteredAgreements = agreements.filter(agreement =>
-    agreement.performer_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  console.log(agreements);
+  const filterOptions = [
+    {
+      field: "status",
+      label: "სტატუსი",
+      valueLabels: {
+        approved: "დამტკიცებული",
+        rejected: "უარყოფილი",
+        pending: "განხილვაში",
+      },
+    },
+  ]
 
   return (
     <React.Fragment>
@@ -65,17 +150,9 @@ const UserAgreements = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="ხელშეკრულებები" breadcrumbItem="ჩემი ხელშეკრულებები" />
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col xl={{ size: 4, offset: 8 }}>
-              <Input
-                type="search"
-                placeholder="ძებნა შემსრულებლის მიხედვით..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                bsSize="sm"
+              <Breadcrumbs
+                title="ხელშეკრულებები"
+                breadcrumbItem="ჩემი ხელშეკრულებები"
               />
             </Col>
           </Row>
@@ -83,69 +160,22 @@ const UserAgreements = () => {
             <Col xl={12}>
               <Card>
                 <CardBody>
-                  <div className="table-responsive">
-                    <Table className="table mb-0">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>შემსრულებელი</th>
-                          <th>მომსახურების აღწერა</th>
-                          <th>ხელშეკრულების ვადა</th>
-                          <th>სტატუსი</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredAgreements.map((agreement, index) => (
-                          <React.Fragment key={agreement.id}>
-                            <tr
-                              className={getRowClass(agreement.status)}
-                              onClick={() => toggleRow(index)}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <th scope="row">{index + 1}</th>
-                              <td>{agreement.performer_name}</td>
-                              <td>{agreement.service_description}</td>
-                              <td>{agreement.contract_duration} დღე</td>
-                              <td>
-                                {agreement.status === "rejected"
-                                  ? "უარყოფილია"
-                                  : agreement.status === "approved"
-                                    ? "დადასტურებულია"
-                                    : "მოლოდინში"}
-                              </td>
-                            </tr>
-                            {expandedRows.includes(index) && (
-                              <tr>
-                                <td colSpan="5">
-                                  <div className="p-3">
-                                    <p>დეტალური ინფორმაცია</p>
-                                    <ul>
-                                      <li>შემსრულებლის სრული დასახელება: {agreement.performer_name}</li>
-                                      <li>საიდენტიფიკაციო კოდი ან პირადი ნომერი: {agreement.id_code_or_personal_number}</li>
-                                      <li>იურიდიული მისამართი / ფაქტიური მისამართი: {agreement.legal_or_actual_address}</li>
-                                      <li>საკონტაქტო ინფორმაცია: {agreement.contact_info}</li>
-                                      <li>ხელშეკრულების დასაწყისი: {agreement.contract_start_period}</li>
-                                      <li>მომსახურების ფასი: {agreement.service_price}</li>
-                                    </ul>
-                                    {agreement.status === "approved" && (
-                                      <Button
-                                        color="primary"
-                                        onClick={() =>
-                                          downloadDocument(`${process.env.REACT_APP_BASE_URL}/${agreement.file_path}`)
-                                        }
-                                      >
-                                        ხელშეკრულების ჩამოტვირთვა
-                                      </Button>
-                                    )}
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </div>
+                  <CardTitle className="h4">ხელშეკრულებების არქივი</CardTitle>
+                  <CardSubtitle className="mb-4">
+                    ქვევით ნაჩვენებია უკვე დადასტურებული ან უარყოფილი მოთხოვნილი
+                    ხელშეკრულებები
+                  </CardSubtitle>
+
+                  <MuiTable
+                    columns={columns}
+                    data={transformedAgreements}
+                    initialPageSize={10}
+                    pageSizeOptions={[5, 10, 15, 20]}
+                    enableSearch={true}
+                    filterOptions={filterOptions}
+                    onRowClick={() => {}}
+                    renderRowDetails={row => <div>{row.comment}</div>}
+                  />
                 </CardBody>
               </Card>
             </Col>
@@ -153,7 +183,7 @@ const UserAgreements = () => {
         </div>
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default UserAgreements;
+export default UserAgreements
