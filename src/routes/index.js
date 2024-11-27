@@ -35,6 +35,9 @@ import UserVocation from "pages/UserVocations"
 import UserTrip from "pages/UserTrips"
 import VipLeadDetailPage from "pages/VipLeadsPage/VipLeadDetailPage"
 import JobDetails from "pages/JobPages/JobDetails"
+import FarmWork from "pages/FarmWork"
+import Dailies from "pages/Dailies"
+import MakeComment from "pages/Comment/MakeComment"
 
 const authProtectedRoutes = [
   {
@@ -44,13 +47,16 @@ const authProtectedRoutes = [
   },
   { path: "/admin", component: <AdminPage /> },
   { path: "/archive", component: <ArchivePage /> },
+  { path: "/approve", component: <HeadPage /> },
   { path: "/business", component: <BusinessPage /> },
   { path: "/business/manage", component: <TripPageApprove /> },
   { path: "/calendar", component: <Calendar /> },
   { path: "/chat", component: <Chat /> },
+  { path: "/comment/:id", component: <MakeComment /> },
   { path: "/corporate-leads", component: <LeadsPage /> },
   { path: "/dashboard", component: <Dashboard /> },
-  { path: "/head", component: <HeadPage /> },
+  { path: "/farm-work", component: <FarmWork /> },
+  { path: "/dailies", component: <Dailies /> },
   { path: "/hr", component: <HrPage /> },
   { path: "/hr-approve", component: <HrPageApprove /> },
   { path: "/it-tasks", component: <TaskList /> },

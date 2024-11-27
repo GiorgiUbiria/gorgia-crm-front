@@ -6,7 +6,7 @@ const styles = {
   link: {
     display: "flex",
     alignItems: "center",
-    gap: "0.25rem",
+    gap: "0.15rem",
   },
   icon: {
     fontSize: "1.25rem",
