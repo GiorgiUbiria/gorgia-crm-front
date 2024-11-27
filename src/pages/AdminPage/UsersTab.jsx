@@ -11,6 +11,7 @@ import DialogTitle from "@mui/material/DialogTitle"
 import * as XLSX from "xlsx"
 import { Row, Col } from "reactstrap"
 import AddUserModal from "./AddUserModal"
+import EditUserModal from "./EditUserModal"
 
 const UsersTab = ({ users = [], onUserDeleted }) => {
   const isAdmin = useIsAdmin()
@@ -20,6 +21,7 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
     userId: null,
   })
   const [addUserModal, setAddUserModal] = useState(false)
+  const [editUserModal, setEditUserModal] = useState({ isOpen: false, user: null })
 
   const handleModalOpen = (type, userId) => {
     setConfirmModal({
@@ -128,15 +130,20 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
         Cell: ({ row }) =>
           isAdmin && (
             <div className="d-flex gap-2">
-              <div className="d-flex align-items-center">
-                <Button
-                  onClick={() => handleModalOpen("delete", row.original.id)}
-                  color="error"
-                  variant="contained"
-                >
-                  წაშლა
-                </Button>
-              </div>
+              <Button
+                onClick={() => setEditUserModal({ isOpen: true, user: row.original })}
+                color="primary"
+                variant="contained"
+              >
+                რედაქტირება
+              </Button>
+              <Button
+                onClick={() => handleModalOpen("delete", row.original.id)}
+                color="error"
+                variant="contained"
+              >
+                წაშლა
+              </Button>
             </div>
           ),
       },
@@ -260,6 +267,13 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
         isOpen={addUserModal}
         toggle={() => setAddUserModal(false)}
         onUserAdded={onUserDeleted}
+      />
+
+      <EditUserModal
+        isOpen={editUserModal.isOpen}
+        user={editUserModal.user}
+        toggle={() => setEditUserModal({ isOpen: false, user: null })}
+        onUserUpdated={onUserDeleted}
       />
     </div>
   )

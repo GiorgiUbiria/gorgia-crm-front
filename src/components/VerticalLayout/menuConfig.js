@@ -37,7 +37,7 @@ export const getMenuConfig = (t, isAdmin) =>
     {
       to: "/dailies",
       icon: BsJournal,
-      label: t("დღიური საქმეები"),
+      label: t("დღის შედეგები"),
     },
     {
       key: "applications",
