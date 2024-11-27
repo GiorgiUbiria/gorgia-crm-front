@@ -7,7 +7,7 @@ const useIsAdmin = () => {
       if (!authUserString) return false;
       
       const authUser = JSON.parse(authUserString);
-      return authUser?.type === 'admin';
+      return authUser?.roles[0].slug === 'admin';
     } catch (error) {
       console.error('Error checking admin status:', error);
       return false;

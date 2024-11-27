@@ -5,14 +5,15 @@ import {
   BsFileText,
   BsFolder,
   BsFileEarmark,
+  BsJournal,
   BsShieldCheck,
   BsHeadset,
   BsCreditCard2Front,
   BsPeople,
   BsCalendar,
-  BsJournal,
   BsChatDots,
   BsTelephone,
+  BsTools,
   BsCash,
 } from "react-icons/bs"
 
@@ -32,6 +33,11 @@ export const getMenuConfig = (t, isAdmin) =>
       to: "/profile",
       icon: BsPerson,
       label: t("პროფილი"),
+    },
+    {
+      to: "/dailies",
+      icon: BsJournal,
+      label: t("დღიური საქმეები"),
     },
     {
       key: "applications",
@@ -89,7 +95,7 @@ export const getMenuConfig = (t, isAdmin) =>
       ],
     },
     isAdmin && {
-      to: "/head",
+      to: "/approve",
       icon: BsShieldCheck,
       label: t("ვიზირება"),
     },
@@ -97,6 +103,11 @@ export const getMenuConfig = (t, isAdmin) =>
       to: "/it-tasks",
       icon: BsHeadset,
       label: t("IT მხარდაჭერა"),
+    },
+    {
+      to: "/farm-work",
+      icon: BsTools,
+      label: t("სამეურნეო Tasks"),
     },
     {
       to: "/contacts-list",

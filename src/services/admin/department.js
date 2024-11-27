@@ -29,3 +29,7 @@ export const deleteUser = async (id) => {
 export const updateUserById = async (id, data) => {
   return defaultInstance.put(`/api/user/${id}`, data)
 }
+
+export const createUser = async (data) => {
+  return defaultInstance.post('/api/admin/create-user', data)
+}
