@@ -11,7 +11,7 @@ import {
   createTask,
   updateTask,
   deleteTask,
-} from "../../services/tasks"
+} from "../../services/farmTasks"
 
 import {
   Col,
@@ -56,6 +56,7 @@ const FarmWork = () => {
     setLoading(true)
     try {
       const response = await getTaskList()
+      console.log(response)
       const sortedTasks = response.sort((a, b) => b.id - a.id)
       setTasks(sortedTasks || [])
     } catch (error) {
@@ -74,22 +75,19 @@ const FarmWork = () => {
     initialValues: {
       task_title: task?.task_title || "",
       description: task?.description || "",
-      priority: task?.priority || "Medium",
-      status: task?.status || "Pending",
-      ip_address: task?.ip_address || "",
-      assigned_to: task?.assigned_to || "",
+      priority: task?.priority || "medium",
+      status: task?.status || "in_progress",
+      assigned_to: task?.assigned_to?.toString() || "",
     },
     validationSchema: Yup.object({
       task_title: Yup.string().required("Please Enter Your Task Title"),
       description: Yup.string().required("Please Enter Your Description"),
-      priority: Yup.string().required("Please Enter Priority"),
-      status: Yup.string().required("Please Enter Status"),
-      ip_address: Yup.string()
-        .required("Please Enter IP Address")
-        .matches(
-          /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-          "Invalid IP address format"
-        ),
+      priority: Yup.string()
+        .oneOf(["low", "medium", "high"])
+        .required("Please Enter Priority"),
+      status: Yup.string()
+        .oneOf(["pending", "in_progress", "completed"])
+        .required("Please Enter Status"),
       assigned_to: Yup.string().required("Please Select Assigned To"),
     }),
     onSubmit: async values => {
@@ -97,9 +95,15 @@ const FarmWork = () => {
         const currentDate = new Date().toISOString().split("T")[0]
 
         const payload = {
-          ...values,
+          task_title: values.task_title,
+          description: values.description,
+          priority: values.priority.toLowerCase(),
+          status: values.status.toLowerCase(),
+          assigned_to: values.assigned_to.toString(),
           due_date: currentDate,
         }
+
+        console.log("Submitting payload:", payload)
 
         if (isEdit) {
           await updateTask(task.id, payload)
@@ -112,6 +116,12 @@ const FarmWork = () => {
         fetchTasks()
       } catch (error) {
         console.error("Error submitting form:", error)
+        if (error.response?.data?.errors) {
+          const errorData = error.response.data.errors
+          Object.keys(errorData).forEach(key => {
+            validation.setFieldError(key, errorData[key][0])
+          })
+        }
       }
     },
   })
@@ -125,7 +135,10 @@ const FarmWork = () => {
   }
 
   const handleTaskClick = task => {
-    setTask(task)
+    setTask({
+      ...task,
+      assigned_to: task.assigned_to?.toString(),
+    })
     setIsEdit(true)
     setModal(true)
   }
@@ -182,11 +195,6 @@ const FarmWork = () => {
         accessorKey: "task_title",
       },
       {
-        header: "IP მისამართი",
-        accessorKey: "ip_address",
-        cell: cellProps => cellProps.row.original.ip_address || "N/A",
-      },
-      {
         header: (
           <div
             style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
@@ -206,11 +214,11 @@ const FarmWork = () => {
         accessorKey: "priority",
         cell: cellProps => {
           switch (cellProps.row.original.priority) {
-            case "High":
+            case "high":
               return <Badge className="bg-danger">მაღალი</Badge>
-            case "Medium":
+            case "medium":
               return <Badge className="bg-warning">საშუალო</Badge>
-            case "Low":
+            case "low":
               return <Badge className="bg-success">დაბალი</Badge>
             default:
               return <Badge className="bg-secondary">უცნობი</Badge>
@@ -222,13 +230,13 @@ const FarmWork = () => {
         accessorKey: "status",
         cell: cellProps => {
           switch (cellProps.row.original.status) {
-            case "Pending":
+            case "pending":
               return <Badge className="bg-warning">ახალი</Badge>
-            case "In Progress":
+            case "in_progress":
               return <Badge className="bg-info">მიმდინარე</Badge>
-            case "Completed":
+            case "completed":
               return <Badge className="bg-success">დასრულებული</Badge>
-            case "Cancelled":
+            case "cancelled":
               return <Badge className="bg-danger">გაუქმებული</Badge>
             default:
               return <Badge className="bg-secondary">უცნობი</Badge>
@@ -388,10 +396,6 @@ const FarmWork = () => {
                                                 {task.description}
                                               </li>
                                               <li>
-                                                <strong>IP მისამართი:</strong>{" "}
-                                                {task.ip_address}
-                                              </li>
-                                              <li>
                                                 <strong>თარიღი:</strong>{" "}
                                                 {task.due_date}
                                               </li>
@@ -500,7 +504,7 @@ const FarmWork = () => {
                 <Row>
                   <Col className="col-12">
                     <div className="mb-3">
-                      <Label>აირჩიეთ პრობლემის ტიპი</Label>
+                      <Label>პრობლემის ტიპი</Label>
                       <Input
                         name="task_title"
                         type="select"
@@ -516,6 +520,9 @@ const FarmWork = () => {
                       >
                         <option value="" disabled hidden>
                           აირჩიეთ პრობლემის ტიპი
+                        </option>
+                        <option value="სამეურნო პრობლემბა">
+                          სამეურნო პრობლემბა
                         </option>
                         <option value="პრინტერის პრობლემა">
                           პრინტერის პრობლემა
@@ -543,6 +550,7 @@ const FarmWork = () => {
                         </FormFeedback>
                       ) : null}
                     </div>
+
                     <div className="mb-3">
                       <Label>აღწერა</Label>
                       <Input
@@ -566,32 +574,6 @@ const FarmWork = () => {
                         </FormFeedback>
                       ) : null}
                     </div>
-                    <div className="mb-3">
-                      <Label>პრიორიტეტი</Label>
-                      <Input
-                        name="priority"
-                        type="select"
-                        onChange={validation.handleChange}
-                        onBlur={validation.handleBlur}
-                        value={validation.values.priority || ""}
-                        invalid={
-                          validation.touched.priority &&
-                          validation.errors.priority
-                            ? true
-                            : false
-                        }
-                      >
-                        <option value="Low">დაბალი</option>
-                        <option value="Medium">საშუალო</option>
-                        <option value="High">მაღალი</option>
-                      </Input>
-                      {validation.touched.priority &&
-                      validation.errors.priority ? (
-                        <FormFeedback type="invalid">
-                          {validation.errors.priority}
-                        </FormFeedback>
-                      ) : null}
-                    </div>
 
                     <div className="mb-3">
                       <Label>სტატუსი</Label>
@@ -607,10 +589,9 @@ const FarmWork = () => {
                             : false
                         }
                       >
-                        <option value="Pending">ახალი</option>
-                        <option value="In Progress">მიმდინარე</option>
-                        <option value="Completed">დასრულებული</option>
-                        <option value="Cancelled">გაუქმებული</option>
+                        <option value="pending">ახალი</option>
+                        <option value="in_progress">მიმდინარე</option>
+                        <option value="completed">დასრულებული</option>
                       </Input>
                       {validation.touched.status && validation.errors.status ? (
                         <FormFeedback type="invalid">
@@ -618,29 +599,34 @@ const FarmWork = () => {
                         </FormFeedback>
                       ) : null}
                     </div>
+
                     <div className="mb-3">
-                      <Label>IP მისამართი</Label>
+                      <Label>პრიორიტეტი</Label>
                       <Input
-                        name="ip_address"
-                        type="text"
-                        placeholder="ჩაწერეთ თქვენი იპ მისამართი"
+                        name="priority"
+                        type="select"
                         onChange={validation.handleChange}
                         onBlur={validation.handleBlur}
-                        value={validation.values.ip_address || ""}
+                        value={validation.values.priority || ""}
                         invalid={
-                          validation.touched.ip_address &&
-                          validation.errors.ip_address
+                          validation.touched.priority &&
+                          validation.errors.priority
                             ? true
                             : false
                         }
-                      />
-                      {validation.touched.ip_address &&
-                      validation.errors.ip_address ? (
+                      >
+                        <option value="low">დაბალი</option>
+                        <option value="medium">საშუალო</option>
+                        <option value="high">მაღალი</option>
+                      </Input>
+                      {validation.touched.priority &&
+                      validation.errors.priority ? (
                         <FormFeedback type="invalid">
-                          {validation.errors.ip_address}
+                          {validation.errors.priority}
                         </FormFeedback>
                       ) : null}
                     </div>
+
                     <div className="mb-3">
                       <Label>პასუხისმგებელი პირი</Label>
                       <Input
@@ -661,7 +647,7 @@ const FarmWork = () => {
                         </option>
                         {!usersLoading &&
                           usersList.map(user => (
-                            <option key={user.id} value={user.id}>
+                            <option key={user.id} value={user.id.toString()}>
                               {`${user.name} ${user.sur_name}`}
                             </option>
                           ))}
