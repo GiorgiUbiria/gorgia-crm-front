@@ -11,6 +11,7 @@ import DialogTitle from "@mui/material/DialogTitle"
 import * as XLSX from "xlsx"
 import { Row, Col } from "reactstrap"
 import AddDepartmentModal from "./AddDepartmentModal"
+import EditDepartmentModal from "./EditDepartmentModal"
 
 const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
   const isAdmin = useIsAdmin()
@@ -20,6 +21,10 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
     departmentId: null,
   })
   const [addDepartmentModal, setAddDepartmentModal] = useState(false)
+  const [editDepartmentModal, setEditDepartmentModal] = useState({
+    isOpen: false,
+    department: null,
+  })
 
   const handleModalOpen = (type, departmentId) => {
     setConfirmModal({
@@ -39,8 +44,14 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
 
   const handleConfirmAction = async () => {
     const { type, departmentId } = confirmModal
-    await deleteDepartment(departmentId)
-    handleModalClose()
+    try {
+      await deleteDepartment(departmentId)
+      onDepartmentDeleted()
+      handleModalClose()
+    } catch (error) {
+      console.error("Error deleting department:", error)
+      alert("დეპარტამენტის წაშლა ვერ მოხერხდა")
+    }
   }
 
   const handleAddDepartmentClick = () => {
@@ -73,15 +84,25 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
         Cell: ({ row }) =>
           isAdmin && (
             <div className="d-flex gap-2">
-              <div className="d-flex align-items-center">
-                <Button
-                  onClick={() => handleModalOpen("delete", row.original.id)}
-                  color="error"
-                  variant="contained"
-                >
-                  წაშლა
-                </Button>
-              </div>
+              <Button
+                onClick={() =>
+                  setEditDepartmentModal({
+                    isOpen: true,
+                    department: row.original,
+                  })
+                }
+                color="primary"
+                variant="contained"
+              >
+                რედაქტირება
+              </Button>
+              <Button
+                onClick={() => handleModalOpen("delete", row.original.id)}
+                color="error"
+                variant="contained"
+              >
+                წაშლა
+              </Button>
             </div>
           ),
       },
@@ -169,7 +190,7 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            დარწმუნებული ხართ, რომ გსურთ დეპარტამენტის წაშლა?
+            დარწმულებული ხართ, რომ გსურთ დეპარტამენტის წაშლა?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -186,6 +207,16 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
         isOpen={addDepartmentModal}
         toggle={() => setAddDepartmentModal(false)}
         onDepartmentAdded={onDepartmentDeleted}
+        users={users}
+      />
+
+      <EditDepartmentModal
+        isOpen={editDepartmentModal.isOpen}
+        department={editDepartmentModal.department}
+        toggle={() =>
+          setEditDepartmentModal({ isOpen: false, department: null })
+        }
+        onDepartmentUpdated={onDepartmentDeleted}
         users={users}
       />
     </div>

@@ -28,6 +28,7 @@ const AddDepartmentModal = ({ isOpen, toggle, onDepartmentAdded, users }) => {
   const handleSubmit = async e => {
     e.preventDefault()
     try {
+      console.log(formData)
       await createDepartment(formData)
       onDepartmentAdded()
       toggle()
@@ -62,10 +63,10 @@ const AddDepartmentModal = ({ isOpen, toggle, onDepartmentAdded, users }) => {
               onChange={handleChange}
               required
             >
-              <option value="">აირჩიეთ დეპარტამენტი</option>
+              <option value="">აირჩიეთ დეპარტამენტის უფროსი</option>
               {users.map(user => (
                 <option value={user.id} key={user.id}>
-                  {user.name}
+                  {user.name + " " + user.sur_name}
                 </option>
               ))}
             </Input>

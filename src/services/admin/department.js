@@ -9,7 +9,7 @@ export const createDepartment = async (data) => {
 }
 
 export const deleteDepartment = async(id) => {
-  return defaultInstance.post('/api/admin/department/' + id + '/delete')
+  return defaultInstance.delete('/api/admin/department/' + id + '/delete')
 }
 
 export const assignHead = async (data) => {
@@ -21,10 +21,8 @@ export const getUsers = async () => {
 }
 
 export const deleteUser = async (id) => {
-  console.log(id)
-  return defaultInstance.post('/api/admin/delete-user/' + id)
+  return defaultInstance.delete('/api/admin/delete-user/' + id)
 }
-
 
 export const updateUserById = async (id, data) => {
   return defaultInstance.put(`/api/user/${id}`, data)
@@ -32,4 +30,8 @@ export const updateUserById = async (id, data) => {
 
 export const createUser = async (data) => {
   return defaultInstance.post('/api/admin/create-user', data)
+}
+
+export const updateDepartment = async (departmentData) => {
+  return defaultInstance.put(`/api/admin/department/${departmentData.id}/update`, departmentData)
 }
