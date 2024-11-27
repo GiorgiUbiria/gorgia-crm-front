@@ -110,13 +110,13 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
     },
     {
       field: "department_head",
-      label: "დეპარტამენტის საჭარბო",
+      label: "დეპარტამენტის უფროსი",
     },
   ]
 
   const exportToExcel = () => {
     const data = [
-      ["სახელი", "დეპარტამენტის საჭარბო"],
+      ["სახელი", "დეპარტამენტის უფროსი"],
       ...transformedDepartments.map(department => [
         department.name,
         department.department_head,

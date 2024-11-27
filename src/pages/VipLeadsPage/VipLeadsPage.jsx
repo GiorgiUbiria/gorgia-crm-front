@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react"
 import {
-  Card,
-  CardBody,
   Col,
   Container,
   Row,
@@ -12,11 +10,7 @@ import {
   Input,
   Form,
   FormGroup,
-  Button,
 } from "reactstrap"
-import { useTable, usePagination, useSortBy } from "react-table"
-import { Link } from "react-router-dom"
-import DeleteModal from "components/Common/DeleteModal"
 import {
   getVipLeads,
   createVipLead,
@@ -24,15 +18,26 @@ import {
   deleteVipLead,
 } from "../../services/vipLeadsService"
 import Breadcrumbs from "components/Common/Breadcrumb"
-import moment from "moment"
 import useIsAdmin from "hooks/useIsAdmin"
+import MuiTable from "components/Mui/MuiTable"
+import Dialog from "@mui/material/Dialog"
+import DialogActions from "@mui/material/DialogActions"
+import DialogContent from "@mui/material/DialogContent"
+import DialogContentText from "@mui/material/DialogContentText"
+import DialogTitle from "@mui/material/DialogTitle"
+import Button from "@mui/material/Button"
+import { Link } from "react-router-dom"
 
 const VipLeadsPage = () => {
   const [vipLeads, setVipLeads] = useState([])
   const [vipLead, setVipLead] = useState(null)
   const [isEdit, setIsEdit] = useState(false)
   const [modal, setModal] = useState(false)
-  const [deleteModal, setDeleteModal] = useState(false)
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    type: null,
+    leadId: null,
+  })
   const isAdmin = useIsAdmin()
 
   const fetchVipLeads = async () => {
@@ -51,71 +56,68 @@ const VipLeadsPage = () => {
 
   const columns = useMemo(
     () => [
-      { Header: "სახელი", accessor: "first_name" },
-      { Header: "გვარი", accessor: "last_name" },
-      { Header: "ტელეფონის ნომერი", accessor: "phone" },
       {
-        Header: "მოქმედება",
-        id: "actions",
+        Header: "#",
+        accessor: "id",
+      },
+      {
+        Header: "სახელი",
+        accessor: "name",
+        disableSortBy: true,
+      },
+      {
+        Header: "ტელეფონის ნომერი",
+        accessor: "phone",
+        disableSortBy: true,
+      },
+      {
+        Header: "მოქმედებები",
+        accessor: "actions",
+        disableSortBy: true,
         Cell: ({ row }) => (
           <div className="d-flex gap-2">
-            {isAdmin && (
-              <>
-                <Button
-                  color="primary"
-                  onClick={() => handleEditClick(row.original)}
-                >
-                  რედაქტირება
-                </Button>
-                <Button
-                  color="danger"
-                  onClick={() => handleDeleteClick(row.original)}
-                >
-                  წაშლა
-                </Button>
-              </>
-            )}
+            <Button
+              onClick={() => handleModalOpen("edit", row.original)}
+              color="primary"
+              variant="contained"
+            >
+              რედაქტირება
+            </Button>
+            <Button
+              onClick={() => handleDeleteClick(row.original.id)}
+              color="error"
+              variant="contained"
+            >
+              წაშლა
+            </Button>
             <Link to={`/vip-leads/${row.original.id}`}>
-              <Button color="info">მოთხოვნები</Button>
+              <Button onClick={() => {}} color="warning" variant="contained">
+                მოთხოვნები
+              </Button>
             </Link>
           </div>
         ),
       },
     ],
-    [vipLeads]
+    []
   )
 
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable(
-      {
-        columns,
-        data: vipLeads,
-      },
-      usePagination
-    )
-
-  const handleAddClick = () => {
-    setVipLead(null)
-    setIsEdit(false)
-    setModal(true)
-  }
-
-  const handleEditClick = leadData => {
-    setVipLead(leadData)
-    setIsEdit(true)
-    setModal(true)
-  }
+  const transformedVipLeads = vipLeads.map(lead => ({
+    id: lead.id,
+    name: lead.first_name + " " + lead.last_name,
+    phone: lead.phone,
+  }))
 
   const handleDeleteClick = leadData => {
     setVipLead(leadData)
-    setDeleteModal(true)
+    setConfirmModal({ isOpen: true, type: "delete", leadId: leadData.id })
   }
 
   const handleDeleteVipLead = async () => {
     try {
       await deleteVipLead(vipLead.id)
       fetchVipLeads()
-      setDeleteModal(false)
+      setConfirmModal({ isOpen: false, type: null, leadId: null })
     } catch (error) {
       console.error("Error deleting VIP lead:", error)
     }
@@ -144,81 +146,60 @@ const VipLeadsPage = () => {
     }
   }
 
+  const handleModalOpen = (type, leadData = null) => {
+    setIsEdit(type === "edit")
+    console.log(leadData)
+    setVipLead(leadData)
+    setModal(true)
+  }
+
   return (
     <React.Fragment>
-      <DeleteModal
-        show={deleteModal}
-        onDeleteClick={handleDeleteVipLead}
-        onCloseClick={() => setDeleteModal(false)}
-      />
-      <div className="page-content">
+      <div className="page-content mb-4">
         <Container fluid>
           <Breadcrumbs title="ლიდები" breadcrumbItem="VIP" />
           <Row className="mb-3">
-            <Col style={{ textAlign: "right" }}>
+            <Col className="d-flex justify-content-end">
               <Button
-                color="success"
-                className="btn-rounded waves-effect waves-light mb-2"
-                onClick={handleAddClick}
+                variant="contained"
+                color="primary"
+                onClick={() => handleModalOpen("add")}
               >
-                დამატება
+                <i className="bx bx-plus me-1"></i>
+                ლიდის დამატება
               </Button>
             </Col>
           </Row>
           <Row>
-            <Col lg="12">
-              <Card>
-                <CardBody>
-                  <table {...getTableProps()} className="table">
-                    <thead>
-                      {headerGroups.map(headerGroup => (
-                        <tr
-                          {...headerGroup.getHeaderGroupProps()}
-                          key={`header-${headerGroup.id}`}
-                        >
-                          {headerGroup.headers.map(column => (
-                            <th
-                              {...column.getHeaderProps()}
-                              key={`header-cell-${column.id}`}
-                              style={{ verticalAlign: "middle" }}
-                            >
-                              {column.id === "created_at"
-                                ? column.render("Header")
-                                : column.render("Header").props?.children ||
-                                  column.render("Header")}
-                            </th>
-                          ))}
-                        </tr>
-                      ))}
-                    </thead>
-                    <tbody {...getTableBodyProps()}>
-                      {rows.map((row, index) => {
-                        prepareRow(row)
-                        return (
-                          <tr
-                            {...row.getRowProps()}
-                            key={`row-${row.id || index}`}
-                          >
-                            {row.cells.map(cell => (
-                              <td
-                                {...cell.getCellProps()}
-                                key={`cell-${row.id || index}-${
-                                  cell.column.id
-                                }`}
-                                style={{ verticalAlign: "middle" }}
-                              >
-                                {cell.render("Cell")}
-                              </td>
-                            ))}
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </CardBody>
-              </Card>
-            </Col>
+            <MuiTable data={transformedVipLeads} columns={columns} />
           </Row>
+          <Dialog
+            open={confirmModal.isOpen}
+            onClose={() =>
+              setConfirmModal({ isOpen: false, type: null, leadId: null })
+            }
+          >
+            <DialogTitle>{"ლიდის წაშლა"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                დარწმუნებული ხართ, რომ გსურთ ლიდის წაშლა?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() =>
+                  setConfirmModal({ isOpen: false, type: null, leadId: null })
+                }
+                color="primary"
+              >
+                გაუქმება
+              </Button>
+              <Button onClick={handleDeleteVipLead} color="error" autoFocus>
+                წაშლა
+              </Button>
+            </DialogActions>
+          </Dialog>
+
           <Modal isOpen={modal} toggle={() => setModal(!modal)}>
             <ModalHeader toggle={() => setModal(!modal)}>
               {isEdit ? "განახლება" : "დამატება"}
@@ -230,7 +211,7 @@ const VipLeadsPage = () => {
                   <Input
                     id="first_name"
                     name="first_name"
-                    defaultValue={vipLead ? vipLead.first_name : ""}
+                    defaultValue={vipLead ? vipLead.name.split(" ")[0] : ""}
                     required
                   />
                 </FormGroup>
@@ -239,7 +220,7 @@ const VipLeadsPage = () => {
                   <Input
                     id="last_name"
                     name="last_name"
-                    defaultValue={vipLead ? vipLead.last_name : ""}
+                    defaultValue={vipLead ? vipLead.name.split(" ")[1] : ""}
                     required
                   />
                 </FormGroup>

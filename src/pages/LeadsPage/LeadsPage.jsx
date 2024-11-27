@@ -1,20 +1,15 @@
 import React, { useEffect, useState, useMemo } from "react"
 import {
-  Card,
-  CardBody,
+  Row,
+  Form,
+  Label,
+  Input,
   Col,
   Container,
-  Row,
   Modal,
   ModalHeader,
   ModalBody,
-  Label,
-  Input,
-  Form,
-  Button,
 } from "reactstrap"
-import { useTable, usePagination, useSortBy } from "react-table"
-import DeleteModal from "components/Common/DeleteModal"
 import useIsAdmin from "hooks/useIsAdmin"
 import {
   getLeads,
@@ -23,15 +18,50 @@ import {
   deleteLead,
 } from "../../services/leadsService"
 import Breadcrumbs from "components/Common/Breadcrumb"
+import Button from "@mui/material/Button"
+import MuiTable from "components/Mui/MuiTable"
+import Dialog from "@mui/material/Dialog"
+import DialogActions from "@mui/material/DialogActions"
+import DialogContent from "@mui/material/DialogContent"
+import DialogContentText from "@mui/material/DialogContentText"
+import DialogTitle from "@mui/material/DialogTitle"
+
+const statusMap = {
+  Active: {
+    label: "აქტიური",
+    icon: "bx-time",
+    color: "#FFA500",
+  },
+  Closed: {
+    label: "დახურული",
+    icon: "bx-check-circle",
+    color: "#28a745",
+  },
+  Problem: {
+    label: "უარყოფილი",
+    icon: "bx-x-circle",
+    color: "#dc3545",
+  },
+}
+
+const STATUS_MAPPING = {
+  Active: "Active",
+  Closed: "Closed",
+  Problem: "Problem",
+}
 
 const LeadsPage = () => {
   const [leads, setLeads] = useState([])
   const [lead, setLead] = useState(null)
-  const [isEdit, setIsEdit] = useState(false)
-  const [modal, setModal] = useState(false)
-  const [deleteModal, setDeleteModal] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    type: null,
+    leadId: null,
+  })
   const isAdmin = useIsAdmin()
+  const [modal, setModal] = useState(false)
+  const [isEdit, setIsEdit] = useState(false)
+  const [permissions, setPermissions] = useState([])
 
   const fetchLeads = async () => {
     try {
@@ -43,81 +73,159 @@ const LeadsPage = () => {
     }
   }
 
+  const checkAuth = async () => {
+    try {
+      const response = await checkAuth()
+      console.log("Permissions:", response)
+      setPermissions(response || [])
+    } catch (error) {
+      console.error("Error checking auth:", error)
+    }
+  }
+
   useEffect(() => {
     fetchLeads()
   }, [])
 
-  const columns = useMemo(
-    () =>
-      [
-        { Header: "სახელი", accessor: "first_name" },
-        { Header: "გვარი", accessor: "last_name" },
-        { Header: "მოთხოვნა", accessor: "request" },
-        { Header: "პასუხისმგებელი პირი", accessor: "responsible_person" },
-        {
-          Header: "სტატუსი",
-          accessor: "status",
-          Cell: ({ row }) => (
-            <span>
-              {row.original.status === "Active" && "აქტიური"}
-              {row.original.status === "Closed" && "დახურული"}
-              {row.original.status === "Problem" && "პრობლემური"}
-            </span>
-          ),
-        },
-        isAdmin && {
-          Header: "მოქმედება",
-          id: "actions",
-          Cell: ({ row }) => (
-            <div className="d-flex gap-2">
-              <Button
-                color="primary"
-                onClick={() => handleEditClick(row.original)}
-              >
-                რედაქტირება
-              </Button>
-              <Button
-                color="danger"
-                onClick={() => handleDeleteClick(row.original)}
-              >
-                წაშლა
-              </Button>
-            </div>
-          ),
-        },
-      ].filter(Boolean),
-    [isAdmin]
-  )
-
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({ columns, data: leads }, useSortBy, usePagination)
-
-  const handleAddClick = () => {
-    setLead(null)
-    setIsEdit(false)
+  const handleModalOpen = (type, leadData = null) => {
+    setIsEdit(!!leadData)
+    setLead(leadData)
     setModal(true)
   }
 
-  const handleEditClick = leadData => {
-    setLead(leadData)
-    setIsEdit(true)
-    setModal(true)
+  const handleDeleteClick = leadId => {
+    setConfirmModal({
+      isOpen: true,
+      type: "delete",
+      leadId,
+    })
   }
 
-  const handleDeleteClick = leadData => {
-    setLead(leadData)
-    setDeleteModal(true)
-  }
-
-  const handleDeleteLead = async () => {
+  const handleConfirmDelete = async () => {
     try {
-      await deleteLead(lead.id)
+      await deleteLead(confirmModal.leadId)
       fetchLeads()
-      setDeleteModal(false)
     } catch (error) {
       console.error("Error deleting lead:", error)
+    } finally {
+      setConfirmModal({ isOpen: false, type: null, leadId: null })
     }
   }
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: "#",
+        accessor: "id",
+      },
+      {
+        Header: "ლიდის სახელი",
+        accessor: "name",
+        disableSortBy: true,
+      },
+      {
+        Header: "ლიდის მოთხოვნა",
+        accessor: "request",
+        disableSortBy: true,
+      },
+      {
+        Header: "პასუხისმგებელი პირი",
+        accessor: "responsible_person",
+        disableSortBy: true,
+      },
+      {
+        Header: "სტატუსი",
+        accessor: "status",
+        Cell: ({ value }) => (
+          <span
+            style={{
+              padding: "6px 12px",
+              borderRadius: "4px",
+              display: "inline-flex",
+              alignItems: "center",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              backgroundColor:
+                value === "pending"
+                  ? "#fff3e0"
+                  : value === "rejected"
+                  ? "#ffebee"
+                  : value === "approved"
+                  ? "#e8f5e9"
+                  : "#f5f5f5",
+              color:
+                value === "pending"
+                  ? "#e65100"
+                  : value === "rejected"
+                  ? "#c62828"
+                  : value === "approved"
+                  ? "#2e7d32"
+                  : "#757575",
+            }}
+          >
+            <i className={`bx ${statusMap[value].icon} me-2`}></i>
+            {statusMap[value].label}
+          </span>
+        ),
+      },
+      {
+        Header: "კომენტარი",
+        accessor: "comment",
+        disableSortBy: true,
+      },
+      {
+        Header: "თარიღი",
+        accessor: "created_at",
+        Cell: ({ value }) => <div>{new Date(value).toLocaleDateString()}</div>,
+      },
+      {
+        Header: "მოქმედებები",
+        accessor: "actions",
+        disableSortBy: true,
+        Cell: ({ row }) => (
+          <div className="d-flex gap-2">
+            <Button
+              onClick={() => handleModalOpen("edit", row.original)}
+              color="primary"
+              variant="contained"
+            >
+              რედაქტირება
+            </Button>
+            <Button
+              onClick={() => handleDeleteClick(row.original.id)}
+              color="error"
+              variant="contained"
+            >
+              წაშლა
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    []
+  )
+
+  const transformedLeads = leads.map(lead => ({
+    id: lead.id,
+    status: STATUS_MAPPING[lead.status] || lead.status,
+    created_at: lead.created_at,
+    name: lead.first_name + " " + lead.last_name,
+    request: lead.request,
+    comment: lead.comment,
+    responsible_person: lead.responsible_person,
+  }))
+
+  const filterOptions = [
+    {
+      field: "status",
+      label: "სტატუსი",
+      valueLabels: {
+        ctive: "აქტიური",
+        Closed: "დახურული",
+        Problem: "პრობლემური",
+      },
+    },
+  ]
 
   const handleSaveLead = async event => {
     event.preventDefault()
@@ -144,105 +252,59 @@ const LeadsPage = () => {
     }
   }
 
-  const filteredLeads = leads.filter(
-    lead =>
-      lead.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.last_name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
   return (
     <React.Fragment>
-      <DeleteModal
-        show={deleteModal}
-        onDeleteClick={handleDeleteLead}
-        onCloseClick={() => setDeleteModal(false)}
-      />
-      <style>
-        {`
-          .vertical-center {
-            vertical-align: middle;
-          }
-        `}
-      </style>
-      <div className="page-content">
+      <div className="page-content mb-4">
         <Container fluid>
           <Breadcrumbs title="ლიდები" breadcrumbItem="კორპორატიული" />
           <Row className="mb-3">
-            <Col style={{ textAlign: "right" }}>
+            <Col className="d-flex justify-content-end">
               <Button
-                color="success"
-                className="btn-rounded waves-effect waves-light mb-2"
-                onClick={handleAddClick}
+                variant="contained"
+                color="primary"
+                onClick={() => handleModalOpen("add")}
               >
-                დამატება
+                <i className="bx bx-plus me-1"></i>
+                ლიდის დამატება
               </Button>
             </Col>
           </Row>
-          <Row className="mb-3">
-            <Col xl={{ size: 4, offset: 8 }}>
-              <Input
-                type="search"
-                placeholder="ძებნა სახელით ან გვარით..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                bsSize="sm"
-              />
-            </Col>
-          </Row>
           <Row>
-            <Col lg="12">
-              <Card>
-                <CardBody>
-                  <table {...getTableProps()} className="table">
-                    <thead>
-                      {headerGroups.map(headerGroup => (
-                        <tr
-                          {...headerGroup.getHeaderGroupProps()}
-                          key={headerGroup.id}
-                        >
-                          {headerGroup.headers.map(column => (
-                            <th
-                              {...column.getHeaderProps(
-                                column.getSortByToggleProps()
-                              )}
-                              key={column.id}
-                            >
-                              {column.render("Header")}
-                              <span>
-                                {column.isSorted
-                                  ? column.isSortedDesc
-                                    ? " 🔽"
-                                    : " 🔼"
-                                  : ""}
-                              </span>
-                            </th>
-                          ))}
-                        </tr>
-                      ))}
-                    </thead>
-                    <tbody {...getTableBodyProps()}>
-                      {rows.map(row => {
-                        prepareRow(row)
-                        return (
-                          <tr {...row.getRowProps()} key={row.id}>
-                            {row.cells.map(cell => (
-                              <td
-                                {...cell.getCellProps()}
-                                key={cell.column.id}
-                                className="vertical-center"
-                              >
-                                {cell.render("Cell")}
-                              </td>
-                            ))}
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </CardBody>
-              </Card>
-            </Col>
+            <MuiTable
+              data={transformedLeads}
+              columns={columns}
+              filterOptions={filterOptions}
+              enableSearch={true}
+              searchableFields={["name", "request", "responsible_person"]}
+              initialPageSize={10}
+            />
           </Row>
+          <Dialog
+            open={confirmModal.isOpen}
+            onClose={() =>
+              setConfirmModal({ isOpen: false, type: null, leadId: null })
+            }
+          >
+            <DialogTitle>{"ლიდის წაშლა"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                დარწმუნებული ხართ, რომ გსურთ ლიდის წაშლა?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() =>
+                  setConfirmModal({ isOpen: false, type: null, leadId: null })
+                }
+                color="primary"
+              >
+                გაუქმება
+              </Button>
+              <Button onClick={handleConfirmDelete} color="error" autoFocus>
+                წაშლა
+              </Button>
+            </DialogActions>
+          </Dialog>
           <Modal isOpen={modal} toggle={() => setModal(!modal)}>
             <ModalHeader toggle={() => setModal(!modal)}>
               {isEdit ? "რედაქტირება" : "დამატება"}
@@ -253,14 +315,14 @@ const LeadsPage = () => {
                 <Input
                   id="first_name"
                   name="first_name"
-                  defaultValue={lead ? lead.first_name : ""}
+                  defaultValue={lead ? lead.name.split(" ")[0] : ""}
                   required
                 />
                 <Label for="last_name">გვარი</Label>
                 <Input
                   id="last_name"
                   name="last_name"
-                  defaultValue={lead ? lead.last_name : ""}
+                  defaultValue={lead ? lead.name.split(" ")[1] : ""}
                   required
                 />
                 <Label for="request">მოთხოვნა</Label>
