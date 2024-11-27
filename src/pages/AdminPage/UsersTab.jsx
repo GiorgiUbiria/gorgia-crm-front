@@ -42,6 +42,7 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
   const handleConfirmAction = async () => {
     const { type, userId } = confirmModal
     await deleteUser(userId)
+    onUserDeleted()
     handleModalClose()
   }
 

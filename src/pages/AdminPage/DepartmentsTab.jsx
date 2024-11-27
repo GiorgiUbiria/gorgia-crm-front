@@ -67,6 +67,7 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
       {
         Header: "სახელი",
         accessor: "name",
+        disableSortBy: true,
         Cell: ({ value }) => (
           <div className="d-flex align-items-center">
             <span className="user-name">{value}</span>
@@ -76,6 +77,7 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
       {
         Header: "დეპარტამენტის უფროსი",
         accessor: "department_head",
+        disableSortBy: true,
       },
       {
         Header: "მოქმედებები",
