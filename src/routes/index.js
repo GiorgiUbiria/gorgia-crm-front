@@ -22,7 +22,7 @@ import LawyerPageArchive from "pages/LawyerPageArchive/LawyerPageArchive"
 import HrPageApprove from "pages/HrPageApprove"
 import TaskList from "../pages/JobPages/JobList"
 import VisitorsTraffic from "pages/VisitorsTraffic/VisitorsTraffic"
-import ArchivePage from "pages/Archive"
+import ArchivePage from "../pages/ArchivePage"
 import InvoicePage from "pages/InvoicePage/InvoicePage"
 import LeadsPage from "pages/LeadsPage/LeadsPage"
 import VipLeadsPage from "pages/VipLeadsPage/VipLeadsPage"
@@ -54,6 +54,7 @@ const authProtectedRoutes = [
   { path: "/admin/approvals", component: <HeadPage /> },
   { path: "/admin/visitors", component: <VisitorsTraffic /> },
   { path: "/admin/payment-monitoring", component: <InvoicePage /> },
+  { path: "/admin/archive", component: <ArchivePage /> },
 
   // Applications Routes
   // -- Internal Purchases
