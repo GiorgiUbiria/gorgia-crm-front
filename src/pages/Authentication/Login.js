@@ -190,7 +190,7 @@ const Login = props => {
               <div className="mt-5 text-center">
                 <p>
                   არ გაქვს ანგარიში?{" "}
-                  <Link to="/register" className="fw-medium text-primary">
+                  <Link to="/auth/register" className="fw-medium text-primary">
                     რეგისტრაცია
                   </Link>
                 </p>

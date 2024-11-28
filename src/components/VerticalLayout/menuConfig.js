@@ -20,14 +20,19 @@ import {
 export const getMenuConfig = (t, isAdmin) =>
   [
     {
-      to: "/",
+      to: "/dashboard",
       icon: BsHouseDoor,
       label: t("მთავარი გვერდი"),
     },
     isAdmin && {
-      to: "/admin",
+      to: "/admin/dashboard",
       icon: BsGear,
       label: t("სამართავი პანელი"),
+      submenu: [
+        { to: "/admin/approvals", label: t("ვიზირება") },
+        { to: "/admin/visitors", label: t("ვიზიტორები") },
+        { to: "/admin/payment-monitoring", label: t("გადახდების მონიტორინგი") },
+      ],
     },
     {
       to: "/profile",
@@ -35,7 +40,7 @@ export const getMenuConfig = (t, isAdmin) =>
       label: t("პროფილი"),
     },
     {
-      to: "/dailies",
+      to: "/tools/daily-results",
       icon: BsJournal,
       label: t("დღის შედეგები"),
     },
@@ -48,27 +53,27 @@ export const getMenuConfig = (t, isAdmin) =>
           key: "internalPurchases",
           label: t("შიდა შესყიდვები"),
           submenu: [
-            { to: "/procurement", label: t("დამატება") },
-            isAdmin && { to: "/procurement/manage", label: t("ვიზირება") },
-            { to: "/user-procurements", label: t("გაგზავნილი") },
+            { to: "/applications/purchases/new", label: t("დამატება") },
+            isAdmin && { to: "/applications/purchases/approve", label: t("ვიზირება") },
+            { to: "/applications/purchases/my-requests", label: t("გაგზავნილი") },
           ],
         },
         {
           key: "vacation",
           label: t("შვებულება"),
           submenu: [
-            { to: "/vacation", label: t("დამატება") },
-            isAdmin && { to: "/vacation/manage", label: t("ვიზირება") },
-            { to: "/user-vocations", label: t("გაგზავნილი") },
+            { to: "/applications/vacation/new", label: t("დამატება") },
+            isAdmin && { to: "/applications/vacation/approve", label: t("ვიზირება") },
+            { to: "/applications/vacation/my-requests", label: t("გაგზავნილი") },
           ],
         },
         {
           key: "business",
           label: t("მივლინება"),
           submenu: [
-            { to: "/business", label: t("დამატება") },
-            isAdmin && { to: "/business/manage", label: t("ვიზირება") },
-            { to: "/user-business", label: t("გაგზავნილი") },
+            { to: "/applications/business-trip/new", label: t("დამატება") },
+            isAdmin && { to: "/applications/business-trip/approve", label: t("ვიზირება") },
+            { to: "/applications/business-trip/my-requests", label: t("გაგზავნილი") },
           ],
         },
       ],
@@ -78,9 +83,9 @@ export const getMenuConfig = (t, isAdmin) =>
       icon: BsFolder,
       label: t("HR დოკუმენტები"),
       submenu: [
-        { to: "/hr", label: t("ცნობები") },
-        isAdmin && { to: "/hr-approve", label: t("ვიზირება") },
-        { to: "/hr", label: t("გაგზავნილი") },
+        { to: "/hr/documents", label: t("ცნობები") },
+        isAdmin && { to: "/hr/documents/approve", label: t("ვიზირება") },
+        { to: "/hr/documents", label: t("გაგზავნილი") },
       ],
     },
     {
@@ -88,24 +93,19 @@ export const getMenuConfig = (t, isAdmin) =>
       icon: BsFileEarmark,
       label: t("ხელშეკრულებები"),
       submenu: [
-        { to: "/lawyer", label: t("მოთხოვნა") },
-        isAdmin && { to: "/lawyer-approve", label: t("ვიზირება") },
-        isAdmin && { to: "/lawyer-history", label: t("არქივი") },
-        { to: "/user-agreements", label: t("გაგზავნილი") },
+        { to: "/legal/contracts/new", label: t("მოთხოვნა") },
+        isAdmin && { to: "/legal/contracts/approve", label: t("ვიზირება") },
+        isAdmin && { to: "/legal/contracts/archive", label: t("არქივი") },
+        { to: "/legal/contracts/my-requests", label: t("გაგზავნილი") },
       ],
     },
-    isAdmin && {
-      to: "/approve",
-      icon: BsShieldCheck,
-      label: t("ვიზირება"),
-    },
     {
-      to: "/it-tasks",
+      to: "/support/it-tasks",
       icon: BsHeadset,
       label: t("IT მხარდაჭერა"),
     },
     {
-      to: "/farm-work",
+      to: "/support/maintenance",
       icon: BsTools,
       label: t("სამეურნეო Tasks"),
     },
@@ -114,37 +114,27 @@ export const getMenuConfig = (t, isAdmin) =>
       icon: BsCreditCard2Front,
       label: t("ლოიალობის ბარათი"),
     },
-    isAdmin && {
-      to: "/visitors",
-      icon: BsPeople,
-      label: t("ვიზიტორები"),
-    },
-    isAdmin && {
-      to: "/payment-monitoring",
-      icon: BsCash,
-      label: t("გადახდების მონიტორინგი"),
-    },
     {
       key: "leads",
       icon: BsTelephone,
       label: t("ლიდები"),
       submenu: [
-        { to: "/vip-leads", label: t("VIP") },
-        { to: "/corporate-leads", label: t("კორპორატიული") },
+        { to: "/leads/vip", label: t("VIP") },
+        { to: "/leads/corporate", label: t("კორპორატიული") },
       ],
     },
     {
-      to: "/calendar",
+      to: "/tools/calendar",
       icon: BsCalendar,
       label: t("კალენდარი"),
     },
     {
-      to: "/notes",
+      to: "/tools/notes",
       icon: BsJournal,
       label: t("ჩანაწერები"),
     },
     {
-      to: "/chat",
+      to: "/communication/chat",
       icon: BsChatDots,
       label: t("ჩათი"),
     },

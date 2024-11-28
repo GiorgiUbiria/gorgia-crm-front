@@ -22,7 +22,7 @@ const Logout = () => {
         toast.success(res.data.message);
         sessionStorage.removeItem('token')
         sessionStorage.removeItem('authUser')
-        navigate('/login');
+        navigate('/auth/login');
       } catch(err) {
         console.error(err);
       }
