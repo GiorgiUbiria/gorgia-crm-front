@@ -56,7 +56,7 @@ const ProfileMenu = props => {
             {props.t("პროფილი")}
           </DropdownItem>
           <div className="dropdown-divider" />
-          <Link to="/logout" className="dropdown-item">
+          <Link to="/auth/logout" className="dropdown-item">
             <i className="bx bx-power-off font-size-16 align-middle me-1 text-danger" />
             <span>{props.t("გასვლა")}</span>
           </Link>

@@ -6,7 +6,7 @@ const Authmiddleware = props => {
   const isAuth = useAuth()
 
   if (!isAuth) {
-    return <Navigate to="/login" />
+    return <Navigate to="/auth/login" />
   }
 
   return <React.Fragment>{props.children}</React.Fragment>

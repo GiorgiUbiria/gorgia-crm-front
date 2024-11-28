@@ -66,7 +66,7 @@ function* socialLogin({ payload: { type, history } }) {
       if (response) {
         history("/dashboard");
       } else {
-        history("/login");
+        history("/auth/login");
       }
       localStorage.setItem("authUser", JSON.stringify(response));
       yield put(loginSuccess(response));

@@ -40,52 +40,88 @@ import Dailies from "pages/Dailies"
 import MakeComment from "pages/Comment/MakeComment"
 
 const authProtectedRoutes = [
+  // Dashboard & Main Routes
   {
     path: "/",
     exact: true,
     component: <Navigate to="/dashboard" />,
   },
-  { path: "/admin", component: <AdminPage /> },
-  { path: "/archive", component: <ArchivePage /> },
-  { path: "/approve", component: <HeadPage /> },
-  { path: "/business", component: <BusinessPage /> },
-  { path: "/business/manage", component: <TripPageApprove /> },
-  { path: "/calendar", component: <Calendar /> },
-  { path: "/chat", component: <Chat /> },
-  { path: "/comment/:id", component: <MakeComment /> },
-  { path: "/corporate-leads", component: <LeadsPage /> },
   { path: "/dashboard", component: <Dashboard /> },
-  { path: "/farm-work", component: <FarmWork /> },
-  { path: "/dailies", component: <Dailies /> },
-  { path: "/hr", component: <HrPage /> },
-  { path: "/hr-approve", component: <HrPageApprove /> },
-  { path: "/it-tasks", component: <TaskList /> },
-  { path: "/it-tasks/:id", component: <JobDetails /> },
-  { path: "/lawyer", component: <LawyerPage /> },
-  { path: "/lawyer-approve", component: <LawyerPageApprove /> },
-  { path: "/lawyer-history", component: <LawyerPageArchive /> },
-  { path: "/notes", component: <NotesPage /> },
-  { path: "/notes-editor/:id?", component: <NotesEditor /> },
-  { path: "/payment-monitoring", component: <InvoicePage /> },
-  { path: "/procurement", component: <ProcurementPage /> },
-  { path: "/procurement/manage", component: <PurchasePageApprove /> },
   { path: "/profile", component: <ProfilePage /> },
-  { path: "/user-agreements", component: <UserAgreements /> },
-  { path: "/user-business", component: <UserTrip /> },
-  { path: "/user-procurements", component: <UserProcurement /> },
-  { path: "/user-vocations", component: <UserVocation /> },
-  { path: "/vacation", component: <VacationPage /> },
-  { path: "/vacation/manage", component: <VacationPageApprove /> },
-  { path: "/visitors", component: <VisitorsTraffic /> },
-  { path: "/vip-leads", component: <VipLeadsPage /> },
-  { path: "/vip-leads/:id", component: <VipLeadDetailPage /> },
+
+  // Admin Routes
+  { path: "/admin/dashboard", component: <AdminPage /> },
+  { path: "/admin/approvals", component: <HeadPage /> },
+  { path: "/admin/visitors", component: <VisitorsTraffic /> },
+  { path: "/admin/payment-monitoring", component: <InvoicePage /> },
+
+  // Applications Routes
+  // -- Internal Purchases
+  { path: "/applications/purchases/new", component: <ProcurementPage /> },
+  {
+    path: "/applications/purchases/approve",
+    component: <PurchasePageApprove />,
+  },
+  {
+    path: "/applications/purchases/my-requests",
+    component: <UserProcurement />,
+  },
+
+  // -- Vacation Requests
+  { path: "/applications/vacation/new", component: <VacationPage /> },
+  {
+    path: "/applications/vacation/approve",
+    component: <VacationPageApprove />,
+  },
+  { path: "/applications/vacation/my-requests", component: <UserVocation /> },
+
+  // -- Business Trips
+  { path: "/applications/business-trip/new", component: <BusinessPage /> },
+  {
+    path: "/applications/business-trip/approve",
+    component: <TripPageApprove />,
+  },
+  { path: "/applications/business-trip/my-requests", component: <UserTrip /> },
+
+  // HR Documents
+  { path: "/hr/documents", component: <HrPage /> },
+  { path: "/hr/documents/approve", component: <HrPageApprove /> },
+
+  // Legal Documents
+  { path: "/legal/contracts/new", component: <LawyerPage /> },
+  { path: "/legal/contracts/approve", component: <LawyerPageApprove /> },
+  { path: "/legal/contracts/archive", component: <LawyerPageArchive /> },
+  { path: "/legal/contracts/my-requests", component: <UserAgreements /> },
+
+  // Support & Tasks
+  { path: "/support/it-tasks", component: <TaskList /> },
+  { path: "/support/it-tasks/:id", component: <JobDetails /> },
+  { path: "/support/maintenance", component: <FarmWork /> },
+
+  // Communication
+  { path: "/communication/chat", component: <Chat /> },
+  { path: "/communication/comments/:id", component: <MakeComment /> },
+
+  // Leads Management
+  { path: "/leads/vip", component: <VipLeadsPage /> },
+  { path: "/leads/vip/:id", component: <VipLeadDetailPage /> },
+  { path: "/leads/corporate", component: <LeadsPage /> },
+
+  // Tools & Utilities
+  { path: "/tools/calendar", component: <Calendar /> },
+  { path: "/tools/notes", component: <NotesPage /> },
+  { path: "/tools/notes/:id", component: <NotesEditor /> },
+  { path: "/tools/daily-results", component: <Dailies /> },
+
+  // Archive
+  { path: "/archive", component: <ArchivePage /> },
 ]
 
 const publicRoutes = [
-  { path: "/login", component: <Login /> },
-  { path: "/logout", component: <Logout /> },
-  { path: "/forgot-password", component: <ForgetPwd /> },
-  { path: "/register", component: <Register /> },
+  { path: "/auth/login", component: <Login /> },
+  { path: "/auth/logout", component: <Logout /> },
+  { path: "/auth/forgot-password", component: <ForgetPwd /> },
+  { path: "/auth/register", component: <Register /> },
 ]
 
 export { authProtectedRoutes, publicRoutes }
