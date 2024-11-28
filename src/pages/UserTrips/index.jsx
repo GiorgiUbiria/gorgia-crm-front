@@ -41,7 +41,7 @@ const STATUS_MAPPING = {
 }
 
 const UserTrip = () => {
-  document.title = "მივლინებები | Georgia LLC"
+  document.title = "ჩემი მივლინებები | Gorgia LLC"
 
   const [trips, setTrips] = useState([])
 
@@ -166,7 +166,7 @@ const UserTrip = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="მივლინებები" breadcrumbItem="ვიზირება" />
+              <Breadcrumbs title="განცხადებები" breadcrumbItem="ჩემი მივლინებები" />
             </Col>
           </Row>
           <Row>

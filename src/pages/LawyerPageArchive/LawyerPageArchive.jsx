@@ -29,7 +29,7 @@ const STATUS_MAPPING = {
 }
 
 const LawyerPageArchive = () => {
-  document.title = "არქივი | Gorgia LLC"
+  document.title = "ხელშეკრულებების არქივი | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
 
   const fetchAgreements = async () => {
@@ -150,7 +150,10 @@ const LawyerPageArchive = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="ხელშეკრულებები" breadcrumbItem="არქივი" />
+              <Breadcrumbs
+                title="ხელშეკრულებები"
+                breadcrumbItem="ხელშეკრულებების არქივი"
+              />
             </Col>
           </Row>
 
@@ -158,18 +161,13 @@ const LawyerPageArchive = () => {
             <Col xl={12}>
               <Card>
                 <CardBody>
-                  <CardTitle className="h4">ხელშეკრულებების არქივი</CardTitle>
-                  <CardSubtitle className="mb-4">
-                    ქვევით ნაჩვენებია უკვე დადასტურებული ან უარყოფილი მოთხოვნილი
-                    ხელშეკრულებები
-                  </CardSubtitle>
-
                   <MuiTable
                     columns={columns}
                     data={transformedAgreements}
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
+                    searchableFields={["user.name", "name"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={row => <div>{row.comment}</div>}

@@ -146,7 +146,7 @@ const UserVocation = () => {
           <Row className="mb-3">
             <Col xl={12}>
               <Breadcrumbs
-                title="შვებულებები"
+                title="განცხადებები"
                 breadcrumbItem="ჩემი შვებულებები"
               />
             </Col>

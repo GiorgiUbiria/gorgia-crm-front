@@ -37,7 +37,7 @@ const STATUS_MAPPING = {
 }
 
 const HrPageApprove = () => {
-  document.title = "ვიზირება | Gorgia LLC"
+  document.title = "HR დოკუმენტების ვიზირება | Gorgia LLC"
   const [documents, setDocuments] = useState([])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState(null)
@@ -253,7 +253,7 @@ const HrPageApprove = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="HR" breadcrumbItem="დოკუმენტების ვიზირება" />
+              <Breadcrumbs title="HR დოკუმენტები" breadcrumbItem="დოკუმენტების ვიზირება" />
             </Col>
           </Row>
           <MuiTable

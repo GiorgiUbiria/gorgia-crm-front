@@ -141,9 +141,13 @@ const UserProcurement = () => {
     },
     objective: purchase.objective,
     reason: purchase.reason,
-    department: purchase.department.name,
+    department: purchase.department?.name || "N/A",
     delivery_address: purchase.delivery_address,
-    reviewer: purchase.reviewed_by.name + " " + purchase.reviewed_by.sur_name,
+    reviewer: purchase.reviewed_by
+      ? `${purchase.reviewed_by.name || ""} ${
+          purchase.reviewed_by.sur_name || ""
+        }`
+      : "N/A",
     comment: purchase.comment,
   }))
 
@@ -166,7 +170,7 @@ const UserProcurement = () => {
           <Row className="mb-3">
             <Col xl={12}>
               <Breadcrumbs
-                title="შესყიდვები"
+                title="განცხადებები"
                 breadcrumbItem="ჩემი შესყიდვები"
               />
             </Col>

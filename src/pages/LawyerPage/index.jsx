@@ -22,7 +22,7 @@ import { createAgreement } from "services/agreement"
 import "../../assets/scss/custom/pages/_lawyer.scss"
 
 const LawyerPage = () => {
-  document.title = "ხელშეკრულების მოთხოვნის ფორმა - Georgia LLC"
+  document.title = "ხელშეკრულების მოთხოვნა | Gorgia LLC"
 
   const [activeTab, setactiveTab] = useState(1)
   const [passedSteps, setPassedSteps] = useState([1])
@@ -55,7 +55,6 @@ const LawyerPage = () => {
     payment_term: "",
     means_of_securing_obligation: "",
     notary_agreement: false,
-    file_path: null,
     initiator_name_signature: "",
     manager_name_signature: "",
   })
@@ -99,11 +98,6 @@ const LawyerPage = () => {
           if (!value)
             errorMsg =
               "ხელშეკრულების მოქმედების ვადის ათვლის პერიოდი აუცილებელია"
-          break
-        case "file_path":
-          if (!value && !selectedFile) errorMsg = "ფაილის ატვირთვა აუცილებელია"
-          else if (selectedFile && selectedFile.size > 5 * 1024 * 1024)
-            errorMsg = "ფაილის ზომა არ უნდა აღემატებოდეს 5MB-ს"
           break
         case "initiator_name_signature":
           if (!value) errorMsg = "ინიციატორის სახელი და გვარი აუცილებელია"
@@ -164,9 +158,7 @@ const LawyerPage = () => {
       const formDataToSend = new FormData()
 
       Object.keys(formData).forEach(key => {
-        if (key === "file_path" && selectedFile) {
-          formDataToSend.append("file_path", selectedFile)
-        } else if (key === "notary_agreement") {
+        if (key === "notary_agreement") {
           formDataToSend.append("notary_agreement", formData[key] ? 1 : 0)
         } else if (formData[key] !== "") {
           formDataToSend.append(key, formData[key])
@@ -204,7 +196,6 @@ const LawyerPage = () => {
           payment_term: "",
           means_of_securing_obligation: "",
           notary_agreement: false,
-          file_path: null,
           initiator_name_signature: "",
           manager_name_signature: "",
         })
@@ -225,9 +216,6 @@ const LawyerPage = () => {
             break
           case 401:
             toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
-            break
-          case 413:
-            toast.error("ფაილის ზომა ძალიან დიდია")
             break
           case 422:
             const validationErrors = error.response.data.errors
@@ -263,43 +251,6 @@ const LawyerPage = () => {
     }
   }
 
-  const handleFileChange = e => {
-    try {
-      const file = e.target.files[0]
-
-      const allowedTypes = [
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/vnd.ms-excel",
-      ]
-      if (file && !allowedTypes.includes(file.type)) {
-        toast.error(
-          "არასწორი ფაილის ფორმატი. დასაშვებია მხოლოდ PDF, DOC, DOCX, XLSX ფაილები"
-        )
-        return
-      }
-
-      if (file && file.size > 5 * 1024 * 1024) {
-        toast.error("ფაილის ზომა არ უნდა აღემატებოდეს 5MB-ს")
-        return
-      }
-
-      setSelectedFile(file)
-      setFormData(prevData => ({
-        ...prevData,
-        file_path: file,
-      }))
-
-      setErrors(prevErrors => ({
-        ...prevErrors,
-        file_path: "",
-      }))
-    } catch (error) {
-      toast.error("შეცდომა ფაილის დამუშავებისას")
-    }
-  }
-
   return (
     <React.Fragment>
       <div className="page-content">
@@ -317,8 +268,8 @@ const LawyerPage = () => {
         />
         <Container fluid>
           <Breadcrumbs
-            title="იურიდიული დეპარტამენტი"
-            breadcrumbItem="ხელშეკრულების მოთხოვნის ფორმა"
+            title="ხელშეკრულებები"
+            breadcrumbItem="ხელშეკრულების მოთხოვნა"
           />
 
           <Card>
@@ -593,34 +544,6 @@ const LawyerPage = () => {
                                 {errors.bank_account_details}
                               </div>
                             )}
-                          </div>
-                        </Col>
-                        <Col lg="6">
-                          <div className="mb-3">
-                            <Label for="file_path">დოკუმენტის ატვირთვა</Label>
-                            <div className="custom-file-input-wrapper">
-                              <Input
-                                type="file"
-                                className={classnames("custom-file-input", {
-                                  "is-invalid": errors.file_path,
-                                })}
-                                id="file_path"
-                                onChange={handleFileChange}
-                                accept=".pdf,.doc,.docx,.xlsx"
-                              />
-                              {selectedFile && (
-                                <div className="file-name">
-                                  <i className="bx bx-file me-2"></i>
-                                  {selectedFile.name}
-                                </div>
-                              )}
-                              {errors.file_path && (
-                                <div className="form-error">
-                                  <i className="bx bx-error-circle"></i>
-                                  {errors.file_path}
-                                </div>
-                              )}
-                            </div>
                           </div>
                         </Col>
                       </Row>

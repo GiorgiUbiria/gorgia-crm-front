@@ -40,7 +40,7 @@ const STATUS_MAPPING = {
 }
 
 const LawyerPageApprove = () => {
-  document.title = "ვიზირება | Gorgia LLC"
+  document.title = "ხელშეკრულებების ვიზირება | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -241,7 +241,7 @@ const LawyerPageApprove = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="ხელშეკრულებები" breadcrumbItem="ვიზირება" />
+              <Breadcrumbs title="ხელშეკრულებები" breadcrumbItem="ხელშეკრულებების ვიზირება" />
             </Col>
           </Row>
           <MuiTable

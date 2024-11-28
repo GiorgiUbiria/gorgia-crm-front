@@ -92,6 +92,7 @@ const NotesPage = () => {
         setIsLoading(true)
         setError(null)
         const response = await getNoteList()
+        console.log(response.data)
         const sortedNotes = response.data.notes.sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
         )
