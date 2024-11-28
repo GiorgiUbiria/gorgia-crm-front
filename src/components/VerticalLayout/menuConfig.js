@@ -15,6 +15,7 @@ import {
   BsTelephone,
   BsTools,
   BsCash,
+  BsArchive,
 } from "react-icons/bs"
 
 export const getMenuConfig = (t, isAdmin) =>
@@ -32,6 +33,7 @@ export const getMenuConfig = (t, isAdmin) =>
         { to: "/admin/approvals", label: t("ვიზირება") },
         { to: "/admin/visitors", label: t("ვიზიტორები") },
         { to: "/admin/payment-monitoring", label: t("გადახდების მონიტორინგი") },
+        { to: "/admin/archive", icon: BsArchive, label: t("არქივი") },
       ],
     },
     {
