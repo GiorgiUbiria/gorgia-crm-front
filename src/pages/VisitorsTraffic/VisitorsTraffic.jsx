@@ -484,7 +484,7 @@ const VisitorsTraffic = () => {
                   ) : filteredVisitors.length === 0 ? (
                     <div className="text-center py-5">
                       <h5>
-                        No visitor traffic data found for the selected filters.
+                        მითითებული ფილტრებისთვის ვიზიტორების მონაცემები ვერ მოიძებნა.
                       </h5>
                     </div>
                   ) : (
