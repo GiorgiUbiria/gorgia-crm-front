@@ -35,10 +35,34 @@ const statusMap = {
   },
 }
 
+const typeMap = {
+  paid: {
+    label: "გადახდილი",
+    icon: "bx-check-circle",
+    color: "#28a745",
+  },
+  unpaid: {
+    label: "გადაუხდელი",
+    icon: "bx-time",
+    color: "#FFA500",
+  },
+  administrative: {
+    label: "ადმინისტრაციული",
+    icon: "bx-time",
+    color: "#FFA500",
+  },
+}
+
 const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
+}
+
+const TYPE_MAPPING = {
+  paid: "paid",
+  unpaid: "unpaid",
+  administrative: "administrative",
 }
 
 const VacationPageApprove = () => {
@@ -131,6 +155,15 @@ const VacationPageApprove = () => {
       {
         Header: "შვებულების ტიპი",
         accessor: "type_of_vacations",
+        Cell: ({ value }) => (
+          <span
+            style={{
+              color: typeMap[value].color,
+            }}
+          >
+            {typeMap[value].label}
+          </span>
+        ),
       },
       {
         Header: "თარიღი",
@@ -222,7 +255,7 @@ const VacationPageApprove = () => {
       location: vacation.legal_or_actual_address,
     },
     comment: vacation.comment,
-    type_of_vacations: vacation.type_of_vocations,
+    type_of_vacations: TYPE_MAPPING[vacation.type_of_vocations] || TYPE_MAPPING.paid,
   }))
 
   const filterOptions = [
@@ -235,6 +268,15 @@ const VacationPageApprove = () => {
         pending: "განხილვაში",
       },
     },
+    {
+      field: "type_of_vacations",
+      label: "შვებულების ტიპი",
+      valueLabels: {
+        paid: "გადახდილი",
+        unpaid: "გადაუხდელი",
+        administrative: "ადმინისტრაციული",
+      },
+    },
   ]
 
   return (
@@ -243,7 +285,10 @@ const VacationPageApprove = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="შვებულებები" breadcrumbItem="ვიზირება" />
+              <Breadcrumbs
+                title="განცხადებები"
+                breadcrumbItem="შვებულებების ვიზირება"
+              />
             </Col>
           </Row>
           <Row>

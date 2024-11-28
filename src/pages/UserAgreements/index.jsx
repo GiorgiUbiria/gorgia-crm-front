@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react"
-import { Row, Col, Card, CardBody, CardTitle, CardSubtitle } from "reactstrap"
+import React, { useEffect, useState, useMemo, useCallback } from "react"
+import { Row, Col, Card, CardBody } from "reactstrap"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import MuiTable from "../../components/Mui/MuiTable"
 import { getUserAgreemnets } from "services/agreement"
@@ -29,7 +29,7 @@ const STATUS_MAPPING = {
 }
 
 const UserAgreements = () => {
-  document.title = "ხელშეკრულებები | Gorgia LLC"
+  document.title = "ჩემი ხელშეკრულებები | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
 
   const fetchAgreements = async () => {
@@ -58,6 +58,7 @@ const UserAgreements = () => {
     name: agreement.service_description,
     salary: agreement.service_price,
     comment: agreement.payment_terms,
+    file_path: agreement.file_path,
   }))
 
   const columns = useMemo(
@@ -144,6 +145,43 @@ const UserAgreements = () => {
     },
   ]
 
+  const expandedRow = useCallback(row => {
+    const handleDownload = async () => {
+      try {
+        // First verify file exists
+        const response = await fetch(row.file_path, { method: 'HEAD' });
+        if (!response.ok) {
+          throw new Error('File not found');
+        }
+
+        const link = document.createElement('a');
+        link.href = row.file_path;
+        link.download = row.file_path.split('/').pop();
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        alert("Sorry, the file is not available for download at this moment.")
+        console.error("Download error:", error)
+      }
+    };
+
+    return (
+      <div>
+        <p>{row.comment}</p>
+        {row.file_path && (
+          <button 
+            className="btn btn-primary btn-sm"
+            onClick={handleDownload}
+          >
+            <i className="bx bx-download me-1"></i>
+            ფაილის ჩამოტვირთვა
+          </button>
+        )}
+      </div>
+    )
+  }, [])
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -160,21 +198,16 @@ const UserAgreements = () => {
             <Col xl={12}>
               <Card>
                 <CardBody>
-                  <CardTitle className="h4">ხელშეკრულებების არქივი</CardTitle>
-                  <CardSubtitle className="mb-4">
-                    ქვევით ნაჩვენებია უკვე დადასტურებული ან უარყოფილი მოთხოვნილი
-                    ხელშეკრულებები
-                  </CardSubtitle>
-
                   <MuiTable
                     columns={columns}
                     data={transformedAgreements}
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
+                    searchableFields={["user.name", "name"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
-                    renderRowDetails={row => <div>{row.comment}</div>}
+                    renderRowDetails={expandedRow}
                   />
                 </CardBody>
               </Card>

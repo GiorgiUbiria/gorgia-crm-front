@@ -122,14 +122,17 @@ const TripPageApprove = () => {
       {
         Header: "სახელი",
         accessor: "user.name",
+        disableSortBy: true,
       },
       {
         Header: "ადგილი",
         accessor: "place_of_trip",
+        disableSortBy: true,
       },
       {
         Header: "მიზეზი",
         accessor: "purpose_of_trip",
+        disableSortBy: true,
       },
       {
         Header: "დაწყების თარიღი",
@@ -146,7 +149,6 @@ const TripPageApprove = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
-        disableSortBy: true,
         Cell: ({ value }) => (
           <span
             style={{
@@ -246,7 +248,7 @@ const TripPageApprove = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="მივლინებები" breadcrumbItem="ვიზირება" />
+              <Breadcrumbs title="განცხადებები" breadcrumbItem="მივლინებების ვიზირება" />
             </Col>
           </Row>
           <Row>

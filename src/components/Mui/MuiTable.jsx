@@ -34,6 +34,7 @@ import FirstPageIcon from "@mui/icons-material/FirstPage"
 import LastPageIcon from "@mui/icons-material/LastPage"
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft"
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight"
+import TableSortLabel from "@mui/material/TableSortLabel"
 
 const CustomPaginationActions = React.memo(function CustomPaginationActions(
   props
@@ -400,13 +401,29 @@ const MuiTable = ({
           sx={{
             minWidth: 650,
             backgroundColor: "background.paper",
+            borderCollapse: "collapse",
             "& .MuiTableCell-head": {
               backgroundColor: "#105d8d",
               color: "primary.contrastText",
               fontWeight: 700,
+              borderRight: "1px solid rgba(224, 224, 224, 0.4)",
+              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              "&:last-child": {
+                borderRight: "none",
+              },
+            },
+            "& .MuiTableCell-body": {
+              borderRight: "1px solid rgba(224, 224, 224, 0.4)",
+              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              "&:last-child": {
+                borderRight: "none",
+              },
+            },
+            "& .MuiTableRow-root:nth-of-type(even)": {
+              backgroundColor: "action.hover",
             },
             "& .MuiTableRow-hover:hover": {
-              backgroundColor: "action.hover",
+              backgroundColor: "action.selected",
             },
           }}
         >
@@ -431,20 +448,21 @@ const MuiTable = ({
                       transition: "background-color 0.2s",
                     }}
                   >
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                    >
-                      {column.render("Header")}
-                      {column.canSort && (
-                        <Box sx={{ color: "text.secondary", fontSize: "1rem" }}>
-                          {column.isSorted
-                            ? column.isSortedDesc
-                              ? "↓"
-                              : "↑"
-                            : "↕"}
-                        </Box>
-                      )}
-                    </Box>
+                    {column.canSort ? (
+                      <TableSortLabel
+                        active={column.isSorted}
+                        direction={column.isSortedDesc ? "desc" : "asc"}
+                        sx={{
+                          "& .MuiTableSortLabel-icon": {
+                            color: "primary.contrastText !important",
+                          },
+                        }}
+                      >
+                        {column.render("Header")}
+                      </TableSortLabel>
+                    ) : (
+                      column.render("Header")
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
@@ -542,9 +560,9 @@ const MuiTable = ({
           rowsPerPage={pageSize}
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={pageSizeOptions}
-          labelRowsPerPage="Rows per page:"
+          labelRowsPerPage="ჩანაწერი გვერდზე:"
           labelDisplayedRows={({ from, to, count }) =>
-            `${from}–${to} of ${count}`
+            `${from}–${to} ${count}-დან`
           }
           ActionsComponent={CustomPaginationActions}
           sx={{

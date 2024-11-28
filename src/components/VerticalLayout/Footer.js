@@ -10,7 +10,7 @@ const Footer = () => {
             <Col md={6}>{new Date().getFullYear()} © Gorgia LLC.</Col>
             <Col md={6}>
               <div className="text-sm-end d-none d-sm-block">
-                Design & Develop by GORGIA
+                შექმნილია Gorgia LLC-ის მიერ
               </div>
             </Col>
           </Row>

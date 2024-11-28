@@ -19,7 +19,7 @@ import SuccessPopup from 'components/SuccessPopup';
 
 const BusinessPage = () => {
   // Meta title
-  document.title = 'მივლინების მოთხოვნის ფორმა - Georgia LLC';
+  document.title = 'მივლინების მოთხოვნა | Gorgia LLC';
 
   const { t } = useTranslation();
   const [errors, setErrors] = useState({}); // State for validation errors
@@ -124,24 +124,6 @@ const BusinessPage = () => {
       const res = await createTrip(formData);
       if (res) {
         setIsSuccessModalOpen(true)
-        // setFormData({
-        //   trip_type: 'regional',
-        //   place_of_trip: '',
-        //   expense_vocation: '',
-        //   expense_transport: '',
-        //   expense_living: '',
-        //   expense_meal: '',
-        //   total_expense: '',
-        //   start_date: '',
-        //   end_date: '',
-        //   subtitle_user_name: '',
-        //   subtitle_user_sur_name: '',
-        //   business_trip_basis: '',
-        //   purpose_of_trip: '',
-        //   description: '',
-        //   business_trip_arrangement: '',
-        //   expected_result_business_trip: '',
-        // })
       }
     } catch (err) {
       console.log(err);
@@ -163,7 +145,7 @@ const BusinessPage = () => {
     <React.Fragment>
       <div className="page-content">
         <Container fluid={true}>
-          <Breadcrumbs title="CRM" breadcrumbItem="მივლინების მოთხოვნის გვერდი" />
+          <Breadcrumbs title="განცხადებები" breadcrumbItem="მივლინების მოთხოვნა" />
           <Row>
             <Col lg="12">
               <Card>

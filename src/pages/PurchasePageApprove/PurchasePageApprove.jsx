@@ -41,7 +41,7 @@ const STATUS_MAPPING = {
 }
 
 const PurchasePageApprove = () => {
-  document.title = "შესყიდვების ვიზირება | Gorgia LLC"
+  document.title = "შიდა შესყიდვების ვიზირება | Gorgia LLC"
 
   const [purchases, setPurchases] = useState([])
   const [rejectionModal, setRejectionModal] = useState(false)
@@ -239,9 +239,13 @@ const PurchasePageApprove = () => {
     },
     objective: purchase.objective,
     reason: purchase.reason,
-    department: purchase.department.name,
+    department: purchase.department?.name || "N/A",
     delivery_address: purchase.delivery_address,
-    reviewer: purchase.reviewed_by.name + " " + purchase.reviewed_by.sur_name,
+    reviewer: purchase.reviewed_by
+      ? `${purchase.reviewed_by.name || ""} ${
+          purchase.reviewed_by.sur_name || ""
+        }`
+      : "N/A",
     comment: purchase.comment,
   }))
 
@@ -263,7 +267,7 @@ const PurchasePageApprove = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="შესყიდვები" breadcrumbitem="ვიზირება" />
+              <Breadcrumbs title="განცხადებები" breadcrumbItem="შიდა შესყიდვების ვიზირება" />
             </Col>
           </Row>
           <Row>

@@ -26,6 +26,7 @@ import {
 } from "../../services/visitorsTrafficService"
 import Breadcrumbs from "components/Common/Breadcrumb"
 import moment from "moment"
+import * as XLSX from "xlsx"
 
 const VisitorsTraffic = () => {
   const [visitors, setVisitors] = useState([])
@@ -33,7 +34,15 @@ const VisitorsTraffic = () => {
   const [isEdit, setIsEdit] = useState(false)
   const [modal, setModal] = useState(false)
   const [deleteModal, setDeleteModal] = useState(false)
-  const [filterType, setFilterType] = useState("daily")
+  const [filterType, setFilterType] = useState("today")
+  const [dateRange, setDateRange] = useState({
+    startDate: null,
+    endDate: null,
+  })
+  const [selectedMonth, setSelectedMonth] = useState({
+    month: moment().month(),
+    year: moment().year(),
+  })
   const [selectedBranch, setSelectedBranch] = useState("სულ")
   const [loading, setLoading] = useState(false)
 
@@ -101,33 +110,48 @@ const VisitorsTraffic = () => {
 
   const handleFilterTypeChange = e => {
     setFilterType(e.target.value)
-    if (e.target.value !== "specific") {
-      setSpecificDate(null)
-    }
+    setDateRange({ startDate: null, endDate: null })
+    setSelectedMonth({ month: moment().month(), year: moment().year() })
   }
 
-  const [specificDate, setSpecificDate] = useState(null)
+  const handleDateRangeChange = (field, value) => {
+    setDateRange(prev => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
 
   const filteredVisitors = useMemo(() => {
     let filtered = [...visitors]
 
-    // Apply time filter
-    if (filterType === "daily") {
-      filtered = filtered.filter(visitor =>
-        moment(visitor.date).isSame(moment(), "day")
-      )
-    } else if (filterType === "weekly") {
-      filtered = filtered.filter(visitor =>
-        moment(visitor.date).isSame(moment(), "week")
-      )
-    } else if (filterType === "monthly") {
-      filtered = filtered.filter(visitor =>
-        moment(visitor.date).isSame(moment(), "month")
-      )
-    } else if (filterType === "specific" && specificDate) {
-      filtered = filtered.filter(visitor =>
-        moment(visitor.date).isSame(moment(specificDate), "day")
-      )
+    switch (filterType) {
+      case "today":
+        filtered = filtered.filter(visitor =>
+          moment(visitor.date).isSame(moment(), "day")
+        )
+        break
+      case "monthly":
+        filtered = filtered.filter(
+          visitor =>
+            moment(visitor.date).month() === selectedMonth.month &&
+            moment(visitor.date).year() === selectedMonth.year
+        )
+        break
+      case "specific":
+        if (dateRange.startDate && dateRange.endDate) {
+          filtered = filtered.filter(
+            visitor =>
+              moment(visitor.date).isSameOrAfter(
+                moment(dateRange.startDate),
+                "day"
+              ) &&
+              moment(visitor.date).isSameOrBefore(
+                moment(dateRange.endDate),
+                "day"
+              )
+          )
+        }
+        break
     }
 
     // Apply branch filter
@@ -136,7 +160,81 @@ const VisitorsTraffic = () => {
     }
 
     return filtered
-  }, [visitors, filterType, selectedBranch, specificDate])
+  }, [visitors, filterType, selectedBranch, dateRange, selectedMonth])
+
+  const totalVisitors = useMemo(() => {
+    return filteredVisitors.reduce(
+      (sum, visitor) => sum + Number(visitor.visitors_count),
+      0
+    )
+  }, [filteredVisitors])
+
+  const getDateRangeString = () => {
+    switch (filterType) {
+      case "today":
+        return moment().format("DD.MM.YYYY")
+      case "monthly":
+        return `${moment()
+          .year(selectedMonth.year)
+          .month(selectedMonth.month)
+          .startOf("month")
+          .format("DD.MM.YYYY")}-${moment()
+          .year(selectedMonth.year)
+          .month(selectedMonth.month)
+          .endOf("month")
+          .format("DD.MM.YYYY")}`
+      case "specific":
+        if (dateRange.startDate && dateRange.endDate) {
+          return `${moment(dateRange.startDate).format("DD.MM.YYYY")}-${moment(
+            dateRange.endDate
+          ).format("DD.MM.YYYY")}`
+        }
+        return "სულ"
+      default:
+        return "სულ"
+    }
+  }
+
+  const handleExportToExcel = () => {
+    const dateRangeString = getDateRangeString()
+    const branchText =
+      selectedBranch === "სულ" ? "ყველა-ფილიალი" : selectedBranch
+
+    const getFilterTypeInGeorgian = () => {
+      switch (filterType) {
+        case "daily":
+          return "დღიური"
+        case "weekly":
+          return "კვირეული"
+        case "monthly":
+          return "თვიური"
+        case "specific":
+          return "კონკრეტული"
+        default:
+          return "სულ"
+      }
+    }
+
+    const filename = `ვიზიტორები_${branchText}_${getFilterTypeInGeorgian()}_${dateRangeString.replace(
+      /\//g,
+      "-"
+    )}.xlsx`
+
+    const exportData = [
+      ["თარიღი", "ფილიალი", "მომხმარებლების რაოდენობა"],
+      ...filteredVisitors.map(visitor => [
+        moment(visitor.date).format("DD.MM.YYYY"),
+        visitor.office,
+        visitor.visitors_count,
+      ]),
+      ["ჯამი", "", totalVisitors],
+    ]
+
+    const ws = XLSX.utils.aoa_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "ვიზიტორები")
+    XLSX.writeFile(wb, filename)
+  }
 
   const columns = useMemo(
     () => [
@@ -240,7 +338,7 @@ const VisitorsTraffic = () => {
         <Container fluid>
           <Breadcrumbs title="მარკეტინგი" breadcrumbItem="ვიზიტორები" />
           <Row className="mb-3">
-            <Col md="4" className="mb-2">
+            <Col md="3" className="mb-2">
               <Button
                 color="success"
                 className="btn-rounded waves-effect waves-light"
@@ -250,7 +348,7 @@ const VisitorsTraffic = () => {
                 ინფორმაციის დამატება
               </Button>
             </Col>
-            <Col md="4" className="mb-2">
+            <Col md="3" className="mb-2">
               <Label for="filterType">ფილტრი:</Label>
               <Input
                 type="select"
@@ -258,22 +356,81 @@ const VisitorsTraffic = () => {
                 value={filterType}
                 onChange={handleFilterTypeChange}
               >
-                <option value="daily">ყოველდღიური</option>
-                <option value="weekly">ყოველკვირეული</option>
-                <option value="monthly">ყოველთვიური</option>
-                <option value="specific">სპეციალური თარიღი</option>
+                <option value="today">დღევანდელი</option>
+                <option value="monthly">თვიური</option>
+                <option value="specific">კონკრეტული პერიოდი</option>
                 <option value="overall">სულ</option>
               </Input>
+
               {filterType === "specific" && (
-                <Input
-                  type="date"
-                  className="mt-2"
-                  value={specificDate || ""}
-                  onChange={e => setSpecificDate(e.target.value)}
-                />
+                <div className="mt-2">
+                  <Input
+                    type="date"
+                    className="mb-2"
+                    value={dateRange.startDate || ""}
+                    onChange={e =>
+                      handleDateRangeChange("startDate", e.target.value)
+                    }
+                    placeholder="საწყისი თარიღი"
+                  />
+                  <Input
+                    type="date"
+                    value={dateRange.endDate || ""}
+                    onChange={e =>
+                      handleDateRangeChange("endDate", e.target.value)
+                    }
+                    placeholder="საბოლოო თარიღი"
+                  />
+                </div>
+              )}
+
+              {filterType === "monthly" && (
+                <div className="mt-2 d-flex gap-2">
+                  <Input
+                    type="select"
+                    value={selectedMonth.month}
+                    onChange={e =>
+                      setSelectedMonth(prev => ({
+                        ...prev,
+                        month: parseInt(e.target.value),
+                      }))
+                    }
+                  >
+                    {moment.months().map((month, index) => (
+                      <option key={month} value={index}>
+                        {month}
+                      </option>
+                    ))}
+                  </Input>
+                  <Input
+                    type="select"
+                    value={selectedMonth.year}
+                    onChange={e =>
+                      setSelectedMonth(prev => ({
+                        ...prev,
+                        year: parseInt(e.target.value),
+                      }))
+                    }
+                  >
+                    {Array.from(
+                      { length: 5 },
+                      (_, i) => moment().year() - i
+                    ).map(year => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </Input>
+                </div>
+              )}
+
+              {filterType !== "overall" && (
+                <div className="mt-2 text-muted small">
+                  პერიოდი: {getDateRangeString()}
+                </div>
               )}
             </Col>
-            <Col md="4" className="mb-2">
+            <Col md="2" className="mb-2">
               <Label for="branchFilter">ფილიალი:</Label>
               <Input
                 type="select"
@@ -281,13 +438,35 @@ const VisitorsTraffic = () => {
                 value={selectedBranch}
                 onChange={e => setSelectedBranch(e.target.value)}
               >
-                <option value="სულ">სულ</option>
+                <option value="სულ">ყველა</option>
                 {offices.map((office, index) => (
                   <option value={office} key={index}>
                     {office}
                   </option>
                 ))}
               </Input>
+            </Col>
+            <Col md="2" className="mb-2">
+              <Label>ჯამი:</Label>
+              <div
+                className="form-control"
+                style={{ backgroundColor: "#f8f9fa" }}
+              >
+                {`${totalVisitors} ${
+                  filterType !== "overall" ? `(${getDateRangeString()})` : ""
+                }`}
+              </div>
+            </Col>
+            <Col md="2" className="mb-2">
+              <Label>&nbsp;</Label>
+              <Button
+                color="primary"
+                className="w-100"
+                onClick={handleExportToExcel}
+              >
+                <i className="bx bx-download me-1"></i>
+                ექსპორტი Excel-ში
+              </Button>
             </Col>
           </Row>
 
@@ -460,7 +639,7 @@ const VisitorsTraffic = () => {
                     </div>
                     <div className="mb-3">
                       <Label className="form-label">
-                        მომხმარებლების რაოდენობა
+                        მოხმარებლების რაოდენობა
                       </Label>
                       <Input
                         name="visitors_count"

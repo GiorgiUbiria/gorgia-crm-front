@@ -13,9 +13,6 @@ import {
   NavLink,
   TabContent,
   TabPane,
-  Row,
-  Col,
-  CardText,
   Container,
 } from "reactstrap"
 import classnames from "classnames"
@@ -106,7 +103,7 @@ const HeadPage = () => {
                       toggleTab("2")
                     }}
                   >
-                    მივლინება
+                    მივლინებები
                   </NavLink>
                 </NavItem>
                 <NavItem>
@@ -117,7 +114,7 @@ const HeadPage = () => {
                       toggleTab("3")
                     }}
                   >
-                    შესყიდვები
+                    შიდა შესყიდვები
                   </NavLink>
                 </NavItem>
                 <NavItem>
@@ -128,7 +125,7 @@ const HeadPage = () => {
                       toggleTab("4")
                     }}
                   >
-                    შვებულება
+                    შვებულებები
                   </NavLink>
                 </NavItem>
                 <NavItem>
@@ -139,7 +136,7 @@ const HeadPage = () => {
                       toggleTab("5")
                     }}
                   >
-                    დოკუმენტები
+                    HR დოკუმენტები
                   </NavLink>
                 </NavItem>
               </Nav>

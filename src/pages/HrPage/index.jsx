@@ -140,7 +140,7 @@ const forUserValidationSchema = activeTab => {
 }
 
 const HrPage = () => {
-  document.title = "ვიზირება | Gorgia LLC"
+  document.title = "HR დოკუმენტები | Gorgia LLC"
 
   const [hrDocuments, setHrDocuments] = useState([])
   const [modal, setModal] = useState(false)
@@ -433,7 +433,7 @@ const HrPage = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="ცნობები" breadcrumbItem="ჩემი ცნობები" />
+              <Breadcrumbs title="HR დოკუმენტები" breadcrumbItem="დოკუმენტები" />
             </Col>
           </Row>
           <ToastContainer />
