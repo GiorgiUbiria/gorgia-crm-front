@@ -10,7 +10,13 @@ import {
   FormGroup,
   Label,
 } from "reactstrap"
-import { BiQuestionMark, BiCheck, BiX, BiXCircle, BiArrowBack } from "react-icons/bi"
+import {
+  BiQuestionMark,
+  BiCheck,
+  BiX,
+  BiXCircle,
+  BiArrowBack,
+} from "react-icons/bi"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import {
   getPurchaseList,
@@ -41,6 +47,48 @@ const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
+}
+
+const ExpandedRowContent = ({ rowData }) => {
+  const details = [
+    { label: "მიწოდების ვადა", value: rowData.deadline },
+    { label: "მოკლე ვადის მიზეზი", value: rowData.short_period_reason },
+    { label: "მარაგის მიზანი", value: rowData.stock_purpose },
+    { label: "მარკა/მოდელი", value: rowData.brand_model },
+    { label: "ალტერნატივა", value: rowData.alternative },
+    {
+      label: "კონკურენტული ფასი",
+      value: rowData.competitive_price || "არ არის მითითებული",
+    },
+    {
+      label: "იგეგმება თუ არა მომდევნო თვეში",
+      value: rowData.planned_next_month,
+    },
+    { label: "თანხის ანაზღაურება", value: rowData.who_pay_amount },
+    {
+      label: "პასუხისმგებელი თანამშრომელი",
+      value: rowData.name_surname_of_employee,
+    },
+  ]
+
+  return (
+    <div className="p-3 bg-light rounded">
+      {rowData.comment && (
+        <div className="mb-3">
+          <span className="fw-bold text-danger">უარყოფის მიზეზი: </span>
+          <p className="mb-0">{rowData.comment}</p>
+        </div>
+      )}
+      <div className="row g-2">
+        {details.map((detail, index) => (
+          <div key={index} className="col-md-6">
+            <span className="fw-bold">{detail.label}: </span>
+            <span>{detail.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 const PurchasePageApprove = () => {
@@ -250,6 +298,19 @@ const PurchasePageApprove = () => {
         }`
       : "N/A",
     comment: purchase.comment,
+    deadline: purchase.deadline,
+    short_period_reason: purchase.short_period_reason,
+    requested_procurement_object_exceed:
+      purchase.requested_procurement_object_exceed,
+    stock_purpose: purchase.stock_purpose,
+    brand_model: purchase.brand_model,
+    alternative: purchase.alternative,
+    competitive_price: purchase.competitive_price,
+    planned_next_month: purchase.planned_next_month,
+    who_pay_amount: purchase.who_pay_amount,
+    name_surname_of_employee: purchase.name_surname_of_employee,
+    reviewed_at: purchase.reviewed_at,
+    reviewed_by: purchase.reviewed_by,
   }))
 
   const filterOptions = [
@@ -263,6 +324,8 @@ const PurchasePageApprove = () => {
       },
     },
   ]
+
+  const expandedRow = row => <ExpandedRowContent rowData={row} />
 
   return (
     <React.Fragment>
@@ -284,7 +347,7 @@ const PurchasePageApprove = () => {
               enableSearch={true}
               searchableFields={["reviewer", "department"]}
               initialPageSize={10}
-              renderRowDetails={row => <div>{row.comment}</div>}
+              renderRowDetails={expandedRow}
             />
           </Row>
         </div>
