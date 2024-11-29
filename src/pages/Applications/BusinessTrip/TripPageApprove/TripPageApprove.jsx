@@ -12,7 +12,7 @@ import {
   Label,
 } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { getTripList, updateTripStatus } from "../../../../services/trip"
+import { getAllTripsList, updateTripStatus } from "../../../../services/trip"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
 
@@ -34,10 +34,26 @@ const statusMap = {
   },
 }
 
+const typeMap = {
+  regional: {
+    label: "რეგიონალური",
+    icon: "bx-map",
+  },
+  international: {
+    label: "საერთაშორისო",
+    icon: "bx-globe",
+  },
+}
+
 const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
+}
+
+const TYPE_MAPPING = {
+  regional: "regional",
+  international: "international",
 }
 
 const TripPageApprove = () => {
@@ -52,7 +68,7 @@ const TripPageApprove = () => {
 
   const fetchTrips = async () => {
     try {
-      const response = await getTripList()
+      const response = await getAllTripsList()
       setTrips(response.data.business)
     } catch (err) {
       console.error("Error fetching trip requests:", err)
@@ -145,6 +161,12 @@ const TripPageApprove = () => {
       {
         Header: "ტიპი",
         accessor: "trip_type",
+        Cell: ({ value }) => (
+          <span>
+            <i className={`bx ${typeMap[value].icon} me-2`}></i>
+            {typeMap[value].label}
+          </span>
+        ),
       },
       {
         Header: "სტატუსი",
@@ -215,7 +237,7 @@ const TripPageApprove = () => {
 
   const transformedTrips = trips.map(trip => ({
     id: trip.id,
-    trip_type: trip.trip_type,
+    trip_type: TYPE_MAPPING[trip.trip_type] || trip.trip_type,
     status: STATUS_MAPPING[trip.status] || trip.status,
     place_of_trip: trip.place_of_trip,
     purpose_of_trip: trip.purpose_of_trip,
@@ -248,7 +270,10 @@ const TripPageApprove = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="განცხადებები" breadcrumbItem="მივლინებების ვიზირება" />
+              <Breadcrumbs
+                title="განცხადებები"
+                breadcrumbItem="მივლინებების ვიზირება"
+              />
             </Col>
           </Row>
           <Row>
