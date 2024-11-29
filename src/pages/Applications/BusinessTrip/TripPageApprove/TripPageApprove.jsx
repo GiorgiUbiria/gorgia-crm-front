@@ -15,6 +15,13 @@ import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getAllTripsList, updateTripStatus } from "../../../../services/trip"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
+import {
+  BiQuestionMark,
+  BiCheck,
+  BiX,
+  BiXCircle,
+  BiArrowBack,
+} from "react-icons/bi"
 
 const statusMap = {
   pending: {
@@ -295,34 +302,40 @@ const TripPageApprove = () => {
         <ModalHeader toggle={() => setConfirmModal(false)}>
           დაადასტურეთ მოქმედება
         </ModalHeader>
-        <ModalBody>
-          დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
+        <ModalBody className="text-center">
+          <BiQuestionMark className="text-warning" size={48} />
+          <p className="mb-4">
+            დარწმუნებული ხართ, რომ გსურთ მივლინების მოთხოვნის დამტკიცება?
+          </p>
+          <div className="d-flex justify-content-center gap-2">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleConfirmAction}
+              startIcon={<BiCheck />}
+            >
+              დადასტურება
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmModal(false)}
+              startIcon={<BiX />}
+            >
+              გაუქმება
+            </Button>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleConfirmAction}
-          >
-            დადასტურება
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setConfirmModal(false)}
-          >
-            გაუქმება
-          </Button>
-        </ModalFooter>
       </Modal>
       <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
         <ModalHeader toggle={() => setRejectionModal(false)}>
+          <BiXCircle className="text-danger me-2" size={24} />
           უარყოფის მიზეზი
         </ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>
-              <Label for="rejectionComment">
+              <Label for="rejectionComment" className="fw-bold mb-2">
                 გთხოვთ მიუთითოთ უარყოფის მიზეზი
               </Label>
               <Input
@@ -333,27 +346,31 @@ const TripPageApprove = () => {
                 onChange={e => setRejectionComment(e.target.value)}
                 rows="4"
                 required
+                className="mb-3"
+                placeholder="შეიყვანეთ უარყოფის დეტალური მიზეზი..."
               />
             </FormGroup>
           </Form>
+          <div className="d-flex justify-content-end gap-2">
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleRejectionSubmit}
+              disabled={!rejectionComment.trim()}
+              startIcon={<BiXCircle />}
+            >
+              უარყოფა
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setRejectionModal(false)}
+              startIcon={<BiArrowBack />}
+            >
+              გაუქმება
+            </Button>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleRejectionSubmit}
-            disabled={!rejectionComment.trim()}
-          >
-            უარყოფა
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setRejectionModal(false)}
-          >
-            გაუქმება
-          </Button>
-        </ModalFooter>
       </Modal>
     </React.Fragment>
   )
