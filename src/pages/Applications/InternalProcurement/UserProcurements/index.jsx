@@ -29,8 +29,50 @@ const STATUS_MAPPING = {
   rejected: "rejected",
 }
 
+const ExpandedRowContent = ({ rowData }) => {
+  const details = [
+    { label: "მიწოდების ვადა", value: rowData.deadline },
+    { label: "მოკლე ვადის მიზეზი", value: rowData.short_period_reason },
+    { label: "მარაგის მიზანი", value: rowData.stock_purpose },
+    { label: "მარკა/მოდელი", value: rowData.brand_model },
+    { label: "ალტერნატივა", value: rowData.alternative },
+    {
+      label: "კონკურენტული ფასი",
+      value: rowData.competitive_price || "არ არის მითითებული",
+    },
+    {
+      label: "იგეგმება თუ არა მომდევნო თვეში",
+      value: rowData.planned_next_month,
+    },
+    { label: "თანხის ანაზღაურება", value: rowData.who_pay_amount },
+    {
+      label: "პასუხისმგებელი თანამშრომელი",
+      value: rowData.name_surname_of_employee,
+    },
+  ]
+
+  return (
+    <div className="p-3 bg-light rounded">
+      {rowData.comment && (
+        <div className="mb-3">
+          <span className="fw-bold text-danger">უარყოფის მიზეზი: </span>
+          <p className="mb-0">{rowData.comment}</p>
+        </div>
+      )}
+      <div className="row g-2">
+        {details.map((detail, index) => (
+          <div key={index} className="col-md-6">
+            <span className="fw-bold">{detail.label}: </span>
+            <span>{detail.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const UserProcurement = () => {
-  document.title = "შესყიდვები | Gorgia LLC"
+  document.title = "ჩემი შესყიდვები | Gorgia LLC"
 
   const [procurements, setProcurements] = useState([])
 
@@ -121,7 +163,7 @@ const UserProcurement = () => {
         disableSortBy: true,
       },
       {
-        Header: "შემმოწმებული",
+        Header: "შემმოწმებელი",
         accessor: "reviewer",
         disableSortBy: true,
       },
@@ -141,14 +183,23 @@ const UserProcurement = () => {
     },
     objective: purchase.objective,
     reason: purchase.reason,
-    department: purchase.department?.name || "N/A",
+    department: purchase.department?.name || "არ არის მითითებული",
     delivery_address: purchase.delivery_address,
     reviewer: purchase.reviewed_by
       ? `${purchase.reviewed_by.name || ""} ${
           purchase.reviewed_by.sur_name || ""
         }`
-      : "N/A",
+      : "არ არის მითითებული",
     comment: purchase.comment,
+    deadline: purchase.deadline,
+    short_period_reason: purchase.short_period_reason,
+    stock_purpose: purchase.stock_purpose,
+    brand_model: purchase.brand_model,
+    alternative: purchase.alternative,
+    competitive_price: purchase.competitive_price,
+    planned_next_month: purchase.planned_next_month,
+    who_pay_amount: purchase.who_pay_amount,
+    name_surname_of_employee: purchase.name_surname_of_employee,
   }))
 
   const filterOptions = [
@@ -161,7 +212,13 @@ const UserProcurement = () => {
         pending: "განხილვაში",
       },
     },
+    {
+      field: "department",
+      label: "დეპარტამენტი",
+    },
   ]
+
+  const expandedRow = row => <ExpandedRowContent rowData={row} />
 
   return (
     <React.Fragment>
@@ -183,7 +240,7 @@ const UserProcurement = () => {
               enableSearch={true}
               searchableFields={["reviewer", "department"]}
               initialPageSize={10}
-              renderRowDetails={row => <div>{row.comment}</div>}
+              renderRowDetails={expandedRow}
             />
           </Row>
         </div>

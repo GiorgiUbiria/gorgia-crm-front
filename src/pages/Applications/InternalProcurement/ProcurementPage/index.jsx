@@ -22,6 +22,7 @@ import "./index.css"
 import { useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import { procurementSchema } from "./validationSchema"
+import useFetchUser from "hooks/useFetchUser"
 
 const InputWithError = ({
   formik,
@@ -68,10 +69,13 @@ const ProcurementPage = () => {
   const navigate = useNavigate()
   const [purchases, setPurchases] = useState([])
   const [departments, setDepartments] = useState([])
+  const { user } = useFetchUser()
+
+  console.log(user)
 
   const formik = useFormik({
     initialValues: {
-      department_purchase_id: "",
+      department_id: "",
       objective: "",
       deadline: "",
       short_period_reason: "",
@@ -88,34 +92,38 @@ const ProcurementPage = () => {
     },
     validationSchema: procurementSchema,
     onSubmit: async values => {
+      const submitData = {
+        ...values,
+        department_purchase_id: Number(values.department_id),
+        deadline: new Date(values.deadline).toISOString().split("T")[0],
+      }
+
       try {
-        const res = await createPurchase(values)
+        const res = await createPurchase(submitData)
 
-        if (res) {
-          toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          })
-
-          formik.resetForm()
-
-          setTimeout(() => {
-            navigate("/applications/purchases/my-requests")
-          }, 1000)
-        }
-      } catch (err) {
-        console.error(err)
-        toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით", {
+        toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
           position: "top-right",
-          autoClose: 5000,
+          autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
+        })
+
+        formik.resetForm()
+        setTimeout(() => {
+          navigate("/applications/purchases/my-requests")
+        }, 1000)
+      } catch (err) {
+        console.error("Submission error:", err)
+        const errorMessage =
+          err?.response?.data?.message ||
+          err?.response?.data?.data?.message ||
+          "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
+
+        toast.error(errorMessage, {
+          position: "top-right",
+          autoClose: 5000,
         })
       }
     },
@@ -181,7 +189,7 @@ const ProcurementPage = () => {
                       <Col lg="6">
                         <InputWithError
                           formik={formik}
-                          name="department_purchase_id"
+                          name="department_id"
                           label="დეპარტამენტი"
                           type="select"
                         >
@@ -223,7 +231,7 @@ const ProcurementPage = () => {
                         <InputWithError
                           formik={formik}
                           name="requested_procurement_object_exceed"
-                          label="ხომ არ აღემატება მოთხოვნილი შესყიდვის ობიექტი საჭიროებებს?"
+                          label="ხომ არ აღემატება მოთხოვნილი შესყიდვის ობიექტი საჭიროებს?"
                         />
                       </Col>
                       <Col lg="6">
