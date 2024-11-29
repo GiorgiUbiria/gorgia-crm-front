@@ -44,6 +44,45 @@ const TYPE_MAPPING = {
   international: "international",
 }
 
+const ExpandedRowContent = ({ rowData }) => {
+  const details = [
+    { label: "მივლინების ადგილი", value: rowData.place_of_trip },
+    { label: "მივლინების საფუძველი", value: rowData.business_trip_basis },
+    { label: "მივლინების მიზანი", value: rowData.purpose_of_trip },
+    { label: "აღწერა", value: rowData.description },
+    { label: "მივლინების მოწყობა", value: rowData.business_trip_arrangement },
+    { label: "მოსალოდნელი შედეგი", value: rowData.expected_result_business_trip },
+    { label: "ფაქტობრივი შედეგი", value: rowData.actual_result },
+    { label: "მივლინების ტიპი", value: rowData.trip_type },
+    { label: "ხარჯები", value: `
+      სამივლინებო: ${rowData.expense_vocation}
+      ტრანსპორტი: ${rowData.expense_transport}
+      საცხოვრებელი: ${rowData.expense_living}
+      კვება: ${rowData.expense_meal}
+      ჯამური: ${rowData.total_expense}
+    `},
+  ]
+
+  return (
+    <div className="p-3 bg-light rounded">
+      {rowData.comment && (
+        <div className="mb-3">
+          <span className="fw-bold text-danger">უარყოფის მიზეზი: </span>
+          <p className="mb-0">{rowData.comment}</p>
+        </div>
+      )}
+      <div className="row g-2">
+        {details.map((detail, index) => (
+          <div key={index} className="col-md-6">
+            <span className="fw-bold">{detail.label}: </span>
+            <span>{detail.value || "არ არის მითითებული"}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const UserTrip = () => {
   document.title = "ჩემი მივლინებები | Gorgia LLC"
 
@@ -178,6 +217,8 @@ const UserTrip = () => {
     },
   ]
 
+  const expandedRow = row => <ExpandedRowContent rowData={row} />
+
   return (
     <React.Fragment>
       <div className="page-content mb-4">
@@ -199,7 +240,7 @@ const UserTrip = () => {
                 initialPageSize={10}
                 enableSearch={true}
                 searchableFields={["user.name", "user.id"]}
-                renderRowDetails={row => <div>{row.comment}</div>}
+                renderRowDetails={expandedRow}
               />
             </Col>
           </Row>
