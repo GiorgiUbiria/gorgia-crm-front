@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react"
 import {
   Card,
   CardBody,
@@ -9,141 +9,140 @@ import {
   Label,
   Row,
   Button,
-} from 'reactstrap';
-import { useTranslation } from 'react-i18next';
-import Breadcrumbs from 'components/Common/Breadcrumb';
-import { createTrip, getTripList } from '../../../../services/trip';
-import './index.css';
-import SuccessPopup from 'components/SuccessPopup';
+} from "reactstrap"
+import Breadcrumbs from "components/Common/Breadcrumb"
+import { createTrip } from "../../../../services/trip"
+import "./index.css"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { useNavigate } from "react-router-dom"
 
 const BusinessPage = () => {
-  document.title = 'მივლინების მოთხოვნა | Gorgia LLC';
-
-  const { t } = useTranslation();
-  const [errors, setErrors] = useState({});
-  const [list, setList] = useState([]);
+  document.title = "მივლინების მოთხოვნა | Gorgia LLC"
+  const navigate = useNavigate()
+  const [errors, setErrors] = useState({})
+  const [list, setList] = useState([])
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
 
   const [formData, setFormData] = useState({
-    trip_type: 'regional',
-    place_of_trip: '',
-    expense_vocation: '',
-    expense_transport: '',
-    expense_living: '',
-    expense_meal: '',
-    total_expense: '',
-    start_date: '',
-    end_date: '',
-    subtitle_user_name: '',
-    subtitle_user_sur_name: '',
-    business_trip_basis: '',
-    purpose_of_trip: '',
-    description: '',
-    business_trip_arrangement: '',
-    expected_result_business_trip: '',
-  });
+    trip_type: "regional",
+    place_of_trip: "",
+    expense_vocation: "",
+    expense_transport: "",
+    expense_living: "",
+    expense_meal: "",
+    total_expense: "",
+    start_date: "",
+    end_date: "",
+    subtitle_user_name: "",
+    subtitle_user_sur_name: "",
+    business_trip_basis: "",
+    purpose_of_trip: "",
+    description: "",
+    business_trip_arrangement: "",
+    expected_result_business_trip: "",
+  })
 
-  useEffect(() => {
-    const fetchList = async () => {
-      try {
-        const res = await getTripList();
-        setList(res.data.business);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    fetchList();
-  }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
+  const handleInputChange = e => {
+    const { name, value } = e.target
+    setFormData(prevData => ({
       ...prevData,
       [name]: value,
-    }));
+    }))
 
-    validateField(name, value); 
-  };
+    validateField(name, value)
+  }
 
   const validateField = (field, value) => {
-    let errorMsg = '';
+    let errorMsg = ""
 
     switch (field) {
-      case 'place_of_trip':
-        if (!value) errorMsg = 'მივლინების ადგილი აუცილებელია';
-        break;
-      case 'start_date':
-        if (!value) errorMsg = 'დაწყების თარიღი აუცილებელია';
-        break;
-      case 'end_date':
-        if (!value) errorMsg = 'დასრულების თარიღი აუცილებელია';
-        break;
-      case 'expense_vocation':
-        if (!value || isNaN(value)) errorMsg = 'მივლინების ხარჯი უნდა იყოს ციფრი';
-        break;
-      case 'expense_transport':
-        if (!value || isNaN(value)) errorMsg = 'ტრანსპორტი უნდა იყოს ციფრი';
-        break;
-      case 'expense_living':
-        if (!value || isNaN(value)) errorMsg = 'საცხოვრებელი უნდა იყოს ციფრი';
-        break;
-      case 'expense_meal':
-        if (!value || isNaN(value)) errorMsg = 'დღიური კვება უნდა იყოს ციფრი';
-        break;
+      case "place_of_trip":
+        if (!value) errorMsg = "მივლინების ადგილი აუცილებელია"
+        break
+      case "start_date":
+        if (!value) errorMsg = "დაწყების თარიღი აუცილებელია"
+        break
+      case "end_date":
+        if (!value) errorMsg = "დასრულების თარიღი აუცილებელია"
+        break
+      case "expense_vocation":
+        if (!value || isNaN(value))
+          errorMsg = "მივლინების ხარჯი უნდა იყოს ციფრი"
+        break
+      case "expense_transport":
+        if (!value || isNaN(value)) errorMsg = "ტრანსპორტი უნდა იყოს ციფრი"
+        break
+      case "expense_living":
+        if (!value || isNaN(value)) errorMsg = "საცხოვრებელი უნდა იყოს ციფრი"
+        break
+      case "expense_meal":
+        if (!value || isNaN(value)) errorMsg = "დღიური კვება უნდა იყოს ციფრი"
+        break
       default:
-        break;
+        break
     }
 
-    setErrors((prevErrors) => ({
+    setErrors(prevErrors => ({
       ...prevErrors,
       [field]: errorMsg,
-    }));
-  };
+    }))
+  }
 
-  // Function to validate all form data before submission
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors = {}
 
-    Object.keys(formData).forEach((field) => {
-      validateField(field, formData[field]);
-    });
+    Object.keys(formData).forEach(field => {
+      validateField(field, formData[field])
+    })
 
-    return Object.keys(newErrors).length === 0;
-  };
+    return Object.keys(newErrors).length === 0
+  }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async event => {
+    event.preventDefault()
     if (!validateForm()) {
-      return;
+      return
     }
 
     try {
-      const res = await createTrip(formData);
+      const res = await createTrip(formData)
       if (res) {
-        setIsSuccessModalOpen(true)
+        toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        })
+
+        setTimeout(() => {
+          navigate("/applications/business-trip/my-requests")
+        }, 1000)
       }
     } catch (err) {
-      console.log(err);
-    }
-  };
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.data?.message ||
+        "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
 
-  const calculateDuration = (startDate, endDate) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) {
-      return 1;
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+      })
+      console.log(err)
     }
-    return diffDays;
-  };
+  }
 
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid={true}>
-          <Breadcrumbs title="განცხადებები" breadcrumbItem="მივლინების მოთხოვნა" />
+          <Breadcrumbs
+            title="განცხადებები"
+            breadcrumbItem="მივლინების მოთხოვნა"
+          />
           <Row>
             <Col lg="12">
               <Card>
@@ -161,13 +160,17 @@ const BusinessPage = () => {
                             onChange={handleInputChange}
                           >
                             <option value="regional">მივლინება რეგიონში</option>
-                            <option value="international">მივლინება საზღვარგარეთ</option>
+                            <option value="international">
+                              მივლინება საზღვარგარეთ
+                            </option>
                           </Input>
                         </div>
                       </Col>
                       <Col lg="6">
                         <div className="mb-3">
-                          <Label for="subtitle_user_name">შემცვლელი პირის სახელი</Label>
+                          <Label for="subtitle_user_name">
+                            შემცვლელი პირის სახელი
+                          </Label>
                           <Input
                             type="text"
                             id="subtitle_user_name"
@@ -177,7 +180,9 @@ const BusinessPage = () => {
                             placeholder="ჩაწერეთ შემცვლელი პირის სახელი..."
                           />
                           {errors.subtitle_user_name && (
-                            <div className="text-danger">{errors.subtitle_user_name}</div>
+                            <div className="text-danger">
+                              {errors.subtitle_user_name}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -185,7 +190,9 @@ const BusinessPage = () => {
                     <Row>
                       <Col lg="6">
                         <div className="mb-3">
-                          <Label for="subtitle_user_sur_name">შემცვლელი პირის გვარი</Label>
+                          <Label for="subtitle_user_sur_name">
+                            შემცვლელი პირის გვარი
+                          </Label>
                           <Input
                             type="text"
                             id="subtitle_user_sur_name"
@@ -195,7 +202,9 @@ const BusinessPage = () => {
                             placeholder="ჩაწერეთ შემცვლელი პირის გვარი..."
                           />
                           {errors.subtitle_user_sur_name && (
-                            <div className="text-danger">{errors.subtitle_user_sur_name}</div>
+                            <div className="text-danger">
+                              {errors.subtitle_user_sur_name}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -211,7 +220,9 @@ const BusinessPage = () => {
                             placeholder="ჩაწერეთ მივლინების ადგილი..."
                           />
                           {errors.place_of_trip && (
-                            <div className="text-danger">{errors.place_of_trip}</div>
+                            <div className="text-danger">
+                              {errors.place_of_trip}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -229,7 +240,9 @@ const BusinessPage = () => {
                             placeholder="ჩაწერეთ მივლინების მიზანი..."
                           />
                           {errors.purpose_of_trip && (
-                            <div className="text-danger">{errors.purpose_of_trip}</div>
+                            <div className="text-danger">
+                              {errors.purpose_of_trip}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -245,7 +258,9 @@ const BusinessPage = () => {
                             placeholder="ჩაწერეთ მივლინების ხარჯი..."
                           />
                           {errors.expense_vocation && (
-                            <div className="text-danger">{errors.expense_vocation}</div>
+                            <div className="text-danger">
+                              {errors.expense_vocation}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -253,7 +268,10 @@ const BusinessPage = () => {
                     <Row>
                       <Col lg="6">
                         <div className="mb-3">
-                          <Label for="expense_transport">ტრანსპორტი (საკუთარი ავტომობილის შემთხვევაში საწვავისთვის საჭირო თანხა)</Label>
+                          <Label for="expense_transport">
+                            ტრანსპორტი (საკუთარი ავტომობილის შემთხვევაში
+                            საწვავისთვის საჭირო თანხა)
+                          </Label>
                           <Input
                             type="text"
                             id="expense_transport"
@@ -263,7 +281,9 @@ const BusinessPage = () => {
                             placeholder="ჩაწერეთ ტრანსპორტის ხარჯი..."
                           />
                           {errors.expense_transport && (
-                            <div className="text-danger">{errors.expense_transport}</div>
+                            <div className="text-danger">
+                              {errors.expense_transport}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -279,7 +299,9 @@ const BusinessPage = () => {
                             placeholder="ჩაწერეთ საცხოვრებლის ხარჯი..."
                           />
                           {errors.expense_living && (
-                            <div className="text-danger">{errors.expense_living}</div>
+                            <div className="text-danger">
+                              {errors.expense_living}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -297,7 +319,9 @@ const BusinessPage = () => {
                             placeholder="ჩაწერეთ დღიური კვების ხარჯი..."
                           />
                           {errors.expense_meal && (
-                            <div className="text-danger">{errors.expense_meal}</div>
+                            <div className="text-danger">
+                              {errors.expense_meal}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -313,7 +337,9 @@ const BusinessPage = () => {
                             placeholder="ჩაწერეთ სრული ხარჯი..."
                           />
                           {errors.total_expense && (
-                            <div className="text-danger">{errors.total_expense}</div>
+                            <div className="text-danger">
+                              {errors.total_expense}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -330,7 +356,9 @@ const BusinessPage = () => {
                             onChange={handleInputChange}
                           />
                           {errors.start_date && (
-                            <div className="text-danger">{errors.start_date}</div>
+                            <div className="text-danger">
+                              {errors.start_date}
+                            </div>
                           )}
                         </div>
                       </Col>
@@ -350,14 +378,15 @@ const BusinessPage = () => {
                         </div>
                       </Col>
                     </Row>
-                    <div style={{
-                      width:"100%",
-                      display:"flex",
-                      justifyContent:"end"
-
-                    }}>
+                    <div
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "end",
+                      }}
+                    >
                       <Button type="submit" color="primary">
-                        {t('გაგზავნა')}
+                        გაგზავნა
                       </Button>
                     </div>
                   </Form>
@@ -367,9 +396,9 @@ const BusinessPage = () => {
           </Row>
         </Container>
       </div>
-      {isSuccessModalOpen && (<SuccessPopup/>)}
+      <ToastContainer />
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default BusinessPage;
+export default BusinessPage
