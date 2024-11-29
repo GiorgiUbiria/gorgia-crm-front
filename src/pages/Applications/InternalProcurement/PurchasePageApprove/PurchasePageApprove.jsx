@@ -12,8 +12,8 @@ import {
   Label,
 } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { getPurchaseList, updatePurchaseStatus } from "services/purchase"
-import MuiTable from "components/Mui/MuiTable"
+import { getPurchaseList, updatePurchaseStatus } from "../../../../services/purchase"
+import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
 
 const statusMap = {

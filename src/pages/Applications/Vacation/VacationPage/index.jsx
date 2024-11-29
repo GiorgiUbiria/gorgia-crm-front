@@ -10,9 +10,9 @@ import {
   Row,
   Button,
 } from 'reactstrap';
-import Breadcrumbs from '../../components/Common/Breadcrumb';
-import { createVacation } from '../../services/vacation';
-import { getApprovalVacations, getVacations } from '../../services/admin/vacation';
+import Breadcrumbs from 'components/Common/Breadcrumb';
+import { createVacation } from '../../../../services/vacation';
+import { getApprovalVacations, getVacations } from '../../../../services/admin/vacation';
 import './index.css';
 import SuccessPopup from 'components/SuccessPopup';
 

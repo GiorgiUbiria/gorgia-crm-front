@@ -11,7 +11,7 @@ import {
   Button,
 } from 'reactstrap';
 import { useTranslation } from 'react-i18next';
-import Breadcrumbs from '../../../../components/Common/Breadcrumb';
+import Breadcrumbs from 'components/Common/Breadcrumb';
 import { createTrip, getTripList } from '../../../../services/trip';
 import './index.css';
 import SuccessPopup from 'components/SuccessPopup';
