@@ -26,7 +26,7 @@ import {
 } from "reactstrap"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import classnames from "classnames"
-import Breadcrumbs from "../../components/Common/Breadcrumb"
+import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
 import { Button } from "reactstrap"
 
@@ -433,7 +433,10 @@ const HrPage = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="HR დოკუმენტები" breadcrumbItem="დოკუმენტები" />
+              <Breadcrumbs
+                title="HR დოკუმენტები"
+                breadcrumbItem="დოკუმენტები"
+              />
             </Col>
           </Row>
           <ToastContainer />

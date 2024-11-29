@@ -11,9 +11,9 @@ import {
   Button,
 } from "reactstrap"
 import { useTranslation } from "react-i18next"
-import Breadcrumbs from "../../components/Common/Breadcrumb"
-import { getPurchaseList, createPurchase } from "../../services/purchase"
-import { getDepartments, getPurchaseDepartments } from "../../services/auth"
+import Breadcrumbs from "../../../../components/Common/Breadcrumb"
+import { getPurchaseList, createPurchase } from "../../../../services/purchase"
+import { getDepartments, getPurchaseDepartments } from "../../../../services/auth"
 import { toast } from "react-toastify"
 import "./index.css"
 import SuccessPopup from "components/SuccessPopup"
