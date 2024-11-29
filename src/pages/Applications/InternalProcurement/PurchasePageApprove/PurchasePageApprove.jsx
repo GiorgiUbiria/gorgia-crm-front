@@ -6,13 +6,22 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   Form,
   FormGroup,
   Label,
 } from "reactstrap"
+import {
+  BiQuestionMark,
+  BiCheck,
+  BiX,
+  BiXCircle,
+  BiArrowBack,
+} from "react-icons/bi"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { getPurchaseList, updatePurchaseStatus } from "../../../../services/purchase"
+import {
+  getPurchaseList,
+  updatePurchaseStatus,
+} from "../../../../services/purchase"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
 
@@ -38,6 +47,48 @@ const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
+}
+
+const ExpandedRowContent = ({ rowData }) => {
+  const details = [
+    { label: "მიწოდების ვადა", value: rowData.deadline },
+    { label: "მოკლე ვადის მიზეზი", value: rowData.short_period_reason },
+    { label: "მარაგის მიზანი", value: rowData.stock_purpose },
+    { label: "მარკა/მოდელი", value: rowData.brand_model },
+    { label: "ალტერნატივა", value: rowData.alternative },
+    {
+      label: "კონკურენტული ფასი",
+      value: rowData.competitive_price || "არ არის მითითებული",
+    },
+    {
+      label: "იგეგმება თუ არა მომდევნო თვეში",
+      value: rowData.planned_next_month,
+    },
+    { label: "თანხის ანაზღაურება", value: rowData.who_pay_amount },
+    {
+      label: "პასუხისმგებელი თანამშრომელი",
+      value: rowData.name_surname_of_employee,
+    },
+  ]
+
+  return (
+    <div className="p-3 bg-light rounded">
+      {rowData.comment && (
+        <div className="mb-3">
+          <span className="fw-bold text-danger">უარყოფის მიზეზი: </span>
+          <p className="mb-0">{rowData.comment}</p>
+        </div>
+      )}
+      <div className="row g-2">
+        {details.map((detail, index) => (
+          <div key={index} className="col-md-6">
+            <span className="fw-bold">{detail.label}: </span>
+            <span>{detail.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 const PurchasePageApprove = () => {
@@ -247,6 +298,19 @@ const PurchasePageApprove = () => {
         }`
       : "N/A",
     comment: purchase.comment,
+    deadline: purchase.deadline,
+    short_period_reason: purchase.short_period_reason,
+    requested_procurement_object_exceed:
+      purchase.requested_procurement_object_exceed,
+    stock_purpose: purchase.stock_purpose,
+    brand_model: purchase.brand_model,
+    alternative: purchase.alternative,
+    competitive_price: purchase.competitive_price,
+    planned_next_month: purchase.planned_next_month,
+    who_pay_amount: purchase.who_pay_amount,
+    name_surname_of_employee: purchase.name_surname_of_employee,
+    reviewed_at: purchase.reviewed_at,
+    reviewed_by: purchase.reviewed_by,
   }))
 
   const filterOptions = [
@@ -261,13 +325,18 @@ const PurchasePageApprove = () => {
     },
   ]
 
+  const expandedRow = row => <ExpandedRowContent rowData={row} />
+
   return (
     <React.Fragment>
       <div className="page-content mb-4">
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="განცხადებები" breadcrumbItem="შიდა შესყიდვების ვიზირება" />
+              <Breadcrumbs
+                title="განცხადებები"
+                breadcrumbItem="შიდა შესყიდვების ვიზირება"
+              />
             </Col>
           </Row>
           <Row>
@@ -278,7 +347,7 @@ const PurchasePageApprove = () => {
               enableSearch={true}
               searchableFields={["reviewer", "department"]}
               initialPageSize={10}
-              renderRowDetails={row => <div>{row.comment}</div>}
+              renderRowDetails={expandedRow}
             />
           </Row>
         </div>
@@ -287,34 +356,41 @@ const PurchasePageApprove = () => {
         <ModalHeader toggle={() => setConfirmModal(false)}>
           დაადასტურეთ მოქმედება
         </ModalHeader>
-        <ModalBody>
-          დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
+        <ModalBody className="text-center">
+          <BiQuestionMark className="text-warning" size={48} />
+          <p className="mb-4">
+            დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
+          </p>
+          <div className="d-flex justify-content-center gap-2">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleConfirmAction}
+              startIcon={<BiCheck />}
+            >
+              დადასტურება
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmModal(false)}
+              startIcon={<BiX />}
+            >
+              გაუქმება
+            </Button>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleConfirmAction}
-          >
-            დადასტურება
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setConfirmModal(false)}
-          >
-            გაუქმება
-          </Button>
-        </ModalFooter>
       </Modal>
+
       <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
         <ModalHeader toggle={() => setRejectionModal(false)}>
+          <BiXCircle className="text-danger me-2" size={24} />
           უარყოფის მიზეზი
         </ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>
-              <Label for="rejectionComment">
+              <Label for="rejectionComment" className="fw-bold mb-2">
                 გთხოვთ მიუთითოთ უარყოფის მიზეზი
               </Label>
               <Input
@@ -325,27 +401,31 @@ const PurchasePageApprove = () => {
                 onChange={e => setRejectionComment(e.target.value)}
                 rows="4"
                 required
+                className="mb-3"
+                placeholder="შეიყვანეთ უარყოფის დეტალური მიზეზი..."
               />
             </FormGroup>
           </Form>
+          <div className="d-flex justify-content-end gap-2">
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleRejectionSubmit}
+              disabled={!rejectionComment.trim()}
+              startIcon={<BiXCircle />}
+            >
+              უარყოფა
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setRejectionModal(false)}
+              startIcon={<BiArrowBack />}
+            >
+              გაუქმება
+            </Button>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleRejectionSubmit}
-            disabled={!rejectionComment.trim()}
-          >
-            უარყოფა
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setRejectionModal(false)}
-          >
-            გაუქმება
-          </Button>
-        </ModalFooter>
       </Modal>
     </React.Fragment>
   )
