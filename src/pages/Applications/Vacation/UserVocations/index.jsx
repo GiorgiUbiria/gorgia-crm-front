@@ -22,10 +22,31 @@ const statusMap = {
   },
 }
 
+const typeMap = {
+  paid: {
+    label: "ანაზღაურებადი",
+    color: "#28a745",
+  },
+  unpaid: {
+    label: "არანაზღაურებადი",
+    color: "#dc3545",
+  },
+  administrative: {
+    label: "ადმინისტრაციული",
+    color: "#FFA500",
+  },
+}
+
 const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
+}
+
+const TYPE_MAPPING = {
+  paid: "paid",
+  unpaid: "unpaid",
+  administrative: "administrative",
 }
 
 const UserVocation = () => {
@@ -61,10 +82,15 @@ const UserVocation = () => {
       {
         Header: "შვებულების ტიპი",
         accessor: "type_of_vacations",
+        disableSortBy: true,
+        Cell: ({ value }) => {
+          const typeInfo = typeMap[value] || { label: value, color: "#757575" }
+          return <span style={{ color: typeInfo.color }}>{typeInfo.label}</span>
+        },
       },
       {
-        Header: "თარიღი",
-        accessor: "created_at",
+        Header: "დაწყების თარიღი",
+        accessor: "start_date",
         sortType: "basic",
         Cell: ({ value }) => (
           <div className="date-wrapper">
@@ -74,7 +100,17 @@ const UserVocation = () => {
         ),
       },
       {
-        Header: "სტატუსი",
+        Header: "დასრულების თარიღი",
+        accessor: "end_date",
+        sortType: "basic",
+        Cell: ({ value }) => (
+          <div className="date-wrapper">
+            <i className="bx bx-calendar me-2"></i>
+            {new Date(value).toLocaleDateString()}
+          </div>
+        ),
+      },
+      {
         accessor: "status",
         disableSortBy: true,
         Cell: ({ value }) => (
@@ -116,15 +152,15 @@ const UserVocation = () => {
   const transformedVacations = vacations.map(vacation => ({
     id: vacation.id,
     status: STATUS_MAPPING[vacation.status] || vacation.status,
-    created_at: vacation.created_at,
+    start_date: vacation.start_date,
+    end_date: vacation.end_date,
     user: {
-      name: vacation.performer_name,
-      id: vacation.id_code_or_personal_number,
-      position: vacation.service_description,
-      location: vacation.legal_or_actual_address,
+      name: vacation.user.name + " " + vacation.user.sur_name,
     },
     comment: vacation.comment,
-    type_of_vacations: vacation.type_of_vocations,
+    type_of_vacations: vacation.type_of_vocations
+      ? TYPE_MAPPING[vacation.type_of_vocations] || vacation.type_of_vocations
+      : "უცნობი",
   }))
 
   const filterOptions = [
@@ -135,6 +171,15 @@ const UserVocation = () => {
         approved: "დამტკიცებული",
         rejected: "უარყოფილი",
         pending: "განხილვაში",
+      },
+    },
+    {
+      field: "type_of_vacations",
+      label: "შვებულების ტიპი",
+      valueLabels: {
+        paid: "ანაზღაურებადი",
+        unpaid: "არანაზღაურებადი",
+        administrative: "ადმინისტრაციული",
       },
     },
   ]
