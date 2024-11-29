@@ -87,7 +87,7 @@ export const getMenuConfig = (t, isAdmin) =>
       submenu: [
         { to: "/hr/documents", label: t("ცნობები") },
         isAdmin && { to: "/hr/documents/approve", label: t("ვიზირება") },
-        { to: "/hr/documents", label: t("გაგზავნილი") },
+        { to: "/hr/documents/sent", label: t("გაგზავნილი") },
       ],
     },
     {
