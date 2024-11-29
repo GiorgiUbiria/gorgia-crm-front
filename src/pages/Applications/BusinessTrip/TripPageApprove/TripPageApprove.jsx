@@ -12,9 +12,16 @@ import {
   Label,
 } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { getTripList, updateTripStatus } from "../../../../services/trip"
+import { getAllTripsList, updateTripStatus } from "../../../../services/trip"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
+import {
+  BiQuestionMark,
+  BiCheck,
+  BiX,
+  BiXCircle,
+  BiArrowBack,
+} from "react-icons/bi"
 
 const statusMap = {
   pending: {
@@ -34,10 +41,65 @@ const statusMap = {
   },
 }
 
+const typeMap = {
+  regional: {
+    label: "რეგიონალური",
+    icon: "bx-map",
+  },
+  international: {
+    label: "საერთაშორისო",
+    icon: "bx-globe",
+  },
+}
+
 const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
+}
+
+const TYPE_MAPPING = {
+  regional: "regional",
+  international: "international",
+}
+
+const ExpandedRowContent = ({ rowData }) => {
+  const details = [
+    { label: "მივლინების ადგილი", value: rowData.place_of_trip },
+    { label: "მივლინების საფუძველი", value: rowData.business_trip_basis },
+    { label: "მივლინების მიზანი", value: rowData.purpose_of_trip },
+    { label: "აღწერა", value: rowData.description },
+    { label: "მივლინების მოწყობა", value: rowData.business_trip_arrangement },
+    { label: "მოსალოდნელი შედეგი", value: rowData.expected_result_business_trip },
+    { label: "ფაქტობრივი შედეგი", value: rowData.actual_result },
+    { label: "მივლინების ტიპი", value: rowData.trip_type },
+    { label: "ხარჯები", value: `
+      სამივლინებო: ${rowData.expense_vocation}
+      ტრანსპორტი: ${rowData.expense_transport}
+      საცხოვრებელი: ${rowData.expense_living}
+      კვება: ${rowData.expense_meal}
+      ჯამური: ${rowData.total_expense}
+    `},
+  ]
+
+  return (
+    <div className="p-3 bg-light rounded">
+      {rowData.comment && (
+        <div className="mb-3">
+          <span className="fw-bold text-danger">უარყოფის მიზეზი: </span>
+          <p className="mb-0">{rowData.comment}</p>
+        </div>
+      )}
+      <div className="row g-2">
+        {details.map((detail, index) => (
+          <div key={index} className="col-md-6">
+            <span className="fw-bold">{detail.label}: </span>
+            <span>{detail.value || "არ არის მითითებული"}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 const TripPageApprove = () => {
@@ -52,7 +114,7 @@ const TripPageApprove = () => {
 
   const fetchTrips = async () => {
     try {
-      const response = await getTripList()
+      const response = await getAllTripsList()
       setTrips(response.data.business)
     } catch (err) {
       console.error("Error fetching trip requests:", err)
@@ -145,6 +207,12 @@ const TripPageApprove = () => {
       {
         Header: "ტიპი",
         accessor: "trip_type",
+        Cell: ({ value }) => (
+          <span>
+            <i className={`bx ${typeMap[value].icon} me-2`}></i>
+            {typeMap[value].label}
+          </span>
+        ),
       },
       {
         Header: "სტატუსი",
@@ -215,7 +283,7 @@ const TripPageApprove = () => {
 
   const transformedTrips = trips.map(trip => ({
     id: trip.id,
-    trip_type: trip.trip_type,
+    trip_type: TYPE_MAPPING[trip.trip_type] || trip.trip_type,
     status: STATUS_MAPPING[trip.status] || trip.status,
     place_of_trip: trip.place_of_trip,
     purpose_of_trip: trip.purpose_of_trip,
@@ -240,7 +308,17 @@ const TripPageApprove = () => {
         pending: "განხილვაში",
       },
     },
+    {
+      field: "trip_type",
+      label: "ტიპი",
+      valueLabels: {
+        regional: "რეგიონალური",
+        international: "საერთაშორისო",
+      },
+    },
   ]
+
+  const expandedRow = row => <ExpandedRowContent rowData={row} />
 
   return (
     <React.Fragment>
@@ -248,7 +326,10 @@ const TripPageApprove = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="განცხადებები" breadcrumbItem="მივლინებების ვიზირება" />
+              <Breadcrumbs
+                title="განცხადებები"
+                breadcrumbItem="მივლინებების ვიზირება"
+              />
             </Col>
           </Row>
           <Row>
@@ -260,7 +341,7 @@ const TripPageApprove = () => {
                 initialPageSize={10}
                 searchableFields={["user.name", "user.id"]}
                 enableSearch={true}
-                renderRowDetails={row => <div>{row.comment}</div>}
+                renderRowDetails={expandedRow}
               />
             </Col>
           </Row>
@@ -270,34 +351,40 @@ const TripPageApprove = () => {
         <ModalHeader toggle={() => setConfirmModal(false)}>
           დაადასტურეთ მოქმედება
         </ModalHeader>
-        <ModalBody>
-          დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
+        <ModalBody className="text-center">
+          <BiQuestionMark className="text-warning" size={48} />
+          <p className="mb-4">
+            დარწმუნებული ხართ, რომ გსურთ მივლინების მოთხოვნის დამტკიცება?
+          </p>
+          <div className="d-flex justify-content-center gap-2">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleConfirmAction}
+              startIcon={<BiCheck />}
+            >
+              დადასტურება
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmModal(false)}
+              startIcon={<BiX />}
+            >
+              გაუქმება
+            </Button>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleConfirmAction}
-          >
-            დადასტურება
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setConfirmModal(false)}
-          >
-            გაუქმება
-          </Button>
-        </ModalFooter>
       </Modal>
       <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
         <ModalHeader toggle={() => setRejectionModal(false)}>
+          <BiXCircle className="text-danger me-2" size={24} />
           უარყოფის მიზეზი
         </ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>
-              <Label for="rejectionComment">
+              <Label for="rejectionComment" className="fw-bold mb-2">
                 გთხოვთ მიუთითოთ უარყოფის მიზეზი
               </Label>
               <Input
@@ -308,27 +395,31 @@ const TripPageApprove = () => {
                 onChange={e => setRejectionComment(e.target.value)}
                 rows="4"
                 required
+                className="mb-3"
+                placeholder="შეიყვანეთ უარყოფის დეტალური მიზეზი..."
               />
             </FormGroup>
           </Form>
+          <div className="d-flex justify-content-end gap-2">
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleRejectionSubmit}
+              disabled={!rejectionComment.trim()}
+              startIcon={<BiXCircle />}
+            >
+              უარყოფა
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setRejectionModal(false)}
+              startIcon={<BiArrowBack />}
+            >
+              გაუქმება
+            </Button>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleRejectionSubmit}
-            disabled={!rejectionComment.trim()}
-          >
-            უარყოფა
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setRejectionModal(false)}
-          >
-            გაუქმება
-          </Button>
-        </ModalFooter>
       </Modal>
     </React.Fragment>
   )
