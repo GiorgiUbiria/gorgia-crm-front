@@ -13,7 +13,10 @@ import {
 import { useTranslation } from "react-i18next"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getPurchaseList, createPurchase } from "../../../../services/purchase"
-import { getDepartments, getPurchaseDepartments } from "../../../../services/auth"
+import {
+  getDepartments,
+  getPurchaseDepartments,
+} from "../../../../services/auth"
 import { toast } from "react-toastify"
 import "./index.css"
 import { useNavigate } from "react-router-dom"
@@ -194,7 +197,7 @@ const ProcurementPage = () => {
                         </div>
                       </Col>
                       <Col lg="6">
-                        <div className="mb-3">
+                        <div className="mb-4">
                           <Label for="short_period_reason">
                             თუ შესყიდვის ობიექტის მიღებისთვის ითხოვთ მცირე
                             ვადას, განმარტეთ მიზეზი:
