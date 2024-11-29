@@ -269,6 +269,14 @@ const TripPageApprove = () => {
         pending: "განხილვაში",
       },
     },
+    {
+      field: "trip_type",
+      label: "ტიპი",
+      valueLabels: {
+        regional: "რეგიონალური",
+        international: "საერთაშორისო",
+      },
+    },
   ]
 
   return (

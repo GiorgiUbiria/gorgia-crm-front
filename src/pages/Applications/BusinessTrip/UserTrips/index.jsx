@@ -22,10 +22,26 @@ const statusMap = {
   },
 }
 
+const typeMap = {
+  regional: {
+    label: "რეგიონალური",
+    icon: "bx-map",
+  },
+  international: {
+    label: "საერთაშორისო",
+    icon: "bx-globe",
+  },
+}
+
 const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
+}
+
+const TYPE_MAPPING = {
+  regional: "regional",
+  international: "international",
 }
 
 const UserTrip = () => {
@@ -78,6 +94,12 @@ const UserTrip = () => {
       {
         Header: "ტიპი",
         accessor: "trip_type",
+        Cell: ({ value }) => (
+          <span>
+            <i className={`bx ${typeMap[value].icon} me-2`}></i>
+            {typeMap[value].label}
+          </span>
+        ),
       },
       {
         Header: "სტატუსი",
@@ -121,7 +143,7 @@ const UserTrip = () => {
 
   const transformedTrips = trips.map(trip => ({
     id: trip.id,
-    trip_type: trip.trip_type,
+    trip_type: TYPE_MAPPING[trip.trip_type] || trip.trip_type,
     status: STATUS_MAPPING[trip.status] || trip.status,
     place_of_trip: trip.place_of_trip,
     purpose_of_trip: trip.purpose_of_trip,
@@ -144,6 +166,14 @@ const UserTrip = () => {
         approved: "დამტკიცებული",
         rejected: "უარყოფილი",
         pending: "განხილვაში",
+      },
+    },
+    {
+      field: "trip_type",
+      label: "ტიპი",
+      valueLabels: {
+        regional: "რეგიონალური",
+        international: "საერთაშორისო",
       },
     },
   ]
