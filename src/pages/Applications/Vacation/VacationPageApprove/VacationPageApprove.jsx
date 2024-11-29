@@ -37,18 +37,15 @@ const statusMap = {
 
 const typeMap = {
   paid: {
-    label: "გადახდილი",
-    icon: "bx-check-circle",
+    label: "ანაზღაურებადი",
     color: "#28a745",
   },
   unpaid: {
-    label: "გადაუხდელი",
-    icon: "bx-time",
-    color: "#FFA500",
+    label: "არანაზღაურებადი",
+    color: "#dc3545",
   },
   administrative: {
     label: "ადმინისტრაციული",
-    icon: "bx-time",
     color: "#FFA500",
   },
 }
@@ -155,19 +152,26 @@ const VacationPageApprove = () => {
       {
         Header: "შვებულების ტიპი",
         accessor: "type_of_vacations",
+        disableSortBy: true,
+        Cell: ({ value }) => {
+          const typeInfo = typeMap[value] || { label: value, color: "#757575" }
+          return <span style={{ color: typeInfo.color }}>{typeInfo.label}</span>
+        },
+      },
+      {
+        Header: "დაწყების თარიღი",
+        accessor: "start_date",
+        sortType: "basic",
         Cell: ({ value }) => (
-          <span
-            style={{
-              color: typeMap[value].color,
-            }}
-          >
-            {typeMap[value].label}
-          </span>
+          <div className="date-wrapper">
+            <i className="bx bx-calendar me-2"></i>
+            {new Date(value).toLocaleDateString()}
+          </div>
         ),
       },
       {
-        Header: "თარიღი",
-        accessor: "created_at",
+        Header: "დასრულების თარიღი",
+        accessor: "end_date",
         sortType: "basic",
         Cell: ({ value }) => (
           <div className="date-wrapper">
@@ -247,15 +251,15 @@ const VacationPageApprove = () => {
   const transformedVacations = vacations.map(vacation => ({
     id: vacation.id,
     status: STATUS_MAPPING[vacation.status] || vacation.status,
-    created_at: vacation.created_at,
-    user: {
-      name: vacation.performer_name,
-      id: vacation.id_code_or_personal_number,
-      position: vacation.service_description,
-      location: vacation.legal_or_actual_address,
-    },
+    start_date: vacation.start_date,
+    end_date: vacation.end_date,
+    // user: {
+    //   name: vacation.user.name + " " + vacation.user.sur_name,
+    // },
     comment: vacation.comment,
-    type_of_vacations: TYPE_MAPPING[vacation.type_of_vocations] || TYPE_MAPPING.paid,
+    type_of_vacations: vacation.type_of_vocations
+      ? TYPE_MAPPING[vacation.type_of_vocations] || vacation.type_of_vocations
+      : "უცნობი",
   }))
 
   const filterOptions = [
