@@ -16,7 +16,6 @@ import { getPurchaseList, createPurchase } from "../../../../services/purchase"
 import { getDepartments, getPurchaseDepartments } from "../../../../services/auth"
 import { toast } from "react-toastify"
 import "./index.css"
-import SuccessPopup from "components/SuccessPopup"
 import { useNavigate } from "react-router-dom"
 
 const ProcurementPage = () => {

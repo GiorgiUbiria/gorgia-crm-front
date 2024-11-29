@@ -11,10 +11,10 @@ import {
   ModalBody,
   ModalFooter,
 } from "reactstrap"
-import Breadcrumbs from "../../components/Common/Breadcrumb"
-import { getVacations } from "services/admin/vacation"
-import { updateVacationStatus } from "services/vacation"
-import MuiTable from "components/Mui/MuiTable"
+import Breadcrumbs from "../../../../components/Common/Breadcrumb"
+import { getVacations } from "../../../../services/admin/vacation"
+import { updateVacationStatus } from "../../../../services/vacation"
+import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
 
 const statusMap = {
