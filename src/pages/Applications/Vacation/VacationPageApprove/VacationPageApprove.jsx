@@ -62,6 +62,46 @@ const TYPE_MAPPING = {
   administrative: "administrative",
 }
 
+const ExpandedRowContent = ({ rowData }) => {
+  const details = [
+    { label: "შვებულების ტიპი", value: rowData.type_of_vocations },
+    { label: "მიზეზი", value: rowData.reason },
+    { label: "ხანგრძლივობა", value: `${rowData.duration} დღე` },
+    { label: "სამუშაო დღეები", value: [
+      rowData.monday === "yes" && "ორშაბათი",
+      rowData.tuesday === "yes" && "სამშაბათი",
+      rowData.wednesday === "yes" && "ოთხშაბათი",
+      rowData.thursday === "yes" && "ხუთშაბათი",
+      rowData.friday === "yes" && "პარასკევი",
+      rowData.saturday === "yes" && "შაბათი",
+      rowData.sunday === "yes" && "კვირა",
+    ].filter(Boolean).join(", ") },
+    { label: "დეპარტამენტის დამტკიცება", value: rowData.department_approval },
+    { label: "HR-ის დამტკიცება", value: rowData.hr_approval },
+    { label: "დეპარტამენტის დამტკიცების თარიღი", value: rowData.department_approval_at },
+    { label: "HR-ის დამტკიცების თარიღი", value: rowData.hr_approval_at },
+  ]
+
+  return (
+    <div className="p-3 bg-light rounded">
+      {rowData.comment && (
+        <div className="mb-3">
+          <span className="fw-bold text-danger">უარყოფის მიზეზი: </span>
+          <p className="mb-0">{rowData.comment}</p>
+        </div>
+      )}
+      <div className="row g-2">
+        {details.map((detail, index) => (
+          <div key={index} className="col-md-6">
+            <span className="fw-bold">{detail.label}: </span>
+            <span>{detail.value || "არ არის მითითებული"}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const VacationPageApprove = () => {
   document.title = "შვებულების ვიზირება | Gorgia LLC"
 
@@ -283,6 +323,8 @@ const VacationPageApprove = () => {
     },
   ]
 
+  const expandedRow = row => <ExpandedRowContent rowData={row} />
+
   return (
     <React.Fragment>
       <div className="page-content mb-4">
@@ -303,7 +345,7 @@ const VacationPageApprove = () => {
               enableSearch={true}
               searchableFields={["user.name", "user.id"]}
               initialPageSize={10}
-              renderRowDetails={row => <div>{row.comment}</div>}
+              renderRowDetails={expandedRow}
             />
           </Row>
         </div>
