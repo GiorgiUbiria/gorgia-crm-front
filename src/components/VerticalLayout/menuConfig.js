@@ -26,10 +26,11 @@ export const getMenuConfig = (t, isAdmin) =>
       label: t("მთავარი გვერდი"),
     },
     isAdmin && {
-      to: "/admin/dashboard",
+      key: "admin",
       icon: BsGear,
       label: t("სამართავი პანელი"),
       submenu: [
+        { to: "/admin/dashboard", label: t("მთავარი") },
         { to: "/admin/approvals", label: t("ვიზირება") },
         { to: "/admin/visitors", label: t("ვიზიტორები") },
         { to: "/admin/payment-monitoring", label: t("გადახდების მონიტორინგი") },
@@ -56,8 +57,14 @@ export const getMenuConfig = (t, isAdmin) =>
           label: t("შიდა შესყიდვები"),
           submenu: [
             { to: "/applications/purchases/new", label: t("დამატება") },
-            isAdmin && { to: "/applications/purchases/approve", label: t("ვიზირება") },
-            { to: "/applications/purchases/my-requests", label: t("გაგზავნილი") },
+            isAdmin && {
+              to: "/applications/purchases/approve",
+              label: t("ვიზირება"),
+            },
+            {
+              to: "/applications/purchases/my-requests",
+              label: t("გაგზავნილი"),
+            },
           ],
         },
         {
@@ -65,8 +72,14 @@ export const getMenuConfig = (t, isAdmin) =>
           label: t("შვებულება"),
           submenu: [
             { to: "/applications/vacation/new", label: t("დამატება") },
-            isAdmin && { to: "/applications/vacation/approve", label: t("ვიზირება") },
-            { to: "/applications/vacation/my-requests", label: t("გაგზავნილი") },
+            isAdmin && {
+              to: "/applications/vacation/approve",
+              label: t("ვიზირება"),
+            },
+            {
+              to: "/applications/vacation/my-requests",
+              label: t("გაგზავნილი"),
+            },
           ],
         },
         {
@@ -74,8 +87,14 @@ export const getMenuConfig = (t, isAdmin) =>
           label: t("მივლინება"),
           submenu: [
             { to: "/applications/business-trip/new", label: t("დამატება") },
-            isAdmin && { to: "/applications/business-trip/approve", label: t("ვიზირება") },
-            { to: "/applications/business-trip/my-requests", label: t("გაგზავნილი") },
+            isAdmin && {
+              to: "/applications/business-trip/approve",
+              label: t("ვიზირება"),
+            },
+            {
+              to: "/applications/business-trip/my-requests",
+              label: t("გაგზავნილი"),
+            },
           ],
         },
       ],
