@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col } from "reactstrap"
 
-import Breadcrumbs from "../../components/Common/Breadcrumb"
-import { getPurchaseList } from "services/purchase"
-import MuiTable from "../../components/Mui/MuiTable"
+import Breadcrumbs from "../../../../components/Common/Breadcrumb"
+import { getPurchaseList } from "../../../../services/purchase"
+import MuiTable from "../../../../components/Mui/MuiTable"
 
 const statusMap = {
   pending: {

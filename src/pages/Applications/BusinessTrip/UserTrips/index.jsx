@@ -1,20 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react"
-import {
-  Row,
-  Col,
-  Input,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Form,
-  FormGroup,
-  Label,
-} from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { getTripList, updateTripStatus } from "services/trip"
-import MuiTable from "components/Mui/MuiTable"
-import Button from "@mui/material/Button"
+import { Row, Col } from "reactstrap"
+import Breadcrumbs from "components/Common/Breadcrumb"
+import { getTripList } from "../../../../services/trip"
+import MuiTable from "../../../../components/Mui/MuiTable"
 
 const statusMap = {
   pending: {
@@ -166,7 +154,10 @@ const UserTrip = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="განცხადებები" breadcrumbItem="ჩემი მივლინებები" />
+              <Breadcrumbs
+                title="განცხადებები"
+                breadcrumbItem="ჩემი მივლინებები"
+              />
             </Col>
           </Row>
           <Row>

@@ -21,9 +21,9 @@ import {
   getApprovalVacations,
 } from "../../services/admin/vacation"
 import HrPageApprove from "pages/HrDocuments/HrPageApprove"
-import VacationPageApprove from "pages/VacationPageApprove/VacationPageApprove"
+import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
 import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
-import TripPageApprove from "pages/TripPageApprove/TripPageApprove"
+import TripPageApprove from "pages/Applications/BusinessTrip/TripPageApprove/TripPageApprove"
 import LawyerPageApprove from "pages/LawyerPageApprove"
 
 const HeadPage = () => {

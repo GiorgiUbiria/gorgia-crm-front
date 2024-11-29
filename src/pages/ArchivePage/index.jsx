@@ -18,8 +18,8 @@ import classnames from "classnames"
 
 import LawyerPageArchive from "pages/LawyerPageArchive/LawyerPageArchive"
 import HrPage from "pages/HrDocuments/HrPage/index"
-import UserProcurement from "pages/UserProcurements"
-import UserVocation from "pages/UserVocations"
+import UserProcurement from "pages/Applications/InternalProcurement/UserProcurements"
+import UserVocation from "pages/Applications/Vacation/UserVocations"
 import UserTrip from "pages/Applications/BusinessTrip/UserTrips"
 
 
