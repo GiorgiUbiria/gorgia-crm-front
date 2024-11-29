@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 
 export const procurementSchema = Yup.object().shape({
-  department_purchase_id: Yup.string()
+  department_id: Yup.string()
     .required('დეპარტამენტის არჩევა სავალდებულოა'),
     
   objective: Yup.string()
