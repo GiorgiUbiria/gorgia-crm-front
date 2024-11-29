@@ -5,7 +5,15 @@ export const getPurchaseList = async () => {
 }
 
 export const createPurchase = async (data) => {
-    return defaultInstance.post('/api/internal-purchase/create', data)
+    console.log('createPurchase called with:', data); // Debug log
+    try {
+        const response = await defaultInstance.post('/api/internal-purchase/create', data);
+        console.log('createPurchase response:', response); // Debug log
+        return response.data;
+    } catch (error) {
+        console.error('createPurchase error:', error); // Debug log
+        throw error;
+    }
 }
   
 export const getPurchase = async (data) => {
