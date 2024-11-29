@@ -183,13 +183,13 @@ const UserProcurement = () => {
     },
     objective: purchase.objective,
     reason: purchase.reason,
-    department: purchase.department?.name || "N/A",
+    department: purchase.department?.name || "არ არის მითითებული",
     delivery_address: purchase.delivery_address,
     reviewer: purchase.reviewed_by
       ? `${purchase.reviewed_by.name || ""} ${
           purchase.reviewed_by.sur_name || ""
         }`
-      : "N/A",
+      : "არ არის მითითებული",
     comment: purchase.comment,
     deadline: purchase.deadline,
     short_period_reason: purchase.short_period_reason,
