@@ -13,16 +13,14 @@ import {
 import { useTranslation } from 'react-i18next';
 import Breadcrumbs from '../../../../components/Common/Breadcrumb';
 import { createTrip, getTripList } from '../../../../services/trip';
-import { toast } from 'react-toastify';
 import './index.css';
 import SuccessPopup from 'components/SuccessPopup';
 
 const BusinessPage = () => {
-  // Meta title
   document.title = 'მივლინების მოთხოვნა | Gorgia LLC';
 
   const { t } = useTranslation();
-  const [errors, setErrors] = useState({}); // State for validation errors
+  const [errors, setErrors] = useState({});
   const [list, setList] = useState([]);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
 
