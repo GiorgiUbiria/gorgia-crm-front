@@ -20,9 +20,9 @@ import {
   approveVacation,
   getApprovalVacations,
 } from "../../services/admin/vacation"
-import HrPageApprove from "pages/HrPageApprove"
+import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import VacationPageApprove from "pages/VacationPageApprove/VacationPageApprove"
-import PurchasePageApprove from "pages/PurchasePageApprove/PurchasePageApprove"
+import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
 import TripPageApprove from "pages/TripPageApprove/TripPageApprove"
 import LawyerPageApprove from "pages/LawyerPageApprove"
 

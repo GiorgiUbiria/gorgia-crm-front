@@ -17,10 +17,10 @@ import {
 import classnames from "classnames"
 
 import LawyerPageArchive from "pages/LawyerPageArchive/LawyerPageArchive"
-import HrPage from "pages/HrPage/index"
+import HrPage from "pages/HrDocuments/HrPage/index"
 import UserProcurement from "pages/UserProcurements"
 import UserVocation from "pages/UserVocations"
-import UserTrip from "pages/UserTrips"
+import UserTrip from "pages/Applications/BusinessTrip/UserTrips"
 
 
 const ArchivePage = () => {

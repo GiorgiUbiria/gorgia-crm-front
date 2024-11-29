@@ -8,18 +8,19 @@ import Register from "../pages/Authentication/Register"
 import ForgetPwd from "../pages/Authentication/ForgetPassword"
 import Dashboard from "../pages/Dashboard/index"
 import ProfilePage from "pages/ProfilePage"
-import BusinessPage from "pages/BusinessPage"
+import BusinessPage from "pages/Applications/BusinessTrip/BusinessPage"
 import VacationPage from "pages/VacationPage"
-import ProcurementPage from "pages/ProcurementPage"
+import ProcurementPage from "pages/Applications/InternalProcurement/ProcurementPage"
 import HeadPage from "pages/HeadPage"
-import HrPage from "pages/HrPage"
+import HrPage from "pages/HrDocuments/HrPage"
+import HrPageSent from "pages/HrDocuments/HrPageSent"
 import AdminPage from "pages/AdminPage"
 import NotesPage from "pages/NotesPage"
 import NotesEditor from "pages/NotesEditor"
 import LawyerPage from "pages/LawyerPage"
 import LawyerPageApprove from "pages/LawyerPageApprove"
 import LawyerPageArchive from "pages/LawyerPageArchive/LawyerPageArchive"
-import HrPageApprove from "pages/HrPageApprove"
+import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import TaskList from "../pages/JobPages/JobList"
 import VisitorsTraffic from "pages/VisitorsTraffic/VisitorsTraffic"
 import ArchivePage from "../pages/ArchivePage"
@@ -28,11 +29,11 @@ import LeadsPage from "pages/LeadsPage/LeadsPage"
 import VipLeadsPage from "pages/VipLeadsPage/VipLeadsPage"
 import VacationPageApprove from "pages/VacationPageApprove/VacationPageApprove"
 import TripPageApprove from "pages/TripPageApprove/TripPageApprove"
-import PurchasePageApprove from "pages/PurchasePageApprove/PurchasePageApprove"
+import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
 import UserAgreements from "pages/UserAgreements"
 import UserProcurement from "pages/UserProcurements"
 import UserVocation from "pages/UserVocations"
-import UserTrip from "pages/UserTrips"
+import UserTrip from "pages/Applications/BusinessTrip/UserTrips"
 import VipLeadDetailPage from "pages/VipLeadsPage/VipLeadDetailPage"
 import JobDetails from "pages/JobPages/JobDetails"
 import FarmWork from "pages/FarmWork"
@@ -87,6 +88,7 @@ const authProtectedRoutes = [
   // HR Documents
   { path: "/hr/documents", component: <HrPage /> },
   { path: "/hr/documents/approve", component: <HrPageApprove /> },
+  { path: "/hr/documents/sent", component: <HrPageSent /> },
 
   // Legal Documents
   { path: "/legal/contracts/new", component: <LawyerPage /> },
@@ -113,9 +115,6 @@ const authProtectedRoutes = [
   { path: "/tools/notes", component: <NotesPage /> },
   { path: "/tools/notes/:id", component: <NotesEditor /> },
   { path: "/tools/daily-results", component: <Dailies /> },
-
-  // Archive
-  { path: "/archive", component: <ArchivePage /> },
 ]
 
 const publicRoutes = [

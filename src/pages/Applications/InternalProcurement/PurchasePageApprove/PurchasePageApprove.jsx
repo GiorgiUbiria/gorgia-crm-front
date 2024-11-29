@@ -11,7 +11,7 @@ import {
   FormGroup,
   Label,
 } from "reactstrap"
-import Breadcrumbs from "../../components/Common/Breadcrumb"
+import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getPurchaseList, updatePurchaseStatus } from "services/purchase"
 import MuiTable from "components/Mui/MuiTable"
 import Button from "@mui/material/Button"

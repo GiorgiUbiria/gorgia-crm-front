@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react"
-import Breadcrumbs from "../../components/Common/Breadcrumb"
+import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { getHrDocuments, updateHrDocumentStatus } from "services/hrDocument"
-import MuiTable from "../../components/Mui/MuiTable"
+import MuiTable from "../../../components/Mui/MuiTable"
 import {
   Button,
   Dialog,
@@ -253,7 +253,10 @@ const HrPageApprove = () => {
         <div className="container-fluid">
           <Row className="mb-3">
             <Col xl={12}>
-              <Breadcrumbs title="HR დოკუმენტები" breadcrumbItem="დოკუმენტების ვიზირება" />
+              <Breadcrumbs
+                title="HR დოკუმენტები"
+                breadcrumbItem="დოკუმენტების ვიზირება"
+              />
             </Col>
           </Row>
           <MuiTable
