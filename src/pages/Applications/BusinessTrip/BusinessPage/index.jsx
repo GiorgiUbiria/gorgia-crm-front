@@ -10,16 +10,16 @@ import {
   Row,
   Button,
 } from "reactstrap"
-import { useTranslation } from "react-i18next"
 import Breadcrumbs from "components/Common/Breadcrumb"
-import { createTrip, getTripList } from "../../../../services/trip"
+import { createTrip } from "../../../../services/trip"
 import "./index.css"
-import SuccessPopup from "components/SuccessPopup"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { useNavigate } from "react-router-dom"
 
 const BusinessPage = () => {
   document.title = "მივლინების მოთხოვნა | Gorgia LLC"
-
-  const { t } = useTranslation()
+  const navigate = useNavigate()
   const [errors, setErrors] = useState({})
   const [list, setList] = useState([])
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
@@ -42,19 +42,6 @@ const BusinessPage = () => {
     business_trip_arrangement: "",
     expected_result_business_trip: "",
   })
-
-  useEffect(() => {
-    const fetchList = async () => {
-      try {
-        const res = await getTripList()
-        setList(res.data.business)
-      } catch (err) {
-        console.log(err)
-      }
-    }
-
-    fetchList()
-  }, [])
 
   const handleInputChange = e => {
     const { name, value } = e.target
@@ -102,7 +89,6 @@ const BusinessPage = () => {
     }))
   }
 
-  // Function to validate all form data before submission
   const validateForm = () => {
     const newErrors = {}
 
@@ -122,22 +108,31 @@ const BusinessPage = () => {
     try {
       const res = await createTrip(formData)
       if (res) {
-        setIsSuccessModalOpen(true)
+        toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        })
+
+        setTimeout(() => {
+          navigate("/applications/business-trip/my-requests")
+        }, 1000)
       }
     } catch (err) {
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.data?.message ||
+        "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+      })
       console.log(err)
     }
-  }
-
-  const calculateDuration = (startDate, endDate) => {
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    const diffTime = Math.abs(end - start)
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    if (diffDays === 0) {
-      return 1
-    }
-    return diffDays
   }
 
   return (
@@ -391,7 +386,7 @@ const BusinessPage = () => {
                       }}
                     >
                       <Button type="submit" color="primary">
-                        {t("გაგზავნა")}
+                        გაგზავნა
                       </Button>
                     </div>
                   </Form>
@@ -401,7 +396,7 @@ const BusinessPage = () => {
           </Row>
         </Container>
       </div>
-      {isSuccessModalOpen && <SuccessPopup />}
+      <ToastContainer />
     </React.Fragment>
   )
 }
