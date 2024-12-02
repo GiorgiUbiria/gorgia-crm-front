@@ -7,8 +7,6 @@ import {
   Form,
   Input,
   Label,
-  NavItem,
-  NavLink,
   Row,
   TabContent,
   TabPane,
@@ -24,39 +22,29 @@ import "../../assets/scss/custom/pages/_lawyer.scss"
 const LawyerPage = () => {
   document.title = "ხელშეკრულების მოთხოვნა | Gorgia LLC"
 
-  const [activeTab, setactiveTab] = useState(1)
+  const [activeTab, setActiveTab] = useState(1)
   const [passedSteps, setPassedSteps] = useState([1])
   const [errors, setErrors] = useState({})
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [type, setType] = useState("იურიდიული დეპარტამენტი")
-
   const [formData, setFormData] = useState({
-    user_id: "",
-    performer_name: "",
-    id_code_or_personal_number: "",
-    legal_or_actual_address: "",
-    bank_account_details: "",
-    representative_name: "",
-    contact_info: "",
-    contract_start_period: new Date().toISOString().split("T")[0],
-    service_description: "",
-    service_price: "",
-    service_location: "",
-    contract_duration: "",
-    contract_responsible_person: "",
-    created_at: "",
-    updated_at: "",
-    status: "",
-    limit_type: "",
-    limit_amount: "",
-    consignment_term: "",
-    place_time_of_delivery: "",
+    contragent_name: "",
+    contragent_id: "",
+    contragent_address: "",
+    contragent_phone_number: "",
+    contragent_email: "",
+    contragent_director: "",
+    contragent_power_of_attorney: "",
+    contragent_power_of_attorney_phone_number: "",
+    conscription_term: "",
+    product_delivery_address: "",
     product_cost: "",
-    payment_term: "",
-    means_of_securing_obligation: "",
-    notary_agreement: false,
-    initiator_name_signature: "",
-    manager_name_signature: "",
+    product_payment_term: "",
+    bank_account: "",
+    buyer_name: "",
+    buyer_surname: "",
+    buyer_signature: "",
+    director_name: "",
+    director_surname: "",
+    director_signature: "",
   })
 
   const handleInputChange = e => {
@@ -65,186 +53,202 @@ const LawyerPage = () => {
       ...prevData,
       [id]: value,
     }))
-
     validateField(id, value)
   }
 
   const validateField = (field, value) => {
     let errorMsg = ""
-
-    try {
-      switch (field) {
-        case "performer_name":
-          if (!value) errorMsg = "შემსრულებლის სრული დასახელება აუცილებელია"
-          break
-        case "id_code_or_personal_number":
-          if (!value)
-            errorMsg = "საიდენტიფიკაციო კოდი ან პირადი ნომერი აუცილებელია"
-          else if (!/^\d{9,11}$/.test(value))
-            errorMsg = "არასწორი ფორმატი. უნდა შეიცავდეს 9-11 ციფრს"
-          break
-        case "legal_or_actual_address":
-          if (!value)
-            errorMsg = "იურიდიული მისამართი / ფაქტიური მისამართი აუცილებელია"
-          break
-        case "bank_account_details":
-          if (!value) errorMsg = "საბანკო რეკვიზიტები აუცილებელია"
-          break
-        case "contact_info":
-          if (!value)
-            errorMsg = "საკონტაქტო ინფორმაცია (ტელეფონი, ელ.ფოსტა) აუცილებელია"
-          break
-        case "contract_start_period":
-          if (!value)
-            errorMsg =
-              "ხელშეკრულების მოქმედების ვადის ათვლის პერიოდი აუცილებელია"
-          break
-        case "initiator_name_signature":
-          if (!value) errorMsg = "ინიციატორის სახელი და გვარი აუცილებელია"
-          break
-        case "manager_name_signature":
-          if (!value) errorMsg = "ხელმძღვანელის სახელი და გვარი აუცილებელია"
-          break
-        default:
-          break
-      }
-
-      setErrors(prevErrors => ({
-        ...prevErrors,
-        [field]: errorMsg,
-      }))
-
-      return !errorMsg
-    } catch (error) {
-      toast.error("შეცდომა ველის ვალიდაციისას")
-      return false
+    switch (field) {
+      case "contragent_name":
+        if (!value) errorMsg = "კონტრაგენტის სრული დასახელება აუცილებელია"
+        break
+      case "contragent_id":
+        if (!value) errorMsg = "საიდენტიფიკაციო კოდი აუცილებელია"
+        else if (!/^\d{9,11}$/.test(value))
+          errorMsg = "არასწორი ფორმატი. უნდა შეიცავდეს 9-11 ციფრს"
+        break
+      case "contragent_address":
+        if (!value) errorMsg = "მისამართი აუცილებელია"
+        break
+      case "contragent_phone_number":
+        if (!value) errorMsg = "ტელეფონის ნომერი აუცილებელია"
+        else if (!/^[0-9+\-\s()]*$/.test(value))
+          errorMsg = "არასწორი ტელეფონის ნომრის ფორმატი"
+        break
+      case "contragent_email":
+        if (!value) errorMsg = "ელ.ფოსტა აუცილებელია"
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          errorMsg = "არასწორი ელ.ფოსტის ფორმატი"
+        break
+      case "contragent_director":
+        if (!value) errorMsg = "დირექტორის სახელი აუცილებელია"
+        break
+      case "contragent_power_of_attorney":
+        if (!value) errorMsg = "მინდობილობა აუცილებელია"
+        break
+      case "contragent_power_of_attorney_phone_number":
+        if (!value) errorMsg = "მინდობილი პირის ტელეფონის ნომერი აუცილებელია"
+        else if (!/^[0-9+\-\s()]*$/.test(value))
+          errorMsg = "არასწორი ტელეფონის ნომრის ფორმატი"
+        break
+      case "conscription_term":
+        if (!value) errorMsg = "კონსიგნაციის ვადა აუცილებელია"
+        break
+      case "product_delivery_address":
+        if (!value) errorMsg = "პროდუქტის მიწოდების ადგილი აუცილებელია"
+        break
+      case "product_cost":
+        if (!value) errorMsg = "პროდუქტის ღირებულება აუცილებელია"
+        else if (isNaN(value) || Number(value) <= 0)
+          errorMsg = "გთხოვთ შეიყვანოთ დადებითი რიცხვი"
+        break
+      case "product_payment_term":
+        if (!value) errorMsg = "გადახდის ვადა აუცილებელია"
+        break
+      case "bank_account":
+        if (!value) errorMsg = "საბანკო რეკვიზიტები აუცილებელია"
+        break
+      case "buyer_name":
+        if (!value) errorMsg = "მყიდველის სახელი აუცილებელია"
+        break
+      case "buyer_surname":
+        if (!value) errorMsg = "მყიდველის გვარი აუცილებელია"
+        break
+      case "buyer_signature":
+        if (!value) errorMsg = "მყიდველის ხელმოწერა აუცილებელია"
+        break
+      case "director_name":
+        if (!value) errorMsg = "დირექტორის სახელი აუცილებელია"
+        break
+      case "director_surname":
+        if (!value) errorMsg = "დირექტორის გვარი აუცილებელია"
+        break
+      case "director_signature":
+        if (!value) errorMsg = "დირექტორის ხელმოწერა აუცილებელია"
+        break
     }
+
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [field]: errorMsg,
+    }))
+
+    return !errorMsg
   }
 
   const validateForm = () => {
-    try {
-      let isValid = true
-      console.log(formData)
-
-      Object.keys(formData).forEach(field => {
-        if (!validateField(field, formData[field])) {
-          isValid = false
-        }
-      })
-
-      if (!isValid) {
-        console.log("Errors:", errors)
-        toast.error("გთხოვთ შეავსოთ ყველა სავალდებულო ველი")
+    let isValid = true
+    Object.keys(formData).forEach(field => {
+      if (!validateField(field, formData[field])) {
+        isValid = false
       }
+    })
 
-      return isValid
-    } catch (error) {
-      toast.error("შეცდომა ფორმის ვალიდაციისას")
-      return false
+    if (!isValid) {
+      toast.error("გთხოვთ შეავსოთ ყველა სავალდებულო ველი")
     }
+
+    return isValid
   }
 
   const handleSubmit = async () => {
-    try {
-      if (!validateForm()) {
-        return
+    if (!validateForm()) {
+      return
+    }
+
+    toast.info("მიმდინარეობს დამუშავება...", {
+      autoClose: false,
+      toastId: "submitProgress",
+    })
+
+    const formDataToSend = new FormData()
+    Object.keys(formData).forEach(key => {
+      if (key === "notary_agreement") {
+        formDataToSend.append("notary_agreement", formData[key] ? 1 : 0)
+      } else if (formData[key] !== "") {
+        formDataToSend.append(key, formData[key])
       }
+    })
 
-      toast.info("მიმდინარეობს დამუშავება...", {
-        autoClose: false,
-        toastId: "submitProgress",
-      })
+    formDataToSend.append("status", "pending")
+    formDataToSend.append("created_at", new Date().toISOString())
+    formDataToSend.append("updated_at", new Date().toISOString())
 
-      const formDataToSend = new FormData()
-
-      Object.keys(formData).forEach(key => {
-        if (key === "notary_agreement") {
-          formDataToSend.append("notary_agreement", formData[key] ? 1 : 0)
-        } else if (formData[key] !== "") {
-          formDataToSend.append(key, formData[key])
-        }
-      })
-
-      formDataToSend.append("status", "pending")
-      formDataToSend.append("created_at", new Date().toISOString())
-      formDataToSend.append("updated_at", new Date().toISOString())
-
+    try {
       const response = await createAgreement(formDataToSend)
-
       toast.dismiss("submitProgress")
 
       if (response) {
         toast.success("ხელშეკრულება წარმატებით შეიქმნა")
-
         setFormData({
-          user_id: "",
-          performer_name: "",
-          id_code_or_personal_number: "",
-          legal_or_actual_address: "",
-          bank_account_details: "",
-          representative_name: "",
-          contact_info: "",
-          contract_start_period: new Date().toISOString().split("T")[0],
-          service_description: "",
-          service_price: "",
-          service_location: "",
-          limit_type: "",
-          limit_amount: "",
-          consignment_term: "",
-          place_time_of_delivery: "",
+          contragent_name: "",
+          contragent_id: "",
+          contragent_address: "",
+          contragent_phone_number: "",
+          contragent_email: "",
+          contragent_director: "",
+          contragent_power_of_attorney: "",
+          contragent_power_of_attorney_phone_number: "",
+          conscription_term: "",
+          product_delivery_address: "",
           product_cost: "",
-          payment_term: "",
-          means_of_securing_obligation: "",
-          notary_agreement: false,
-          initiator_name_signature: "",
-          manager_name_signature: "",
+          product_payment_term: "",
+          bank_account: "",
+          buyer_name: "",
+          buyer_surname: "",
+          buyer_signature: "",
+          director_name: "",
+          director_surname: "",
+          director_signature: "",
         })
-        setSelectedFile(null)
-        setactiveTab(4)
+        setActiveTab(4)
         setPassedSteps(prevSteps => [...prevSteps, 4])
         setErrors({})
       }
     } catch (error) {
       toast.dismiss("submitProgress")
-
-      if (error.response) {
-        switch (error.response.status) {
-          case 400:
-            toast.error(
-              "არასწორი მოაცემები. გთხოვთ შეამოწმოთ შეყვანილი ინფორმაცია"
-            )
-            break
-          case 401:
-            toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
-            break
-          case 422:
-            const validationErrors = error.response.data.errors
-            Object.keys(validationErrors).forEach(key => {
-              toast.error(validationErrors[key][0])
-            })
-            break
-          case 500:
-            toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
-            break
-          default:
-            toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
-        }
-      } else if (error.request) {
-        toast.error("კავშირის შეცდომა. გთხოვთ შეამოწმოთ ინტერნეტ კავშირი")
-      } else {
-        toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
-      }
+      handleError(error)
     }
   }
 
-  function toggleTab(tab) {
+  const handleError = error => {
+    if (error.response) {
+      switch (error.response.status) {
+        case 400:
+          toast.error(
+            "არასწორი მოაცემები. გთხოვთ შეამოწმოთ შეყვანილი ინფორმაცია"
+          )
+          break
+        case 401:
+          toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
+          break
+        case 422:
+          const validationErrors = error.response.data.errors
+          Object.keys(validationErrors).forEach(key => {
+            toast.error(validationErrors[key][0])
+          })
+          break
+        case 500:
+          toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+          break
+        default:
+          toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+      }
+    } else if (error.request) {
+      toast.error("კავშირის შეცდომა. გთხოვთ შეამოწმოთ ინტერნეტ კავშირი")
+    } else {
+      toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+    }
+  }
+
+  const toggleTab = tab => {
     if (activeTab !== tab) {
       if (tab === 4 && activeTab === 3) {
         handleSubmit()
       } else {
-        var modifiedSteps = [...passedSteps, tab]
+        const modifiedSteps = [...passedSteps, tab]
         if (tab >= 1 && tab <= 4) {
-          setactiveTab(tab)
+          setActiveTab(tab)
           setPassedSteps(modifiedSteps)
         }
       }
@@ -272,9 +276,9 @@ const LawyerPage = () => {
             breadcrumbItem="ხელშეკრულების მოთხოვნა"
           />
 
-          <Card>
+          <Card className="shadow-lg border-0 rounded-lg mt-5">
             <CardBody>
-              <div className="progress-steps">
+              <div className="progress-steps mb-4">
                 {[
                   { label: "ძირითადი ინფორმაცია", icon: "bx-user" },
                   { label: "ფინანსური დეტალები", icon: "bx-money" },
@@ -288,7 +292,7 @@ const LawyerPage = () => {
                       disabled: !passedSteps.includes(index + 1),
                     })}
                     onClick={() =>
-                      passedSteps.includes(index + 1) && setactiveTab(index + 1)
+                      passedSteps.includes(index + 1) && setActiveTab(index + 1)
                     }
                   >
                     <div className="step-number">
@@ -306,94 +310,46 @@ const LawyerPage = () => {
                       <Row>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="performer_name">
+                            <Label for="contragent_name">
                               კონტრაგენტის სრული დასახელება
                             </Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.performer_name,
+                                "is-invalid": errors.contragent_name,
                               })}
-                              id="performer_name"
-                              value={formData.performer_name}
+                              id="contragent_name"
+                              value={formData.contragent_name}
                               onChange={handleInputChange}
                               placeholder="ჩაწერეთ კონტრაგენტის სრული დასახელება..."
                             />
-                            {errors.performer_name && (
+                            {errors.contragent_name && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.performer_name}
+                                {errors.contragent_name}
                               </div>
                             )}
                           </div>
                         </Col>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="id_code_or_personal_number">
-                              საიდენტიფიკაციო კოდი ან პირადი ნომერი
+                            <Label for="contragent_id">
+                              კონტრაგენტის საიდენტიფიკაციო კოდი/პირადი ნომერი
                             </Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.id_code_or_personal_number,
+                                "is-invalid": errors.contragent_id,
                               })}
-                              id="id_code_or_personal_number"
-                              value={formData.id_code_or_personal_number}
+                              id="contragent_id"
+                              value={formData.contragent_id}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ საიდენტიფიკაციო კოდი ან პირადი ნომერი..."
+                              placeholder="ჩაწერეთ საიდენტიფიკაციო კოდი..."
                             />
-                            {errors.id_code_or_personal_number && (
+                            {errors.contragent_id && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.id_code_or_personal_number}
-                              </div>
-                            )}
-                          </div>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col lg="6">
-                          <div className="mb-3">
-                            <Label for="legal_or_actual_address">
-                              იურიდიული მისამართი / ფაქტიური მისამართი
-                            </Label>
-                            <Input
-                              type="text"
-                              className={classnames("form-control", {
-                                "is-invalid": errors.legal_or_actual_address,
-                              })}
-                              id="legal_or_actual_address"
-                              value={formData.legal_or_actual_address}
-                              onChange={handleInputChange}
-                              placeholder="ჩაწერეთ იურიდიული ან ფაქტიური მისამართი..."
-                            />
-                            {errors.legal_or_actual_address && (
-                              <div className="form-error">
-                                <i className="bx bx-error-circle"></i>
-                                {errors.legal_or_actual_address}
-                              </div>
-                            )}
-                          </div>
-                        </Col>
-                        <Col lg="6">
-                          <div className="mb-3">
-                            <Label for="contact_info">
-                              საკონტაქტო ინფორმაცია (ტელეფონი, ელ.ფოსტა)
-                            </Label>
-                            <Input
-                              type="text"
-                              className={classnames("form-control", {
-                                "is-invalid": errors.contact_info,
-                              })}
-                              id="contact_info"
-                              value={formData.contact_info}
-                              onChange={handleInputChange}
-                              placeholder="ჩაწერეთ საკონტაქტო ინფორმაცია..."
-                            />
-                            {errors.contact_info && (
-                              <div className="form-error">
-                                <i className="bx bx-error-circle"></i>
-                                {errors.contact_info}
+                                {errors.contragent_id}
                               </div>
                             )}
                           </div>
@@ -402,23 +358,94 @@ const LawyerPage = () => {
                       <Row>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="representative_name">
-                              დირექტორი ან წარმომადგენელი
+                            <Label for="contragent_address">
+                              კონტრაგენტის მისამართი
                             </Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.representative_name,
+                                "is-invalid": errors.contragent_address,
                               })}
-                              id="representative_name"
-                              value={formData.representative_name}
+                              id="contragent_address"
+                              value={formData.contragent_address}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ დირექტორის ან წარმომადგენლის სახელი..."
+                              placeholder="ჩაწერეთ მისამართი..."
                             />
-                            {errors.representative_name && (
+                            {errors.contragent_address && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.representative_name}
+                                {errors.contragent_address}
+                              </div>
+                            )}
+                          </div>
+                        </Col>
+                        <Col lg="6">
+                          <div className="mb-3">
+                            <Label for="contragent_phone_number">
+                              კონტრაგენტის ტელეფონის ნომერი
+                            </Label>
+                            <Input
+                              type="text"
+                              className={classnames("form-control", {
+                                "is-invalid": errors.contragent_phone_number,
+                              })}
+                              id="contragent_phone_number"
+                              value={formData.contragent_phone_number}
+                              onChange={handleInputChange}
+                              placeholder="ჩაწერეთ ტელეფონის ნომერი..."
+                            />
+                            {errors.contragent_phone_number && (
+                              <div className="form-error">
+                                <i className="bx bx-error-circle"></i>
+                                {errors.contragent_phone_number}
+                              </div>
+                            )}
+                          </div>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col lg="6">
+                          <div className="mb-3">
+                            <Label for="contragent_email">
+                              კონტრაგენტის ელ.ფოსტა
+                            </Label>
+                            <Input
+                              type="text"
+                              className={classnames("form-control", {
+                                "is-invalid": errors.contragent_email,
+                              })}
+                              id="contragent_email"
+                              value={formData.contragent_email}
+                              onChange={handleInputChange}
+                              placeholder="ჩაწერეთ ელ.ფოსტა..."
+                            />
+                            {errors.contragent_email && (
+                              <div className="form-error">
+                                <i className="bx bx-error-circle"></i>
+                                {errors.contragent_email}
+                              </div>
+                            )}
+                          </div>
+                        </Col>
+                        <Col lg="6">
+                          <div className="mb-3">
+                            <Label for="contragent_director">
+                              კონტრაგენტის დირექტორი
+                            </Label>
+                            <Input
+                              type="text"
+                              className={classnames("form-control", {
+                                "is-invalid": errors.contragent_director,
+                              })}
+                              id="contragent_director"
+                              value={formData.contragent_director}
+                              onChange={handleInputChange}
+                              placeholder="ჩაწერეთ დირექტორის სახელი..."
+                            />
+                            {errors.contragent_director && (
+                              <div className="form-error">
+                                <i className="bx bx-error-circle"></i>
+                                {errors.contragent_director}
                               </div>
                             )}
                           </div>
@@ -431,46 +458,46 @@ const LawyerPage = () => {
                       <Row>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="consignment_term">
+                            <Label for="conscription_term">
                               კონსიგნაციის ვადა
                             </Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.consignment_term,
+                                "is-invalid": errors.conscription_term,
                               })}
-                              id="consignment_term"
-                              value={formData.consignment_term}
+                              id="conscription_term"
+                              value={formData.conscription_term}
                               onChange={handleInputChange}
                               placeholder="ჩაწერეთ კონსიგნაციის ვადა..."
                             />
-                            {errors.consignment_term && (
+                            {errors.conscription_term && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.consignment_term}
+                                {errors.conscription_term}
                               </div>
                             )}
                           </div>
                         </Col>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="place_time_of_delivery">
-                              მიწოდების ადგილი/დრო
+                            <Label for="product_delivery_address">
+                              პროდუქციის მიწოდების ადგილი
                             </Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.place_time_of_delivery,
+                                "is-invalid": errors.product_delivery_address,
                               })}
-                              id="place_time_of_delivery"
-                              value={formData.place_time_of_delivery}
+                              id="product_delivery_address"
+                              value={formData.product_delivery_address}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ მიწოდების ადგილი და დრო..."
+                              placeholder="ჩაწერეთ პროდუქტის ღიწოდების ადგილი..."
                             />
-                            {errors.place_time_of_delivery && (
+                            {errors.product_delivery_address && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.place_time_of_delivery}
+                                {errors.product_delivery_address}
                               </div>
                             )}
                           </div>
@@ -480,7 +507,7 @@ const LawyerPage = () => {
                         <Col lg="6">
                           <div className="mb-3">
                             <Label for="product_cost">
-                              პროდუქტის ღირბულება
+                              პროდუქციის ღირებულება
                             </Label>
                             <Input
                               type="number"
@@ -502,21 +529,23 @@ const LawyerPage = () => {
                         </Col>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="payment_term">გადახდის ვადა</Label>
+                            <Label for="product_payment_term">
+                              ღირებულების გადახდის ვადა
+                            </Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.payment_term,
+                                "is-invalid": errors.product_payment_term,
                               })}
-                              id="payment_term"
-                              value={formData.payment_term}
+                              id="product_payment_term"
+                              value={formData.product_payment_term}
                               onChange={handleInputChange}
                               placeholder="ჩაწერეთ გადახდის ვადა..."
                             />
-                            {errors.payment_term && (
+                            {errors.product_payment_term && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.payment_term}
+                                {errors.product_payment_term}
                               </div>
                             )}
                           </div>
@@ -525,23 +554,21 @@ const LawyerPage = () => {
                       <Row>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="bank_account_details">
-                              საბანკო რეკვიზიტები
-                            </Label>
+                            <Label for="bank_account">ანგარიშის ნომერი</Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.bank_account_details,
+                                "is-invalid": errors.bank_account,
                               })}
-                              id="bank_account_details"
-                              value={formData.bank_account_details}
+                              id="bank_account"
+                              value={formData.bank_account}
                               onChange={handleInputChange}
                               placeholder="ჩაწერეთ საბანკო რეკვიზიტები..."
                             />
-                            {errors.bank_account_details && (
+                            {errors.bank_account && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.bank_account_details}
+                                {errors.bank_account}
                               </div>
                             )}
                           </div>
@@ -554,47 +581,42 @@ const LawyerPage = () => {
                       <Row>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="means_of_securing_obligation">
-                              ვალდებულების უზრუნველყოფის საშუალება
-                            </Label>
+                            <Label for="buyer_name">"მყიდველის" სახელი</Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid":
-                                  errors.means_of_securing_obligation,
+                                "is-invalid": errors.buyer_name,
                               })}
-                              id="means_of_securing_obligation"
-                              value={formData.means_of_securing_obligation}
+                              id="buyer_name"
+                              value={formData.buyer_name}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ ვალდებულების უზრუნველყოფის საშუალება..."
+                              placeholder="ჩაწერეთ პყიდველის სახელი..."
                             />
-                            {errors.means_of_securing_obligation && (
+                            {errors.buyer_name && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.means_of_securing_obligation}
+                                {errors.buyer_name}
                               </div>
                             )}
                           </div>
                         </Col>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="initiator_name_signature">
-                              ხელშეკრულების ინიციატორის სახელი/ გვარი
-                            </Label>
+                            <Label for="buyer_surname">"მყიდველის" გვარი</Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.initiator_name_signature,
+                                "is-invalid": errors.buyer_surname,
                               })}
-                              id="initiator_name_signature"
-                              value={formData.initiator_name_signature}
+                              id="buyer_surname"
+                              value={formData.buyer_surname}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ ინიციატორის სახელი და გვარი..."
+                              placeholder="ჩაწერეთ პყიდველის გვარი..."
                             />
-                            {errors.initiator_name_signature && (
+                            {errors.buyer_surname && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.initiator_name_signature}
+                                {errors.buyer_surname}
                               </div>
                             )}
                           </div>
@@ -603,23 +625,144 @@ const LawyerPage = () => {
                       <Row>
                         <Col lg="6">
                           <div className="mb-3">
-                            <Label for="manager_name_signature">
-                              ხელშეკრულების ინიციატორის ხელმძღვანელი
+                            <Label for="buyer_signature">
+                              "მყიდველის" ხელმოწერა
                             </Label>
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.manager_name_signature,
+                                "is-invalid": errors.buyer_signature,
                               })}
-                              id="manager_name_signature"
-                              value={formData.manager_name_signature}
+                              id="buyer_signature"
+                              value={formData.buyer_signature}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ ხელმძღვანელის სახელი და გვარი..."
+                              placeholder="ჩაწერეთ ხყიდველის ხელმოწერა..."
                             />
-                            {errors.manager_name_signature && (
+                            {errors.buyer_signature && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.manager_name_signature}
+                                {errors.buyer_signature}
+                              </div>
+                            )}
+                          </div>
+                        </Col>
+                        <Col lg="6">
+                          <div className="mb-3">
+                            <Label for="director_name">დირექტორის სახელი</Label>
+                            <Input
+                              type="text"
+                              className={classnames("form-control", {
+                                "is-invalid": errors.director_name,
+                              })}
+                              id="director_name"
+                              value={formData.director_name}
+                              onChange={handleInputChange}
+                              placeholder="ჩაწერეთ დირექტორის სახელი..."
+                            />
+                            {errors.director_name && (
+                              <div className="form-error">
+                                <i className="bx bx-error-circle"></i>
+                                {errors.director_name}
+                              </div>
+                            )}
+                          </div>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col lg="6">
+                          <div className="mb-3">
+                            <Label for="director_surname">
+                              დირექტორის გვარი
+                            </Label>
+                            <Input
+                              type="text"
+                              className={classnames("form-control", {
+                                "is-invalid": errors.director_surname,
+                              })}
+                              id="director_surname"
+                              value={formData.director_surname}
+                              onChange={handleInputChange}
+                              placeholder="ჩაწერეთ დირექტორის გვარი..."
+                            />
+                            {errors.director_surname && (
+                              <div className="form-error">
+                                <i className="bx bx-error-circle"></i>
+                                {errors.director_surname}
+                              </div>
+                            )}
+                          </div>
+                        </Col>
+                        <Col lg="6">
+                          <div className="mb-3">
+                            <Label for="director_signature">
+                              დირექტორის ხელმოწერა
+                            </Label>
+                            <Input
+                              type="text"
+                              className={classnames("form-control", {
+                                "is-invalid": errors.director_signature,
+                              })}
+                              id="director_signature"
+                              value={formData.director_signature}
+                              onChange={handleInputChange}
+                              placeholder="ჩაწერეთ ხირექტორის ხელმოწერა..."
+                            />
+                            {errors.director_signature && (
+                              <div className="form-error">
+                                <i className="bx bx-error-circle"></i>
+                                {errors.director_signature}
+                              </div>
+                            )}
+                          </div>
+                        </Col>
+                        <Col lg="6">
+                          <div className="mb-3">
+                            <Label for="contragent_power_of_attorney">
+                              მინდობილი პირი
+                            </Label>
+                            <Input
+                              type="text"
+                              className={classnames("form-control", {
+                                "is-invalid":
+                                  errors.contragent_power_of_attorney,
+                              })}
+                              id="contragent_power_of_attorney"
+                              value={formData.contragent_power_of_attorney}
+                              onChange={handleInputChange}
+                              placeholder="ჩაწერეთ მინდობილი პირი..."
+                            />
+                            {errors.contragent_power_of_attorney && (
+                              <div className="form-error">
+                                <i className="bx bx-error-circle"></i>
+                                {errors.contragent_power_of_attorney}
+                              </div>
+                            )}
+                          </div>
+                        </Col>
+                        <Col lg="6">
+                          <div className="mb-3">
+                            <Label for="contragent_power_of_attorney_phone_number">
+                              მინდობილი პირის ნომერი
+                            </Label>
+                            <Input
+                              type="text"
+                              className={classnames("form-control", {
+                                "is-invalid":
+                                  errors.contragent_power_of_attorney_phone_number,
+                              })}
+                              id="contragent_power_of_attorney_phone_number"
+                              value={
+                                formData.contragent_power_of_attorney_phone_number
+                              }
+                              onChange={handleInputChange}
+                              placeholder="ჩაწერეთ მინდობილი პირის ნომერი..."
+                            />
+                            {errors.contragent_power_of_attorney_phone_number && (
+                              <div className="form-error">
+                                <i className="bx bx-error-circle"></i>
+                                {
+                                  errors.contragent_power_of_attorney_phone_number
+                                }
                               </div>
                             )}
                           </div>
@@ -647,8 +790,7 @@ const LawyerPage = () => {
                 </TabContent>
               </div>
 
-              {/* Navigation Buttons */}
-              <div className="form-navigation">
+              <div className="form-navigation mt-4">
                 <button
                   className="btn btn-secondary"
                   onClick={() => toggleTab(activeTab - 1)}
