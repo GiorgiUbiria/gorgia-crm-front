@@ -31,9 +31,9 @@ export const getMenuConfig = (t, isAdmin) =>
       label: t("სამართავი პანელი"),
       submenu: [
         { to: "/admin/dashboard", label: t("მთავარი") },
-        { to: "/admin/approvals", label: t("ვიზირება") },
         { to: "/admin/visitors", label: t("ვიზიტორები") },
         { to: "/admin/payment-monitoring", label: t("გადახდების მონიტორინგი") },
+        { to: "/admin/approvals", label: t("ვიზირება") },
         { to: "/admin/archive", icon: BsArchive, label: t("არქივი") },
       ],
     },
