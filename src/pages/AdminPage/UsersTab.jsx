@@ -182,14 +182,16 @@ const UsersTab = ({
           if (!canManageUser(user)) return null
 
           return (
-            <div className="d-flex gap-2">
-              {isDepartmentHead && user.status === "pending" && (
-                <>
+            <div className="d-flex flex-column gap-2">
+              {(isDepartmentHead || isAdmin) && user.status === "pending" && (
+                <div className="d-flex gap-2 mb-2">
                   <Button
                     onClick={() => handleModalOpen("approve", user.id)}
                     color="success"
                     variant="contained"
                     size="small"
+                    startIcon={<i className="bx bx-check" />}
+                    style={{ width: "100%" }}
                   >
                     დადასტურება
                   </Button>
@@ -198,31 +200,39 @@ const UsersTab = ({
                     color="error"
                     variant="contained"
                     size="small"
+                    startIcon={<i className="bx bx-x" />}
+                    style={{ width: "100%" }}
                   >
                     უარყოფა
                   </Button>
-                </>
+                </div>
               )}
-              <Button
-                onClick={() =>
-                  setEditUserModal({ isOpen: true, user: row.original })
-                }
-                color="primary"
-                variant="contained"
-                size="small"
-              >
-                რედაქტირება
-              </Button>
-              {isAdmin && (
+              <div className="d-flex gap-2">
                 <Button
-                  onClick={() => handleModalOpen("delete", user.id)}
-                  color="error"
+                  onClick={() =>
+                    setEditUserModal({ isOpen: true, user: row.original })
+                  }
+                  color="primary"
                   variant="contained"
                   size="small"
+                  startIcon={<i className="bx bx-edit" />}
+                  style={{ width: "100%" }}
                 >
-                  წაშლა
+                  რედაქტირება
                 </Button>
-              )}
+                {isAdmin && (
+                  <Button
+                    onClick={() => handleModalOpen("delete", user.id)}
+                    color="error"
+                    variant="outlined"
+                    size="small"
+                    startIcon={<i className="bx bx-trash" />}
+                    style={{ width: "100%" }}
+                  >
+                    წაშლა
+                  </Button>
+                )}
+              </div>
             </div>
           )
         },

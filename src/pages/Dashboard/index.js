@@ -1,26 +1,27 @@
-import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Card, CardBody, Badge } from "reactstrap";
-import { useSelector, useDispatch } from "react-redux";
-import { createSelector } from "reselect";
-import { getChartsData as onGetChartsData } from "../../store/actions";
-import Breadcrumbs from "../../components/Common/Breadcrumb";
-import { withTranslation } from "react-i18next";
+import React, { useEffect, useState } from "react"
+import { Container, Row, Col, Card, CardBody, Badge } from "reactstrap"
+import { useSelector, useDispatch } from "react-redux"
+import { createSelector } from "reselect"
+import { getChartsData as onGetChartsData } from "../../store/actions"
+import Breadcrumbs from "../../components/Common/Breadcrumb"
+import { withTranslation } from "react-i18next"
+import { ToastContainer } from "react-toastify"
 
 const Dashboard = props => {
-  const dispatch = useDispatch();
-  
-  const DashboardProperties = createSelector(
-    (state) => state.Dashboard,
-    (dashboard) => ({
-      chartsData: dashboard.chartsData
-    })
-  );
+  const dispatch = useDispatch()
 
-  const { chartsData } = useSelector(DashboardProperties);
+  const DashboardProperties = createSelector(
+    state => state.Dashboard,
+    dashboard => ({
+      chartsData: dashboard.chartsData,
+    })
+  )
+
+  const { chartsData } = useSelector(DashboardProperties)
 
   useEffect(() => {
-    dispatch(onGetChartsData("yearly"));
-  }, [dispatch]);
+    dispatch(onGetChartsData("yearly"))
+  }, [dispatch])
 
   // Stats data
   const statsData = [
@@ -28,27 +29,27 @@ const Dashboard = props => {
       title: "აქტიური დავალებები",
       count: "125",
       icon: "bx bx-task",
-      color: "primary"
+      color: "primary",
     },
     {
       title: "დასრულებული დავალებები",
       count: "84",
       icon: "bx bx-check-circle",
-      color: "success"
+      color: "success",
     },
     {
       title: "მიმდინარე პროექტები",
       count: "12",
       icon: "bx bx-trending-up",
-      color: "info"
+      color: "info",
     },
     {
       title: "გადაუდებელი დავალებები",
       count: "5",
       icon: "bx bx-alarm",
-      color: "danger"
-    }
-  ];
+      color: "danger",
+    },
+  ]
 
   // Recent tasks data
   const recentTasks = [
@@ -56,23 +57,23 @@ const Dashboard = props => {
       title: "პრინტერის პრობლემა",
       priority: "High",
       status: "Pending",
-      assignee: "გიორგი მაისურაძე"
+      assignee: "გიორგი მაისურაძე",
     },
     {
       title: "სერვერის განახლება",
       priority: "Medium",
       status: "In Progress",
-      assignee: "ნინო კაპანაძე"
+      assignee: "ნინო კაპანაძე",
     },
     {
       title: "ქსელის მონიტორინგი",
       priority: "Low",
       status: "Completed",
-      assignee: "დავით ბერიძე"
-    }
-  ];
+      assignee: "დავით ბერიძე",
+    },
+  ]
 
-  document.title = "მთავარი გვერდი | Gorgia LLC";
+  document.title = "მთავარი გვერდი | Gorgia LLC"
 
   return (
     <React.Fragment>
@@ -89,9 +90,13 @@ const Dashboard = props => {
                     <div className="d-flex">
                       <div className="flex-grow-1">
                         <h4 className="mb-0">{stat.count}</h4>
-                        <p className="text-muted fw-medium mb-2">{stat.title}</p>
+                        <p className="text-muted fw-medium mb-2">
+                          {stat.title}
+                        </p>
                       </div>
-                      <div className={`avatar-sm rounded-circle bg-${stat.color} align-self-center mini-stat-icon`}>
+                      <div
+                        className={`avatar-sm rounded-circle bg-${stat.color} align-self-center mini-stat-icon`}
+                      >
                         <span className="avatar-title rounded-circle bg-${stat.color}">
                           <i className={`${stat.icon} font-size-24`}></i>
                         </span>
@@ -126,23 +131,35 @@ const Dashboard = props => {
                             <td>
                               <Badge
                                 className={`font-size-12 badge-soft-${
-                                  task.priority === "High" ? "danger" :
-                                  task.priority === "Medium" ? "warning" : "success"
+                                  task.priority === "High"
+                                    ? "danger"
+                                    : task.priority === "Medium"
+                                    ? "warning"
+                                    : "success"
                                 }`}
                               >
-                                {task.priority === "High" ? "მაღალი" :
-                                 task.priority === "Medium" ? "საშუალო" : "დაბალი"}
+                                {task.priority === "High"
+                                  ? "მაღალი"
+                                  : task.priority === "Medium"
+                                  ? "საშუალო"
+                                  : "დაბალი"}
                               </Badge>
                             </td>
                             <td>
                               <Badge
                                 className={`font-size-12 badge-soft-${
-                                  task.status === "Pending" ? "warning" :
-                                  task.status === "In Progress" ? "info" : "success"
+                                  task.status === "Pending"
+                                    ? "warning"
+                                    : task.status === "In Progress"
+                                    ? "info"
+                                    : "success"
                                 }`}
                               >
-                                {task.status === "Pending" ? "მოლოდინში" :
-                                 task.status === "In Progress" ? "მიმდინარე" : "დასრულებული"}
+                                {task.status === "Pending"
+                                  ? "მოლოდინში"
+                                  : task.status === "In Progress"
+                                  ? "მიმდინარე"
+                                  : "დასრულებული"}
                               </Badge>
                             </td>
                             <td>{task.assignee}</td>
@@ -157,8 +174,9 @@ const Dashboard = props => {
           </Row>
         </Container>
       </div>
+      <ToastContainer />
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default withTranslation()(Dashboard);
+export default withTranslation()(Dashboard)

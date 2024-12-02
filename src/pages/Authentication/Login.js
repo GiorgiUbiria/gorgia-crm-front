@@ -22,6 +22,8 @@ import { loginUser } from "../../services/auth"
 import { fetchUserSuccess } from "../../store/user/actions"
 import { toast } from "react-toastify"
 import { FaHeart } from "react-icons/fa"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 import profile from "assets/images/profile-img.png"
 import logo from "assets/images/logo.svg"
@@ -40,26 +42,33 @@ const Login = props => {
     },
     validationSchema: Yup.object({
       email: Yup.string()
-        .email("Invalid email address")
-        .required("Please Enter Your Email"),
-      password: Yup.string().required("Please Enter Your Password"),
+        .email("არასწორი ელ-ფოსტის ფორმატი")
+        .required("გთხოვთ შეიყვანოთ ელ-ფოსტა"),
+      password: Yup.string()
+        .required("გთხოვთ შეიყვანოთ პაროლი"),
     }),
     onSubmit: async values => {
       try {
         const res = await loginUser(values)
 
         if (res.data.status !== 200) {
-          toast.error(res.data.message)
-        } else {
-          sessionStorage.setItem("token", res.data.token)
-          sessionStorage.setItem("authUser", JSON.stringify(res.data.user))
-          console.log(res)
-          dispatch(fetchUserSuccess(res.data.user))
+          toast.error("შეცდომა: " + res.data.message)
+          return
         }
-        navigate("/dashboard")
+
+        sessionStorage.setItem("token", res.data.token)
+        sessionStorage.setItem("authUser", JSON.stringify(res.data.user))
+        dispatch(fetchUserSuccess(res.data.user))
+        toast.success("წარმატებით გაიარეთ ავტორიზაცია")
+
+        setTimeout(() => {
+          navigate("/dashboard")
+        }, 1000)
       } catch (error) {
-        console.error("Login failed", error)
-        toast.error("Login failed. Please try again.")
+        const errorMessage =
+          error.response?.data?.message ||
+          "ავტორიზაცია ვერ მოხერხდა. გთხოვთ სცადოთ თავიდან."
+        toast.error("შეცდომა: " + errorMessage)
       }
     },
   })
@@ -81,6 +90,18 @@ const Login = props => {
 
   return (
     <React.Fragment>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
       <div className="account-pages my-5 pt-sm-5">
         <Container>
           <Row className="justify-content-center">
@@ -116,7 +137,6 @@ const Login = props => {
                   </div>
                   <div className="p-2">
                     <Form className="form-horizontal" onSubmit={handleSubmit}>
-                      {error && <Alert color="danger">{error}</Alert>}
                       <div className="mb-3">
                         <Label className="form-label">ელ-ფოსტა</Label>
                         <Input
