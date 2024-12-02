@@ -1,8 +1,22 @@
-import React, { useEffect, useState, useMemo } from "react"
-import { Row, Col, Card, CardBody, CardTitle, CardSubtitle } from "reactstrap"
+import React, { useEffect, useState, useMemo, useCallback } from "react"
+import { Row, Col, Card, CardBody } from "reactstrap"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import MuiTable from "../../components/Mui/MuiTable"
-import { getDepartmentAgreements } from "services/agreement"
+import {
+  getDepartmentAgreements,
+  downloadAgreement as downloadAgreementService,
+} from "services/agreement"
+import { toast, ToastContainer } from "react-toastify"
+
+const handleDownload = async agreementId => {
+  try {
+    await downloadAgreementService(agreementId)
+    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
+  } catch (error) {
+    console.error("Download failed:", error)
+    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
+  }
+}
 
 const statusMap = {
   pending: {
@@ -45,20 +59,27 @@ const LawyerPageArchive = () => {
     fetchAgreements()
   }, [])
 
-  const transformedAgreements = agreements.map(agreement => ({
-    id: agreement.id,
-    status: STATUS_MAPPING[agreement.status] || agreement.status,
-    created_at: agreement.created_at,
-    user: {
-      name: agreement.performer_name,
-      id: agreement.id_code_or_personal_number,
-      position: agreement.service_description,
-      location: agreement.legal_or_actual_address,
-    },
-    name: agreement.service_description,
-    salary: agreement.service_price,
-    comment: agreement.payment_terms,
-  }))
+  const transformedAgreements = useMemo(() => {
+    return agreements.map(agreement => {
+      return {
+        id: agreement.id,
+        status: STATUS_MAPPING[agreement.status] || agreement.status,
+        created_at: agreement.created_at,
+        name: agreement.contragent_name || "N/A",
+        price: agreement.product_cost,
+        payment_terms: agreement.product_payment_term,
+        buyer: agreement.buyer_name + " " + agreement.buyer_surname,
+        file_path: "/storage/app/templates/agreement_template_1.docx",
+        contragent: {
+          name: agreement.contragent_name,
+          address: agreement.contragent_address,
+          phone: agreement.contragent_phone_number,
+          email: agreement.contragent_email,
+          director: agreement.contragent_director,
+        },
+      }
+    })
+  }, [agreements])
 
   const columns = useMemo(
     () => [
@@ -67,66 +88,85 @@ const LawyerPageArchive = () => {
         accessor: "id",
       },
       {
-        Header: "მომთხოვნი სახელი",
-        accessor: "user.name",
-        Cell: ({ value }) => (
-          <div className="d-flex align-items-center">
-            <div className="avatar-wrapper">
-              <span className="avatar-initial">{value.charAt(0) || "?"}</span>
-            </div>
-            <span className="user-name">{value}</span>
-          </div>
-        ),
+        Header: "კონტრაგენტის სახელი",
+        accessor: "contragent.name",
       },
       {
-        Header: "მოთხოვნილი ფორმის სტილი",
-        accessor: "name",
+        Header: "კონტრაგენტის მისამართი",
+        accessor: "contragent.address",
       },
       {
-        Header: "თარიღი",
-        accessor: "created_at",
-        sortType: "basic",
+        Header: "კონტრაგენტის ნომერი",
+        accessor: "contragent.phone",
+      },
+      {
+        Header: "კონტრაგენტის ელ-ფოსტა",
+        accessor: "contragent.email",
+      },
+      {
+        Header: "მყიდველი",
+        accessor: "buyer",
+      },
+      {
+        Header: "დირექტორი",
+        accessor: "contragent.director",
+      },
+      {
+        Header: "პროდუქციის ღირებულება",
+        accessor: "price",
         Cell: ({ value }) => (
-          <div className="date-wrapper">
-            <i className="bx bx-calendar me-2"></i>
-            {new Date(value).toLocaleDateString()}
+          <div>
+            {value
+              ? new Intl.NumberFormat("ka-GE", {
+                  style: "currency",
+                  currency: "GEL",
+                }).format(value)
+              : "N/A"}
           </div>
         ),
       },
       {
         Header: "სტატუსი",
         accessor: "status",
-        Cell: ({ value }) => (
-          <span
-            style={{
-              padding: "6px 12px",
-              borderRadius: "4px",
-              display: "inline-flex",
-              alignItems: "center",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              backgroundColor:
-                value === "pending"
-                  ? "#fff3e0"
-                  : value === "rejected"
-                  ? "#ffebee"
-                  : value === "approved"
-                  ? "#e8f5e9"
-                  : "#f5f5f5",
-              color:
-                value === "pending"
-                  ? "#e65100"
-                  : value === "rejected"
-                  ? "#c62828"
-                  : value === "approved"
-                  ? "#2e7d32"
-                  : "#757575",
-            }}
-          >
-            <i className={`bx ${statusMap[value].icon} me-2`}></i>
-            {statusMap[value].label}
-          </span>
-        ),
+        Cell: ({ value }) => {
+          const status = statusMap[value] || {
+            label: "უცნობი",
+            icon: "bx-question-mark",
+            color: "#757575",
+          }
+
+          return (
+            <span
+              style={{
+                padding: "6px 12px",
+                borderRadius: "4px",
+                display: "inline-flex",
+                alignItems: "center",
+                fontSize: "0.875rem",
+                fontWeight: 500,
+                backgroundColor:
+                  value === "pending"
+                    ? "#fff3e0"
+                    : value === "rejected"
+                    ? "#ffebee"
+                    : value === "approved"
+                    ? "#e8f5e9"
+                    : "#f5f5f5",
+                color:
+                  value === "pending"
+                    ? "#e65100"
+                    : value === "rejected"
+                    ? "#c62828"
+                    : value === "approved"
+                    ? "#2e7d32"
+                    : "#757575",
+              }}
+            >
+              <i className={`bx ${status.icon} me-2`}></i>
+              {status.label}
+            </span>
+          )
+        },
       },
     ],
     []
@@ -144,6 +184,25 @@ const LawyerPageArchive = () => {
     },
   ]
 
+  const renderRowDetails = useCallback(row => {
+    if (!row) {
+      console.error("Row data is missing")
+      return null
+    }
+
+    return (
+      <div className="p-3">
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={() => handleDownload(row.id)}
+        >
+          <i className="bx bx-download me-1"></i>
+          ხელშეკრულების ჩამოტვირთვა
+        </button>
+      </div>
+    )
+  }, [])
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -156,7 +215,6 @@ const LawyerPageArchive = () => {
               />
             </Col>
           </Row>
-
           <Row>
             <Col xl={12}>
               <Card>
@@ -167,10 +225,14 @@ const LawyerPageArchive = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["user.name", "name"]}
+                    searchableFields={["contragent.name"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
-                    renderRowDetails={row => <div>{row.comment}</div>}
+                    renderRowDetails={row => {
+                      return row.status === "approved"
+                        ? renderRowDetails(row)
+                        : null
+                    }}
                   />
                 </CardBody>
               </Card>
@@ -178,6 +240,7 @@ const LawyerPageArchive = () => {
           </Row>
         </div>
       </div>
+      <ToastContainer />
     </React.Fragment>
   )
 }
