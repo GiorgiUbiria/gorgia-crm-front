@@ -6,26 +6,23 @@ import {
   BsFolder,
   BsFileEarmark,
   BsJournal,
-  BsShieldCheck,
   BsHeadset,
   BsCreditCard2Front,
-  BsPeople,
   BsCalendar,
   BsChatDots,
   BsTelephone,
   BsTools,
-  BsCash,
   BsArchive,
 } from "react-icons/bs"
 
-export const getMenuConfig = (t, isAdmin) =>
+export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
   [
     {
       to: "/dashboard",
       icon: BsHouseDoor,
       label: t("მთავარი გვერდი"),
     },
-    isAdmin && {
+    (isAdmin || isDepartmentHead) && {
       key: "admin",
       icon: BsGear,
       label: t("სამართავი პანელი"),

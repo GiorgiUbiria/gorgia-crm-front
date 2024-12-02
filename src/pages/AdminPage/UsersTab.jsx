@@ -1,5 +1,10 @@
-import React, { useState, useMemo } from "react"
-import { deleteUser } from "services/admin/department"
+import React, { useState, useMemo, useEffect } from "react"
+import {
+  deleteUser,
+  approveDepartmentMember,
+  rejectDepartmentMember,
+  updateDepartmentMember,
+} from "services/admin/department"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
 import useIsAdmin from "hooks/useIsAdmin"
@@ -13,7 +18,12 @@ import { Row, Col } from "reactstrap"
 import AddUserModal from "./AddUserModal"
 import EditUserModal from "./EditUserModal"
 
-const UsersTab = ({ users = [], onUserDeleted }) => {
+const UsersTab = ({
+  users = [],
+  onUserDeleted,
+  isDepartmentHead = false,
+  currentUserDepartmentId,
+}) => {
   const isAdmin = useIsAdmin()
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -21,7 +31,18 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
     userId: null,
   })
   const [addUserModal, setAddUserModal] = useState(false)
-  const [editUserModal, setEditUserModal] = useState({ isOpen: false, user: null })
+  const [editUserModal, setEditUserModal] = useState({
+    isOpen: false,
+    user: null,
+  })
+
+  useEffect(() => {
+    console.log("UsersTab mounted with:", {
+      isDepartmentHead,
+      currentUserDepartmentId,
+      usersCount: users.length,
+    })
+  }, [isDepartmentHead, currentUserDepartmentId, users])
 
   const handleModalOpen = (type, userId) => {
     setConfirmModal({
@@ -40,14 +61,38 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
   }
 
   const handleConfirmAction = async () => {
-    const { type, userId } = confirmModal
-    await deleteUser(userId)
-    onUserDeleted()
-    handleModalClose()
+    try {
+      const { type, userId } = confirmModal
+
+      if (!currentUserDepartmentId && isDepartmentHead) {
+        console.error("Department ID is missing for department head")
+        return
+      }
+
+      if (type === "delete") {
+        await deleteUser(userId)
+      } else if (type === "approve") {
+        await approveDepartmentMember(currentUserDepartmentId, userId)
+      } else if (type === "reject") {
+        await rejectDepartmentMember(currentUserDepartmentId, userId)
+      }
+
+      onUserDeleted()
+      handleModalClose()
+    } catch (error) {
+      console.error("Error performing action:", error)
+    }
   }
 
   const handleAddUserClick = () => {
     setAddUserModal(true)
+  }
+
+  const canManageUser = user => {
+    if (isAdmin) return true
+    if (isDepartmentHead && user.department_id === currentUserDepartmentId)
+      return true
+    return false
   }
 
   const columns = useMemo(
@@ -59,11 +104,6 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
       {
         Header: "სახელი",
         accessor: "name",
-        Cell: ({ value }) => (
-          <div className="d-flex align-items-center">
-            <span className="user-name">{value}</span>
-          </div>
-        ),
       },
       {
         Header: "ელ-ფოსტა",
@@ -83,16 +123,19 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
       {
         Header: "დაწყების თარიღი",
         accessor: "working_start_date",
-        Cell: ({ value }) => (
-          <div className="date-wrapper">
-            <i className="bx bx-calendar me-2"></i>
-            {new Date(value).toLocaleDateString()}
-          </div>
-        ),
+        Cell: ({ value }) =>
+          value ? (
+            <div className="date-wrapper">
+              <i className="bx bx-calendar me-2"></i>
+              {new Date(value).toLocaleDateString()}
+            </div>
+          ) : (
+            "-"
+          ),
       },
       {
-        Header: "როლი",
-        accessor: "role",
+        Header: "სტატუსი",
+        accessor: "status",
         Cell: ({ value }) => (
           <span
             style={{
@@ -103,24 +146,30 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
               fontSize: "0.875rem",
               fontWeight: 500,
               backgroundColor:
-                value === "Administrator"
-                  ? "#fff3e0"
-                  : value === "VIP User"
-                  ? "#ffebee"
-                  : value === "Regular User"
+                value === "accepted"
                   ? "#e8f5e9"
+                  : value === "pending"
+                  ? "#fff3e0"
+                  : value === "rejected"
+                  ? "#ffebee"
                   : "#f5f5f5",
               color:
-                value === "Administrator"
-                  ? "#e65100"
-                  : value === "VIP User"
-                  ? "#c62828"
-                  : value === "Regular User"
+                value === "accepted"
                   ? "#2e7d32"
+                  : value === "pending"
+                  ? "#e65100"
+                  : value === "rejected"
+                  ? "#c62828"
                   : "#757575",
             }}
           >
-            {value}
+            {value === "accepted"
+              ? "აქტიური"
+              : value === "pending"
+              ? "მოლოდინში"
+              : value === "rejected"
+              ? "უარყოფილი"
+              : value}
           </span>
         ),
       },
@@ -128,62 +177,80 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
         Header: "მოქმედებები",
         accessor: "actions",
         disableSortBy: true,
-        Cell: ({ row }) =>
-          isAdmin && (
+        Cell: ({ row }) => {
+          const user = row.original
+          if (!canManageUser(user)) return null
+
+          return (
             <div className="d-flex gap-2">
+              {isDepartmentHead && user.status === "pending" && (
+                <>
+                  <Button
+                    onClick={() => handleModalOpen("approve", user.id)}
+                    color="success"
+                    variant="contained"
+                    size="small"
+                  >
+                    დადასტურება
+                  </Button>
+                  <Button
+                    onClick={() => handleModalOpen("reject", user.id)}
+                    color="error"
+                    variant="contained"
+                    size="small"
+                  >
+                    უარყოფა
+                  </Button>
+                </>
+              )}
               <Button
-                onClick={() => setEditUserModal({ isOpen: true, user: row.original })}
+                onClick={() =>
+                  setEditUserModal({ isOpen: true, user: row.original })
+                }
                 color="primary"
                 variant="contained"
+                size="small"
               >
                 რედაქტირება
               </Button>
-              <Button
-                onClick={() => handleModalOpen("delete", row.original.id)}
-                color="error"
-                variant="contained"
-              >
-                წაშლა
-              </Button>
+              {isAdmin && (
+                <Button
+                  onClick={() => handleModalOpen("delete", user.id)}
+                  color="error"
+                  variant="contained"
+                  size="small"
+                >
+                  წაშლა
+                </Button>
+              )}
             </div>
-          ),
+          )
+        },
       },
     ],
-    []
+    [isAdmin, isDepartmentHead, currentUserDepartmentId]
   )
 
   const transformedUsers = useMemo(() => {
     if (!Array.isArray(users)) return []
 
     return users.map(user => ({
+      ...user,
       id: user.id,
       role:
         user.roles?.length > 0
           ? user.roles?.map(role => role.name).join(", ")
           : "არ აქვს როლი მინიჭებული",
-      position: user.position,
-      name: user.name + " " + user.sur_name,
-      email: user.email,
+      position: user.position || "-",
+      name: `${user.name || ""} ${user.sur_name || ""}`.trim() || "-",
+      email: user.email || "-",
       department: user.department?.name || "არ არის მითითებული",
-      id_number: user.id_number,
-      mobile_number: user.mobile_number,
-      working_start_date: user.working_start_date
-        ? new Date(user.working_start_date).toLocaleDateString()
-        : "",
+      mobile_number: user.mobile_number || "-",
+      working_start_date: user.working_start_date || null,
+      status: user.status || "pending",
+      department_id: user.department_id,
     }))
   }, [users])
-
-  const filterOptions = [
-    {
-      field: "role",
-      label: "როლი",
-      valueLabels: {
-        admin: "ადმინისტრატორი",
-        user: "ჩვეულებრივი",
-        vip: "VIP",
-      },
-    },
-  ]
 
   const exportToExcel = () => {
     const data = [
@@ -215,14 +282,16 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
     <div>
       <Row className="mb-3">
         <Col className="d-flex justify-content-end gap-2">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddUserClick}
-          >
-            <i className="bx bx-plus me-1"></i>
-            მომხმარებლის დამატება
-          </Button>
+          {isAdmin && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddUserClick}
+            >
+              <i className="bx bx-plus me-1"></i>
+              მომხმარებლის დამატება
+            </Button>
+          )}
           <Button variant="outlined" color="primary" onClick={exportToExcel}>
             <i className="bx bx-download me-1"></i>
             ექსპორტი Excel-ში
@@ -233,8 +302,18 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
       <MuiTable
         columns={columns}
         data={transformedUsers}
-        filterOptions={filterOptions}
-        searchableFields={["name", "email", "department", "role"]}
+        filterOptions={[
+          {
+            field: "status",
+            label: "სტატუსი",
+            valueLabels: {
+              accepted: "აქტიური",
+              pending: "მოლოდინში",
+              rejected: "უარყოფილი",
+            },
+          },
+        ]}
+        searchableFields={["name", "email", "department", "mobile_number"]}
         enableSearch={true}
         initialPageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
@@ -247,19 +326,35 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"მომხმარებლის წაშლა"}
+          {confirmModal.type === "delete"
+            ? "მომხმარებლის წაშლა"
+            : confirmModal.type === "approve"
+            ? "მომხმარებლის დადასტურება"
+            : "მომხმარებლის უარყოფა"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            დარწმუნებული ხართ, რომ გსურთ მომხმარებლის წაშლა?
+            {confirmModal.type === "delete"
+              ? "დარწმუნებული ხართ, რომ გსურთ მომხმარებლის წაშლა?"
+              : confirmModal.type === "approve"
+              ? "დარწმუნებული ხართ, რომ გსურთ მომხმარებლის დადასტურება?"
+              : "დარწმუნებული ხართ, რომ გსურთ მომხმარებლის უარყოფა?"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleModalClose} color="primary">
             გაუქმება
           </Button>
-          <Button onClick={handleConfirmAction} color="error" autoFocus>
-            წაშლა
+          <Button
+            onClick={handleConfirmAction}
+            color={confirmModal.type === "approve" ? "success" : "error"}
+            autoFocus
+          >
+            {confirmModal.type === "delete"
+              ? "წაშლა"
+              : confirmModal.type === "approve"
+              ? "დადასტურება"
+              : "უარყოფა"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -275,6 +370,8 @@ const UsersTab = ({ users = [], onUserDeleted }) => {
         user={editUserModal.user}
         toggle={() => setEditUserModal({ isOpen: false, user: null })}
         onUserUpdated={onUserDeleted}
+        isDepartmentHead={isDepartmentHead}
+        currentUserDepartmentId={currentUserDepartmentId}
       />
     </div>
   )

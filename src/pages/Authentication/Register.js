@@ -1,70 +1,99 @@
-import React, { useState } from "react";
-import * as Yup from "yup";
-import { useFormik } from "formik";
-import { Link, useNavigate } from "react-router-dom";
-import { Row, Col, CardBody, Card, Container, Form, Label, Input, FormFeedback } from "reactstrap";
-import profileImg from "../../assets/images/profile-img.png";
-import logoImg from "../../assets/images/logo.svg";
-import lightlogo from "../../assets/images/logo-light.svg";
-import { registerUser } from "services/auth";
-
+import React, { useState, useEffect } from "react"
+import * as Yup from "yup"
+import { useFormik } from "formik"
+import { Link, useNavigate } from "react-router-dom"
+import {
+  Row,
+  Col,
+  CardBody,
+  Card,
+  Container,
+  Form,
+  Label,
+  Input,
+  FormFeedback,
+} from "reactstrap"
+import profileImg from "../../assets/images/profile-img.png"
+import { registerUser } from "services/auth"
+import { getPublicDepartments } from "services/admin/department"
 
 const Register = () => {
+  document.title = "Register | Gorgia LLC"
 
-  //meta title
-  document.title = "Register | Gorgia LLC";
+  const [errorMessage, setErrorMessage] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
+  const navigate = useNavigate()
+  const [departments, setDepartments] = useState([])
 
-  // State to track API response
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const navigate = useNavigate();
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await getPublicDepartments()
+        setDepartments(response.data?.departments || response.data || [])
+      } catch (error) {
+        console.error("Failed to fetch departments:", error)
+        setDepartments([])
+      }
+    }
+    fetchDepartments()
+  }, [])
 
-
-  //form validation
   const validation = useFormik({
     enableReinitialize: true,
 
     initialValues: {
-      email: '',
-      username: '',
-      password: '',
-      mobile_number: '', 
+      email: "",
+      name: "",
+      sur_name: "",
+      password: "",
+      mobile_number: "",
+      department_id: "",
     },
     validationSchema: Yup.object({
       email: Yup.string()
         .required("გთხოვთ შეიყვანოთ Email")
         .email("არასწორი Email ფორმატი")
         .matches(/@gorgia\.ge$/, "Email უნდა მთავრდებოდეს @gorgia.ge-ით"),
-      username: Yup.string().required("გთხოვთ შეიყვანოთ სახელი"),
+      name: Yup.string().required("გთხოვთ შეიყვანოთ სახელი"),
+      sur_name: Yup.string().required("გთხოვთ შეიყვანოთ გვარი"),
       password: Yup.string().required("გთხოვთ შეიყვანოთ პაროლი"),
+      department_id: Yup.number().required("გთხოვთ აირჩიოთ დეპარტამენტი"),
       mobile_number: Yup.string()
-        .nullable()
+        .required("გთხოვთ შეიყვანოთ მობილურის ნომერი")
         .matches(/^[0-9]+$/, "ტელეფონის ნომერი უნდა შეიცავდეს მხოლოდ ციფრებს")
         .min(9, "ტელეფონის ნომერი უნდა იყოს მინიმუმ 9 ციფრი"),
     }),
-    onSubmit: async (values) => {
+    onSubmit: async values => {
       try {
-        setErrorMessage("");
-        setSuccessMessage("");
-        navigate('/')
-        console.log("someeeeeeeeeee");
-        
-        const response = await registerUser(values);
-          if (response.status === 201) {
-          setSuccessMessage("User registered successfully!");
-          console.log('Registration successful:', response.data);
+        setErrorMessage("")
+        setSuccessMessage("")
 
+        const response = await registerUser({
+          ...values,
+          department_id: Number(values.department_id),
+        })
+
+        if (response.status === 200) {
+          setSuccessMessage(
+            "მომხმარებელი წარმატებით დარეგისტრირდა! გთხოვთ დაელოდოთ ადმინისტრატორის დადასტურებას."
+          )
+          setTimeout(() => {
+            navigate("/auth/login")
+          }, 1500)
         }
       } catch (error) {
         if (error.response && error.response.data) {
-          setErrorMessage("Registration failed: " + error.response.data.message);
+          const errorMessage =
+            typeof error.response.data === "object"
+              ? Object.values(error.response.data).flat().join(", ")
+              : error.response.data.message
+          setErrorMessage("რეგისტრაცია ვერ მოხერხდა: " + errorMessage)
         } else {
-          setErrorMessage("Registration failed. Please try again.");
+          setErrorMessage("რეგისტრაცია ვერ მოხერხდა. გთხოვთ სცადოთ თავიდან.")
         }
-        console.error('Registration error:', error);
       }
-    }
-  });
+    },
+  })
 
   return (
     <React.Fragment>
@@ -87,40 +116,13 @@ const Register = () => {
                   </Row>
                 </div>
                 <CardBody className="pt-0">
-                  <div>
-                    <div className="auth-logo">
-                      <Link to="/" className="auth-logo-light">
-                        <div className="avatar-md profile-user-wid mb-4">
-                          <span className="avatar-title rounded-circle bg-light">
-                            <img
-                              src={lightlogo}
-                              alt=""
-                              className="rounded-circle"
-                              height="34"
-                            />
-                          </span>
-                        </div>
-                      </Link>
-                      <Link to="/" className="auth-logo-dark">
-                        <div className="avatar-md profile-user-wid mb-4">
-                          <span className="avatar-title rounded-circle bg-light">
-                            <img
-                              src={logoImg}
-                              alt=""
-                              className="rounded-circle"
-                              height="34"
-                            />
-                          </span>
-                        </div>
-                      </Link>
-                    </div>
-                  </div>
                   <div className="p-2">
-                    <Form className="form-horizontal"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        validation.handleSubmit();
-                        return false;
+                    <Form
+                      className="form-horizontal"
+                      onSubmit={e => {
+                        e.preventDefault()
+                        validation.handleSubmit()
+                        return false
                       }}
                     >
                       <div className="mb-3">
@@ -135,47 +137,118 @@ const Register = () => {
                           onBlur={validation.handleBlur}
                           value={validation.values.email || ""}
                           invalid={
-                            validation.touched.email && validation.errors.email ? true : false
+                            validation.touched.email && validation.errors.email
+                              ? true
+                              : false
                           }
                         />
                         {validation.touched.email && validation.errors.email ? (
-                          <FormFeedback type="invalid">{validation.errors.email}</FormFeedback>
+                          <FormFeedback type="invalid">
+                            {validation.errors.email}
+                          </FormFeedback>
                         ) : null}
                       </div>
 
                       <div className="mb-3">
                         <Label className="form-label">სახელი</Label>
                         <Input
-                          name="username"
+                          name="name"
+                          id="name"
+                          className="form-control"
                           type="text"
                           placeholder="ჩაწერეთ თქვენი სახელი"
                           onChange={validation.handleChange}
                           onBlur={validation.handleBlur}
-                          value={validation.values.username || ""}
+                          value={validation.values.name || ""}
                           invalid={
-                            validation.touched.username && validation.errors.username ? true : false
+                            validation.touched.name && validation.errors.name
                           }
                         />
-                        {validation.touched.username && validation.errors.username ? (
-                          <FormFeedback type="invalid">{validation.errors.username}</FormFeedback>
+                        {validation.touched.name && validation.errors.name ? (
+                          <FormFeedback type="invalid">
+                            {validation.errors.name}
+                          </FormFeedback>
                         ) : null}
                       </div>
-                      
+
+                      <div className="mb-3">
+                        <Label className="form-label">გვარი</Label>
+                        <Input
+                          name="sur_name"
+                          id="sur_name"
+                          className="form-control"
+                          type="text"
+                          placeholder="ჩაწერეთ მქვენი გვარი"
+                          onChange={validation.handleChange}
+                          onBlur={validation.handleBlur}
+                          value={validation.values.sur_name || ""}
+                          invalid={
+                            validation.touched.sur_name &&
+                            validation.errors.sur_name
+                          }
+                        />
+                        {validation.touched.sur_name &&
+                        validation.errors.sur_name ? (
+                          <FormFeedback type="invalid">
+                            {validation.errors.sur_name}
+                          </FormFeedback>
+                        ) : null}
+                      </div>
+
+                      <div className="mb-3">
+                        <Label className="form-label">პეპარტამენტი</Label>
+                        <Input
+                          type="select"
+                          name="department_id"
+                          value={validation.values.department_id || ""}
+                          onChange={validation.handleChange}
+                          onBlur={validation.handleBlur}
+                          invalid={
+                            validation.touched.department_id &&
+                            validation.errors.department_id
+                              ? true
+                              : false
+                          }
+                        >
+                          <option value="">აირჩიე დეპარტამენტი</option>
+                          {Array.isArray(departments) &&
+                            departments.map(dept => (
+                              <option key={dept.id} value={dept.id}>
+                                {dept.name}
+                              </option>
+                            ))}
+                        </Input>
+                        {validation.touched.department_id &&
+                        validation.errors.department_id ? (
+                          <FormFeedback type="invalid">
+                            {validation.errors.department_id}
+                          </FormFeedback>
+                        ) : null}
+                      </div>
+
                       <div className="mb-3">
                         <Label className="form-label">მობილურის ნომერი</Label>
                         <Input
                           name="mobile_number"
+                          id="mobile_number"
+                          className="form-control"
                           type="text"
                           placeholder="ჩაწერეთ მობილურის ნომერი"
                           onChange={validation.handleChange}
                           onBlur={validation.handleBlur}
                           value={validation.values.mobile_number || ""}
                           invalid={
-                            validation.touched.mobile_number && validation.errors.mobile_number ? true : false
+                            validation.touched.mobile_number &&
+                            validation.errors.mobile_number
+                              ? true
+                              : false
                           }
                         />
-                        {validation.touched.mobile_number && validation.errors.mobile_number ? (
-                          <FormFeedback type="invalid">{validation.errors.mobile_number}</FormFeedback>
+                        {validation.touched.mobile_number &&
+                        validation.errors.mobile_number ? (
+                          <FormFeedback type="invalid">
+                            {validation.errors.mobile_number}
+                          </FormFeedback>
                         ) : null}
                       </div>
 
@@ -184,22 +257,35 @@ const Register = () => {
                         <Input
                           name="password"
                           type="password"
+                          id="password"
+                          className="form-control"
                           placeholder="ჩაწერეთ პაროლი"
                           onChange={validation.handleChange}
                           onBlur={validation.handleBlur}
                           value={validation.values.password || ""}
                           invalid={
-                            validation.touched.password && validation.errors.password ? true : false
+                            validation.touched.password &&
+                            validation.errors.password
+                              ? true
+                              : false
                           }
                         />
-                        {validation.touched.password && validation.errors.password ? (
-                          <FormFeedback type="invalid">{validation.errors.password}</FormFeedback>
+                        {validation.touched.password &&
+                        validation.errors.password ? (
+                          <FormFeedback type="invalid">
+                            {validation.errors.password}
+                          </FormFeedback>
                         ) : null}
                       </div>
 
-                      {/* Display success or error message */}
-                      {errorMessage && <div className="text-danger mb-3">{errorMessage}</div>}
-                      {successMessage && <div className="text-success mb-3">{successMessage}</div>}
+                      {errorMessage && (
+                        <div className="text-danger mb-3">{errorMessage}</div>
+                      )}
+                      {successMessage && (
+                        <div className="text-success mb-3">
+                          {successMessage}
+                        </div>
+                      )}
 
                       <div className="mt-4 d-grid">
                         <button
@@ -209,17 +295,15 @@ const Register = () => {
                           რეგისტრაცია
                         </button>
                       </div>
-
                     </Form>
                   </div>
                 </CardBody>
               </Card>
               <div className="mt-5 text-center">
                 <p>
-                  გაქვთ უკვე ანგარიში?{" "} <Link
-                    to="/pages-login"
-                    className="fw-medium text-primary"
-                  >ავტორიზაცია
+                  გაქვთ უკვე ანგარიში?{" "}
+                  <Link to="/pages-login" className="fw-medium text-primary">
+                    ავტორიზაცია
                   </Link>{" "}
                 </p>
                 <p>
@@ -232,7 +316,7 @@ const Register = () => {
         </Container>
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default Register;
+export default Register

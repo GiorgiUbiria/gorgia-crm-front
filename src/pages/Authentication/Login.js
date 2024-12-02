@@ -195,9 +195,8 @@ const Login = props => {
                   </Link>
                 </p>
                 <p>
-                  © {new Date().getFullYear()} Gorgia LLC. დამზადებულია დიდი{" "}
-                  <FaHeart className="text-danger" />
-                  -ით ვებ-დეველოპერების მიერ
+                  © {new Date().getFullYear()} Gorgia LLC. Crafted with{" "}
+                  <i className="mdi mdi-heart text-danger" /> by GORGIA
                 </p>
               </div>
             </Col>
