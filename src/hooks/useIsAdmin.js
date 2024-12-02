@@ -7,7 +7,7 @@ const useIsAdmin = () => {
       if (!authUserString) return false
 
       const authUser = JSON.parse(authUserString)
-      return authUser?.roles[0].slug === "admin"
+      return authUser?.roles?.some(role => role.slug === "admin")
     } catch (error) {
       console.error("Error checking admin status:", error)
       return false

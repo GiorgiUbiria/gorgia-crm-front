@@ -14,31 +14,43 @@ import {
 import Button from "@mui/material/Button"
 import { updateUserById } from "services/admin/department"
 
-const EditUserModal = ({ isOpen, toggle, user, onUserUpdated }) => {
+const EditUserModal = ({
+  isOpen,
+  toggle,
+  user,
+  onUserUpdated,
+  isDepartmentHead,
+  currentUserDepartmentId,
+}) => {
   const [formData, setFormData] = useState({
     name: "",
     sur_name: "",
     email: "",
+    position: "",
     mobile_number: "",
+    working_start_date: "",
+    department_id: "",
+    roles: [],
     password: "",
     confirm_password: "",
   })
 
   useEffect(() => {
     if (user) {
-      const [firstName, ...lastName] = user.name.split(" ")
       setFormData({
-        name: firstName,
-        sur_name: lastName.join(" "),
-        email: user.email,
-        mobile_number: user.mobile_number,
-        password: "",
-        confirm_password: "",
+        name: user.name || "",
+        sur_name: user.sur_name || "",
+        email: user.email || "",
+        position: user.position || "",
+        mobile_number: user.mobile_number || "",
+        working_start_date: user.working_start_date || "",
+        department_id: user.department_id || "",
+        roles: user.roles?.map(role => role.id) || []
       })
     }
   }, [user])
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -48,15 +60,9 @@ const EditUserModal = ({ isOpen, toggle, user, onUserUpdated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (formData.password !== formData.confirm_password) {
-      alert("პაროლები არ ემთხვევა")
-      return
-    }
-
     try {
       const updateData = {
-        ...formData,
-        id: user.id,
+        ...formData
       }
       
       // Only include password if it was changed
@@ -65,12 +71,24 @@ const EditUserModal = ({ isOpen, toggle, user, onUserUpdated }) => {
         delete updateData.confirm_password
       }
 
-      await updateUserById(user.id, updateData)
+      if (isDepartmentHead) {
+        // Department heads can only update specific fields
+        const allowedFields = ['position', 'mobile_number', 'working_start_date']
+        Object.keys(updateData).forEach(key => {
+          if (!allowedFields.includes(key)) {
+            delete updateData[key]
+          }
+        })
+        await updateDepartmentMember(currentUserDepartmentId, user.id, updateData)
+      } else {
+        await updateUserById(user.id, updateData)
+      }
+
       onUserUpdated()
       toggle()
     } catch (error) {
       console.error("Error updating user:", error)
-      alert("მომხმარებლის განახლება ვერ მოხერხდა")
+      // Handle error appropriately
     }
   }
 
@@ -173,4 +191,4 @@ const EditUserModal = ({ isOpen, toggle, user, onUserUpdated }) => {
   )
 }
 
-export default EditUserModal 
+export default EditUserModal
