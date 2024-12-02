@@ -16,12 +16,12 @@ import {
 import profileImg from "../../assets/images/profile-img.png"
 import { registerUser } from "services/auth"
 import { getPublicDepartments } from "services/admin/department"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 const Register = () => {
   document.title = "Register | Gorgia LLC"
 
-  const [errorMessage, setErrorMessage] = useState("")
-  const [successMessage, setSuccessMessage] = useState("")
   const navigate = useNavigate()
   const [departments, setDepartments] = useState([])
 
@@ -31,7 +31,7 @@ const Register = () => {
         const response = await getPublicDepartments()
         setDepartments(response.data?.departments || response.data || [])
       } catch (error) {
-        console.error("Failed to fetch departments:", error)
+        console.error("დეპარტამენტები ვერ მოიძებნა: ", error)
         setDepartments([])
       }
     }
@@ -65,38 +65,44 @@ const Register = () => {
     }),
     onSubmit: async values => {
       try {
-        setErrorMessage("")
-        setSuccessMessage("")
-
         const response = await registerUser({
           ...values,
           department_id: Number(values.department_id),
         })
 
         if (response.status === 200) {
-          setSuccessMessage(
+          toast.success(
             "მომხმარებელი წარმატებით დარეგისტრირდა! გთხოვთ დაელოდოთ ადმინისტრატორის დადასტურებას."
           )
           setTimeout(() => {
             navigate("/auth/login")
-          }, 1500)
+          }, 2000)
         }
       } catch (error) {
-        if (error.response && error.response.data) {
-          const errorMessage =
-            typeof error.response.data === "object"
-              ? Object.values(error.response.data).flat().join(", ")
-              : error.response.data.message
-          setErrorMessage("რეგისტრაცია ვერ მოხერხდა: " + errorMessage)
-        } else {
-          setErrorMessage("რეგისტრაცია ვერ მოხერხდა. გთხოვთ სცადოთ თავიდან.")
-        }
+        const errorMessage = error.response?.data
+          ? typeof error.response.data === "object"
+            ? Object.values(error.response.data).flat().join(", ")
+            : error.response.data.message
+          : "რეგისტრაცია ვერ მოხერხდა. გთხოვთ სცადოთ თავიდან."
+
+        toast.error("რეგისტრაცია ვერ მოხერხდა: " + errorMessage)
       }
     },
   })
 
   return (
     <React.Fragment>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <div className="account-pages my-5 pt-sm-5">
         <Container>
           <Row className="justify-content-center">
@@ -277,15 +283,6 @@ const Register = () => {
                           </FormFeedback>
                         ) : null}
                       </div>
-
-                      {errorMessage && (
-                        <div className="text-danger mb-3">{errorMessage}</div>
-                      )}
-                      {successMessage && (
-                        <div className="text-success mb-3">
-                          {successMessage}
-                        </div>
-                      )}
 
                       <div className="mt-4 d-grid">
                         <button

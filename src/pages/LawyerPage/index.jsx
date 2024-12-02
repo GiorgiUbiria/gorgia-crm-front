@@ -7,8 +7,6 @@ import {
   Form,
   Input,
   Label,
-  NavItem,
-  NavLink,
   Row,
   TabContent,
   TabPane,
@@ -24,12 +22,9 @@ import "../../assets/scss/custom/pages/_lawyer.scss"
 const LawyerPage = () => {
   document.title = "ხელშეკრულების მოთხოვნა | Gorgia LLC"
 
-  const [activeTab, setactiveTab] = useState(1)
+  const [activeTab, setActiveTab] = useState(1)
   const [passedSteps, setPassedSteps] = useState([1])
   const [errors, setErrors] = useState({})
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [type, setType] = useState("იურიდიული დეპარტამენტი")
-
   const [formData, setFormData] = useState({
     contragent_name: "",
     contragent_id: "",
@@ -58,165 +53,133 @@ const LawyerPage = () => {
       ...prevData,
       [id]: value,
     }))
-
     validateField(id, value)
   }
 
   const validateField = (field, value) => {
     let errorMsg = ""
-
-    try {
-      switch (field) {
-        // Basic Information
-        case "contragent_name":
-          if (!value) errorMsg = "კონტრაგენტის სრული დასახელება აუცილებელია"
-          break
-        case "contragent_id":
-          if (!value) errorMsg = "საიდენტიფიკაციო კოდი აუცილებელია"
-          else if (!/^\d{9,11}$/.test(value))
-            errorMsg = "არასწორი ფორმატი. უნდა შეიცავდეს 9-11 ციფრს"
-          break
-        case "contragent_address":
-          if (!value) errorMsg = "მისამართი აუცილებელია"
-          break
-        case "contragent_phone_number":
-          if (!value) errorMsg = "ტელეფონის ნომერი აუცილებელია"
-          else if (!/^[0-9+\-\s()]*$/.test(value))
-            errorMsg = "არასწორი ტელეფონის ნომრის ფორმატი"
-          break
-        case "contragent_email":
-          if (!value) errorMsg = "ელ.ფოსტა აუცილებელია"
-          else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-            errorMsg = "არასწორი ელ.ფოსტის ფორმატი"
-          break
-        case "contragent_director":
-          if (!value) errorMsg = "დირექტორის სახელი აუცილებელია"
-          break
-        case "contragent_power_of_attorney":
-          if (!value) errorMsg = "მინდობილობა აუცილებელია"
-          break
-        case "contragent_power_of_attorney_phone_number":
-          if (!value) errorMsg = "მინდობილი პირის ტელეფონის ნომერი აუცილებელია"
-          else if (!/^[0-9+\-\s()]*$/.test(value))
-            errorMsg = "არასწორი ტელეფონის ნომრის ფორმატი"
-          break
-
-        // Financial Details
-        case "conscription_term":
-          if (!value) errorMsg = "კონსიგნაციის ვადა აუცილებელია"
-          break
-        case "product_delivery_address":
-          if (!value) errorMsg = "პროდუქტის მიწოდების ადგილი აუცილებელია"
-          break
-        case "product_cost":
-          if (!value) errorMsg = "პროდუქტის ღირებულება აუცილებელია"
-          else if (isNaN(value) || Number(value) <= 0)
-            errorMsg = "გთხოვთ შეიყვანოთ დადებითი რიცხვი"
-          break
-        case "product_payment_term":
-          if (!value) errorMsg = "გადახდის ვადა აუცილებელია"
-          break
-        case "bank_account":
-          if (!value) errorMsg = "საბანკო რეკვიზიტები აუცილებელია"
-          break
-
-        // Additional Information
-        case "buyer_name":
-          if (!value) errorMsg = "მყიდველის სახელი აუცილებელია"
-          break
-        case "buyer_surname":
-          if (!value) errorMsg = "მყიდველის გვარი აუცილებელია"
-          break
-        case "buyer_signature":
-          if (!value) errorMsg = "მყიდველის ხელმოწერა აუცილებელია"
-          break
-        case "director_name":
-          if (!value) errorMsg = "დირექტორის სახელი აუცილებელია"
-          break
-        case "director_surname":
-          if (!value) errorMsg = "დირექტორის გვარი აუცილებელია"
-          break
-        case "director_signature":
-          if (!value) errorMsg = "დირექტორის ხელმოწერა აუცილებელია"
-          break
-
-        // Power of Attorney
-        case "contragent_power_of_attorney":
-          if (!value) errorMsg = "მინდობილობა აუცილებელია"
-          break
-        case "contragent_power_of_attorney_phone_number":
-          if (!value) errorMsg = "მინდობილი პირის ტელეფონის ნომერი აუცილებელია"
-          break
-      }
-
-      setErrors(prevErrors => ({
-        ...prevErrors,
-        [field]: errorMsg,
-      }))
-
-      return !errorMsg
-    } catch (error) {
-      toast.error("შეცდომა ველის ვალიდაციისას")
-      return false
+    switch (field) {
+      case "contragent_name":
+        if (!value) errorMsg = "კონტრაგენტის სრული დასახელება აუცილებელია"
+        break
+      case "contragent_id":
+        if (!value) errorMsg = "საიდენტიფიკაციო კოდი აუცილებელია"
+        else if (!/^\d{9,11}$/.test(value))
+          errorMsg = "არასწორი ფორმატი. უნდა შეიცავდეს 9-11 ციფრს"
+        break
+      case "contragent_address":
+        if (!value) errorMsg = "მისამართი აუცილებელია"
+        break
+      case "contragent_phone_number":
+        if (!value) errorMsg = "ტელეფონის ნომერი აუცილებელია"
+        else if (!/^[0-9+\-\s()]*$/.test(value))
+          errorMsg = "არასწორი ტელეფონის ნომრის ფორმატი"
+        break
+      case "contragent_email":
+        if (!value) errorMsg = "ელ.ფოსტა აუცილებელია"
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          errorMsg = "არასწორი ელ.ფოსტის ფორმატი"
+        break
+      case "contragent_director":
+        if (!value) errorMsg = "დირექტორის სახელი აუცილებელია"
+        break
+      case "contragent_power_of_attorney":
+        if (!value) errorMsg = "მინდობილობა აუცილებელია"
+        break
+      case "contragent_power_of_attorney_phone_number":
+        if (!value) errorMsg = "მინდობილი პირის ტელეფონის ნომერი აუცილებელია"
+        else if (!/^[0-9+\-\s()]*$/.test(value))
+          errorMsg = "არასწორი ტელეფონის ნომრის ფორმატი"
+        break
+      case "conscription_term":
+        if (!value) errorMsg = "კონსიგნაციის ვადა აუცილებელია"
+        break
+      case "product_delivery_address":
+        if (!value) errorMsg = "პროდუქტის მიწოდების ადგილი აუცილებელია"
+        break
+      case "product_cost":
+        if (!value) errorMsg = "პროდუქტის ღირებულება აუცილებელია"
+        else if (isNaN(value) || Number(value) <= 0)
+          errorMsg = "გთხოვთ შეიყვანოთ დადებითი რიცხვი"
+        break
+      case "product_payment_term":
+        if (!value) errorMsg = "გადახდის ვადა აუცილებელია"
+        break
+      case "bank_account":
+        if (!value) errorMsg = "საბანკო რეკვიზიტები აუცილებელია"
+        break
+      case "buyer_name":
+        if (!value) errorMsg = "მყიდველის სახელი აუცილებელია"
+        break
+      case "buyer_surname":
+        if (!value) errorMsg = "მყიდველის გვარი აუცილებელია"
+        break
+      case "buyer_signature":
+        if (!value) errorMsg = "მყიდველის ხელმოწერა აუცილებელია"
+        break
+      case "director_name":
+        if (!value) errorMsg = "დირექტორის სახელი აუცილებელია"
+        break
+      case "director_surname":
+        if (!value) errorMsg = "დირექტორის გვარი აუცილებელია"
+        break
+      case "director_signature":
+        if (!value) errorMsg = "დირექტორის ხელმოწერა აუცილებელია"
+        break
     }
+
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [field]: errorMsg,
+    }))
+
+    return !errorMsg
   }
 
   const validateForm = () => {
-    try {
-      let isValid = true
-      console.log(formData)
-
-      Object.keys(formData).forEach(field => {
-        if (!validateField(field, formData[field])) {
-          isValid = false
-        }
-      })
-
-      if (!isValid) {
-        console.log("Errors:", errors)
-        toast.error("გთხოვთ შეავსოთ ყველა სავალდებულო ველი")
+    let isValid = true
+    Object.keys(formData).forEach(field => {
+      if (!validateField(field, formData[field])) {
+        isValid = false
       }
+    })
 
-      return isValid
-    } catch (error) {
-      toast.error("შეცდომა ფორმის ვალიდაციისას")
-      return false
+    if (!isValid) {
+      toast.error("გთხოვთ შეავსოთ ყველა სავალდებულო ველი")
     }
+
+    return isValid
   }
 
   const handleSubmit = async () => {
-    try {
-      if (!validateForm()) {
-        return
+    if (!validateForm()) {
+      return
+    }
+
+    toast.info("მიმდინარეობს დამუშავება...", {
+      autoClose: false,
+      toastId: "submitProgress",
+    })
+
+    const formDataToSend = new FormData()
+    Object.keys(formData).forEach(key => {
+      if (key === "notary_agreement") {
+        formDataToSend.append("notary_agreement", formData[key] ? 1 : 0)
+      } else if (formData[key] !== "") {
+        formDataToSend.append(key, formData[key])
       }
+    })
 
-      toast.info("მიმდინარეობს დამუშავება...", {
-        autoClose: false,
-        toastId: "submitProgress",
-      })
+    formDataToSend.append("status", "pending")
+    formDataToSend.append("created_at", new Date().toISOString())
+    formDataToSend.append("updated_at", new Date().toISOString())
 
-      const formDataToSend = new FormData()
-
-      Object.keys(formData).forEach(key => {
-        if (key === "notary_agreement") {
-          formDataToSend.append("notary_agreement", formData[key] ? 1 : 0)
-        } else if (formData[key] !== "") {
-          formDataToSend.append(key, formData[key])
-        }
-      })
-
-      formDataToSend.append("status", "pending")
-      formDataToSend.append("created_at", new Date().toISOString())
-      formDataToSend.append("updated_at", new Date().toISOString())
-
+    try {
       const response = await createAgreement(formDataToSend)
-      console.log(response)
-
       toast.dismiss("submitProgress")
 
       if (response) {
         toast.success("ხელშეკრულება წარმატებით შეიქმნა")
-
         setFormData({
           contragent_name: "",
           contragent_id: "",
@@ -238,52 +201,54 @@ const LawyerPage = () => {
           director_surname: "",
           director_signature: "",
         })
-        setSelectedFile(null)
-        setactiveTab(4)
+        setActiveTab(4)
         setPassedSteps(prevSteps => [...prevSteps, 4])
         setErrors({})
       }
     } catch (error) {
       toast.dismiss("submitProgress")
-
-      if (error.response) {
-        switch (error.response.status) {
-          case 400:
-            toast.error(
-              "არასწორი მოაცემები. გთხოვთ შეამოწმოთ შეყვანილი ინფორმაცია"
-            )
-            break
-          case 401:
-            toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
-            break
-          case 422:
-            const validationErrors = error.response.data.errors
-            Object.keys(validationErrors).forEach(key => {
-              toast.error(validationErrors[key][0])
-            })
-            break
-          case 500:
-            toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
-            break
-          default:
-            toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
-        }
-      } else if (error.request) {
-        toast.error("კავშირის შეცდომა. გთხოვთ შეამოწმოთ ინტერნეტ კავშირი")
-      } else {
-        toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
-      }
+      handleError(error)
     }
   }
 
-  function toggleTab(tab) {
+  const handleError = error => {
+    if (error.response) {
+      switch (error.response.status) {
+        case 400:
+          toast.error(
+            "არასწორი მოაცემები. გთხოვთ შეამოწმოთ შეყვანილი ინფორმაცია"
+          )
+          break
+        case 401:
+          toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
+          break
+        case 422:
+          const validationErrors = error.response.data.errors
+          Object.keys(validationErrors).forEach(key => {
+            toast.error(validationErrors[key][0])
+          })
+          break
+        case 500:
+          toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+          break
+        default:
+          toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+      }
+    } else if (error.request) {
+      toast.error("კავშირის შეცდომა. გთხოვთ შეამოწმოთ ინტერნეტ კავშირი")
+    } else {
+      toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+    }
+  }
+
+  const toggleTab = tab => {
     if (activeTab !== tab) {
       if (tab === 4 && activeTab === 3) {
         handleSubmit()
       } else {
-        var modifiedSteps = [...passedSteps, tab]
+        const modifiedSteps = [...passedSteps, tab]
         if (tab >= 1 && tab <= 4) {
-          setactiveTab(tab)
+          setActiveTab(tab)
           setPassedSteps(modifiedSteps)
         }
       }
@@ -311,9 +276,9 @@ const LawyerPage = () => {
             breadcrumbItem="ხელშეკრულების მოთხოვნა"
           />
 
-          <Card>
+          <Card className="shadow-lg border-0 rounded-lg mt-5">
             <CardBody>
-              <div className="progress-steps">
+              <div className="progress-steps mb-4">
                 {[
                   { label: "ძირითადი ინფორმაცია", icon: "bx-user" },
                   { label: "ფინანსური დეტალები", icon: "bx-money" },
@@ -327,7 +292,7 @@ const LawyerPage = () => {
                       disabled: !passedSteps.includes(index + 1),
                     })}
                     onClick={() =>
-                      passedSteps.includes(index + 1) && setactiveTab(index + 1)
+                      passedSteps.includes(index + 1) && setActiveTab(index + 1)
                     }
                   >
                     <div className="step-number">
@@ -462,8 +427,6 @@ const LawyerPage = () => {
                             )}
                           </div>
                         </Col>
-                      </Row>
-                      <Row>
                         <Col lg="6">
                           <div className="mb-3">
                             <Label for="contragent_director">
@@ -529,7 +492,7 @@ const LawyerPage = () => {
                               id="product_delivery_address"
                               value={formData.product_delivery_address}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ პროდუქტის ღიწოდების ადგილი და დრო..."
+                              placeholder="ჩაწერეთ პროდუქტის ღიწოდების ადგილი..."
                             />
                             {errors.product_delivery_address && (
                               <div className="form-error">
@@ -627,7 +590,7 @@ const LawyerPage = () => {
                               id="buyer_name"
                               value={formData.buyer_name}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ პირველი მომსაზრების სახელი..."
+                              placeholder="ჩაწერეთ პყიდველის სახელი..."
                             />
                             {errors.buyer_name && (
                               <div className="form-error">
@@ -648,7 +611,7 @@ const LawyerPage = () => {
                               id="buyer_surname"
                               value={formData.buyer_surname}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ პირველი მომსაზრების გვარი..."
+                              placeholder="ჩაწერეთ პყიდველის გვარი..."
                             />
                             {errors.buyer_surname && (
                               <div className="form-error">
@@ -673,7 +636,7 @@ const LawyerPage = () => {
                               id="buyer_signature"
                               value={formData.buyer_signature}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ ხირველი მომსაზრების ხელმოწოდება..."
+                              placeholder="ჩაწერეთ ხყიდველის ხელმოწერა..."
                             />
                             {errors.buyer_signature && (
                               <div className="form-error">
@@ -729,8 +692,6 @@ const LawyerPage = () => {
                             )}
                           </div>
                         </Col>
-                      </Row>
-                      <Row>
                         <Col lg="6">
                           <div className="mb-3">
                             <Label for="director_signature">
@@ -744,7 +705,7 @@ const LawyerPage = () => {
                               id="director_signature"
                               value={formData.director_signature}
                               onChange={handleInputChange}
-                              placeholder="ჩაწერეთ ხირველი დირექტორის ხელმოწოდება..."
+                              placeholder="ჩაწერეთ ხირექტორის ხელმოწერა..."
                             />
                             {errors.director_signature && (
                               <div className="form-error">
@@ -762,7 +723,8 @@ const LawyerPage = () => {
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.contragent_power_of_attorney,
+                                "is-invalid":
+                                  errors.contragent_power_of_attorney,
                               })}
                               id="contragent_power_of_attorney"
                               value={formData.contragent_power_of_attorney}
@@ -785,17 +747,22 @@ const LawyerPage = () => {
                             <Input
                               type="text"
                               className={classnames("form-control", {
-                                "is-invalid": errors.contragent_power_of_attorney_phone_number,
+                                "is-invalid":
+                                  errors.contragent_power_of_attorney_phone_number,
                               })}
                               id="contragent_power_of_attorney_phone_number"
-                              value={formData.contragent_power_of_attorney_phone_number}
+                              value={
+                                formData.contragent_power_of_attorney_phone_number
+                              }
                               onChange={handleInputChange}
                               placeholder="ჩაწერეთ მინდობილი პირის ნომერი..."
                             />
                             {errors.contragent_power_of_attorney_phone_number && (
                               <div className="form-error">
                                 <i className="bx bx-error-circle"></i>
-                                {errors.contragent_power_of_attorney_phone_number}
+                                {
+                                  errors.contragent_power_of_attorney_phone_number
+                                }
                               </div>
                             )}
                           </div>
@@ -823,8 +790,7 @@ const LawyerPage = () => {
                 </TabContent>
               </div>
 
-              {/* Navigation Buttons */}
-              <div className="form-navigation">
+              <div className="form-navigation mt-4">
                 <button
                   className="btn btn-secondary"
                   onClick={() => toggleTab(activeTab - 1)}
