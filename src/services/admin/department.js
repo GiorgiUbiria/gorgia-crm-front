@@ -1,11 +1,19 @@
 import defaultInstance from "../../plugins/axios"
 
 export const getDepartments = async () => {
-  return defaultInstance.get("/api/admin/department/list")
+  return defaultInstance.get("/api/admin/department")
+}
+
+export const getPublicDepartments = async () => {
+  return defaultInstance.get("/api/departments")
+}
+
+export const getDepartmentMembers = async id => {
+  return defaultInstance.get(`/api/department/${id}/members`)
 }
 
 export const createDepartment = async data => {
-  return defaultInstance.post("/api/admin/department/create", data)
+  return defaultInstance.post("/api/admin/department", data)
 }
 
 export const deleteDepartment = async id => {
@@ -36,5 +44,24 @@ export const updateDepartment = async departmentData => {
   return defaultInstance.put(
     `/api/admin/department/${departmentData.id}/update`,
     departmentData
+  )
+}
+
+export const approveDepartmentMember = async (departmentId, userId) => {
+  return defaultInstance.post(
+    `/api/department/${departmentId}/members/${userId}/approve`
+  )
+}
+
+export const rejectDepartmentMember = async (departmentId, userId) => {
+  return defaultInstance.post(
+    `/api/department/${departmentId}/members/${userId}/reject`
+  )
+}
+
+export const updateDepartmentMember = async (departmentId, userId, data) => {
+  return defaultInstance.put(
+    `/api/department/${departmentId}/members/${userId}`,
+    data
   )
 }
