@@ -148,11 +148,18 @@ const MuiTable = ({
         pageSize: initialPageSize,
         filters: currentFilters,
         globalFilter: searchTerm,
+        sortBy: [
+          {
+            id: 'id',
+            desc: true
+          }
+        ]
       },
       globalFilter: customGlobalFilter,
       autoResetPage: false,
       autoResetFilters: false,
       autoResetGlobalFilter: false,
+      autoResetSortBy: false,
     },
     useFilters,
     useGlobalFilter,
