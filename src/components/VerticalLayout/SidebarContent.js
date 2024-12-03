@@ -6,6 +6,7 @@ import { withTranslation } from "react-i18next"
 import useIsAdmin from "hooks/useIsAdmin"
 import useIsDepartmentHead from "hooks/useIsDepartmentHead"
 import MenuItem from "./MenuItem"
+import { useSelector } from "react-redux"
 import { getMenuConfig } from "./menuConfig"
 import useMenuState from "./useMenuState"
 
@@ -13,13 +14,15 @@ const SidebarContent = ({ t }) => {
   const ref = useRef()
   const isAdmin = useIsAdmin()
   const isDepartmentHead = useIsDepartmentHead()
+  const user = useSelector(state => state.user.user)
   const location = useLocation()
 
   const { expandedMenus, toggleMenu } = useMenuState()
 
   const menuConfig = useMemo(
-    () => getMenuConfig(t, isAdmin, isDepartmentHead),
-    [t, isAdmin, isDepartmentHead]
+    () =>
+      getMenuConfig(t, isAdmin, isDepartmentHead, user?.department_id || null),
+    [t, isAdmin, isDepartmentHead, user?.department_id]
   )
 
   const activateParentDropdown = useCallback(item => {
