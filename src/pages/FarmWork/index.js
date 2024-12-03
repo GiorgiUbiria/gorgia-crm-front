@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useMemo, useState } from "react"
 import "../../../node_modules/bootstrap/dist/css/bootstrap.min.css"
 import * as Yup from "yup"
 import { useFormik } from "formik"
+import { MdEdit, MdDelete, MdChevronLeft, MdChevronRight } from "react-icons/md"
 
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import DeleteModal from "../../components/Common/DeleteModal"
@@ -47,7 +48,7 @@ const FarmWork = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [expandedRows, setExpandedRows] = useState([])
   const [sortConfig, setSortConfig] = useState({
-    key: "due_date",
+    key: "created_at",
     direction: "desc",
   })
   const { users: usersList, loading: usersLoading } = useFetchUsers()
@@ -169,10 +170,13 @@ const FarmWork = () => {
     }
   }
 
-  const handleSort = () => {
+  const handleSort = key => {
     setSortConfig(prevConfig => ({
-      key: "due_date",
-      direction: prevConfig.direction === "asc" ? "desc" : "asc",
+      key: key,
+      direction:
+        prevConfig.key === key && prevConfig.direction === "asc"
+          ? "desc"
+          : "asc",
     }))
   }
 
@@ -198,16 +202,49 @@ const FarmWork = () => {
         header: (
           <div
             style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
-            onClick={handleSort}
+            onClick={() => handleSort("created_at")}
           >
-            თარიღი
+            შექმნის თარიღი
             <span style={{ marginLeft: "4px" }}>
-              {sortConfig.direction === "desc" ? "▼" : "▲"}
+              {sortConfig.key === "created_at" &&
+                (sortConfig.direction === "desc" ? "▼" : "▲")}
+            </span>
+          </div>
+        ),
+        accessorKey: "created_at",
+        cell: cellProps => {
+          const date = new Date(cellProps.row.original.created_at)
+          return date.toLocaleDateString("ka-GE", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        },
+      },
+      {
+        header: (
+          <div
+            style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+            onClick={() => handleSort("due_date")}
+          >
+            დასრულების თარიღი
+            <span style={{ marginLeft: "4px" }}>
+              {sortConfig.key === "due_date" &&
+                (sortConfig.direction === "desc" ? "▼" : "▲")}
             </span>
           </div>
         ),
         accessorKey: "due_date",
-        cell: cellProps => cellProps.row.original.due_date,
+        cell: cellProps => {
+          const date = new Date(cellProps.row.original.due_date)
+          return date.toLocaleDateString("ka-GE", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
+        },
       },
       {
         header: "პრიორიტეტი",
@@ -261,7 +298,7 @@ const FarmWork = () => {
                 className="btn btn-sm btn-soft-info"
                 onClick={() => handleTaskClick(cellProps.row.original)}
               >
-                <i className="mdi mdi-pencil-outline" />
+                <MdEdit />
               </Link>
             </li>
             <li data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
@@ -270,14 +307,14 @@ const FarmWork = () => {
                 className="btn btn-sm btn-soft-danger"
                 onClick={() => onClickDelete(cellProps.row.original)}
               >
-                <i className="mdi mdi-delete-outline" />
+                <MdDelete />
               </Link>
             </li>
           </ul>
         ),
       },
     ],
-    [sortConfig.direction]
+    [sortConfig]
   )
 
   const totalPages = Math.ceil(tasks.length / itemsPerPage)
@@ -303,8 +340,8 @@ const FarmWork = () => {
   useEffect(() => {
     if (tasks.length > 0) {
       const sortedTasks = [...tasks].sort((a, b) => {
-        const dateA = new Date(a.due_date)
-        const dateB = new Date(b.due_date)
+        const dateA = new Date(a[sortConfig.key])
+        const dateB = new Date(b[sortConfig.key])
         return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA
       })
       setTasks(sortedTasks)
@@ -444,7 +481,7 @@ const FarmWork = () => {
                                     to="#"
                                     onClick={handlePreviousPage}
                                   >
-                                    <i className="mdi mdi-chevron-left"></i>
+                                    <MdChevronLeft />
                                   </Link>
                                 </li>
                                 {[...Array(totalPages).keys()].map(page => (
@@ -473,7 +510,7 @@ const FarmWork = () => {
                                     to="#"
                                     onClick={handleNextPage}
                                   >
-                                    <i className="mdi mdi-chevron-right"></i>
+                                    <MdChevronRight />
                                   </Link>
                                 </li>
                               </ul>
