@@ -4,6 +4,7 @@ import SimpleBar from "simplebar-react"
 import MetisMenu from "metismenujs"
 import { withTranslation } from "react-i18next"
 import useIsAdmin from "hooks/useIsAdmin"
+import { usePermissions } from "hooks/usePermissions"
 import useIsDepartmentHead from "hooks/useIsDepartmentHead"
 import MenuItem from "./MenuItem"
 import { useSelector } from "react-redux"
@@ -16,13 +17,20 @@ const SidebarContent = ({ t }) => {
   const isDepartmentHead = useIsDepartmentHead()
   const user = useSelector(state => state.user.user)
   const location = useLocation()
+  const { hasPermission, userDepartmentId } = usePermissions()
 
   const { expandedMenus, toggleMenu } = useMenuState()
 
   const menuConfig = useMemo(
     () =>
-      getMenuConfig(t, isAdmin, isDepartmentHead, user?.department_id || null),
-    [t, isAdmin, isDepartmentHead, user?.department_id]
+      getMenuConfig(
+        t,
+        isAdmin,
+        isDepartmentHead,
+        userDepartmentId,
+        hasPermission
+      ),
+    [t, isAdmin, isDepartmentHead, userDepartmentId, hasPermission]
   )
 
   const activateParentDropdown = useCallback(item => {

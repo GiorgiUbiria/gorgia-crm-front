@@ -39,22 +39,9 @@ const buttonVariants = {
     icon: "bx bx-download",
     label: "ექსპორტი",
   },
-  cancel: {
-    color: "secondary",
-    variant: "outlined",
-    icon: "bx bx-x",
-    label: "გაუქმება",
-  },
 }
 
-export function TableButton({
-  type,
-  onClick,
-  label,
-  className = "",
-  size = "small",
-  fullWidth = false,
-}) {
+export function TableButton({ type, onClick, label, className = "", size = "small", fullWidth = false }) {
   const variant = buttonVariants[type] || buttonVariants.edit
 
   return (
@@ -105,4 +92,4 @@ TableActionButtons.propTypes = {
   className: PropTypes.string,
 }
 
-export default TableActionButtons
+export default TableActionButtons 
