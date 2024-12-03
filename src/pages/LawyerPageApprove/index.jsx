@@ -51,6 +51,7 @@ const LawyerPageApprove = () => {
     agreementId: null,
   })
   const [isProcessing, setIsProcessing] = useState(false)
+  const [rejectionComment, setRejectionComment] = useState("")
 
   const fetchAgreements = async () => {
     try {
@@ -65,17 +66,15 @@ const LawyerPageApprove = () => {
     fetchAgreements()
   }, [])
 
-  const handleUpdateStatus = async (agreementId, status, additionalData) => {
+  const handleUpdateStatus = async (agreementId, status, additionalData, rejectionReason) => {
     if (status === "approved") {
       setIsProcessing(true)
     }
 
     try {
-      const response = await updateAgreementStatus(
-        agreementId,
-        status,
-        additionalData
-      )
+      const response = await updateAgreementStatus(agreementId, status, {
+        rejection_reason: rejectionReason
+      })
 
       setAgreements(prevAgreements =>
         prevAgreements.map(agreement =>
@@ -114,7 +113,12 @@ const LawyerPageApprove = () => {
 
   const handleConfirmAction = async () => {
     const { type, agreementId } = confirmModal
-    await handleUpdateStatus(agreementId, type)
+    if (type === "rejected" && !rejectionComment.trim()) {
+      alert("გთხოვთ მიუთითოთ უარყოფის მიზეზი")
+      return
+    }
+    await handleUpdateStatus(agreementId, type, null, rejectionComment)
+    setRejectionComment("")
     handleModalClose()
   }
 
@@ -262,6 +266,7 @@ const LawyerPageApprove = () => {
           product_delivery_address: agreement.product_delivery_address,
           product_payment_term: agreement.product_payment_term,
           bank_account: agreement.bank_account,
+          rejection_reason: agreement.rejection_reason || null,
         },
       }
     })
@@ -286,6 +291,11 @@ const LawyerPageApprove = () => {
 
     return (
       <div className="p-3">
+        {row.expanded.rejection_reason && (
+          <div className="alert alert-danger mb-3">
+            უარყოფის მიზეზი: {row.expanded.rejection_reason}
+          </div>
+        )}
         <div className="mb-3">
           <Row>
             <Col md={6}>
@@ -383,12 +393,29 @@ const LawyerPageApprove = () => {
               </p>
             </div>
           ) : (
-            "დარწმუნებული ხართ, რომ გსურთ ამ მოქმედების შესრულება?"
+            <>
+              <p>დარწმუნებული ხართ, რომ გსურთ ამ მოქმედების შესრულება?</p>
+              {confirmModal.type === "rejected" && (
+                <div className="mt-3">
+                  <label htmlFor="rejection_reason" className="form-label">
+                    უარყოფის მიზეზი *
+                  </label>
+                  <textarea
+                    id="rejection_reason"
+                    className="form-control"
+                    value={rejectionComment}
+                    onChange={e => setRejectionComment(e.target.value)}
+                    rows="3"
+                    required
+                  />
+                </div>
+              )}
+            </>
           )}
         </ModalBody>
         <ModalFooter>
           <Button
-            color="error"
+            color={confirmModal.type === "rejected" ? "secondary" : "error"}
             onClick={handleModalClose}
             disabled={isProcessing}
           >
