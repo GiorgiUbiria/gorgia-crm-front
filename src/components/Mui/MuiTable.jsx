@@ -148,11 +148,18 @@ const MuiTable = ({
         pageSize: initialPageSize,
         filters: currentFilters,
         globalFilter: searchTerm,
+        sortBy: [
+          {
+            id: "id",
+            desc: true,
+          },
+        ],
       },
       globalFilter: customGlobalFilter,
       autoResetPage: false,
       autoResetFilters: false,
       autoResetGlobalFilter: false,
+      autoResetSortBy: false,
     },
     useFilters,
     useGlobalFilter,
@@ -430,8 +437,8 @@ const MuiTable = ({
           <TableHead>
             {headerGroups.map(headerGroup => (
               <TableRow
-                {...headerGroup.getHeaderGroupProps()}
                 key={headerGroup.id}
+                {...headerGroup.getHeaderGroupProps()}
               >
                 {renderRowDetails && (
                   <TableCell sx={{ width: 48, padding: "0 4px" }} />
@@ -476,12 +483,12 @@ const MuiTable = ({
               return (
                 <React.Fragment key={row.original.id}>
                   <TableRow
-                    {...row.getRowProps()}
                     hover
                     onClick={event => {
                       if (event.target.closest(".collapse-button")) return
                       onRowClick && onRowClick(row.original)
                     }}
+                    {...row.getRowProps()}
                     sx={{
                       cursor: onRowClick ? "pointer" : "default",
                       "&:hover": {
@@ -518,7 +525,7 @@ const MuiTable = ({
                     ))}
                   </TableRow>
                   {renderRowDetails && (
-                    <TableRow>
+                    <TableRow key={`${row.original.id}-collapse`}>
                       <TableCell
                         sx={{
                           py: 0,

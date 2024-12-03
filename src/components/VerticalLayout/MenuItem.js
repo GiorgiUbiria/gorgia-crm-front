@@ -23,6 +23,11 @@ const styles = {
     maxHeight: 0,
     opacity: 0,
     transform: "translateY(-10px)",
+    "& > li:not(:last-child)": {
+      borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+      paddingBottom: "0.5rem",
+      marginBottom: "0.5rem",
+    },
   },
   submenuExpanded: {
     maxHeight: "500px",
