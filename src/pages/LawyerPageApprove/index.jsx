@@ -16,6 +16,14 @@ import {
   getDepartmentAgreements,
   updateAgreementStatus,
 } from "services/agreement"
+import {
+  BsBank,
+  BsCalendar,
+  BsCreditCard,
+  BsMap,
+  BsPerson,
+  BsVoicemail,
+} from "react-icons/bs"
 import MuiTable from "../../components/Mui/MuiTable"
 
 const statusMap = {
@@ -66,14 +74,19 @@ const LawyerPageApprove = () => {
     fetchAgreements()
   }, [])
 
-  const handleUpdateStatus = async (agreementId, status, additionalData, rejectionReason) => {
+  const handleUpdateStatus = async (
+    agreementId,
+    status,
+    additionalData,
+    rejectionReason
+  ) => {
     if (status === "approved") {
       setIsProcessing(true)
     }
 
     try {
       const response = await updateAgreementStatus(agreementId, status, {
-        rejection_reason: rejectionReason
+        rejection_reason: rejectionReason,
       })
 
       setAgreements(prevAgreements =>
@@ -267,6 +280,7 @@ const LawyerPageApprove = () => {
           product_payment_term: agreement.product_payment_term,
           bank_account: agreement.bank_account,
           rejection_reason: agreement.rejection_reason || null,
+          requested_by: agreement.user.name + " " + agreement.user.sur_name,
         },
       }
     })
@@ -285,64 +299,111 @@ const LawyerPageApprove = () => {
   ]
 
   const renderRowDetails = useCallback(row => {
-    if (!row) {
-      return null
-    }
+    if (!row) return null
 
     return (
-      <div className="p-3">
+      <div className="p-4 bg-light rounded">
+        {/* Status Banner */}
         {row.expanded.rejection_reason && (
-          <div className="alert alert-danger mb-3">
-            უარყოფის მიზეზი: {row.expanded.rejection_reason}
+          <div className="alert alert-danger d-flex align-items-center mb-4">
+            <i className="bx bx-error-circle me-2 fs-5"></i>
+            <div>
+              <strong>უარყოფის მიზეზი:</strong> {row.expanded.rejection_reason}
+            </div>
           </div>
         )}
-        <div className="mb-3">
-          <Row>
+
+        {/* Requester Info */}
+        <div className="d-flex align-items-center mb-4 gap-2 text-muted">
+          <BsPerson className="fs-3 text-primary" />
+          <strong>მოითხოვა:</strong>
+          <span className="ms-2">{row.expanded.requested_by}</span>
+        </div>
+
+        {/* Details Grid */}
+        <div className="border rounded p-4 bg-white mb-4">
+          <Row className="g-4">
             <Col md={6}>
-              <div className="mb-2">
-                <strong>გადახდის განსხვავებული პირობები: </strong>
-                {row.expanded.different_terms ? "კი" : "არა"}
+              <div className="d-flex align-items-center gap-2">
+                <BsCreditCard className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    გადახდის განსხვავებული პირობები
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.different_terms ? "კი" : "არა"}
+                  </div>
+                </div>
               </div>
             </Col>
             <Col md={6}>
-              <div className="mb-2">
-                <strong>
-                  ხელშეკრულების გაფორმების ინიციატორი და შესრულებაზე
-                  პასუხისმგებელი პირი:{" "}
-                </strong>
-                {row.expanded.contract_initiator}
-              </div>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <div className="mb-2">
-                <strong>ხელშეკრულების ვადა: </strong>
-                {row.expanded.conscription_term}
+              <div className="d-flex align-items-center gap-2">
+                <BsVoicemail className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    ხელშეკრულების ინიციატორი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.contract_initiator}
+                  </div>
+                </div>
               </div>
             </Col>
             <Col md={6}>
-              <div className="mb-2">
-                <strong>პროდუქციის მიწოდების მისამართი: </strong>
-                {row.expanded.product_delivery_address}
-              </div>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <div className="mb-2">
-                <strong>პროდუქციის გადახდის ვადა: </strong>
-                {row.expanded.product_payment_term}
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ხელშეკრულების ვადა</div>
+                  <div className="fw-medium">
+                    {row.expanded.conscription_term}
+                  </div>
+                </div>
               </div>
             </Col>
             <Col md={6}>
-              <div className="mb-2">
-                <strong>საბანკო ანგარიში: </strong>
-                {row.expanded.bank_account}
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">მიწოდების მისამართი</div>
+                  <div className="fw-medium">
+                    {row.expanded.product_delivery_address}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">გადახდის ვადა</div>
+                  <div className="fw-medium">
+                    {row.expanded.product_payment_term}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">საბანკო ანგარიში</div>
+                  <div className="fw-medium">{row.expanded.bank_account}</div>
+                </div>
               </div>
             </Col>
           </Row>
         </div>
+
+        {/* Download Button */}
+        {row.status === "approved" && (
+          <button
+            className="btn btn-primary"
+            onClick={() => handleDownload(row.id)}
+          >
+            <i className="bx bx-download me-2"></i>
+            ხელშეკრულების ჩამოტვირთვა
+          </button>
+        )}
       </div>
     )
   }, [])
