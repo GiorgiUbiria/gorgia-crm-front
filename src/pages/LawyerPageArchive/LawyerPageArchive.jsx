@@ -84,6 +84,7 @@ const LawyerPageArchive = () => {
           product_delivery_address: agreement.product_delivery_address,
           product_payment_term: agreement.product_payment_term,
           bank_account: agreement.bank_account,
+          rejection_reason: agreement.rejection_reason || null,
         },
       }
     })
@@ -203,6 +204,11 @@ const LawyerPageArchive = () => {
 
     return (
       <div className="p-3">
+        {row.expanded.rejection_reason && (
+          <div className="alert alert-danger mb-3">
+            უარყოფის მიზეზი: {row.expanded.rejection_reason}
+          </div>
+        )}
         <div className="mb-3">
           <Row>
             <Col md={6}>

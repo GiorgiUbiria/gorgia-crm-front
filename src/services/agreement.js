@@ -5,9 +5,10 @@ export const createAgreement = async data => {
   return response.data
 }
 
-export const updateAgreementStatus = async (agreementId, status) => {
+export const updateAgreementStatus = async (agreementId, status, additionalData) => {
   return defaultInstance.post(`/api/agreements/${agreementId}/status`, {
     status,
+    ...additionalData
   })
 }
 
