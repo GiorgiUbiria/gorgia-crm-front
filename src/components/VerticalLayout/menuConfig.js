@@ -117,7 +117,7 @@ export const getMenuConfig = (
           departmentId: 8,
           permission: "hr-documents.manage",
           label: t("ვიზირება"),
-          visible: isDepartmentHead && userDepartmentId === 8,
+          visible: (isDepartmentHead && userDepartmentId === 8) || isAdmin,
         },
         {
           to: "/hr/documents/archive",

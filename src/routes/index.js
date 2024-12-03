@@ -52,8 +52,16 @@ const authProtectedRoutes = [
   { path: "/profile", component: <ProfilePage /> },
 
   // Admin Routes
-  { path: "/admin/dashboard", component: <AdminPage /> },
-  { path: "/admin/approvals", component: <HeadPage /> },
+  { 
+    path: "/admin/dashboard", 
+    component: <AdminPage />,
+    permission: "admin.access"
+  },
+  { 
+    path: "/admin/approvals", 
+    component: <HeadPage />,
+    permission: "admin.approvals"
+  },
   { path: "/admin/visitors", component: <VisitorsTraffic /> },
   { path: "/admin/payment-monitoring", component: <InvoicePage /> },
   { path: "/admin/archive", component: <ArchivePage /> },
@@ -87,9 +95,26 @@ const authProtectedRoutes = [
   { path: "/applications/business-trip/my-requests", component: <UserTrip /> },
 
   // HR Documents
-  { path: "/hr/documents", component: <HrPage /> },
-  { path: "/hr/documents/approve", component: <HrPageApprove /> },
-  { path: "/hr/documents/sent", component: <HrPageSent /> },
+  { 
+    path: "/hr/documents/new", 
+    component: <HrPage /> 
+  },
+  { 
+    path: "/hr/documents/approve", 
+    component: <HrPageApprove />,
+    permission: "hr-documents.manage",
+    departmentId: 8
+  },
+  // { 
+  //   path: "/hr/documents/archive", 
+  //   component: <HrPageArchive />,
+  //   permission: "hr-documents.view",
+  //   departmentId: 8
+  // },
+  { 
+    path: "/hr/documents/my-requests", 
+    component: <HrPageSent /> 
+  },
 
   // Legal Documents
   { path: "/legal/contracts/new", component: <LawyerPage /> },
