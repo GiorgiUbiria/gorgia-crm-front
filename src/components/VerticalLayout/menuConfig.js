@@ -13,6 +13,12 @@ import {
   BsTelephone,
   BsTools,
   BsArchive,
+  BsPeople,
+  BsCashStack,
+  BsCalendar2DateFill,
+  BsJournalBookmarkFill,
+  BsFileCodeFill,
+  BsFileCode,
 } from "react-icons/bs"
 
 export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
@@ -28,8 +34,6 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
       label: t("სამართავი პანელი"),
       submenu: [
         { to: "/admin/dashboard", label: t("მთავარი") },
-        { to: "/admin/visitors", label: t("ვიზიტორები") },
-        { to: "/admin/payment-monitoring", label: t("გადახდების მონიტორინგი") },
         { to: "/admin/approvals", label: t("ვიზირება") },
         { to: "/admin/archive", icon: BsArchive, label: t("არქივი") },
       ],
@@ -46,7 +50,7 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
     },
     {
       key: "applications",
-      icon: BsFileText,
+      icon: BsFileCode,
       label: t("განცხადებები"),
       submenu: [
         {
@@ -108,7 +112,7 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
     },
     {
       key: "contracts",
-      icon: BsFileEarmark,
+      icon: BsFileText,
       label: t("ხელშეკრულებები"),
       submenu: [
         { to: "/legal/contracts/new", label: t("მოთხოვნა") },
@@ -132,6 +136,12 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
       icon: BsCreditCard2Front,
       label: t("ლოიალობის ბარათი"),
     },
+    { to: "/admin/visitors", icon: BsPeople, label: t("ვიზიტორები") },
+    {
+      to: "/admin/payment-monitoring",
+      icon: BsCashStack,
+      label: t("გადახდების მონიტორინგი"),
+    },
     {
       key: "leads",
       icon: BsTelephone,
@@ -143,12 +153,12 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
     },
     {
       to: "/tools/calendar",
-      icon: BsCalendar,
+      icon: BsCalendar2DateFill,
       label: t("კალენდარი"),
     },
     {
       to: "/tools/notes",
-      icon: BsJournal,
+      icon: BsJournalBookmarkFill,
       label: t("ჩანაწერები"),
     },
     {
