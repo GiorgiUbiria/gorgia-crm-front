@@ -13,6 +13,9 @@ import {
 } from "reactstrap"
 import Button from "@mui/material/Button"
 import { updateUserById } from "services/admin/department"
+import IconButton from "@mui/material/IconButton"
+import Visibility from "@mui/icons-material/Visibility"
+import VisibilityOff from "@mui/icons-material/VisibilityOff"
 
 const EditUserModal = ({
   isOpen,
@@ -26,14 +29,13 @@ const EditUserModal = ({
     name: "",
     sur_name: "",
     email: "",
-    position: "",
     mobile_number: "",
-    working_start_date: "",
     department_id: "",
     roles: [],
     password: "",
     confirm_password: "",
   })
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -41,11 +43,11 @@ const EditUserModal = ({
         name: user.name || "",
         sur_name: user.sur_name || "",
         email: user.email || "",
-        position: user.position || "",
         mobile_number: user.mobile_number || "",
-        working_start_date: user.working_start_date || "",
         department_id: user.department_id || "",
-        roles: user.roles?.map(role => role.id) || []
+        roles: user.roles?.map(role => role.id) || [],
+        password: "",
+        confirm_password: "",
       })
     }
   }, [user])
@@ -57,14 +59,14 @@ const EditUserModal = ({
     })
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault()
-    
+
     try {
       const updateData = {
-        ...formData
+        ...formData,
       }
-      
+
       // Only include password if it was changed
       if (!formData.password) {
         delete updateData.password
@@ -72,14 +74,22 @@ const EditUserModal = ({
       }
 
       if (isDepartmentHead) {
-        // Department heads can only update specific fields
-        const allowedFields = ['position', 'mobile_number', 'working_start_date']
+        // Department heads can only update specific fields, admin should be able to update all fields.
+        const allowedFields = [
+          "position",
+          "mobile_number",
+          "working_start_date",
+        ]
         Object.keys(updateData).forEach(key => {
           if (!allowedFields.includes(key)) {
             delete updateData[key]
           }
         })
-        await updateDepartmentMember(currentUserDepartmentId, user.id, updateData)
+        await updateDepartmentMember(
+          currentUserDepartmentId,
+          user.id,
+          updateData
+        )
       } else {
         await updateUserById(user.id, updateData)
       }
@@ -88,8 +98,11 @@ const EditUserModal = ({
       toggle()
     } catch (error) {
       console.error("Error updating user:", error)
-      // Handle error appropriately
     }
+  }
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
   }
 
   return (
@@ -154,32 +167,60 @@ const EditUserModal = ({
             <Col md={6}>
               <FormGroup>
                 <Label for="password">ახალი პაროლი (არასავალდებულო)</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
+                <div className="position-relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <IconButton
+                    onClick={togglePasswordVisibility}
+                    style={{
+                      position: "absolute",
+                      right: "8px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      padding: "4px",
+                    }}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </div>
               </FormGroup>
             </Col>
             <Col md={6}>
               <FormGroup>
                 <Label for="confirm_password">გაიმეორეთ პაროლი</Label>
-                <Input
-                  id="confirm_password"
-                  name="confirm_password"
-                  type="password"
-                  value={formData.confirm_password}
-                  onChange={handleChange}
-                  disabled={!formData.password}
-                />
+                <div className="position-relative">
+                  <Input
+                    id="confirm_password"
+                    name="confirm_password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.confirm_password}
+                    onChange={handleChange}
+                    disabled={!formData.password}
+                  />
+                  <IconButton
+                    onClick={togglePasswordVisibility}
+                    style={{
+                      position: "absolute",
+                      right: "8px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      padding: "4px",
+                    }}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </div>
               </FormGroup>
             </Col>
           </Row>
         </ModalBody>
-        <ModalFooter>
-          <Button onClick={toggle} color="secondary">
+        <ModalFooter className="d-flex gap-2">
+          <Button onClick={toggle} color="error">
             გაუქმება
           </Button>
           <Button type="submit" variant="contained" color="primary">

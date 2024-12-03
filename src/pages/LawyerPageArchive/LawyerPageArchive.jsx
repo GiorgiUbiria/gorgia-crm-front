@@ -7,6 +7,14 @@ import {
   downloadAgreement as downloadAgreementService,
 } from "services/agreement"
 import { toast, ToastContainer } from "react-toastify"
+import {
+  BsBank,
+  BsCalendar,
+  BsCreditCard,
+  BsMap,
+  BsPerson,
+  BsVoicemail,
+} from "react-icons/bs"
 
 const handleDownload = async agreementId => {
   try {
@@ -65,17 +73,27 @@ const LawyerPageArchive = () => {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
         created_at: agreement.created_at,
-        name: agreement.contragent_name || "N/A",
         price: agreement.product_cost,
-        payment_terms: agreement.product_payment_term,
-        buyer: agreement.buyer_name + " " + agreement.buyer_surname,
-        file_path: "/storage/app/templates/agreement_template_1.docx",
         contragent: {
           name: agreement.contragent_name,
+          id: agreement.contragent_id,
           address: agreement.contragent_address,
           phone: agreement.contragent_phone_number,
           email: agreement.contragent_email,
-          director: agreement.contragent_director,
+        },
+        director: {
+          name: agreement.contragent_director_name,
+          phone: agreement.contragent_director_phone_number,
+        },
+        expanded: {
+          different_terms: agreement.payment_different_terms,
+          contract_initiator: agreement.contract_initiator_name,
+          conscription_term: agreement.conscription_term,
+          product_delivery_address: agreement.product_delivery_address,
+          product_payment_term: agreement.product_payment_term,
+          bank_account: agreement.bank_account,
+          rejection_reason: agreement.rejection_reason || null,
+          requested_by: agreement.user.name + " " + agreement.user.sur_name,
         },
       }
     })
@@ -88,28 +106,32 @@ const LawyerPageArchive = () => {
         accessor: "id",
       },
       {
-        Header: "კონტრაგენტის სახელი",
+        Header: "კონტრაგენტის დასახელება/სახელი და გვარი",
         accessor: "contragent.name",
       },
       {
-        Header: "კონტრაგენტის მისამართი",
+        Header: "პირადი ნომერი/საიდენტიფიკაციო კოდი",
+        accessor: "contragent.id",
+      },
+      {
+        Header: "მისამართი",
         accessor: "contragent.address",
       },
       {
-        Header: "კონტრაგენტის ნომერი",
+        Header: "ტელეფონის ნომერი",
         accessor: "contragent.phone",
       },
       {
-        Header: "კონტრაგენტის ელ-ფოსტა",
+        Header: "ელ.ფოსტა",
         accessor: "contragent.email",
       },
       {
-        Header: "მყიდველი",
-        accessor: "buyer",
+        Header: "დირექტორის სახელი და გვარი",
+        accessor: "director.name",
       },
       {
-        Header: "დირექტორი",
-        accessor: "contragent.director",
+        Header: "დირექტორის ტელეფონის ნომერი",
+        accessor: "director.phone",
       },
       {
         Header: "პროდუქციის ღირებულება",
@@ -185,20 +207,111 @@ const LawyerPageArchive = () => {
   ]
 
   const renderRowDetails = useCallback(row => {
-    if (!row) {
-      console.error("Row data is missing")
-      return null
-    }
+    if (!row) return null
 
     return (
-      <div className="p-3">
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={() => handleDownload(row.id)}
-        >
-          <i className="bx bx-download me-1"></i>
-          ხელშეკრულების ჩამოტვირთვა
-        </button>
+      <div className="p-4 bg-light rounded">
+        {/* Status Banner */}
+        {row.expanded.rejection_reason && (
+          <div className="alert alert-danger d-flex align-items-center mb-4">
+            <i className="bx bx-error-circle me-2 fs-5"></i>
+            <div>
+              <strong>უარყოფის მიზეზი:</strong> {row.expanded.rejection_reason}
+            </div>
+          </div>
+        )}
+
+        {/* Requester Info */}
+        <div className="d-flex align-items-center mb-4 gap-2 text-muted">
+          <BsPerson className="fs-3 text-primary" />
+          <strong>მოითხოვა:</strong>
+          <span className="ms-2">{row.expanded.requested_by}</span>
+        </div>
+
+        {/* Details Grid */}
+        <div className="border rounded p-4 bg-white mb-4">
+          <Row className="g-4">
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCreditCard className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    გადახდის განსხვავებული პირობები
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.different_terms ? "კი" : "არა"}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsVoicemail className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    ხელშეკრულების ინიციატორი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.contract_initiator}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ხელშეკრულების ვადა</div>
+                  <div className="fw-medium">
+                    {row.expanded.conscription_term}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">მიწოდების მისამართი</div>
+                  <div className="fw-medium">
+                    {row.expanded.product_delivery_address}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">გადახდის ვადა</div>
+                  <div className="fw-medium">
+                    {row.expanded.product_payment_term}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">საბანკო ანგარიში</div>
+                  <div className="fw-medium">{row.expanded.bank_account}</div>
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </div>
+
+        {/* Download Button */}
+        {row.status === "approved" && (
+          <button
+            className="btn btn-primary"
+            onClick={() => handleDownload(row.id)}
+          >
+            <i className="bx bx-download me-2"></i>
+            ხელშეკრულების ჩამოტვირთვა
+          </button>
+        )}
       </div>
     )
   }, [])
@@ -228,11 +341,7 @@ const LawyerPageArchive = () => {
                     searchableFields={["contragent.name"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
-                    renderRowDetails={row => {
-                      return row.status === "approved"
-                        ? renderRowDetails(row)
-                        : null
-                    }}
+                    renderRowDetails={renderRowDetails}
                   />
                 </CardBody>
               </Card>

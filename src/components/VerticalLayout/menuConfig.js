@@ -4,19 +4,28 @@ import {
   BsPerson,
   BsFileText,
   BsFolder,
-  BsFileEarmark,
   BsJournal,
   BsHeadset,
   BsCreditCard2Front,
-  BsCalendar,
   BsChatDots,
   BsTelephone,
   BsTools,
   BsArchive,
+  BsPeople,
+  BsCashStack,
+  BsCalendar2DateFill,
+  BsJournalBookmarkFill,
+  BsFileCode,
 } from "react-icons/bs"
 
-export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
-  [
+export const getMenuConfig = (
+  t,
+  isAdmin,
+  isDepartmentHead,
+  userDepartmentId,
+  hasPermission
+) => {
+  const menuItems = [
     {
       to: "/dashboard",
       icon: BsHouseDoor,
@@ -28,8 +37,6 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
       label: t("სამართავი პანელი"),
       submenu: [
         { to: "/admin/dashboard", label: t("მთავარი") },
-        { to: "/admin/visitors", label: t("ვიზიტორები") },
-        { to: "/admin/payment-monitoring", label: t("გადახდების მონიტორინგი") },
         { to: "/admin/approvals", label: t("ვიზირება") },
         { to: "/admin/archive", icon: BsArchive, label: t("არქივი") },
       ],
@@ -46,7 +53,7 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
     },
     {
       key: "applications",
-      icon: BsFileText,
+      icon: BsFileCode,
       label: t("განცხადებები"),
       submenu: [
         {
@@ -101,14 +108,33 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
       icon: BsFolder,
       label: t("HR დოკუმენტები"),
       submenu: [
-        { to: "/hr/documents", label: t("ცნობები") },
-        isAdmin && { to: "/hr/documents/approve", label: t("ვიზირება") },
-        { to: "/hr/documents/sent", label: t("გაგზავნილი") },
+        {
+          to: "/hr/documents/new",
+          label: t("ახალი მოთხოვნა"),
+        },
+        {
+          to: "/hr/documents/approve",
+          departmentId: 8,
+          permission: "hr-documents.manage",
+          label: t("ვიზირება"),
+          visible: (isDepartmentHead && userDepartmentId === 8) || isAdmin,
+        },
+        {
+          to: "/hr/documents/archive",
+          departmentId: 8,
+          permission: "hr-documents.view",
+          label: t("არქივი"),
+          visible: userDepartmentId === 8 || isAdmin,
+        },
+        {
+          to: "/hr/documents/my-requests",
+          label: t("ჩემი მოთხოვნები"),
+        },
       ],
     },
     {
       key: "contracts",
-      icon: BsFileEarmark,
+      icon: BsFileText,
       label: t("ხელშეკრულებები"),
       submenu: [
         { to: "/legal/contracts/new", label: t("მოთხოვნა") },
@@ -132,6 +158,12 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
       icon: BsCreditCard2Front,
       label: t("ლოიალობის ბარათი"),
     },
+    { to: "/admin/visitors", icon: BsPeople, label: t("ვიზიტორები") },
+    // {
+    //   to: "/admin/payment-monitoring",
+    //   icon: BsCashStack,
+    //   label: t("გადახდების მონიტორინგი"),
+    // },
     {
       key: "leads",
       icon: BsTelephone,
@@ -143,12 +175,12 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
     },
     {
       to: "/tools/calendar",
-      icon: BsCalendar,
+      icon: BsCalendar2DateFill,
       label: t("კალენდარი"),
     },
     {
       to: "/tools/notes",
-      icon: BsJournal,
+      icon: BsJournalBookmarkFill,
       label: t("ჩანაწერები"),
     },
     {
@@ -156,4 +188,30 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
       icon: BsChatDots,
       label: t("ჩათი"),
     },
-  ].filter(Boolean)
+  ]
+  const filterMenuItems = items => {
+    return items
+      .filter(item => {
+        if (item.visible === false) return false
+        if (!item.permission) return true
+        return hasPermission(item.permission, item.departmentId)
+      })
+      .map(item => {
+        if (item.submenu) {
+          return {
+            ...item,
+            submenu: filterMenuItems(item.submenu),
+          }
+        }
+        return item
+      })
+      .filter(item => {
+        if (item.submenu) {
+          return item.submenu.length > 0
+        }
+        return true
+      })
+  }
+
+  return filterMenuItems(menuItems)
+}

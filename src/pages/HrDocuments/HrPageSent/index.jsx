@@ -10,7 +10,9 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material"
+import { downloadHrDocument as downloadHrDocumentService } from "services/hrDocument"
 import { Row, Col } from "reactstrap"
+import { toast, ToastContainer } from "react-toastify"
 
 const statusMap = {
   in_progress: {
@@ -178,23 +180,36 @@ const HrPageSent = () => {
     ]
   }, [])
 
+  const handleHrDocumentDownload = async hrDocumentId => {
+    try {
+      const response = await downloadHrDocumentService(hrDocumentId)
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement("a")
+      link.href = url
+      link.setAttribute("download", "hr-document.pdf") // or use a dynamic name
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      toast.success("HR დოკუმენტი წარმატებით ჩამოიტვირთა")
+    } catch (error) {
+      console.error("Download failed:", error)
+      toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
+    }
+  }
+
   const expandedRow = row => {
     return (
       <div>
         <div>კომენტარი: {row.comment}</div>
-        {row.status === "approved" && row.pdf_path && (
-          <div className="mt-2">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => window.open(row.pdf_path)}
-              startIcon={<i className="bx bx-download" />}
-            >
-              PDF-ის ჩამოტვირთვა
-            </Button>
-          </div>
+        {row.status === "approved" && (
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => handleHrDocumentDownload(row.id)}
+          >
+            <i className="bx bx-download me-1"></i>
+            HR დოკუმენტის ჩამოტვირთვა
+          </button>
         )}
-        <div> {JSON.stringify(row)}</div>
       </div>
     )
   }
@@ -227,6 +242,7 @@ const HrPageSent = () => {
           />
         </div>
       </div>
+      <ToastContainer />
     </React.Fragment>
   )
 }
