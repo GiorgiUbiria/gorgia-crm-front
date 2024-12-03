@@ -4,7 +4,6 @@ import { Routes, Route } from "react-router-dom"
 import { authProtectedRoutes, publicRoutes } from "./routes"
 
 import Authmiddleware from "./routes/route"
-
 import VerticalLayout from "./components/VerticalLayout/"
 import NonAuthLayout from "./components/NonAuthLayout"
 
@@ -36,7 +35,10 @@ const App = () => {
           <Route
             path={route.path}
             element={
-              <Authmiddleware>
+              <Authmiddleware
+                permission={route.permission}
+                departmentId={route.departmentId}
+              >
                 <Layout>{route.component}</Layout>
               </Authmiddleware>
             }
