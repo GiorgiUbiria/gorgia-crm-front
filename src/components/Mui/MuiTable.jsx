@@ -150,10 +150,10 @@ const MuiTable = ({
         globalFilter: searchTerm,
         sortBy: [
           {
-            id: 'id',
-            desc: true
-          }
-        ]
+            id: "id",
+            desc: true,
+          },
+        ],
       },
       globalFilter: customGlobalFilter,
       autoResetPage: false,
