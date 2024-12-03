@@ -29,6 +29,7 @@ import classnames from "classnames"
 import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
 import { Button } from "reactstrap"
+import { usePermissions } from "hooks/usePermissions"
 
 const DOCUMENT_TYPES = {
   PAID_EMPLOYMENT: "შრომითი ხელფასიანი",
@@ -154,7 +155,7 @@ const HrPage = () => {
   const [selectedUserId, setSelectedUserId] = useState("")
   const [selectedUser, setSelectedUser] = useState(null)
 
-  const isAdmin = useIsAdmin()
+  const { hasPermission, isAdmin, isHrMember } = usePermissions()
 
   useEffect(() => {
     setCurrentUser(reduxUser)
@@ -162,7 +163,7 @@ const HrPage = () => {
 
   const fetchHrDocuments = async () => {
     try {
-      if (isAdmin) {
+      if (isAdmin || isHrMember) {
         const response = await getHrDocuments()
         setHrDocuments(response.data)
       } else {

@@ -4,11 +4,9 @@ import {
   BsPerson,
   BsFileText,
   BsFolder,
-  BsFileEarmark,
   BsJournal,
   BsHeadset,
   BsCreditCard2Front,
-  BsCalendar,
   BsChatDots,
   BsTelephone,
   BsTools,
@@ -17,12 +15,17 @@ import {
   BsCashStack,
   BsCalendar2DateFill,
   BsJournalBookmarkFill,
-  BsFileCodeFill,
   BsFileCode,
 } from "react-icons/bs"
 
-export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
-  [
+export const getMenuConfig = (
+  t,
+  isAdmin,
+  isDepartmentHead,
+  userDepartmentId,
+  hasPermission
+) => {
+  const menuItems = [
     {
       to: "/dashboard",
       icon: BsHouseDoor,
@@ -105,9 +108,28 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
       icon: BsFolder,
       label: t("HR დოკუმენტები"),
       submenu: [
-        { to: "/hr/documents", label: t("ცნობები") },
-        isAdmin && { to: "/hr/documents/approve", label: t("ვიზირება") },
-        { to: "/hr/documents/sent", label: t("გაგზავნილი") },
+        {
+          to: "/hr/documents/new",
+          label: t("ახალი მოთხოვნა"),
+        },
+        {
+          to: "/hr/documents/approve",
+          departmentId: 8,
+          permission: "hr-documents.manage",
+          label: t("ვიზირება"),
+          visible: isDepartmentHead && userDepartmentId === 8,
+        },
+        {
+          to: "/hr/documents/archive",
+          departmentId: 8,
+          permission: "hr-documents.view",
+          label: t("არქივი"),
+          visible: userDepartmentId === 8 || isAdmin,
+        },
+        {
+          to: "/hr/documents/my-requests",
+          label: t("ჩემი მოთხოვნები"),
+        },
       ],
     },
     {
@@ -166,4 +188,30 @@ export const getMenuConfig = (t, isAdmin, isDepartmentHead) =>
       icon: BsChatDots,
       label: t("ჩათი"),
     },
-  ].filter(Boolean)
+  ]
+  const filterMenuItems = items => {
+    return items
+      .filter(item => {
+        if (item.visible === false) return false
+        if (!item.permission) return true
+        return hasPermission(item.permission, item.departmentId)
+      })
+      .map(item => {
+        if (item.submenu) {
+          return {
+            ...item,
+            submenu: filterMenuItems(item.submenu),
+          }
+        }
+        return item
+      })
+      .filter(item => {
+        if (item.submenu) {
+          return item.submenu.length > 0
+        }
+        return true
+      })
+  }
+
+  return filterMenuItems(menuItems)
+}
