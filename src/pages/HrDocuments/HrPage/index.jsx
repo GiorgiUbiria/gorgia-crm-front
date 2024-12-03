@@ -450,6 +450,7 @@ const HrPage = () => {
                     ჩემთვის
                   </NavLink>
                 </NavItem>
+                {isAdmin && (
                 <NavItem>
                   <NavLink
                     style={{ cursor: "pointer" }}
@@ -461,6 +462,7 @@ const HrPage = () => {
                     სხვისთვის
                   </NavLink>
                 </NavItem>
+                )}
               </Nav>
 
               <TabContent activeTab={activeTab} className="p-3 text-muted">
@@ -497,10 +499,8 @@ const HrPage = () => {
 
 
                 </TabPane>
+                {isAdmin && (
                 <TabPane tabId="2">
-
-
-
                 <Formik
                   enableReinitialize
                   initialValues={getInitialValues(activeTab, currentUser, selectedUser)}
@@ -516,7 +516,6 @@ const HrPage = () => {
                   }) => (
                     <Form onSubmit={handleSubmit}>
                       <OthersDocument activeTab={activeTab} users={users} selectedUserId={selectedUserId}  setSelectedUserId={setSelectedUserId} />
-                      
                       <ModalFooter>
                         <Button color="primary" type="submit" disabled={isSubmitting}>
                           შენახვა
@@ -528,10 +527,8 @@ const HrPage = () => {
                     </Form>
                   )}
                 </Formik>
-
-
-
                 </TabPane>
+                )}
               </TabContent>
               
             </div>
