@@ -68,6 +68,7 @@ const LawyerPageArchive = () => {
         price: agreement.product_cost,
         contragent: {
           name: agreement.contragent_name,
+          id: agreement.contragent_id,
           address: agreement.contragent_address,
           phone: agreement.contragent_phone_number,
           email: agreement.contragent_email,
@@ -76,8 +77,14 @@ const LawyerPageArchive = () => {
           name: agreement.contragent_director_name,
           phone: agreement.contragent_director_phone_number,
         },
-        different_terms: agreement.payment_different_terms,
-        contract_initiator: agreement.contract_initiator_name,
+        expanded: {
+          different_terms: agreement.payment_different_terms,
+          contract_initiator: agreement.contract_initiator_name,
+          conscription_term: agreement.conscription_term,
+          product_delivery_address: agreement.product_delivery_address,
+          product_payment_term: agreement.product_payment_term,
+          bank_account: agreement.bank_account,
+        },
       }
     })
   }, [agreements])
@@ -91,6 +98,10 @@ const LawyerPageArchive = () => {
       {
         Header: "კონტრაგენტის დასახელება/სახელი და გვარი",
         accessor: "contragent.name",
+      },
+      {
+        Header: "პირადი ნომერი/საიდენტიფიკაციო კოდი",
+        accessor: "contragent.id",
       },
       {
         Header: "მისამართი",
@@ -196,8 +207,8 @@ const LawyerPageArchive = () => {
           <Row>
             <Col md={6}>
               <div className="mb-2">
-                <strong> გადახდის განსხვავებული პირობები: </strong>
-                {row.payment_different_terms ? "კი" : "არა"}
+                <strong>გადახდის განსხვავებული პირობები: </strong>
+                {row.expanded.different_terms ? "კი" : "არა"}
               </div>
             </Col>
             <Col md={6}>
@@ -206,18 +217,48 @@ const LawyerPageArchive = () => {
                   ხელშეკრულების გაფორმების ინიციატორი და შესრულებაზე
                   პასუხისმგებელი პირი:{" "}
                 </strong>
-                {row.contract_initiator}
+                {row.expanded.contract_initiator}
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>ხელშეკრულების ვადა: </strong>
+                {row.expanded.conscription_term}
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>პროდუქციის მიწოდების მისამართი: </strong>
+                {row.expanded.product_delivery_address}
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>პროდუქციის გადახდის ვადა: </strong>
+                {row.expanded.product_payment_term}
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>საბანკო ანგარიში: </strong>
+                {row.expanded.bank_account}
               </div>
             </Col>
           </Row>
         </div>
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={() => handleDownload(row.id)}
-        >
-          <i className="bx bx-download me-1"></i>
-          ხელშეკრულების ჩამოტვირთვა
-        </button>
+        {row.status === "approved" && (
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => handleDownload(row.id)}
+          >
+            <i className="bx bx-download me-1"></i>
+            ხელშეკრულების ჩამოტვირთვა
+          </button>
+        )}
       </div>
     )
   }, [])
@@ -247,11 +288,7 @@ const LawyerPageArchive = () => {
                     searchableFields={["contragent.name"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
-                    renderRowDetails={row => {
-                      return row.status === "approved"
-                        ? renderRowDetails(row)
-                        : null
-                    }}
+                    renderRowDetails={renderRowDetails}
                   />
                 </CardBody>
               </Card>

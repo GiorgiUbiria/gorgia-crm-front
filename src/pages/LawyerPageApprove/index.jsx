@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState, useMemo, useCallback } from "react"
 import {
   Row,
   Col,
@@ -125,28 +125,32 @@ const LawyerPageApprove = () => {
         accessor: "id",
       },
       {
-        Header: "კონტრაგენტის სახელი",
+        Header: "კონტრაგენტის დასახელება/სახელი და გვარი",
         accessor: "contragent.name",
       },
       {
-        Header: "კონტრაგენტის მისამართი",
+        Header: "პირადი ნომერი/საიდენტიფიკაციო კოდი",
+        accessor: "contragent.id",
+      },
+      {
+        Header: "მისამართი",
         accessor: "contragent.address",
       },
       {
-        Header: "კონტრაგენტის ნომერი",
+        Header: "ტელეფონის ნომერი",
         accessor: "contragent.phone",
       },
       {
-        Header: "კონტრაგენტის ელ-ფოსტა",
+        Header: "ელ.ფოსტა",
         accessor: "contragent.email",
       },
       {
-        Header: "მყიდველი",
-        accessor: "buyer",
+        Header: "დირექტორის სახელი და გვარი",
+        accessor: "director.name",
       },
       {
-        Header: "დირექტორი",
-        accessor: "contragent.director",
+        Header: "დირექტორის ტელეფონის ნომერი",
+        accessor: "director.phone",
       },
       {
         Header: "პროდუქციის ღირებულება",
@@ -239,17 +243,25 @@ const LawyerPageApprove = () => {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
         created_at: agreement.created_at,
-        name: agreement.contragent_name || "N/A",
         price: agreement.product_cost,
-        payment_terms: agreement.product_payment_term,
-        buyer: agreement.buyer_name + " " + agreement.buyer_surname,
-        file_path: "/storage/app/templates/agreement_template_1.docx",
         contragent: {
           name: agreement.contragent_name,
+          id: agreement.contragent_id,
           address: agreement.contragent_address,
           phone: agreement.contragent_phone_number,
           email: agreement.contragent_email,
-          director: agreement.contragent_director,
+        },
+        director: {
+          name: agreement.contragent_director_name,
+          phone: agreement.contragent_director_phone_number,
+        },
+        expanded: {
+          different_terms: agreement.payment_different_terms,
+          contract_initiator: agreement.contract_initiator_name,
+          conscription_term: agreement.conscription_term,
+          product_delivery_address: agreement.product_delivery_address,
+          product_payment_term: agreement.product_payment_term,
+          bank_account: agreement.bank_account,
         },
       }
     })
@@ -266,6 +278,64 @@ const LawyerPageApprove = () => {
       },
     },
   ]
+
+  const renderRowDetails = useCallback(row => {
+    if (!row) {
+      return null
+    }
+
+    return (
+      <div className="p-3">
+        <div className="mb-3">
+          <Row>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>გადახდის განსხვავებული პირობები: </strong>
+                {row.expanded.different_terms ? "კი" : "არა"}
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>
+                  ხელშეკრულების გაფორმების ინიციატორი და შესრულებაზე
+                  პასუხისმგებელი პირი:{" "}
+                </strong>
+                {row.expanded.contract_initiator}
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>ხელშეკრულების ვადა: </strong>
+                {row.expanded.conscription_term}
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>პროდუქციის მიწოდების მისამართი: </strong>
+                {row.expanded.product_delivery_address}
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>პროდუქციის გადახდის ვადა: </strong>
+                {row.expanded.product_payment_term}
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="mb-2">
+                <strong>საბანკო ანგარიში: </strong>
+                {row.expanded.bank_account}
+              </div>
+            </Col>
+          </Row>
+        </div>
+      </div>
+    )
+  }, [])
 
   return (
     <React.Fragment>
@@ -291,6 +361,7 @@ const LawyerPageApprove = () => {
                     enableSearch={true}
                     searchableFields={["contragent.name"]}
                     filterOptions={filterOptions}
+                    renderRowDetails={renderRowDetails}
                   />
                 </CardBody>
               </Card>
