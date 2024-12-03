@@ -159,11 +159,11 @@ export const getMenuConfig = (
       label: t("ლოიალობის ბარათი"),
     },
     { to: "/admin/visitors", icon: BsPeople, label: t("ვიზიტორები") },
-    {
-      to: "/admin/payment-monitoring",
-      icon: BsCashStack,
-      label: t("გადახდების მონიტორინგი"),
-    },
+    // {
+    //   to: "/admin/payment-monitoring",
+    //   icon: BsCashStack,
+    //   label: t("გადახდების მონიტორინგი"),
+    // },
     {
       key: "leads",
       icon: BsTelephone,
