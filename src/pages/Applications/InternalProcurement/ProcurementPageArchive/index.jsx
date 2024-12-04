@@ -37,7 +37,6 @@ const STATUS_MAPPING = {
 const handleDownload = async id => {
   try {
     const response = await downloadPurchaseFile(id)
-    // Get the filename from the Content-Disposition header if available
     const contentDisposition = response.headers["content-disposition"]
     let filename = `purchase-${id}-document.pdf`
 
@@ -115,18 +114,37 @@ const ExpandedRowContent = ({ rowData }) => {
   )
 }
 
-const UserProcurement = () => {
-  document.title = "ჩემი შესყიდვები | Gorgia LLC"
+const ProcurementPageArchive = () => {
+  document.title = "შიდა შესყიდვების არქივი | Gorgia LLC"
   const [procurements, setProcurements] = useState([])
   const [loading, setLoading] = useState(false)
+  const [pagination, setPagination] = useState({
+    currentPage: 0,
+    totalPages: 0,
+    totalItems: 0,
+    pageSize: 10,
+  })
 
-  const fetchProcurements = async () => {
+  const fetchProcurements = async (page = 0, pageSize = 10) => {
     try {
-      const response = await getPurchaseList(false)
+      setLoading(true)
+      const response = await getPurchaseList(true)
       setProcurements(response.data.internal_purchases)
+      setPagination({
+        currentPage: page,
+        totalPages: response.data.pagination.total_pages,
+        totalItems: response.data.pagination.total,
+        pageSize: pageSize,
+      })
     } catch (err) {
       console.error("Error fetching purchases:", err)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const handlePageChange = (newPage, pageSize) => {
+    fetchProcurements(newPage, pageSize)
   }
 
   useEffect(() => {
@@ -284,10 +302,13 @@ const UserProcurement = () => {
               filterOptions={filterOptions}
               enableSearch={true}
               searchableFields={["reviewer", "department"]}
-              initialPageSize={10}
+              initialPageSize={pagination.pageSize}
               pageSizeOptions={[10, 25, 50, 100]}
               renderRowDetails={expandedRow}
               loading={loading}
+              totalCount={pagination.totalItems}
+              page={pagination.currentPage}
+              onPageChange={handlePageChange}
             />
           </Row>
         </div>
@@ -296,4 +317,4 @@ const UserProcurement = () => {
   )
 }
 
-export default UserProcurement
+export default ProcurementPageArchive
