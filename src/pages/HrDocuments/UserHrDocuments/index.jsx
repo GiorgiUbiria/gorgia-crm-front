@@ -37,7 +37,6 @@ const UserHrDocuments = () => {
   const fetchDocuments = async () => {
     try {
       const response = await getCurrentUserHrDocuments()
-      console.log(response.data)
       setDocuments(response.data)
     } catch (err) {
       console.error("Error fetching HR documents:", err)
