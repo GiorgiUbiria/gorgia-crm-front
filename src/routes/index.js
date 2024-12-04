@@ -18,7 +18,7 @@ import FarmWork from "pages/FarmWork"
 import HeadPage from "pages/HeadPage"
 import HrPage from "pages/HrDocuments/HrPage"
 import HrPageApprove from "pages/HrDocuments/HrPageApprove"
-import HrPageSent from "pages/HrDocuments/HrPageSent"
+import UserHrDocuments from "pages/HrDocuments/UserHrDocuments"
 import InvoicePage from "pages/InvoicePage/InvoicePage"
 import JobDetails from "pages/JobPages/JobDetails"
 import LawyerPage from "pages/LawyerPage"
@@ -43,6 +43,7 @@ import Dashboard from "../pages/Dashboard/index"
 import TaskList from "../pages/JobPages/JobList"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
+import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 
 const authProtectedRoutes = [
   // Dashboard & Main Routes
@@ -114,15 +115,15 @@ const authProtectedRoutes = [
     permission: "hr-documents.manage",
     departmentId: 8,
   },
-  // {
-  //   path: "/hr/documents/archive",
-  //   component: <HrPageArchive />,
-  //   permission: "hr-documents.view",
-  //   departmentId: 8
-  // },
+  {
+    path: "/hr/documents/archive",
+    component: <HrPageArchive />,
+    permission: "hr-documents.view",
+    departmentId: 8
+  },
   {
     path: "/hr/documents/my-requests",
-    component: <HrPageSent />,
+    component: <UserHrDocuments />,
   },
 
   // Legal Documents

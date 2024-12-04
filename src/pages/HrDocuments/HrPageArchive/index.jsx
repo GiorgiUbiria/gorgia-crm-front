@@ -2,14 +2,6 @@ import React, { useEffect, useState, useMemo } from "react"
 import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { getHrDocuments, updateHrDocumentStatus } from "services/hrDocument"
 import MuiTable from "../../../components/Mui/MuiTable"
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-} from "@mui/material"
 import { downloadHrDocument as downloadHrDocumentService } from "services/hrDocument"
 import { Row, Col } from "reactstrap"
 import { toast, ToastContainer } from "react-toastify"
@@ -38,13 +30,9 @@ const STATUS_MAPPING = {
   rejected: "rejected",
 }
 
-const HrPageSent = () => {
-  document.title = "HR დოკუმენტების ვიზირება | Gorgia LLC"
+const HrPageArchive = () => {
+  document.title = "HR დოკუმენტების არქივი | Gorgia LLC"
   const [documents, setDocuments] = useState([])
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedStatus, setSelectedStatus] = useState(null)
-  const [selectedDocumentId, setSelectedDocumentId] = useState(null)
-  const [comment, setComment] = useState("")
 
   const fetchDocuments = async () => {
     try {
@@ -186,7 +174,7 @@ const HrPageSent = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement("a")
       link.href = url
-      link.setAttribute("download", "hr-document.pdf") // or use a dynamic name
+      link.setAttribute("download", "hr-document.pdf")
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -247,4 +235,4 @@ const HrPageSent = () => {
   )
 }
 
-export default HrPageSent
+export default HrPageArchive
