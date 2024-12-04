@@ -103,17 +103,13 @@ const MuiTable = ({
   columns = [],
   data = [],
   initialPageSize = 10,
-  pageSizeOptions = [10, 25, 50, 100],
+  pageSizeOptions = [5, 10, 20, 50],
   onRowClick,
   enableSearch = false,
   searchableFields = [],
   actions = [],
   renderRowDetails,
   filterOptions = [],
-  loading = false,
-  totalCount = 0,
-  page = 0,
-  onPageChange,
 }) => {
   const [openRows, setOpenRows] = useState({})
   const [filterField, setFilterField] = useState("")
@@ -179,7 +175,7 @@ const MuiTable = ({
     setFilter,
     headerGroups,
     prepareRow,
-    page: tablePage,
+    page,
     rows,
   } = tableInstance
 
@@ -194,17 +190,18 @@ const MuiTable = ({
 
   const handlePageChange = useCallback(
     (event, newPage) => {
-      onPageChange(newPage, pageSize)
+      gotoPage(newPage)
     },
-    [onPageChange, pageSize]
+    [gotoPage]
   )
 
   const handleChangeRowsPerPage = useCallback(
     event => {
       const newSize = parseInt(event.target.value, 10)
-      onPageChange(0, newSize)
+      setPageSize(newSize)
+      gotoPage(0)
     },
-    [onPageChange]
+    [setPageSize, gotoPage]
   )
 
   const handleFilterChange = useCallback(
@@ -479,7 +476,7 @@ const MuiTable = ({
             ))}
           </TableHead>
           <TableBody {...tableInstance.getTableBodyProps()}>
-            {tablePage.map(row => {
+            {page.map(row => {
               prepareRow(row)
               const isOpen = openRows[row.original.id] || false
 
@@ -564,8 +561,8 @@ const MuiTable = ({
       >
         <TablePagination
           component="div"
-          count={totalCount}
-          page={page}
+          count={rows.length}
+          page={pageIndex}
           onPageChange={handlePageChange}
           rowsPerPage={pageSize}
           onRowsPerPageChange={handleChangeRowsPerPage}
@@ -628,10 +625,6 @@ MuiTable.propTypes = {
       valueLabels: PropTypes.object,
     })
   ),
-  loading: PropTypes.bool,
-  totalCount: PropTypes.number,
-  page: PropTypes.number,
-  onPageChange: PropTypes.func,
 }
 
 export default React.memo(MuiTable)

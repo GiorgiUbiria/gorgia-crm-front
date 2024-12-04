@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col } from "reactstrap"
 import Breadcrumbs from "components/Common/Breadcrumb"
-import { getCurrentUserVocations } from "services/vacation"
+import { getVacations } from "services/admin/vacation"
 import MuiTable from "components/Mui/MuiTable"
 
 const statusMap = {
@@ -89,16 +89,15 @@ const ExpandedRowContent = ({ rowData }) => {
   )
 }
 
-const UserVocation = () => {
-  document.title = "შვებულებები | Gorgia LLC"
+const VacationPageArchive = () => {
+  document.title = "შვებულებების არქივი | Gorgia LLC"
 
   const [vacations, setVacations] = useState([])
 
   const fetchVacations = async () => {
     try {
-      const response = await getCurrentUserVocations()
-      console.log(response)
-      setVacations(response.data.data)
+      const response = await getVacations()
+      setVacations(response.data.vocations)
     } catch (err) {
       console.error("Error fetching vocations:", err)
     }
@@ -195,9 +194,9 @@ const UserVocation = () => {
     status: STATUS_MAPPING[vacation.status] || vacation.status,
     start_date: vacation.start_date,
     end_date: vacation.end_date,
-    user: {
-      name: vacation.user.name + " " + vacation.user.sur_name,
-    },
+    // user: {
+    //   name: vacation.user.name + " " + vacation.user.sur_name,
+    // },
     comment: vacation.comment,
     type_of_vacations: vacation.type_of_vocations
       ? TYPE_MAPPING[vacation.type_of_vocations] || vacation.type_of_vocations
@@ -235,7 +234,7 @@ const UserVocation = () => {
             <Col xl={12}>
               <Breadcrumbs
                 title="განცხადებები"
-                breadcrumbItem="ჩემი შვებულებები"
+                breadcrumbItem="შვებულებების არქივი"
               />
             </Col>
           </Row>
@@ -256,4 +255,4 @@ const UserVocation = () => {
   )
 }
 
-export default UserVocation
+export default VacationPageArchive

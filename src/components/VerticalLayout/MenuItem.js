@@ -30,7 +30,7 @@ const styles = {
     },
   },
   submenuExpanded: {
-    maxHeight: "500px",
+    maxHeight: "1000px",
     opacity: 1,
     transform: "translateY(0)",
   },

@@ -2,44 +2,48 @@ import React from "react"
 import { Navigate } from "react-router-dom"
 
 import AdminPage from "pages/AdminPage"
-import ArchivePage from "../pages/ArchivePage"
 import BusinessPage from "pages/Applications/BusinessTrip/BusinessPage"
-import Calendar from "../pages/Calendar/index"
-import Chat from "../pages/Chat/Chat"
+import TripPageApprove from "pages/Applications/BusinessTrip/TripPageApprove/TripPageApprove"
+import UserTrip from "pages/Applications/BusinessTrip/UserTrips"
+import ProcurementPage from "pages/Applications/InternalProcurement/ProcurementPage"
+import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
+import ProcurementPageArchive from "pages/Applications/InternalProcurement/ProcurementPageArchive"
+import UserProcurement from "pages/Applications/InternalProcurement/UserProcurements"
+import UserVocation from "pages/Applications/Vacation/UserVocations"
+import VacationPage from "pages/Applications/Vacation/VacationPage"
+import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
+import MakeComment from "pages/Comment/MakeComment"
 import Dailies from "pages/Dailies"
-import Dashboard from "../pages/Dashboard/index"
 import FarmWork from "pages/FarmWork"
-import ForgetPwd from "../pages/Authentication/ForgetPassword"
 import HeadPage from "pages/HeadPage"
 import HrPage from "pages/HrDocuments/HrPage"
 import HrPageApprove from "pages/HrDocuments/HrPageApprove"
-import HrPageSent from "pages/HrDocuments/HrPageSent"
+import UserHrDocuments from "pages/HrDocuments/UserHrDocuments"
 import InvoicePage from "pages/InvoicePage/InvoicePage"
 import JobDetails from "pages/JobPages/JobDetails"
 import LawyerPage from "pages/LawyerPage"
 import LawyerPageApprove from "pages/LawyerPageApprove"
 import LawyerPageArchive from "pages/LawyerPageArchive/LawyerPageArchive"
 import LeadsPage from "pages/LeadsPage/LeadsPage"
-import Login from "../pages/Authentication/Login"
-import Logout from "../pages/Authentication/Logout"
-import MakeComment from "pages/Comment/MakeComment"
 import NotesEditor from "pages/NotesEditor"
 import NotesPage from "pages/NotesPage"
-import ProcurementPage from "pages/Applications/InternalProcurement/ProcurementPage"
 import ProfilePage from "pages/ProfilePage"
-import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
-import Register from "../pages/Authentication/Register"
-import TaskList from "../pages/JobPages/JobList"
-import TripPageApprove from "pages/Applications/BusinessTrip/TripPageApprove/TripPageApprove"
 import UserAgreements from "pages/UserAgreements"
-import UserProcurement from "pages/Applications/InternalProcurement/UserProcurements"
-import UserTrip from "pages/Applications/BusinessTrip/UserTrips"
-import UserVocation from "pages/Applications/Vacation/UserVocations"
-import VacationPage from "pages/Applications/Vacation/VacationPage"
-import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
 import VipLeadDetailPage from "pages/VipLeadsPage/VipLeadDetailPage"
 import VipLeadsPage from "pages/VipLeadsPage/VipLeadsPage"
 import VisitorsTraffic from "pages/VisitorsTraffic/VisitorsTraffic"
+import ArchivePage from "../pages/ArchivePage"
+import ForgetPwd from "../pages/Authentication/ForgetPassword"
+import Login from "../pages/Authentication/Login"
+import Logout from "../pages/Authentication/Logout"
+import Register from "../pages/Authentication/Register"
+import Calendar from "../pages/Calendar/index"
+import Chat from "../pages/Chat/Chat"
+import Dashboard from "../pages/Dashboard/index"
+import TaskList from "../pages/JobPages/JobList"
+import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
+import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
+import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 
 const authProtectedRoutes = [
   // Dashboard & Main Routes
@@ -52,15 +56,15 @@ const authProtectedRoutes = [
   { path: "/profile", component: <ProfilePage /> },
 
   // Admin Routes
-  { 
-    path: "/admin/dashboard", 
+  {
+    path: "/admin/dashboard",
     component: <AdminPage />,
-    permission: "admin.access"
+    permission: "admin.access",
   },
-  { 
-    path: "/admin/approvals", 
+  {
+    path: "/admin/approvals",
     component: <HeadPage />,
-    permission: "admin.approvals"
+    permission: "admin.approvals",
   },
   { path: "/admin/visitors", component: <VisitorsTraffic /> },
   { path: "/admin/payment-monitoring", component: <InvoicePage /> },
@@ -74,6 +78,10 @@ const authProtectedRoutes = [
     component: <PurchasePageApprove />,
   },
   {
+    path: "/applications/purchases/archive",
+    component: <ProcurementPageArchive />,
+  },
+  {
     path: "/applications/purchases/my-requests",
     component: <UserProcurement />,
   },
@@ -84,6 +92,10 @@ const authProtectedRoutes = [
     path: "/applications/vacation/approve",
     component: <VacationPageApprove />,
   },
+  {
+    path: "/applications/vacation/archive",
+    component: <VacationPageArchive />,
+  },
   { path: "/applications/vacation/my-requests", component: <UserVocation /> },
 
   // -- Business Trips
@@ -92,28 +104,32 @@ const authProtectedRoutes = [
     path: "/applications/business-trip/approve",
     component: <TripPageApprove />,
   },
+  {
+    path: "/applications/business-trip/archive",
+    component: <TripPageArchive />,
+  },
   { path: "/applications/business-trip/my-requests", component: <UserTrip /> },
 
   // HR Documents
-  { 
-    path: "/hr/documents/new", 
-    component: <HrPage /> 
+  {
+    path: "/hr/documents/new",
+    component: <HrPage />,
   },
-  { 
-    path: "/hr/documents/approve", 
+  {
+    path: "/hr/documents/approve",
     component: <HrPageApprove />,
     permission: "hr-documents.manage",
-    departmentId: 8
+    departmentId: 8,
   },
-  // { 
-  //   path: "/hr/documents/archive", 
-  //   component: <HrPageArchive />,
-  //   permission: "hr-documents.view",
-  //   departmentId: 8
-  // },
-  { 
-    path: "/hr/documents/my-requests", 
-    component: <HrPageSent /> 
+  {
+    path: "/hr/documents/archive",
+    component: <HrPageArchive />,
+    permission: "hr-documents.view",
+    departmentId: 8,
+  },
+  {
+    path: "/hr/documents/my-requests",
+    component: <UserHrDocuments />,
   },
 
   // Legal Documents

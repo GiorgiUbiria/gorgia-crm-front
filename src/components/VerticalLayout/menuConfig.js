@@ -65,6 +65,10 @@ export const getMenuConfig = (
               to: "/applications/purchases/approve",
               label: t("ვიზირება"),
             },
+            isAdmin && {
+              to: "/applications/purchases/archive",
+              label: t("არქივი"),
+            },
             {
               to: "/applications/purchases/my-requests",
               label: t("გაგზავნილი"),
@@ -80,6 +84,10 @@ export const getMenuConfig = (
               to: "/applications/vacation/approve",
               label: t("ვიზირება"),
             },
+            isAdmin && {
+              to: "/applications/vacation/archive",
+              label: t("არქივი"),
+            },
             {
               to: "/applications/vacation/my-requests",
               label: t("გაგზავნილი"),
@@ -94,6 +102,10 @@ export const getMenuConfig = (
             isAdmin && {
               to: "/applications/business-trip/approve",
               label: t("ვიზირება"),
+            },
+            isAdmin && {
+              to: "/applications/business-trip/archive",
+              label: t("არქივი"),
             },
             {
               to: "/applications/business-trip/my-requests",

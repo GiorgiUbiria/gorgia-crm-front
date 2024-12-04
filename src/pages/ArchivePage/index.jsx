@@ -17,11 +17,10 @@ import {
 import classnames from "classnames"
 
 import LawyerPageArchive from "pages/LawyerPageArchive/LawyerPageArchive"
-import HrPage from "pages/HrDocuments/HrPage/index"
-import UserProcurement from "pages/Applications/InternalProcurement/UserProcurements"
-import UserVocation from "pages/Applications/Vacation/UserVocations"
-import UserTrip from "pages/Applications/BusinessTrip/UserTrips"
-
+import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
+import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
+import ProcurementPageArchive from "pages/Applications/InternalProcurement/ProcurementPageArchive"
+import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 
 const ArchivePage = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false)
@@ -103,16 +102,16 @@ const ArchivePage = () => {
                   <LawyerPageArchive />
                 </TabPane>
                 <TabPane tabId="2">
-                  <UserTrip />
+                  <TripPageArchive />
                 </TabPane>
                 <TabPane tabId="3">
-                  <UserProcurement />
+                  <ProcurementPageArchive />
                 </TabPane>
                 <TabPane tabId="4">
-                  <UserVocation />
+                  <VacationPageArchive />
                 </TabPane>
                 <TabPane tabId="5">
-                  <HrPage />
+                  <HrPageArchive />
                 </TabPane>
               </TabContent>
 
