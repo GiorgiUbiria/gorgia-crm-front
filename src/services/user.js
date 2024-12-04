@@ -12,6 +12,14 @@ export const updateUser = async data => {
   })
 }
 
+export const updateUserIdNumberById = async (data, id) => {
+  return defaultInstance.put(`/api/hr-documents/update_user/${id}`, data)
+}
+
+export const updateUserIdNumber = async data => {
+  return defaultInstance.put(`/api/hr-documents/update_user`, data)
+}
+
 export const fetchUser = async () => {
   return defaultInstance.get("/api/user")
 }

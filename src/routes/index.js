@@ -92,7 +92,10 @@ const authProtectedRoutes = [
     path: "/applications/vacation/approve",
     component: <VacationPageApprove />,
   },
-  { path: "/applications/vacation/archive", component: <VacationPageArchive /> },
+  {
+    path: "/applications/vacation/archive",
+    component: <VacationPageArchive />,
+  },
   { path: "/applications/vacation/my-requests", component: <UserVocation /> },
 
   // -- Business Trips
@@ -101,7 +104,10 @@ const authProtectedRoutes = [
     path: "/applications/business-trip/approve",
     component: <TripPageApprove />,
   },
-  { path: "/applications/business-trip/archive", component: <TripPageArchive /> },
+  {
+    path: "/applications/business-trip/archive",
+    component: <TripPageArchive />,
+  },
   { path: "/applications/business-trip/my-requests", component: <UserTrip /> },
 
   // HR Documents
@@ -119,7 +125,7 @@ const authProtectedRoutes = [
     path: "/hr/documents/archive",
     component: <HrPageArchive />,
     permission: "hr-documents.view",
-    departmentId: 8
+    departmentId: 8,
   },
   {
     path: "/hr/documents/my-requests",
