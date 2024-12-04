@@ -103,7 +103,8 @@ const PurchasePageApprove = () => {
 
   const fetchPurchases = async () => {
     try {
-      const response = await getPurchaseList()
+      const response = await getPurchaseList(true)
+      console.log(response.data)
       setPurchases(response.data.internal_purchases)
     } catch (err) {
       console.error("Error fetching purchase requests:", err)

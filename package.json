@@ -3,6 +3,7 @@
   "version": "2.0.1",
   "private": true,
   "dependencies": {
+    "@ant-design/icons": "^5.5.2",
     "@chatscope/chat-ui-kit-react": "^2.0.3",
     "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "@ckeditor/ckeditor5-build-classic": "40.1.0",
@@ -28,6 +29,7 @@
     "@vtaits/react-color-picker": "1.0.2",
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
+    "antd": "^5.22.3",
     "apexcharts": "^3.41.0",
     "autoprefixer": "^10.4.14",
     "axios": "^1.4.0",

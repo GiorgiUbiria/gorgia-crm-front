@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useMemo } from "react"
-import { Row, Col } from "reactstrap"
+import { Row, Col, Button } from "reactstrap"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDownload } from '@fortawesome/free-solid-svg-icons'
 
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { getPurchaseList } from "../../../../services/purchase"
+import { getPurchaseList, downloadPurchaseFile } from "../../../../services/purchase"
 import MuiTable from "../../../../components/Mui/MuiTable"
 
 const statusMap = {
@@ -28,6 +30,35 @@ const STATUS_MAPPING = {
   approved: "approved",
   rejected: "rejected",
 }
+
+const handleDownload = async (id) => {
+  try {
+    const response = await downloadPurchaseFile(id);
+    // Get the filename from the Content-Disposition header if available
+    const contentDisposition = response.headers['content-disposition'];
+    let filename = `purchase-${id}-document.pdf`;
+    
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1].replace(/['"]/g, '');
+      }
+    }
+
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    alert('ფაილის ჩამოტვირთვა ვერ მოხერხდა');
+  }
+};
 
 const ExpandedRowContent = ({ rowData }) => {
   const details = [
@@ -67,22 +98,52 @@ const ExpandedRowContent = ({ rowData }) => {
           </div>
         ))}
       </div>
+      {rowData.file_path && rowData.status === "approved" && (
+        <div className="mt-3">
+          <Button 
+            color="primary"
+            onClick={() => handleDownload(rowData.id)}
+          >
+            <FontAwesomeIcon icon={faDownload} className="me-2" />
+            დოკუმენტის ჩამოტვირთვა
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
 
 const UserProcurement = () => {
   document.title = "ჩემი შესყიდვები | Gorgia LLC"
-
   const [procurements, setProcurements] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [pagination, setPagination] = useState({
+    currentPage: 0,  // MUI pagination is 0-based
+    totalPages: 0,
+    totalItems: 0,
+    pageSize: 10
+  })
 
-  const fetchProcurements = async () => {
+  const fetchProcurements = async (page = 0, pageSize = 10) => {
     try {
-      const response = await getPurchaseList()
+      setLoading(true)
+      const response = await getPurchaseList(false, page + 1, pageSize) // Adding +1 because backend is 1-based
       setProcurements(response.data.internal_purchases)
+      setPagination({
+        currentPage: page,
+        totalPages: response.data.pagination.total_pages,
+        totalItems: response.data.pagination.total,
+        pageSize: pageSize
+      })
     } catch (err) {
       console.error("Error fetching purchases:", err)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const handlePageChange = (newPage, pageSize) => {
+    fetchProcurements(newPage, pageSize)
   }
 
   useEffect(() => {
@@ -200,6 +261,7 @@ const UserProcurement = () => {
     planned_next_month: purchase.planned_next_month,
     who_pay_amount: purchase.who_pay_amount,
     name_surname_of_employee: purchase.name_surname_of_employee,
+    file_path: purchase.file_path,
   }))
 
   const filterOptions = [
@@ -239,8 +301,13 @@ const UserProcurement = () => {
               filterOptions={filterOptions}
               enableSearch={true}
               searchableFields={["reviewer", "department"]}
-              initialPageSize={10}
+              initialPageSize={pagination.pageSize}
+              pageSizeOptions={[10, 25, 50, 100]}
               renderRowDetails={expandedRow}
+              loading={loading}
+              totalCount={pagination.totalItems}
+              page={pagination.currentPage}
+              onPageChange={handlePageChange}
             />
           </Row>
         </div>

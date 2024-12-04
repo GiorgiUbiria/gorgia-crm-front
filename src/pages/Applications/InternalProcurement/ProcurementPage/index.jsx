@@ -9,6 +9,7 @@ import {
   Label,
   Row,
   Button,
+  FormGroup,
 } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getPurchaseList, createPurchase } from "../../../../services/purchase"
@@ -23,6 +24,8 @@ import { useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import { procurementSchema } from "./validationSchema"
 import useFetchUser from "hooks/useFetchUser"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUpload } from '@fortawesome/free-solid-svg-icons'
 
 const InputWithError = ({
   formik,
@@ -172,6 +175,31 @@ const ProcurementPage = () => {
     fetchPurchaseDepartments()
   }, [])
 
+  const onFinish = async (values) => {
+    try {
+      const formData = new FormData();
+      
+      // Append all form fields to FormData
+      Object.keys(values).forEach(key => {
+        if (key === 'file') {
+          const fileInput = document.querySelector('input[type="file"]');
+          if (fileInput && fileInput.files[0]) {
+            formData.append('file', fileInput.files[0]);
+          }
+        } else {
+          formData.append(key, values[key]);
+        }
+      });
+
+      await createPurchase(formData);
+      alert('შესყიდვის მოთხოვნა წარმატებით შეიქმნა');
+      navigate('/applications/internal-procurement/user-procurements');
+    } catch (error) {
+      console.error('Error creating purchase:', error);
+      alert('შეცდომა შესყიდვის მოთხოვნის შექმნისას');
+    }
+  };
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -184,7 +212,7 @@ const ProcurementPage = () => {
             <Col lg="12">
               <Card>
                 <CardBody>
-                  <Form onSubmit={formik.handleSubmit}>
+                  <Form onSubmit={formik.handleSubmit} encType="multipart/form-data">
                     <Row>
                       <Col lg="6">
                         <InputWithError
@@ -306,6 +334,22 @@ const ProcurementPage = () => {
                         />
                       </Col>
                     </Row>
+                    <FormGroup>
+                      <Label for="file">დამატებითი დოკუმენტი</Label>
+                      <Input
+                        type="file"
+                        name="file"
+                        id="file"
+                        onChange={(event) => {
+                          const file = event.currentTarget.files[0];
+                          console.log('Selected file:', file); // Debug log
+                          formik.setFieldValue('file', file);
+                        }}
+                      />
+                      <small className="form-text text-muted">
+                        დაშვებული ფორმატები: PDF, DOC, DOCX, XLS, XLSX. მაქსიმალური ზომა: 10MB
+                      </small>
+                    </FormGroup>
                     <div className="d-flex justify-content-end">
                       <Button type="submit" color="primary">
                         გაგზავნა
