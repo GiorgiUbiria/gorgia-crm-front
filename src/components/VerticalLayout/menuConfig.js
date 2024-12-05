@@ -150,9 +150,76 @@ export const getMenuConfig = (
       label: t("ხელშეკრულებები"),
       submenu: [
         { to: "/legal/contracts/new", label: t("მოთხოვნა") },
-        isAdmin && { to: "/legal/contracts/approve", label: t("ვიზირება") },
-        isAdmin && { to: "/legal/contracts/archive", label: t("არქივი") },
-        { to: "/legal/contracts/my-requests", label: t("გაგზავნილი") },
+        {
+          key: "purchase",
+          to: "/legal/contracts/purchase",
+          label: t("ნასყიდობის ხელშეკრულება"),
+          submenu: [
+            isAdmin && {
+              to: "/legal/contracts/purchase/approve",
+              label: t("ვიზირება"),
+            },
+            isAdmin && {
+              to: "/legal/contracts/purchase/archive",
+              label: t("არქივი"),
+            },
+            { to: "/legal/contracts/purchase/my-requests", label: t("გაგზავნილი") },
+          ],
+        },
+        {
+          key: "delivery",
+          to: "/legal/contracts/delivery",
+          label: t("მიღება-ჩაბარების ხელშეკრულება"),
+          submenu: [
+            isAdmin && {
+              to: "/legal/contracts/delivery/approve",
+              label: t("ვიზირება"),
+            },
+            isAdmin && {
+              to: "/legal/contracts/delivery/archive",
+              label: t("არქივი"),
+            },
+            {
+              to: "/legal/contracts/delivery/my-requests",
+              label: t("გაგზავნილი"),
+            },
+          ],
+        },
+        {
+          key: "marketing",
+          to: "/legal/contracts/marketing",
+          label: t("მარკეტინგის ხელშეკრულება"),
+          submenu: [
+            isAdmin && {
+              to: "/legal/contracts/marketing/approve",
+              label: t("ვიზირება"),
+            },
+            isAdmin && {
+              to: "/legal/contracts/marketing/archive",
+              label: t("არქივი"),
+            },
+            { to: "/legal/contracts/marketing/my-requests", label: t("გაგზავნილი") },
+          ],
+        },
+        {
+          key: "service",
+          to: "/legal/contracts/service",
+          label: t("მომსახურების ხელშეკრულება"),
+          submenu: [
+            isAdmin && {
+              to: "/legal/contracts/service/approve",
+              label: t("ვიზირება"),
+            },
+            isAdmin && {
+              to: "/legal/contracts/service/archive",
+              label: t("არქივი"),
+            },
+            {
+              to: "/legal/contracts/service/my-requests",
+              label: t("გაგზავნილი"),
+            },
+          ],
+        },
       ],
     },
     {
