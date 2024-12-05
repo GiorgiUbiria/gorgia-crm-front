@@ -15,7 +15,6 @@ import Breadcrumbs from "../../components/Common/Breadcrumb"
 import {
   getDepartmentAgreements,
   updateAgreementStatus,
-  downloadAgreement,
 } from "services/serviceAgreement"
 import {
   BsBank,
@@ -23,7 +22,6 @@ import {
   BsCreditCard,
   BsMap,
   BsPerson,
-  BsVoicemail,
 } from "react-icons/bs"
 import MuiTable from "../../components/Mui/MuiTable"
 import { toast, ToastContainer } from "react-toastify"
@@ -50,16 +48,6 @@ const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
-}
-
-const handleDownload = async agreementId => {
-  try {
-    await downloadAgreement(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
-  } catch (error) {
-    console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
-  }
 }
 
 const ServiceAgreementApprove = () => {
@@ -346,7 +334,9 @@ const ServiceAgreementApprove = () => {
                 <BsMap className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">ფაქტიური მისამართი</div>
-                  <div className="fw-medium">{row.expanded.executor_factual_address}</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_factual_address}
+                  </div>
                 </div>
               </div>
             </Col>
@@ -357,7 +347,9 @@ const ServiceAgreementApprove = () => {
                 <BsBank className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">SWIFT კოდი</div>
-                  <div className="fw-medium">{row.expanded.executor_bank_swift}</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_swift}
+                  </div>
                 </div>
               </div>
             </Col>
@@ -369,7 +361,8 @@ const ServiceAgreementApprove = () => {
                 <div>
                   <div className="text-muted small">დირექტორის ინფორმაცია</div>
                   <div className="fw-medium">
-                    {row.expanded.director_full_name} ({row.expanded.director_id_number})
+                    {row.expanded.director_full_name} (
+                    {row.expanded.director_id_number})
                   </div>
                 </div>
               </div>
@@ -392,7 +385,9 @@ const ServiceAgreementApprove = () => {
                 <BsCreditCard className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">გადახდის დეტალები</div>
-                  <div className="fw-medium">{row.expanded.service_payment_details}</div>
+                  <div className="fw-medium">
+                    {row.expanded.service_payment_details}
+                  </div>
                 </div>
               </div>
             </Col>
@@ -402,8 +397,12 @@ const ServiceAgreementApprove = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">მომსახურების აქტიური ვადა</div>
-                  <div className="fw-medium">{row.expanded.service_active_term}</div>
+                  <div className="text-muted small">
+                    მომსახურების აქტიური ვადა
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.service_active_term}
+                  </div>
                 </div>
               </div>
             </Col>
@@ -420,17 +419,6 @@ const ServiceAgreementApprove = () => {
             </Col>
           </Row>
         </div>
-
-        {/* Download button for approved agreements */}
-        {row.status === "approved" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => handleDownload(row.id)}
-          >
-            <i className="bx bx-download me-2"></i>
-            ხელშეკრულების ჩამოტვირთვა
-          </button>
-        )}
       </div>
     )
   }, [])
@@ -457,7 +445,10 @@ const ServiceAgreementApprove = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["executor_firm_name", "executor_full_name"]}
+                    searchableFields={[
+                      "executor_firm_name",
+                      "executor_full_name",
+                    ]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}
@@ -469,54 +460,53 @@ const ServiceAgreementApprove = () => {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
-      <Modal
-        isOpen={confirmModal.isOpen}
-        toggle={handleModalClose}
-        centered={true}
-      >
+      <Modal isOpen={confirmModal.isOpen} toggle={handleModalClose}>
         <ModalHeader toggle={handleModalClose}>
-          {confirmModal.type === "approved"
-            ? "ხელშეკრულების დამტკიცება"
-            : "ხელშეკრულების უარყოფა"}
+          {confirmModal.type === "approved" ? "დამტკიცება" : "უარყოფა"}
         </ModalHeader>
         <ModalBody>
-          {confirmModal.type === "approved" ? (
-            <p>გსურთ ხელშეკრულების დამტკიცე���ა?</p>
-          ) : (
-            <div>
-              <p>გთხოვთ მიუთითოთ უარყოფის მიზეზი:</p>
-              <textarea
-                className="form-control"
-                rows="3"
-                value={rejectionComment}
-                onChange={e => setRejectionComment(e.target.value)}
-              />
+          {isProcessing ? (
+            <div className="text-center">
+              <Spinner color="primary" />
+              <p className="mt-2">
+                გთხოვთ დაელოდოთ, მიმდინარეობს დამუშავება...
+              </p>
             </div>
+          ) : (
+            <>
+              <p>დარწმუნებული ხართ, რომ გსურთ ამ მოქმედების შესრულება?</p>
+              {confirmModal.type === "rejected" && (
+                <div className="mt-3">
+                  <label htmlFor="rejection_reason" className="form-label">
+                    უარყოფის მიზეზი *
+                  </label>
+                  <textarea
+                    id="rejection_reason"
+                    className="form-control"
+                    value={rejectionComment}
+                    onChange={e => setRejectionComment(e.target.value)}
+                    rows="3"
+                    required
+                  />
+                </div>
+              )}
+            </>
           )}
         </ModalBody>
         <ModalFooter>
           <Button
-            variant="contained"
+            color={confirmModal.type === "rejected" ? "secondary" : "error"}
+            onClick={handleModalClose}
+            disabled={isProcessing}
+          >
+            გაუქმება
+          </Button>
+          <Button
             color={confirmModal.type === "approved" ? "success" : "error"}
             onClick={handleConfirmAction}
             disabled={isProcessing}
           >
-            {isProcessing ? (
-              <Spinner size="sm" className="me-2" />
-            ) : (
-              <i
-                className={`bx ${
-                  confirmModal.type === "approved"
-                    ? "bx-check-circle"
-                    : "bx-x-circle"
-                } me-2`}
-              />
-            )}
-            {confirmModal.type === "approved" ? "დამტკიცება" : "უარყოფა"}
-          </Button>
-          <Button variant="outlined" onClick={handleModalClose}>
-            გაუქმება
+            დადასტურება
           </Button>
         </ModalFooter>
       </Modal>
@@ -526,4 +516,4 @@ const ServiceAgreementApprove = () => {
   )
 }
 
-export default ServiceAgreementApprove 
+export default ServiceAgreementApprove
