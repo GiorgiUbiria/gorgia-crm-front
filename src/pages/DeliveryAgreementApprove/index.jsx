@@ -13,9 +13,10 @@ import {
 import Button from "@mui/material/Button"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import {
-  getDepartmentAgreements,
-  updateAgreementStatus,
-} from "services/agreement"
+  getDepartmentAgreements as getDeliveryDepartmentAgreements,
+  updateAgreementStatus as updateDeliveryAgreementStatus,
+  downloadAgreement as downloadDeliveryAgreementService,
+} from "services/deliveryAgreement"
 import {
   BsBank,
   BsCalendar,
@@ -26,7 +27,6 @@ import {
 } from "react-icons/bs"
 import MuiTable from "../../components/Mui/MuiTable"
 import { toast, ToastContainer } from "react-toastify"
-import { downloadAgreement as downloadAgreementService } from "services/agreement"
 
 const statusMap = {
   pending: {
@@ -54,7 +54,7 @@ const STATUS_MAPPING = {
 
 const handleDownload = async agreementId => {
   try {
-    await downloadAgreementService(agreementId)
+    await downloadDeliveryAgreementService(agreementId)
     toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
   } catch (error) {
     console.error("Download failed:", error)
@@ -62,7 +62,7 @@ const handleDownload = async agreementId => {
   }
 }
 
-const LawyerPageApprove = () => {
+const DeliveryAgreementApprove = () => {
   document.title = "ხელშეკრულებების ვიზირება | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
   const [confirmModal, setConfirmModal] = useState({
@@ -75,7 +75,8 @@ const LawyerPageApprove = () => {
 
   const fetchAgreements = async () => {
     try {
-      const response = await getDepartmentAgreements()
+      const response = await getDeliveryDepartmentAgreements()
+      console.log(response.data.data)
       setAgreements(response.data.data)
     } catch (err) {
       console.error("Error fetching agreements:", err)
@@ -97,9 +98,13 @@ const LawyerPageApprove = () => {
     }
 
     try {
-      const response = await updateAgreementStatus(agreementId, status, {
-        rejection_reason: rejectionReason,
-      })
+      const response = await updateDeliveryAgreementStatus(
+        agreementId,
+        status,
+        {
+          rejection_reason: rejectionReason,
+        }
+      )
 
       setAgreements(prevAgreements =>
         prevAgreements.map(agreement =>
@@ -154,37 +159,33 @@ const LawyerPageApprove = () => {
         accessor: "id",
       },
       {
-        Header: "კონტრაგენტის დასახელება/სახელი და გვარი",
-        accessor: "contragent.name",
+        Header: "იურიდიული პირის დასახელება",
+        accessor: "jursdictional_unit.name",
       },
       {
-        Header: "პირადი ნომერი/საიდენტიფიკაციო კოდი",
-        accessor: "contragent.id",
+        Header: "საიდენტიფიკაციო კოდი",
+        accessor: "jursdictional_unit.id",
       },
       {
         Header: "მისამართი",
-        accessor: "contragent.address",
+        accessor: "jursdictional_unit.address",
       },
       {
-        Header: "ტელეფონის ნომერი",
-        accessor: "contragent.phone",
-      },
-      {
-        Header: "ელ.ფოსტა",
-        accessor: "contragent.email",
+        Header: "ხელშეკრულების ტიპი",
+        accessor: "agreement_type",
       },
       {
         Header: "დირექტორის სახელი და გვარი",
         accessor: "director.name",
       },
       {
-        Header: "დირექტორის ტელეფონის ნომერი",
-        accessor: "director.phone",
+        Header: "დირექტორის პირადი ნომერი",
+        accessor: "director.id",
       },
       {
-        Header: "პროდუქციის ღირებულება",
-        accessor: "price",
-        Cell: ({ value }) => (
+        Header: "ჯამური ღირებულება",
+        accessor: "cost",
+        Cell: ({ value, row }) => (
           <div>
             {value
               ? new Intl.NumberFormat("ka-GE", {
@@ -194,6 +195,10 @@ const LawyerPageApprove = () => {
               : "N/A"}
           </div>
         ),
+      },
+      {
+        Header: "ღირებულების ტიპი",
+        accessor: "cost_type",
       },
       {
         Header: "სტატუსი",
@@ -272,25 +277,20 @@ const LawyerPageApprove = () => {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
         created_at: agreement.created_at,
-        price: agreement.product_cost,
-        contragent: {
-          name: agreement.contragent_name,
-          id: agreement.contragent_id,
-          address: agreement.contragent_address,
-          phone: agreement.contragent_phone_number,
-          email: agreement.contragent_email,
+        cost: agreement.sum_cost,
+        cost_type: agreement.sum_cost_type,
+        jursdictional_unit: {
+          name: agreement.jursdictional_name,
+          id: agreement.jursdictional_id_number,
+          address: agreement.jursdictional_address,
         },
+        agreement_type: agreement.agreement_type,
         director: {
-          name: agreement.contragent_director_name,
-          phone: agreement.contragent_director_phone_number,
+          name: agreement.director_full_name,
+          id: agreement.director_id_number,
         },
         expanded: {
-          different_terms: agreement.payment_different_terms,
-          contract_initiator: agreement.contract_initiator_name,
-          conscription_term: agreement.conscription_term,
-          product_delivery_address: agreement.product_delivery_address,
-          product_payment_term: agreement.product_payment_term,
-          bank_account: agreement.bank_account,
+          action_act: agreement.action_act,
           rejection_reason: agreement.rejection_reason || null,
           requested_by: agreement.user.name + " " + agreement.user.sur_name,
         },
@@ -315,7 +315,7 @@ const LawyerPageApprove = () => {
 
     return (
       <div className="p-4 bg-light rounded">
-        {/* Status Banner */}
+        {/* Rejection reason banner */}
         {row.expanded.rejection_reason && (
           <div className="alert alert-danger d-flex align-items-center mb-4">
             <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -325,88 +325,94 @@ const LawyerPageApprove = () => {
           </div>
         )}
 
-        {/* Requester Info */}
+        {/* Requester info */}
         <div className="d-flex align-items-center mb-4 gap-2 text-muted">
           <BsPerson className="fs-3 text-primary" />
           <strong>მოითხოვა:</strong>
           <span className="ms-2">{row.expanded.requested_by}</span>
         </div>
 
-        {/* Details Grid */}
+        {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
+            {/* Agreement Type */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">
-                    გადახდის განსხვავებული პირობები
-                  </div>
-                  <div className="fw-medium">
-                    {row.expanded.different_terms ? "კი" : "არა"}
-                  </div>
+                  <div className="text-muted small">ხელშეკრულების ტიპი</div>
+                  <div className="fw-medium">{row.agreement_type}</div>
                 </div>
               </div>
             </Col>
+
+            {/* Cost */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsVoicemail className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">
-                    ხელშეკრულების ინიციატორი
-                  </div>
+                  <div className="text-muted small">ღირებულება</div>
                   <div className="fw-medium">
-                    {row.expanded.contract_initiator}
+                    {row.cost} {row.cost_type}
                   </div>
                 </div>
               </div>
             </Col>
+
+            {/* Jurisdictional Unit */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ხელშეკრულების ვადა</div>
+                  <div className="text-muted small">იურიდიული პირი</div>
                   <div className="fw-medium">
-                    {row.expanded.conscription_term}
+                    {row.jursdictional_unit.name} ({row.jursdictional_unit.id}
+                    )
                   </div>
                 </div>
               </div>
             </Col>
+
+            {/* Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">მიწოდების მისამართი</div>
+                  <div className="text-muted small">მისამართი</div>
                   <div className="fw-medium">
-                    {row.expanded.product_delivery_address}
+                    {row.jursdictional_unit.address}
                   </div>
                 </div>
               </div>
             </Col>
+
+            {/* Director */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">გადახდის ვადა</div>
+                  <div className="text-muted small">დირექტორი</div>
                   <div className="fw-medium">
-                    {row.expanded.product_payment_term}
+                    {row.director.name} ({row.director.id})
                   </div>
                 </div>
               </div>
             </Col>
+
+            {/* Created Date */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">საბანკო ანგარიში</div>
-                  <div className="fw-medium">{row.expanded.bank_account}</div>
+                  <div className="text-muted small">შექმნის თარიღი</div>
+                  <div className="fw-medium">{row.created_at}</div>
                 </div>
               </div>
             </Col>
           </Row>
         </div>
 
-        {/* Download Button */}
+        {/* Download button for approved agreements */}
         {row.status === "approved" && (
           <button
             className="btn btn-primary"
@@ -442,7 +448,7 @@ const LawyerPageApprove = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["contragent.name"]}
+                    searchableFields={["jursdictional_unit.name"]}
                     filterOptions={filterOptions}
                     renderRowDetails={renderRowDetails}
                   />
@@ -508,4 +514,4 @@ const LawyerPageApprove = () => {
   )
 }
 
-export default LawyerPageApprove
+export default DeliveryAgreementApprove
