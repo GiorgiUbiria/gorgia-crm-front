@@ -13,14 +13,17 @@ import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
 import Breadcrumbs from "../../components/Common/Breadcrumb"
-import StandardAgreementForm from "../../components/AgreementForms/StandardAgreementForm"
+import StandardAgreementForm from "../../components/AgreementForms/Strandard/StandardAgreementForm"
+import DeliveryAgreementForm from "../../components/AgreementForms/DeliveryAcceptance/DeliveryAgreementForm"
+import MarketingAgreementForm from "../../components/AgreementForms/Marketing/MarketingAgreementForm"
+import ServiceAgreementForm from "../../components/AgreementForms/Service/ServiceAgreementForm"
 import "../../assets/scss/custom/pages/_lawyer.scss"
 
 const AGREEMENT_TYPES = {
   STANDARD: "standard",
-  // Add more agreement types here as needed
-  // SPECIAL: "special",
-  // INTERNATIONAL: "international",
+  DELIVERY: "delivery",
+  MARKETING: "marketing",
+  SERVICE: "service",
 }
 
 const LawyerPage = () => {
@@ -33,9 +36,12 @@ const LawyerPage = () => {
     switch (selectedAgreementType) {
       case AGREEMENT_TYPES.STANDARD:
         return <StandardAgreementForm />
-      // Add more cases for different agreement types
-      // case AGREEMENT_TYPES.SPECIAL:
-      //   return <SpecialAgreementForm />
+      case AGREEMENT_TYPES.DELIVERY:
+        return <DeliveryAgreementForm />
+      case AGREEMENT_TYPES.MARKETING:
+        return <MarketingAgreementForm />
+      case AGREEMENT_TYPES.SERVICE:
+        return <ServiceAgreementForm />
       default:
         return <StandardAgreementForm />
     }
@@ -76,16 +82,22 @@ const LawyerPage = () => {
                         onChange={e => setSelectedAgreementType(e.target.value)}
                       >
                         <option value={AGREEMENT_TYPES.STANDARD}>
-                          სტანდარტული ხელშეკრულება
+                          ნასყიდობის ხელშეკრულება
                         </option>
-                        {/* Add more agreement type options here */}
-                        {/* <option value={AGREEMENT_TYPES.SPECIAL}>სპეციალური ხელშეკრულება</option> */}
+                        <option value={AGREEMENT_TYPES.DELIVERY}>
+                          მიღება-ჩაბარების ხელშეკრულება
+                        </option>
+                        <option value={AGREEMENT_TYPES.MARKETING}>
+                          მარკეტინგის ხელშეკრულება
+                        </option>
+                        <option value={AGREEMENT_TYPES.SERVICE}>
+                          მომსახურების ხელშეკრულება
+                        </option>
                       </Input>
                     </div>
                   </Form>
                 </Col>
               </Row>
-
               {renderAgreementForm()}
             </CardBody>
           </Card>

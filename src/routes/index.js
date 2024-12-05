@@ -44,6 +44,15 @@ import TaskList from "../pages/JobPages/JobList"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
+import DeliveryAgreementArchive from "pages/DeliveryAgreementArchive"
+import DeliveryAgreementUser from "pages/DeliveryAgreementUser"
+import DeliveryAgreementApprove from "pages/DeliveryAgreementApprove"
+import MarketingAgreementApprove from "pages/MarketingAgreementApprove"
+import MarketingAgreementArchive from "pages/MarketingAgreementArchive"
+import MarketingAgreementUser from "pages/MarketingAgreementUser"
+import ServiceAgreementApprove from "pages/ServiceAgreementApprove"
+import ServiceAgreementArchive from "pages/ServiceAgreementArchive"
+import ServiceAgreementUser from "pages/ServiceAgreementUser"
 
 const authProtectedRoutes = [
   // Dashboard & Main Routes
@@ -134,9 +143,57 @@ const authProtectedRoutes = [
 
   // Legal Documents
   { path: "/legal/contracts/new", component: <LawyerPage /> },
-  { path: "/legal/contracts/approve", component: <LawyerPageApprove /> },
-  { path: "/legal/contracts/archive", component: <LawyerPageArchive /> },
-  { path: "/legal/contracts/my-requests", component: <UserAgreements /> },
+
+  {
+    path: "/legal/contracts/purchase/approve",
+    component: <LawyerPageApprove />,
+  },
+  {
+    path: "/legal/contracts/purchase/archive",
+    component: <LawyerPageArchive />,
+  },
+  {
+    path: "/legal/contracts/purchase/my-requests",
+    component: <UserAgreements />,
+  },
+
+  {
+    path: "/legal/contracts/delivery/approve",
+    component: <DeliveryAgreementApprove />,
+  },
+  {
+    path: "/legal/contracts/delivery/archive",
+    component: <DeliveryAgreementArchive />,
+  },
+  {
+    path: "/legal/contracts/delivery/my-requests",
+    component: <DeliveryAgreementUser />,
+  },
+
+  {
+    path: "/legal/contracts/marketing/approve",
+    component: <MarketingAgreementApprove />,
+  },
+  {
+    path: "/legal/contracts/marketing/archive",
+    component: <MarketingAgreementArchive />,
+  },
+  {
+    path: "/legal/contracts/marketing/my-requests",
+    component: <MarketingAgreementUser />,
+  },
+  {
+    path: "/legal/contracts/service/approve",
+    component: <ServiceAgreementApprove />,
+  },
+  {
+    path: "/legal/contracts/service/archive",
+    component: <ServiceAgreementArchive />,
+  },
+  {
+    path: "/legal/contracts/service/my-requests",
+    component: <ServiceAgreementUser />,
+  },
 
   // Support & Tasks
   { path: "/support/it-tasks", component: <TaskList /> },
