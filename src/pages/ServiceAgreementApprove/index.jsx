@@ -13,10 +13,10 @@ import {
 import Button from "@mui/material/Button"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import {
-  getDepartmentAgreements as getDeliveryDepartmentAgreements,
-  updateAgreementStatus as updateDeliveryAgreementStatus,
-  downloadAgreement as downloadDeliveryAgreementService,
-} from "services/deliveryAgreement"
+  getDepartmentAgreements,
+  updateAgreementStatus,
+  downloadAgreement,
+} from "services/serviceAgreement"
 import {
   BsBank,
   BsCalendar,
@@ -54,7 +54,7 @@ const STATUS_MAPPING = {
 
 const handleDownload = async agreementId => {
   try {
-    await downloadDeliveryAgreementService(agreementId)
+    await downloadAgreement(agreementId)
     toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
   } catch (error) {
     console.error("Download failed:", error)
@@ -62,7 +62,7 @@ const handleDownload = async agreementId => {
   }
 }
 
-const DeliveryAgreementApprove = () => {
+const ServiceAgreementApprove = () => {
   document.title = "ხელშეკრულებების ვიზირება | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
   const [confirmModal, setConfirmModal] = useState({
@@ -75,8 +75,7 @@ const DeliveryAgreementApprove = () => {
 
   const fetchAgreements = async () => {
     try {
-      const response = await getDeliveryDepartmentAgreements()
-      console.log(response.data.data)
+      const response = await getDepartmentAgreements()
       setAgreements(response.data.data)
     } catch (err) {
       console.error("Error fetching agreements:", err)
@@ -87,24 +86,15 @@ const DeliveryAgreementApprove = () => {
     fetchAgreements()
   }, [])
 
-  const handleUpdateStatus = async (
-    agreementId,
-    status,
-    additionalData,
-    rejectionReason
-  ) => {
+  const handleUpdateStatus = async (agreementId, status, rejectionReason) => {
     if (status === "approved") {
       setIsProcessing(true)
     }
 
     try {
-      const response = await updateDeliveryAgreementStatus(
-        agreementId,
-        status,
-        {
-          rejection_reason: rejectionReason,
-        }
-      )
+      const response = await updateAgreementStatus(agreementId, status, {
+        rejection_reason: rejectionReason,
+      })
 
       setAgreements(prevAgreements =>
         prevAgreements.map(agreement =>
@@ -147,10 +137,41 @@ const DeliveryAgreementApprove = () => {
       alert("გთხოვთ მიუთითოთ უარყოფის მიზეზი")
       return
     }
-    await handleUpdateStatus(agreementId, type, null, rejectionComment)
+    await handleUpdateStatus(agreementId, type, rejectionComment)
     setRejectionComment("")
     handleModalClose()
   }
+
+  const transformedAgreements = useMemo(() => {
+    return agreements.map(agreement => {
+      return {
+        id: agreement.id,
+        status: STATUS_MAPPING[agreement.status] || agreement.status,
+        created_at: agreement.created_at,
+        executor_firm_name: agreement.executor_firm_name,
+        executor_id_number: agreement.executor_id_number,
+        executor_home_address: agreement.executor_home_address,
+        executor_full_name: agreement.executor_full_name,
+        executor_position: agreement.executor_position,
+        executor_bank_account: agreement.executor_bank_account,
+        executor_bank_name: agreement.executor_bank_name,
+        service_type: agreement.service_type,
+        service_term: agreement.service_term,
+        service_cost: agreement.service_cost,
+        expanded: {
+          executor_factual_address: agreement.executor_factual_address,
+          executor_bank_swift: agreement.executor_bank_swift,
+          director_full_name: agreement.director_full_name,
+          director_id_number: agreement.director_id_number,
+          service_place: agreement.service_place,
+          service_payment_details: agreement.service_payment_details,
+          service_active_term: agreement.service_active_term,
+          rejection_reason: agreement.rejection_reason || null,
+          requested_by: agreement.user.name + " " + agreement.user.sur_name,
+        },
+      }
+    })
+  }, [agreements])
 
   const columns = useMemo(
     () => [
@@ -159,33 +180,46 @@ const DeliveryAgreementApprove = () => {
         accessor: "id",
       },
       {
-        Header: "იურიდიული პირის დასახელება",
-        accessor: "jursdictional_unit.name",
+        Header: "შემსრულებელი ფირმის დასახელება",
+        accessor: "executor_firm_name",
       },
       {
-        Header: "საიდენტიფიკაციო კოდი",
-        accessor: "jursdictional_unit.id",
+        Header: "საიდენტიფიკაციო ნომერი",
+        accessor: "executor_id_number",
       },
       {
-        Header: "მისამართი",
-        accessor: "jursdictional_unit.address",
+        Header: "იურიდიული მისამართი",
+        accessor: "executor_home_address",
       },
       {
-        Header: "ხელშეკრულების ტიპი",
-        accessor: "agreement_type",
+        Header: "შემსრულებლის სახელი",
+        accessor: "executor_full_name",
       },
       {
-        Header: "დირექტორის სახელი და გვარი",
-        accessor: "director.name",
+        Header: "თანამდებობა",
+        accessor: "executor_position",
       },
       {
-        Header: "დირექტორის პირადი ნომერი",
-        accessor: "director.id",
+        Header: "საბანკო ანგარიში",
+        accessor: "executor_bank_account",
       },
       {
-        Header: "ჯამური ღირებულება",
-        accessor: "cost",
-        Cell: ({ value, row }) => (
+        Header: "ბანკის დასახელება",
+        accessor: "executor_bank_name",
+      },
+      {
+        Header: "მომსახურების ტიპი",
+        accessor: "service_type",
+      },
+      {
+        Header: "მომსახურების ვადა",
+        accessor: "service_term",
+        Cell: ({ value }) => `${value} დღე`,
+      },
+      {
+        Header: "მომსახურების ღირებულება",
+        accessor: "service_cost",
+        Cell: ({ value }) => (
           <div>
             {value
               ? new Intl.NumberFormat("ka-GE", {
@@ -195,10 +229,6 @@ const DeliveryAgreementApprove = () => {
               : "N/A"}
           </div>
         ),
-      },
-      {
-        Header: "ღირებულების ტიპი",
-        accessor: "cost_type",
       },
       {
         Header: "სტატუსი",
@@ -248,55 +278,30 @@ const DeliveryAgreementApprove = () => {
         accessor: "actions",
         disableSortBy: true,
         Cell: ({ row }) =>
-          row.original.status === "pending" ? (
+          row.original.status === "pending" && (
             <div className="d-flex gap-2">
               <Button
-                onClick={() => handleModalOpen("approved", row.original.id)}
-                color="success"
                 variant="contained"
+                color="success"
+                size="small"
+                onClick={() => handleModalOpen("approved", row.original.id)}
               >
                 დამტკიცება
               </Button>
               <Button
-                onClick={() => handleModalOpen("rejected", row.original.id)}
-                color="error"
                 variant="contained"
+                color="error"
+                size="small"
+                onClick={() => handleModalOpen("rejected", row.original.id)}
               >
-                უარყოფა
+                უარყო���ა
               </Button>
             </div>
-          ) : null,
+          ),
       },
     ],
     []
   )
-
-  const transformedAgreements = useMemo(() => {
-    return agreements.map(agreement => {
-      return {
-        id: agreement.id,
-        status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: agreement.created_at,
-        cost: agreement.sum_cost,
-        cost_type: agreement.sum_cost_type,
-        jursdictional_unit: {
-          name: agreement.jursdictional_name,
-          id: agreement.jursdictional_id_number,
-          address: agreement.jursdictional_address,
-        },
-        agreement_type: agreement.agreement_type,
-        director: {
-          name: agreement.director_full_name,
-          id: agreement.director_id_number,
-        },
-        expanded: {
-          action_act: agreement.action_act,
-          rejection_reason: agreement.rejection_reason || null,
-          requested_by: agreement.user.name + " " + agreement.user.sur_name,
-        },
-      }
-    })
-  }, [agreements])
 
   const filterOptions = [
     {
@@ -335,65 +340,70 @@ const DeliveryAgreementApprove = () => {
         {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            {/* Agreement Type */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCreditCard className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">ხელშეკრულების ტიპი</div>
-                  <div className="fw-medium">{row.agreement_type}</div>
-                </div>
-              </div>
-            </Col>
-
-            {/* Cost */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsVoicemail className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">ღირებულება</div>
-                  <div className="fw-medium">
-                    {row.cost} {row.cost_type}
-                  </div>
-                </div>
-              </div>
-            </Col>
-
-            {/* Jurisdictional Unit */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">იურიდიული პირი</div>
-                  <div className="fw-medium">
-                    {row.jursdictional_unit.name} ({row.jursdictional_unit.id})
-                  </div>
-                </div>
-              </div>
-            </Col>
-
-            {/* Address */}
+            {/* Factual Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">მისამართი</div>
+                  <div className="text-muted small">ფაქტიური მისამართი</div>
+                  <div className="fw-medium">{row.expanded.executor_factual_address}</div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Bank Swift */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">SWIFT კოდი</div>
+                  <div className="fw-medium">{row.expanded.executor_bank_swift}</div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Director Info */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">დირექტორის ინფორმაცია</div>
                   <div className="fw-medium">
-                    {row.jursdictional_unit.address}
+                    {row.expanded.director_full_name} ({row.expanded.director_id_number})
                   </div>
                 </div>
               </div>
             </Col>
 
-            {/* Director */}
+            {/* Service Place */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">მომსახურების ადგილი</div>
+                  <div className="fw-medium">{row.expanded.service_place}</div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Payment Details */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCreditCard className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">გადახდის დეტალები</div>
+                  <div className="fw-medium">{row.expanded.service_payment_details}</div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Service Active Term */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">დირექტორი</div>
-                  <div className="fw-medium">
-                    {row.director.name} ({row.director.id})
-                  </div>
+                  <div className="text-muted small">მომსახურების აქტიური ვადა</div>
+                  <div className="fw-medium">{row.expanded.service_active_term}</div>
                 </div>
               </div>
             </Col>
@@ -401,7 +411,7 @@ const DeliveryAgreementApprove = () => {
             {/* Created Date */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
-                <BsBank className="fs-7 text-primary" />
+                <BsCalendar className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">შექმნის თარიღი</div>
                   <div className="fw-medium">{row.created_at}</div>
@@ -447,70 +457,73 @@ const DeliveryAgreementApprove = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["jursdictional_unit.name"]}
+                    searchableFields={["executor_firm_name", "executor_full_name"]}
                     filterOptions={filterOptions}
+                    onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}
                   />
                 </CardBody>
               </Card>
             </Col>
           </Row>
-          <ToastContainer />
         </div>
       </div>
 
-      <Modal isOpen={confirmModal.isOpen} toggle={handleModalClose}>
+      {/* Confirmation Modal */}
+      <Modal
+        isOpen={confirmModal.isOpen}
+        toggle={handleModalClose}
+        centered={true}
+      >
         <ModalHeader toggle={handleModalClose}>
-          {confirmModal.type === "approved" ? "დამტკიცება" : "უარყოფა"}
+          {confirmModal.type === "approved"
+            ? "ხელშეკრულების დამტკიცება"
+            : "ხელშეკრულების უარყოფა"}
         </ModalHeader>
         <ModalBody>
-          {isProcessing ? (
-            <div className="text-center">
-              <Spinner color="primary" />
-              <p className="mt-2">
-                გთხოვთ დაელოდოთ, მიმდინარეობს დამუშავება...
-              </p>
-            </div>
+          {confirmModal.type === "approved" ? (
+            <p>გსურთ ხელშეკრულების დამტკიცე���ა?</p>
           ) : (
-            <>
-              <p>დარწმუნებული ხართ, რომ გსურთ ამ მოქმედების შესრულება?</p>
-              {confirmModal.type === "rejected" && (
-                <div className="mt-3">
-                  <label htmlFor="rejection_reason" className="form-label">
-                    უარყოფის მიზეზი *
-                  </label>
-                  <textarea
-                    id="rejection_reason"
-                    className="form-control"
-                    value={rejectionComment}
-                    onChange={e => setRejectionComment(e.target.value)}
-                    rows="3"
-                    required
-                  />
-                </div>
-              )}
-            </>
+            <div>
+              <p>გთხოვთ მიუთითოთ უარყოფის მიზეზი:</p>
+              <textarea
+                className="form-control"
+                rows="3"
+                value={rejectionComment}
+                onChange={e => setRejectionComment(e.target.value)}
+              />
+            </div>
           )}
         </ModalBody>
         <ModalFooter>
           <Button
-            color={confirmModal.type === "rejected" ? "secondary" : "error"}
-            onClick={handleModalClose}
-            disabled={isProcessing}
-          >
-            გაუქმება
-          </Button>
-          <Button
+            variant="contained"
             color={confirmModal.type === "approved" ? "success" : "error"}
             onClick={handleConfirmAction}
             disabled={isProcessing}
           >
-            დადასტურება
+            {isProcessing ? (
+              <Spinner size="sm" className="me-2" />
+            ) : (
+              <i
+                className={`bx ${
+                  confirmModal.type === "approved"
+                    ? "bx-check-circle"
+                    : "bx-x-circle"
+                } me-2`}
+              />
+            )}
+            {confirmModal.type === "approved" ? "დამტკიცება" : "უარყოფა"}
+          </Button>
+          <Button variant="outlined" onClick={handleModalClose}>
+            გაუქმება
           </Button>
         </ModalFooter>
       </Modal>
+
+      <ToastContainer />
     </React.Fragment>
   )
 }
 
-export default DeliveryAgreementApprove
+export default ServiceAgreementApprove 
