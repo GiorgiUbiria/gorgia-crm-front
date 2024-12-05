@@ -1,7 +1,7 @@
 import defaultInstance from "plugins/axios"
 
 export const createAgreement = async data => {
-  const response = await defaultInstance.post("/api/purchase-agreements", data)
+  const response = await defaultInstance.post("/api/service-agreements", data)
   return response.data
 }
 
@@ -10,27 +10,24 @@ export const updateAgreementStatus = async (
   status,
   additionalData
 ) => {
-  return defaultInstance.post(
-    `/api/purchase-agreements/${agreementId}/status`,
-    {
-      status,
-      ...additionalData,
-    }
-  )
+  return defaultInstance.post(`/api/service-agreements/${agreementId}/status`, {
+    status,
+    ...additionalData,
+  })
 }
 
 export const getDepartmentAgreements = async () => {
-  return defaultInstance.get("/api/purchase-agreements/departments")
+  return defaultInstance.get("/api/service-agreements/departments")
 }
 
 export const getUserAgreemnets = async () => {
-  return defaultInstance.get("/api/purchase-agreements/user")
+  return defaultInstance.get("/api/service-agreements/user")
 }
 
 export const downloadAgreement = async agreementId => {
   try {
     const response = await defaultInstance.get(
-      `/api/purchase-agreements/${agreementId}/download`,
+      `/api/service-agreements/${agreementId}/download`,
       {
         responseType: "blob",
         headers: {
@@ -51,7 +48,7 @@ export const downloadAgreement = async agreementId => {
     link.href = fileURL
     link.setAttribute(
       "download",
-      `purchase_agreement_${agreementId}.${isDocx ? "docx" : "pdf"}`
+      `service_agreement_${agreementId}.${isDocx ? "docx" : "pdf"}`
     )
 
     document.body.appendChild(link)

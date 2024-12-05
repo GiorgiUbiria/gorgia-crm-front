@@ -15,14 +15,13 @@ import Breadcrumbs from "../../components/Common/Breadcrumb"
 import {
   getDepartmentAgreements,
   updateAgreementStatus,
-} from "services/agreement"
+} from "services/serviceAgreement"
 import {
   BsBank,
   BsCalendar,
   BsCreditCard,
   BsMap,
   BsPerson,
-  BsVoicemail,
 } from "react-icons/bs"
 import MuiTable from "../../components/Mui/MuiTable"
 import { toast, ToastContainer } from "react-toastify"
@@ -51,7 +50,7 @@ const STATUS_MAPPING = {
   rejected: "rejected",
 }
 
-const LawyerPageApprove = () => {
+const ServiceAgreementApprove = () => {
   document.title = "ხელშეკრულებების ვიზირება | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
   const [confirmModal, setConfirmModal] = useState({
@@ -75,12 +74,7 @@ const LawyerPageApprove = () => {
     fetchAgreements()
   }, [])
 
-  const handleUpdateStatus = async (
-    agreementId,
-    status,
-    additionalData,
-    rejectionReason
-  ) => {
+  const handleUpdateStatus = async (agreementId, status, rejectionReason) => {
     if (status === "approved") {
       setIsProcessing(true)
     }
@@ -131,10 +125,41 @@ const LawyerPageApprove = () => {
       alert("გთხოვთ მიუთითოთ უარყოფის მიზეზი")
       return
     }
-    await handleUpdateStatus(agreementId, type, null, rejectionComment)
+    await handleUpdateStatus(agreementId, type, rejectionComment)
     setRejectionComment("")
     handleModalClose()
   }
+
+  const transformedAgreements = useMemo(() => {
+    return agreements.map(agreement => {
+      return {
+        id: agreement.id,
+        status: STATUS_MAPPING[agreement.status] || agreement.status,
+        created_at: agreement.created_at,
+        executor_firm_name: agreement.executor_firm_name,
+        executor_id_number: agreement.executor_id_number,
+        executor_home_address: agreement.executor_home_address,
+        executor_full_name: agreement.executor_full_name,
+        executor_position: agreement.executor_position,
+        executor_bank_account: agreement.executor_bank_account,
+        executor_bank_name: agreement.executor_bank_name,
+        service_type: agreement.service_type,
+        service_term: agreement.service_term,
+        service_cost: agreement.service_cost,
+        expanded: {
+          executor_factual_address: agreement.executor_factual_address,
+          executor_bank_swift: agreement.executor_bank_swift,
+          director_full_name: agreement.director_full_name,
+          director_id_number: agreement.director_id_number,
+          service_place: agreement.service_place,
+          service_payment_details: agreement.service_payment_details,
+          service_active_term: agreement.service_active_term,
+          rejection_reason: agreement.rejection_reason || null,
+          requested_by: agreement.user.name + " " + agreement.user.sur_name,
+        },
+      }
+    })
+  }, [agreements])
 
   const columns = useMemo(
     () => [
@@ -143,36 +168,45 @@ const LawyerPageApprove = () => {
         accessor: "id",
       },
       {
-        Header: "კონტრაგენტის დასახელება/სახელი და გვარი",
-        accessor: "contragent.name",
+        Header: "შემსრულებელი ფირმის დასახელება",
+        accessor: "executor_firm_name",
       },
       {
-        Header: "პირადი ნომერი/საიდენტიფიკაციო კოდი",
-        accessor: "contragent.id",
+        Header: "საიდენტიფიკაციო ნომერი",
+        accessor: "executor_id_number",
       },
       {
-        Header: "მისამართი",
-        accessor: "contragent.address",
+        Header: "იურიდიული მისამართი",
+        accessor: "executor_home_address",
       },
       {
-        Header: "ტელეფონის ნომერი",
-        accessor: "contragent.phone",
+        Header: "შემსრულებლის სახელი",
+        accessor: "executor_full_name",
       },
       {
-        Header: "ელ.ფოსტა",
-        accessor: "contragent.email",
+        Header: "თანამდებობა",
+        accessor: "executor_position",
       },
       {
-        Header: "დირექტორის სახელი და გვარი",
-        accessor: "director.name",
+        Header: "საბანკო ანგარიში",
+        accessor: "executor_bank_account",
       },
       {
-        Header: "დირექტორის ტელეფონის ნომერი",
-        accessor: "director.phone",
+        Header: "ბანკის დასახელება",
+        accessor: "executor_bank_name",
       },
       {
-        Header: "პროდუქციის ღირებულება",
-        accessor: "price",
+        Header: "მომსახურების ტიპი",
+        accessor: "service_type",
+      },
+      {
+        Header: "მომსახურების ვადა",
+        accessor: "service_term",
+        Cell: ({ value }) => `${value} დღე`,
+      },
+      {
+        Header: "მომსახურების ღირებულება",
+        accessor: "service_cost",
         Cell: ({ value }) => (
           <div>
             {value
@@ -232,60 +266,30 @@ const LawyerPageApprove = () => {
         accessor: "actions",
         disableSortBy: true,
         Cell: ({ row }) =>
-          row.original.status === "pending" ? (
+          row.original.status === "pending" && (
             <div className="d-flex gap-2">
               <Button
-                onClick={() => handleModalOpen("approved", row.original.id)}
-                color="success"
                 variant="contained"
+                color="success"
+                size="small"
+                onClick={() => handleModalOpen("approved", row.original.id)}
               >
                 დამტკიცება
               </Button>
               <Button
-                onClick={() => handleModalOpen("rejected", row.original.id)}
-                color="error"
                 variant="contained"
+                color="error"
+                size="small"
+                onClick={() => handleModalOpen("rejected", row.original.id)}
               >
-                უარყოფა
+                უარყო���ა
               </Button>
             </div>
-          ) : null,
+          ),
       },
     ],
     []
   )
-
-  const transformedAgreements = useMemo(() => {
-    return agreements.map(agreement => {
-      return {
-        id: agreement.id,
-        status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: agreement.created_at,
-        price: agreement.product_cost,
-        contragent: {
-          name: agreement.contragent_name,
-          id: agreement.contragent_id,
-          address: agreement.contragent_address,
-          phone: agreement.contragent_phone_number,
-          email: agreement.contragent_email,
-        },
-        director: {
-          name: agreement.contragent_director_name,
-          phone: agreement.contragent_director_phone_number,
-        },
-        expanded: {
-          different_terms: agreement.payment_different_terms,
-          contract_initiator: agreement.contract_initiator_name,
-          conscription_term: agreement.conscription_term,
-          product_delivery_address: agreement.product_delivery_address,
-          product_payment_term: agreement.product_payment_term,
-          bank_account: agreement.bank_account,
-          rejection_reason: agreement.rejection_reason || null,
-          requested_by: agreement.user.name + " " + agreement.user.sur_name,
-        },
-      }
-    })
-  }, [agreements])
 
   const filterOptions = [
     {
@@ -304,7 +308,7 @@ const LawyerPageApprove = () => {
 
     return (
       <div className="p-4 bg-light rounded">
-        {/* Status Banner */}
+        {/* Rejection reason banner */}
         {row.expanded.rejection_reason && (
           <div className="alert alert-danger d-flex align-items-center mb-4">
             <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -314,81 +318,102 @@ const LawyerPageApprove = () => {
           </div>
         )}
 
-        {/* Requester Info */}
+        {/* Requester info */}
         <div className="d-flex align-items-center mb-4 gap-2 text-muted">
           <BsPerson className="fs-3 text-primary" />
           <strong>მოითხოვა:</strong>
           <span className="ms-2">{row.expanded.requested_by}</span>
         </div>
 
-        {/* Details Grid */}
+        {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCreditCard className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">
-                    გადახდის განსხვავებული პირობები
-                  </div>
-                  <div className="fw-medium">
-                    {row.expanded.different_terms ? "კი" : "არა"}
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsVoicemail className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">
-                    ხელშეკრულების ინიციატორი
-                  </div>
-                  <div className="fw-medium">
-                    {row.expanded.contract_initiator}
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">ხელშეკრულების ვადა</div>
-                  <div className="fw-medium">
-                    {row.expanded.conscription_term}
-                  </div>
-                </div>
-              </div>
-            </Col>
+            {/* Factual Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">მიწოდების მისამართი</div>
+                  <div className="text-muted small">ფაქტიური მისამართი</div>
                   <div className="fw-medium">
-                    {row.expanded.product_delivery_address}
+                    {row.expanded.executor_factual_address}
                   </div>
                 </div>
               </div>
             </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">გადახდის ვადა</div>
-                  <div className="fw-medium">
-                    {row.expanded.product_payment_term}
-                  </div>
-                </div>
-              </div>
-            </Col>
+
+            {/* Bank Swift */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">საბანკო ანგარიში</div>
-                  <div className="fw-medium">{row.expanded.bank_account}</div>
+                  <div className="text-muted small">SWIFT კოდი</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_swift}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Director Info */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">დირექტორის ინფორმაცია</div>
+                  <div className="fw-medium">
+                    {row.expanded.director_full_name} (
+                    {row.expanded.director_id_number})
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Service Place */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">მომსახურების ადგილი</div>
+                  <div className="fw-medium">{row.expanded.service_place}</div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Payment Details */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCreditCard className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">გადახდის დეტალები</div>
+                  <div className="fw-medium">
+                    {row.expanded.service_payment_details}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Service Active Term */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    მომსახურების აქტიური ვადა
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.service_active_term}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Created Date */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">შექმნის თარიღი</div>
+                  <div className="fw-medium">{row.created_at}</div>
                 </div>
               </div>
             </Col>
@@ -420,15 +445,18 @@ const LawyerPageApprove = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["contragent.name"]}
+                    searchableFields={[
+                      "executor_firm_name",
+                      "executor_full_name",
+                    ]}
                     filterOptions={filterOptions}
+                    onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}
                   />
                 </CardBody>
               </Card>
             </Col>
           </Row>
-          <ToastContainer />
         </div>
       </div>
 
@@ -482,8 +510,10 @@ const LawyerPageApprove = () => {
           </Button>
         </ModalFooter>
       </Modal>
+
+      <ToastContainer />
     </React.Fragment>
   )
 }
 
-export default LawyerPageApprove
+export default ServiceAgreementApprove
