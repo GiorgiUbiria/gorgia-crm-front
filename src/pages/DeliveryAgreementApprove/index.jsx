@@ -15,7 +15,6 @@ import Breadcrumbs from "../../components/Common/Breadcrumb"
 import {
   getDepartmentAgreements as getDeliveryDepartmentAgreements,
   updateAgreementStatus as updateDeliveryAgreementStatus,
-  downloadAgreement as downloadDeliveryAgreementService,
 } from "services/deliveryAgreement"
 import {
   BsBank,
@@ -50,16 +49,6 @@ const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
-}
-
-const handleDownload = async agreementId => {
-  try {
-    await downloadDeliveryAgreementService(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
-  } catch (error) {
-    console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
-  }
 }
 
 const DeliveryAgreementApprove = () => {
@@ -410,17 +399,6 @@ const DeliveryAgreementApprove = () => {
             </Col>
           </Row>
         </div>
-
-        {/* Download button for approved agreements */}
-        {row.status === "approved" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => handleDownload(row.id)}
-          >
-            <i className="bx bx-download me-2"></i>
-            ხელშეკრულების ჩამოტვირთვა
-          </button>
-        )}
       </div>
     )
   }, [])

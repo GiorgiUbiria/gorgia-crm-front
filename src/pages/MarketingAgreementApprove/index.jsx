@@ -15,7 +15,6 @@ import Breadcrumbs from "../../components/Common/Breadcrumb"
 import {
   getDepartmentAgreements,
   updateAgreementStatus,
-  downloadAgreement,
 } from "services/marketingAgreement"
 import {
   BsBank,
@@ -23,7 +22,6 @@ import {
   BsCreditCard,
   BsMap,
   BsPerson,
-  BsVoicemail,
 } from "react-icons/bs"
 import MuiTable from "../../components/Mui/MuiTable"
 import { toast, ToastContainer } from "react-toastify"
@@ -50,16 +48,6 @@ const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
-}
-
-const handleDownload = async agreementId => {
-  try {
-    await downloadAgreement(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
-  } catch (error) {
-    console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
-  }
 }
 
 const MarketingAgreementApprove = () => {
@@ -420,17 +408,6 @@ const MarketingAgreementApprove = () => {
             </Col>
           </Row>
         </div>
-
-        {/* Download button for approved agreements */}
-        {row.status === "approved" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => handleDownload(row.id)}
-          >
-            <i className="bx bx-download me-2"></i>
-            ხელშეკრულების ჩამოტვირთვა
-          </button>
-        )}
       </div>
     )
   }, [])

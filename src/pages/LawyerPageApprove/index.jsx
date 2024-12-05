@@ -26,7 +26,6 @@ import {
 } from "react-icons/bs"
 import MuiTable from "../../components/Mui/MuiTable"
 import { toast, ToastContainer } from "react-toastify"
-import { downloadAgreement as downloadAgreementService } from "services/agreement"
 
 const statusMap = {
   pending: {
@@ -50,16 +49,6 @@ const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
-}
-
-const handleDownload = async agreementId => {
-  try {
-    await downloadAgreementService(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
-  } catch (error) {
-    console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
-  }
 }
 
 const LawyerPageApprove = () => {
@@ -405,17 +394,6 @@ const LawyerPageApprove = () => {
             </Col>
           </Row>
         </div>
-
-        {/* Download Button */}
-        {row.status === "approved" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => handleDownload(row.id)}
-          >
-            <i className="bx bx-download me-2"></i>
-            ხელშეკრულების ჩამოტვირთვა
-          </button>
-        )}
       </div>
     )
   }, [])
