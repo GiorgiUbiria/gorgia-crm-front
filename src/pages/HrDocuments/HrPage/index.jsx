@@ -37,7 +37,7 @@ import { usePermissions } from "hooks/usePermissions"
 import { useNavigate } from "react-router-dom"
 
 const DOCUMENT_TYPES = {
-  PAID_EMPLOYMENT: "შელფასიანი ცნობა",
+  PAID_EMPLOYMENT: "ხელფასიანი ცნობა",
   UNPAID_EMPLOYMENT: "უხელფასო ცნობა",
   PAID_PROBATION: "გამოსაცდელი ვადით ხელფასიანი",
   UNPAID_PROBATION: "გამოსაცდელი ვადით უხელფასო",
@@ -68,7 +68,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
     return {
       documentType: "",
       id_number: currentUser?.id_number || "",
-      position: currentUser?.department?.name || "",
+      position: currentUser?.position || "",
       working_start_date: currentUser?.working_start_date || "",
       purpose: "",
     }
@@ -77,7 +77,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       selectedUser: selectedUser?.id || "",
       documentType: "",
       id_number: selectedUser?.id_number || "",
-      position: selectedUser?.department?.name || "",
+      position: selectedUser?.position || "",
       working_start_date: selectedUser?.working_start_date || "",
       purpose: "",
     }
@@ -93,9 +93,12 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
 }
 
 const validationSchema = Yup.object().shape({
+  first_name: Yup.string().required("სახელი აუცილებელია"),
+  last_name: Yup.string().required("გვარი აუცილებელია"),
   documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
   id_number: Yup.string().required("პირადი ნომერი აუცილებელია"),
   position: Yup.string().required("პოზიცია აუცილებელია"),
+  
   purpose: Yup.string().when("documentType", {
     is: type =>
       type === DOCUMENT_TYPES.PAID_EMPLOYMENT ||
@@ -119,6 +122,11 @@ const HrPage = () => {
   const [currentUser, setCurrentUser] = useState(reduxUser)
   const { users, loading: usersLoading } = useFetchUsers()
   const [selectedUserId, setSelectedUserId] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [position, setPosition] = useState("")
+  const [idNumber, setIdNumber] = useState("")
+  const [goal, setGoal] = useState("")
   const [selectedUser, setSelectedUser] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
   const { hasPermission, isAdmin } = usePermissions()
@@ -143,38 +151,56 @@ const HrPage = () => {
   }, [activeTab, selectedUserId, users])
 
   const handleDocumentSubmit = async (values, { setSubmitting, resetForm }) => {
+    console.log('here')
+
     try {
-      const contextUser = activeTab === "1" ? currentUser : selectedUser
+      // const contextUser = activeTab === "1" ? currentUser : selectedUser
 
-      if (!contextUser) {
-        toast.error("მომხმარებლის მონაცემები არ მოიძებნა")
-        return
-      }
+      // if (!contextUser) {
+      //   toast.error("მომხმარებლის მონაცემები არ მოიძებნა")
+      //   return
+      // }
 
-      if (
-        (activeTab === "2" || isAdmin) &&
-        (values.id_number !== contextUser.id_number ||
-          values.position !== contextUser.position)
-      ) {
-        const updateData = {
-          id_number: values.id_number,
-          position: values.position,
-        }
+      // const data = {
+      //   first_name: firstName,
+      //   last_name: lastName,
+      //   position,
+      //   id_number: idNumber,
+      //   purpose: goal,
+      // }
+      // await updateUserIdNumberById(data, currentUser.id)
 
-        if (activeTab === "2") {
-          await updateUserIdNumberById(updateData, contextUser.id)
-        } else {
-          await updateUserIdNumber(updateData)
-        }
-      }
+      // if (
+      //   (activeTab === "2" || isAdmin) &&
+      //   (values.id_number !== currentUser.id_number ||
+      //     values.position !== currentUser.position)
+      // ) {
+      //   const updateData = {
+      //     id_number: values.id_number,
+      //     position: values.position,
+      //     first_name: firstName,
+      //     last_name: lastName,
+      //   }
 
+      //   if (activeTab === "2") {
+      //     await updateUserIdNumberById(updateData, currentUser.id)
+      //   } else {
+      //     await updateUserIdNumber(updateData)
+      //   }
+      // }
       const documentData = {
         name: values.documentType,
-        user_id: activeTab === "2" ? selectedUser.id : contextUser.id,
+        user_id: currentUser.id,
+        first_name: firstName,
+        last_name: lastName,
+        position,
+        id_number: idNumber,
+        purpose: goal,
+
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
 
-      console.log(documentData)
+      
 
       await createHrDocument(documentData)
       toast.success("დოკუმენტი წარმატებით შეიქმნა")
@@ -196,10 +222,6 @@ const HrPage = () => {
 
   const renderUserInfo = (user, isEditable = false) => (
     <div className="row g-3 mb-4">
-      {
-    console.log(user)
-
-      }
       <div className="col-md-6">
         <Label className="form-label">პირადი ნომერი</Label>
         {isEditable ? (
@@ -221,7 +243,7 @@ const HrPage = () => {
           <Field type="text" name="position" className="form-control" />
         ) : (
           <p className="form-control-plaintext border rounded p-2">
-            {user?.department?.name}
+            {user?.position}
           </p>
         )}
         <ErrorMessage
@@ -369,14 +391,17 @@ const HrPage = () => {
                             {canAccessOtherTab && (
                               <TabPane tabId="2">
                                 {/* User Selection */}
-                                <div className="mb-4">
+
+                                {/* <div className="mb-4">
                                   <Label className="form-label">
                                     მომხმარებელი
                                   </Label>
                                   <Field
-                                    as="select"
+                                    type="text"
                                     name="selectedUser"
-                                    className="form-select"
+                                    className="form-control"
+                                    value={firstName}
+                                    onChange={e => setFirstName(e.target.value)}
                                     onChange={e => {
                                       setSelectedUserId(e.target.value)
                                       const formik = e.target.form?.formik
@@ -403,10 +428,37 @@ const HrPage = () => {
                                     component="div"
                                     className="text-danger mt-1"
                                   />
-                                </div>
+                                </div> */}
+
+
+
+                                <div className="row g-3 mb-4">
+                                      <div className="col-md-6">
+                                        <Label className="form-label">სახელი</Label>
+                                        
+                                          <Field type="text" name="first_name" className="form-control" value={firstName} onChange={e => setFirstName(e.target.value)} />
+                                        
+                                        <ErrorMessage
+                                          name="first_name"
+                                          component="div"
+                                          className="text-danger mt-1"
+                                        />
+                                      </div>
+                                      <div className="col-md-6">
+                                        <Label className="form-label">გვარი</Label>
+                                        
+                                          <Field type="text" name="last_name" className="form-control" value={lastName} onChange={e => setLastName(e.target.value)} />
+                                        
+                                        <ErrorMessage
+                                          name="last_name"
+                                          component="div"
+                                          className="text-danger mt-1"
+                                        />
+                                      </div>
+                                    </div>
 
                                 {/* Document Type and User Info */}
-                                {selectedUser && (
+                                
                                   <>
                                     {/* Document Type Selection */}
                                     <div className="mb-4">
@@ -437,7 +489,33 @@ const HrPage = () => {
                                     </div>
 
                                     {/* Selected User Info (editable) */}
-                                    {renderUserInfo(selectedUser, true)}
+                                    {/* {renderUserInfo(selectedUser, true)} */}
+
+                                    <div className="row g-3 mb-4">
+                                      <div className="col-md-6">
+                                        <Label className="form-label">პირადი ნომერი</Label>
+                                        
+                                          <Field type="text" name="id_number" className="form-control" value={idNumber} onChange={e => setIdNumber(e.target.value)} />
+                                        
+                                        <ErrorMessage
+                                          name="id_number"
+                                          component="div"
+                                          className="text-danger mt-1"
+                                        />
+                                      </div>
+                                      <div className="col-md-6">
+                                        <Label className="form-label">პოზიცია</Label>
+                                          <Field type="text" name="position" className="form-control" value={position} onChange={e => setPosition(e.target.value)} />
+                                        
+                                        <ErrorMessage
+                                          name="position"
+                                          component="div"
+                                          className="text-danger mt-1"
+                                        />
+                                      </div>
+                                    </div>
+
+
 
                                     {/* Purpose field for paid documents */}
                                     {isPaidDocument(values.documentType) && (
@@ -449,6 +527,8 @@ const HrPage = () => {
                                           type="text"
                                           name="purpose"
                                           className="form-control"
+                                          value={goal}
+                                          onChange={e => setGoal(e.target.value)}
                                         />
                                         <ErrorMessage
                                           name="purpose"
@@ -458,7 +538,7 @@ const HrPage = () => {
                                       </div>
                                     )}
                                   </>
-                                )}
+                                
                               </TabPane>
                             )}
                           </TabContent>
