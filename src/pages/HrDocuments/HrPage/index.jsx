@@ -68,7 +68,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
     return {
       documentType: "",
       id_number: currentUser?.id_number || "",
-      position: currentUser?.position || "",
+      position: currentUser?.department?.name || "",
       working_start_date: currentUser?.working_start_date || "",
       purpose: "",
     }
@@ -77,7 +77,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       selectedUser: selectedUser?.id || "",
       documentType: "",
       id_number: selectedUser?.id_number || "",
-      position: selectedUser?.position || "",
+      position: selectedUser?.department?.name || "",
       working_start_date: selectedUser?.working_start_date || "",
       purpose: "",
     }
@@ -192,8 +192,14 @@ const HrPage = () => {
     }
   }
 
+  
+
   const renderUserInfo = (user, isEditable = false) => (
     <div className="row g-3 mb-4">
+      {
+    console.log(user)
+
+      }
       <div className="col-md-6">
         <Label className="form-label">პირადი ნომერი</Label>
         {isEditable ? (
@@ -215,7 +221,7 @@ const HrPage = () => {
           <Field type="text" name="position" className="form-control" />
         ) : (
           <p className="form-control-plaintext border rounded p-2">
-            {user?.position}
+            {user?.department?.name}
           </p>
         )}
         <ErrorMessage
