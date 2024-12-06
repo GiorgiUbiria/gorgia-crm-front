@@ -53,6 +53,9 @@ import MarketingAgreementUser from "pages/MarketingAgreementUser"
 import ServiceAgreementApprove from "pages/ServiceAgreementApprove"
 import ServiceAgreementArchive from "pages/ServiceAgreementArchive"
 import ServiceAgreementUser from "pages/ServiceAgreementUser"
+import LocalAgreementApprove from "pages/LocalAgreementApprove"
+import LocalAgreementArchive from "pages/LocalAgreementArchive"
+import LocalAgreementUser from "pages/LocalAgreementUser"
 
 const authProtectedRoutes = [
   // Dashboard & Main Routes
@@ -193,6 +196,19 @@ const authProtectedRoutes = [
   {
     path: "/legal/contracts/service/my-requests",
     component: <ServiceAgreementUser />,
+  },
+
+  {
+    path: "/legal/contracts/local/approve",
+    component: <LocalAgreementApprove />,
+  },
+  {
+    path: "/legal/contracts/local/archive",
+    component: <LocalAgreementArchive />,
+  },
+  {
+    path: "/legal/contracts/local/my-requests",
+    component: <LocalAgreementUser />,
   },
 
   // Support & Tasks
