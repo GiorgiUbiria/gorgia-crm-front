@@ -220,6 +220,16 @@ export const getMenuConfig = (
             },
           ],
         },
+        {
+          to: "/legal/contracts/local",
+          key: "local",
+          label: t("ადგილობრივი ხელშეკრულება"),
+          submenu: [
+            isAdmin && { to: "/legal/contracts/local/approve", label: t("ვიზირება") },
+            isAdmin && { to: "/legal/contracts/local/archive", label: t("არქივი") },
+            { to: "/legal/contracts/local/my-requests", label: t("გაგზავნილი") },
+          ],
+        },
       ],
     },
     {

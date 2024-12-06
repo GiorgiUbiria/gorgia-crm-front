@@ -17,6 +17,7 @@ import StandardAgreementForm from "../../components/AgreementForms/Strandard/Sta
 import DeliveryAgreementForm from "../../components/AgreementForms/DeliveryAcceptance/DeliveryAgreementForm"
 import MarketingAgreementForm from "../../components/AgreementForms/Marketing/MarketingAgreementForm"
 import ServiceAgreementForm from "../../components/AgreementForms/Service/ServiceAgreementForm"
+import LocalAgreementForm from "../../components/AgreementForms/Local/LocalAgreementForm"
 import "../../assets/scss/custom/pages/_lawyer.scss"
 
 const AGREEMENT_TYPES = {
@@ -24,6 +25,7 @@ const AGREEMENT_TYPES = {
   DELIVERY: "delivery",
   MARKETING: "marketing",
   SERVICE: "service",
+  LOCAL: "local",
 }
 
 const LawyerPage = () => {
@@ -42,6 +44,8 @@ const LawyerPage = () => {
         return <MarketingAgreementForm />
       case AGREEMENT_TYPES.SERVICE:
         return <ServiceAgreementForm />
+      case AGREEMENT_TYPES.LOCAL:
+        return <LocalAgreementForm />
       default:
         return <StandardAgreementForm />
     }
@@ -92,6 +96,9 @@ const LawyerPage = () => {
                         </option>
                         <option value={AGREEMENT_TYPES.SERVICE}>
                           მომსახურების ხელშეკრულება
+                        </option>
+                        <option value={AGREEMENT_TYPES.LOCAL}>
+                          ადგილობრივი ხელშეკრულება
                         </option>
                       </Input>
                     </div>
