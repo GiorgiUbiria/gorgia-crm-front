@@ -270,7 +270,7 @@ const HrPage = () => {
                         ჩემთვის
                       </NavLink>
                     </NavItem>
-                    {canAccessOtherTab && (
+                    {canAccessOtherTab && (isAdmin || isHrMember) && (
                       <NavItem>
                         <NavLink
                           className={classnames({ active: activeTab === "2" })}
