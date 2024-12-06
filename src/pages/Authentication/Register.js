@@ -48,6 +48,7 @@ const Register = () => {
       password: "",
       mobile_number: "",
       department_id: "",
+      id_number: ""
     },
     validationSchema: Yup.object({
       email: Yup.string()
@@ -58,6 +59,7 @@ const Register = () => {
       sur_name: Yup.string().required("გთხოვთ შეიყვანოთ გვარი"),
       password: Yup.string().required("გთხოვთ შეიყვანოთ პაროლი"),
       department_id: Yup.number().required("გთხოვთ აირჩიოთ დეპარტამენტი"),
+      id_number: Yup.number().required("გთხოვთ ჩაწეროთ პირადი ნომერი"),
       mobile_number: Yup.string()
         .required("გთხოვთ შეიყვანოთ მობილურის ნომერი")
         .matches(/^[0-9]+$/, "ტელეფონის ნომერი უნდა შეიცავდეს მხოლოდ ციფრებს")
@@ -197,6 +199,30 @@ const Register = () => {
                         validation.errors.sur_name ? (
                           <FormFeedback type="invalid">
                             {validation.errors.sur_name}
+                          </FormFeedback>
+                        ) : null}
+                      </div>
+
+                      <div className="mb-3">
+                        <Label className="form-label">პირადი ნომერი</Label>
+                        <Input
+                          name="id_number"
+                          id="id_number"
+                          className="form-control"
+                          type="text"
+                          placeholder="ჩაწერეთ პირადი ნომერი"
+                          onChange={validation.handleChange}
+                          onBlur={validation.handleBlur}
+                          value={validation.values.id_number || ""}
+                          invalid={
+                            validation.touched.id_number &&
+                            validation.errors.id_number
+                          }
+                        />
+                        {validation.touched.id_number &&
+                        validation.errors.id_number ? (
+                          <FormFeedback type="invalid">
+                            {validation.errors.id_number}
                           </FormFeedback>
                         ) : null}
                       </div>
