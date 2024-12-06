@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { toast } from "react-toastify"
 import { changePassword, updateUser } from "../../services/user"
-import { getDepartments } from "../../services/admin/department"
+import { getDepartments, getPublicDepartments } from "../../services/admin/department"
 import { useTranslation } from "react-i18next"
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap"
 import { useSelector } from "react-redux"
@@ -270,7 +270,7 @@ const ProfilePage = () => {
   const { t } = useTranslation()
   const userData = useSelector(state => state.user.user)
 
-  console.log(userData)
+  // console.log(userData)
 
   const [departments, setDepartments] = useState([])
   const [passForm, setPassForm] = useState({
@@ -285,11 +285,13 @@ const ProfilePage = () => {
     confirm_password: "",
   })
 
+
+
   const [profileForm, setProfileForm] = useState({
     name: userData?.name || "",
     sur_name: userData?.sur_name || "",
     position: userData?.position || "",
-    department: userData?.department?.name || "",
+    department: userData?.department || "",
     location: userData?.location || "",
     working_start_date: userData?.working_start_date || "",
     date_of_birth: userData?.date_of_birth || "",
@@ -298,6 +300,8 @@ const ProfilePage = () => {
     id_number: userData?.id_number || "",
     password: "",
     profile_image: "",
+    roles: userData?.roles || "",
+
   })
 
   const [profileError, setProfileError] = useState({
@@ -313,6 +317,7 @@ const ProfilePage = () => {
     id_number: "",
     password: "",
     profile_image: "",
+    roles: "",
   })
 
   const [modal, setModal] = useState(false)
@@ -323,7 +328,7 @@ const ProfilePage = () => {
         name: userData.name || "",
         sur_name: userData.sur_name || "",
         position: userData.position || "",
-        department: userData.department?.name || "",
+        department: userData.department || "",
         location: userData.location || "",
         working_start_date: userData.working_start_date || "",
         date_of_birth: userData.date_of_birth || "",
@@ -332,14 +337,17 @@ const ProfilePage = () => {
         id_number: userData.id_number || "",
         password: "",
         profile_image: "",
+        roles: userData.roles || "",
       })
     }
   }, [userData])
 
+
+
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const res = await getDepartments()
+        const res = await getPublicDepartments()
         setDepartments(res.data.departments || [])
       } catch (err) {
         console.error(err)
@@ -470,8 +478,11 @@ const ProfilePage = () => {
               {userData?.name} {userData?.sur_name}
             </UserName>
             <UserRole>
-              <RoleBadge>{userData?.position}</RoleBadge>
               <DepartmentBadge>{userData?.department?.name}</DepartmentBadge>
+              {userData?.roles?.map(role => (
+
+              <RoleBadge key={role.id}>{role.name}</RoleBadge>
+              ))}
             </UserRole>
           </UserInfo>
         </HeaderContent>
@@ -511,11 +522,12 @@ const ProfilePage = () => {
                 )}
               </FormField>
 
-              <FormField>
+              {/* <FormField>
                 <Label>{t("დეპარტამენტი")}</Label>
                 <Select
+                  disabled
                   name="department_id"
-                  value={profileForm.department_id}
+                  value={profileForm?.department?.name}
                   onChange={handleChangeProfile}
                 >
                   {departments.map(dep => (
@@ -524,7 +536,22 @@ const ProfilePage = () => {
                     </option>
                   ))}
                 </Select>
+              </FormField> */}
+
+              <FormField>
+                <Label>{t("დეპარტამენტი")}</Label>
+                <Input
+                  disabled
+                  type="text"
+                  name="department_id"
+                  value={profileForm?.department?.name}
+                  onChange={handleChangeProfile}
+                />
+                {profileError?.sur_name && (
+                  <ErrorText>{profileError.sur_name}</ErrorText>
+                )}
               </FormField>
+
 
               <FormField>
                 <Label>{t("ელ-ფოსტა")}</Label>
