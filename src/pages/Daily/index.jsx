@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import {
-  Card,
-  CardBody,
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-} from "reactstrap"
+import { Card, CardBody, Container, Row, Col, Form, Button } from "reactstrap"
 import Breadcrumbs from "components/Common/Breadcrumb"
 import { getDaily } from "services/daily"
 import { getPublicDepartments } from "services/admin/department"
@@ -46,9 +38,8 @@ const Daily = () => {
   const fetchDepartments = async () => {
     try {
       const response = await getPublicDepartments()
-      // Ensure we have an array of departments
-      const departmentsArray = Array.isArray(response.data) 
-        ? response.data 
+      const departmentsArray = Array.isArray(response.data)
+        ? response.data
         : response.data?.departments || []
       setDepartments(departmentsArray)
     } catch (error) {
@@ -57,7 +48,7 @@ const Daily = () => {
     }
   }
 
-  const handleCommentSubmit = async (e) => {
+  const handleCommentSubmit = async e => {
     e.preventDefault()
     if (!comment.trim()) return
 
@@ -69,13 +60,13 @@ const Daily = () => {
       })
       setComment("")
       setReplyTo(null)
-      fetchDaily() // Refresh comments
+      fetchDaily()
     } catch (error) {
       console.error("Error adding comment:", error)
     }
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     return new Date(dateString).toLocaleDateString("ka-GE", {
       year: "numeric",
       month: "long",
@@ -85,54 +76,69 @@ const Daily = () => {
     })
   }
 
-  const handleReply = (comment) => {
+  const handleReply = comment => {
     setReplyTo(comment)
     document.getElementById("commentInput")?.focus()
   }
 
-  const renderComment = (comment, isReply = false) => (
+  const renderComment = (comment, isReply = false, parentComment = null) => (
     <div
       key={comment.id}
-      className={`comment-item mb-3 p-3 border rounded ${
-        isReply ? "ms-5" : ""
-      }`}
+      className={`comment-item mb-3 ${isReply ? "ps-5" : ""}`}
     >
-      <div className="d-flex align-items-start">
-        <Avatar
-          src={comment.user?.avatar}
-          alt={comment.user?.name}
-          className="me-2"
-        >
-          {comment.user?.name?.[0]}
-        </Avatar>
-        <div className="flex-grow-1">
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 className="mb-1">
-                {comment.user?.name} {comment.user?.sur_name}
-                {comment.department && (
-                  <Chip
-                    label={comment.department.name}
-                    size="small"
-                    className="ms-2"
-                  />
-                )}
-              </h6>
-              <small className="text-muted">{formatDate(comment.created_at)}</small>
+      <div className="bg-light rounded p-3">
+        <div className="d-flex align-items-start">
+          <Avatar
+            src={comment.user?.avatar}
+            alt={comment.user?.name}
+            className="me-2"
+            sx={{ width: 32, height: 32 }}
+          >
+            {comment.user?.name?.[0]}
+          </Avatar>
+          <div className="flex-grow-1">
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 className="mb-1 d-flex align-items-center">
+                  <span className="me-2">
+                    {comment.user?.name} {comment.user?.sur_name}
+                  </span>
+                  {comment.department && (
+                    <Chip
+                      label={comment.department.name}
+                      size="small"
+                      className="ms-2"
+                    />
+                  )}
+                </h6>
+                <small className="text-muted d-block">
+                  {isReply && parentComment && (
+                    <span className="me-2">
+                      <i className="bx bx-reply me-1"></i>
+                      პასუხი: <strong>{parentComment.user?.name} {parentComment.user?.sur_name}</strong> •
+                    </span>
+                  )}
+                  {formatDate(comment.created_at)}
+                </small>
+              </div>
+              <Button
+                color="link"
+                className="p-0 text-primary"
+                onClick={() => handleReply(comment)}
+              >
+                <i className="bx bx-reply me-1"></i>
+                პასუხი
+              </Button>
             </div>
-            <Button
-              color="link"
-              className="p-0 text-primary"
-              onClick={() => handleReply(comment)}
-            >
-              <i className="bx bx-reply me-1"></i>
-              პასუხი
-            </Button>
+            <p className="mt-2 mb-0">{comment.comment}</p>
           </div>
-          <p className="mt-2 mb-0">{comment.comment}</p>
         </div>
       </div>
-      {Array.isArray(comment.replies) && comment.replies.map((reply) => renderComment(reply, true))}
+      {Array.isArray(comment.replies) && comment.replies.length > 0 && (
+        <div className="replies-container mt-2">
+          {comment.replies.map(reply => renderComment(reply, true, comment))}
+        </div>
+      )}
     </div>
   )
 
@@ -156,7 +162,10 @@ const Daily = () => {
         <Container fluid>
           <div className="text-center">
             <h3>Daily task not found</h3>
-            <Button color="primary" onClick={() => navigate("/tools/daily-results")}>
+            <Button
+              color="primary"
+              onClick={() => navigate("/tools/daily-results")}
+            >
               დაბრუნება
             </Button>
           </div>
@@ -168,10 +177,7 @@ const Daily = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs
-          title="დღიური შეფასება"
-          breadcrumbItem={daily.name}
-        />
+        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem={daily.name} />
 
         <Row>
           <Col>
@@ -236,12 +242,13 @@ const Daily = () => {
                       ({daily.comments?.length || 0})
                     </span>
                   </h5>
-                  
+
                   <Form onSubmit={handleCommentSubmit} className="mb-4">
                     {replyTo && (
                       <div className="reply-badge mb-2 p-2 bg-light rounded d-flex align-items-center">
                         <small className="text-muted me-2">
-                          პასუხი {replyTo.user?.name} {replyTo.user?.sur_name}-ს
+                          <i className="bx bx-reply-all me-1"></i>
+                          პასუხი: <strong>{replyTo.user?.name} {replyTo.user?.sur_name}</strong>
                         </small>
                         <Button
                           close
@@ -250,31 +257,44 @@ const Daily = () => {
                         />
                       </div>
                     )}
-                    <MentionsInput
-                      id="commentInput"
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      placeholder={
-                        replyTo
-                          ? "დაწერეთ პასუხი..."
-                          : "დაწერეთ კომენტარი..."
-                      }
-                      mentions={departments.map(dept => ({
-                        id: dept.id,
-                        display: dept.name,
-                        type: 'department'
-                      }))}
-                      className="form-control mb-3"
-                    />
-                    <Button color="primary" type="submit" disabled={!comment.trim()}>
-                      {replyTo ? "პასუხის გაგზავნა" : "კომენტარის დამატება"}
-                    </Button>
+                    <div className="comment-input-wrapper bg-light rounded p-3">
+                      <MentionsInput
+                        id="commentInput"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder={
+                          replyTo
+                            ? "დაწერეთ პასუხი..."
+                            : "დაწერეთ კომენტარი..."
+                        }
+                        mentions={departments.map(dept => ({
+                          id: dept.id,
+                          display: dept.name,
+                          type: 'department'
+                        }))}
+                      />
+                      <div className="text-end mt-3">
+                        {replyTo && (
+                          <Button
+                            color="light"
+                            className="me-2"
+                            onClick={() => setReplyTo(null)}
+                          >
+                            გაუქმება
+                          </Button>
+                        )}
+                        <Button color="primary" type="submit" disabled={!comment.trim()}>
+                          {replyTo ? "პასუხის გაგზავნა" : "კომენტარის დამატება"}
+                        </Button>
+                      </div>
+                    </div>
                   </Form>
 
                   <div className="comments-list">
-                    {Array.isArray(daily.comments) && daily.comments
-                      .filter(comment => !comment.parent_id)
-                      .map(comment => renderComment(comment))}
+                    {Array.isArray(daily.comments) &&
+                      daily.comments
+                        .filter(comment => !comment.parent_id)
+                        .map(comment => renderComment(comment))}
                   </div>
                 </div>
               </CardBody>

@@ -1,49 +1,66 @@
 import React from "react"
 import { Mention, MentionsInput as ReactMentions } from "react-mentions"
 
-const MentionsInput = ({ value, onChange, placeholder, mentions, className }) => {
-  const mentionStyle = {
-    control: {
-      backgroundColor: "#fff",
-      fontSize: 14,
-      fontWeight: "normal",
-    },
-    input: {
-      margin: 0,
-      padding: "8px 12px",
-      border: "1px solid #ced4da",
+const defaultStyle = {
+  control: {
+    minHeight: "100px",
+    backgroundColor: "#fff",
+    fontSize: 14,
+    fontWeight: "normal",
+    border: "1px solid #ced4da",
+    borderRadius: "0.25rem",
+  },
+  highlighter: {
+    padding: "12px",
+    minHeight: "100px",
+    border: "1px solid transparent",
+  },
+  input: {
+    padding: "12px",
+    minHeight: "100px",
+    outline: 0,
+    border: 0,
+  },
+  suggestions: {
+    list: {
+      backgroundColor: "white",
+      border: "1px solid rgba(0,0,0,0.15)",
       borderRadius: "0.25rem",
-      width: "100%",
-      height: "100%",
-      minHeight: "80px",
+      fontSize: 14,
+      maxHeight: "200px",
+      overflow: "auto",
+      position: "absolute",
+      bottom: "100%",
+      marginBottom: "8px",
     },
-    suggestions: {
-      list: {
-        backgroundColor: "white",
-        border: "1px solid rgba(0,0,0,0.15)",
-        borderRadius: "0.25rem",
-        fontSize: 14,
-        maxHeight: "200px",
-        overflow: "auto",
-      },
-      item: {
-        padding: "8px 12px",
-        borderBottom: "1px solid rgba(0,0,0,0.15)",
-        "&focused": {
-          backgroundColor: "#f8f9fa",
-        },
+    item: {
+      padding: "8px 12px",
+      borderBottom: "1px solid rgba(0,0,0,0.15)",
+      "&focused": {
+        backgroundColor: "#f8f9fa",
       },
     },
-  }
+  },
+}
 
+const MentionsInput = ({
+  value,
+  onChange,
+  placeholder,
+  mentions,
+  className,
+  style = {},
+}) => {
   return (
-    <div className={className}>
+    <div className={className} style={{ position: "relative" }}>
       <ReactMentions
         value={value}
         onChange={onChange}
-        style={mentionStyle}
+        style={{ ...defaultStyle, ...style }}
         placeholder={placeholder}
         a11ySuggestionsListLabel={"Suggested departments for mention"}
+        singleLine={false}
+        forceSuggestionsAboveCursor={true}
       >
         <Mention
           trigger="@"
@@ -61,4 +78,4 @@ const MentionsInput = ({ value, onChange, placeholder, mentions, className }) =>
   )
 }
 
-export default MentionsInput 
+export default MentionsInput

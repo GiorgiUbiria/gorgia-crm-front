@@ -55,8 +55,9 @@ const Dailies = () => {
     fetchDepartments()
   }, [])
 
-  const handleRowClick = (row) => {
-    navigate(`/tools/daily-results/${row.original.id}`)
+  const handleRowClick = row => {
+    console.log(row)
+    navigate(`/tools/daily-results/${row.id}`)
   }
 
   const columns = useMemo(
@@ -104,13 +105,7 @@ const Dailies = () => {
 
   const exportToExcel = () => {
     const data = [
-      [
-        "დეპარტამენტი",
-        "საკითხის ნომერი",
-        "თარიღი",
-        "საკ��თხი",
-        "სახელი/გვარი",
-      ],
+      ["დეპარტამენტი", "საკითხის ნომერი", "თარიღი", "საკ��თხი", "სახელი/გვარი"],
       ...dailiesData.data.map(daily => [
         daily.user.department.name,
         daily.id,
