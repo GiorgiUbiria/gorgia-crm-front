@@ -257,6 +257,7 @@ const VacationPageArchive = () => {
         ),
       },
       {
+        Header: "სტატუსი",
         accessor: "status",
         disableSortBy: true,
         Cell: ({ value }) => (
