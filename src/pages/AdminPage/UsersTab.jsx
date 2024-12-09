@@ -329,7 +329,7 @@ const UsersTab = ({
             },
           },
         ]}
-        searchableFields={["name", "email", "department", "mobile_number"]}
+        searchableFields={["name", "email", "department", "mobile_number", "user_id"]}
         enableSearch={true}
         initialPageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
