@@ -187,7 +187,7 @@ const FarmWork = () => {
         accessorKey: "id",
         cell: cellProps => (
           <Link
-            to={`/it-tasks/${cellProps.row.original.id}`}
+            to={`/support/farm-tasks/${cellProps.row.original.id}`}
             className="text-body fw-bold"
           >
             {cellProps.row.original.id}

@@ -34,6 +34,11 @@ const EditUserModal = ({
     roles: [],
     password: "",
     confirm_password: "",
+    position: "",
+    location: "",
+    working_start_date: "",
+    date_of_birth: "",
+    id_number: "",
   })
   const [showPassword, setShowPassword] = useState(false)
 
@@ -48,6 +53,11 @@ const EditUserModal = ({
         roles: user.roles?.map(role => role.id) || [],
         password: "",
         confirm_password: "",
+        position: user.position || "",
+        location: user.location || "",
+        working_start_date: user.working_start_date || "",
+        date_of_birth: user.date_of_birth || "",
+        id_number: user.id_number || "",
       })
     }
   }, [user])
@@ -67,14 +77,12 @@ const EditUserModal = ({
         ...formData,
       }
 
-      // Only include password if it was changed
       if (!formData.password) {
         delete updateData.password
         delete updateData.confirm_password
       }
 
       if (isDepartmentHead) {
-        // Department heads can only update specific fields, admin should be able to update all fields.
         const allowedFields = [
           "position",
           "mobile_number",
@@ -218,6 +226,65 @@ const EditUserModal = ({
               </FormGroup>
             </Col>
           </Row>
+          <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="position">პოზიცია</Label>
+                <Input
+                  id="position"
+                  name="position"
+                  value={formData.position}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="location">მდებარეობა</Label>
+                <Input
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="working_start_date">დაწყების თარიღი</Label>
+                <Input
+                  id="working_start_date"
+                  name="working_start_date"
+                  type="date"
+                  value={formData.working_start_date}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="date_of_birth">დაბადების თარიღი</Label>
+                <Input
+                  id="date_of_birth"
+                  name="date_of_birth"
+                  type="date"
+                  value={formData.date_of_birth}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+          </Row>
+          <FormGroup>
+            <Label for="id_number">პირადი ნომერი</Label>
+            <Input
+              id="id_number"
+              name="id_number"
+              value={formData.id_number}
+              onChange={handleChange}
+            />
+          </FormGroup>
         </ModalBody>
         <ModalFooter className="d-flex gap-2">
           <Button onClick={toggle} color="error">

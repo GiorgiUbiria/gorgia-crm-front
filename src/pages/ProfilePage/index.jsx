@@ -1,25 +1,14 @@
 import React, { useEffect, useState } from "react"
-import { toast } from "react-toastify"
 import { changePassword, updateUser } from "../../services/user"
-import { getDepartments, getPublicDepartments } from "../../services/admin/department"
+import { getPublicDepartments } from "../../services/admin/department"
 import { useTranslation } from "react-i18next"
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap"
 import { useSelector } from "react-redux"
-import {
-  FiCamera,
-  FiUser,
-  FiMail,
-  FiPhone,
-  FiCalendar,
-  FiMapPin,
-  FiLock,
-} from "react-icons/fi"
+import { FiCamera, FiUser, FiMail, FiLock } from "react-icons/fi"
 import styled from "@emotion/styled"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 import "./index.css"
 import NoAvatarIcon from "../../assets/images/no-avatar.jpg"
-
-// Updated primary color
-const PRIMARY_COLOR = "#105D8D"
 
 const Container = styled.div`
   max-width: 1200px;
@@ -32,36 +21,36 @@ const Container = styled.div`
 
 const PageHeader = styled.header`
   background: linear-gradient(135deg, var(--bg-secondary) 0%, #2a3f54 100%);
-  border-radius: 10px; /* Reduced from 20px to 10px */
-  padding: 2rem; /* Reduced padding for a sharper look */
-  margin-bottom: 2rem; /* Adjusted margin */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
 `
 
 const HeaderContent = styled.div`
   display: flex;
   align-items: center;
-  gap: 1.5rem; /* Reduced gap for a more compact layout */
+  gap: 1.5rem;
   max-width: 1200px;
   width: 100%;
 `
 
 const ImageSection = styled.div`
   position: relative;
-  margin-right: 15px; /* Reduced margin */
+  margin-right: 15px;
 `
 
 const ProfileImageWrapper = styled.div`
   position: relative;
-  width: 100px; /* Reduced size for a sharper appearance */
+  width: 100px;
   height: 100px;
-  border-radius: 10px; /* Reduced border-radius for less rounding */
+  border-radius: 10px;
   overflow: hidden;
-  border: 3px solid rgba(255, 255, 255, 0.2); /* Adjusted border size */
+  border: 3px solid rgba(255, 255, 255, 0.2);
   transition: transform 0.3s ease;
 
   &:hover {
-    transform: scale(1.03); /* Slight scale for subtle hover effect */
+    transform: scale(1.03);
   }
 `
 
@@ -96,7 +85,7 @@ const UserInfo = styled.div`
 `
 
 const UserName = styled.h1`
-  font-size: 24px; /* Adjusted font size */
+  font-size: 24px;
   font-weight: 600;
   color: #fff;
   margin: 0;
@@ -105,14 +94,14 @@ const UserName = styled.h1`
 
 const UserRole = styled.p`
   display: flex;
-  gap: 8px; /* Reduced gap */
-  margin-top: 6px; /* Reduced margin */
+  gap: 8px;
+  margin-top: 6px;
 `
 
 const Badge = styled.span`
-  padding: 5px 10px; /* Reduced padding */
-  border-radius: 12px; /* Reduced border-radius */
-  font-size: 13px; /* Adjusted font size */
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 13px;
   font-weight: 500;
   transition: transform 0.2s ease;
 
@@ -122,40 +111,76 @@ const Badge = styled.span`
 `
 
 const RoleBadge = styled(Badge)`
-  background-color: #4caf50;
+  background-color: var(--success-color);
   color: white;
 `
 
 const DepartmentBadge = styled(Badge)`
-  background-color: #2196f3;
+  background-color: var(--primary-color);
   color: white;
 `
 
 const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem; /* Reduced gap */
-  padding: 15px; /* Reduced padding */
+  gap: 1.5rem;
+  padding: 15px;
 
   @media (min-width: 1024px) {
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: 1fr;
     > * {
       height: 100%;
     }
   }
 `
 
+const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`
+
+const InfoItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+`
+
+const InfoLabel = styled.span`
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+`
+
+const InfoValue = styled.span`
+  font-size: 1rem;
+  color: #2c3e50;
+  font-weight: 500;
+`
+
 const Section = styled.div`
   background-color: white;
-  border-radius: 8px; /* Reduced border-radius */
-  padding: 1.5rem; /* Reduced padding */
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease;
   display: flex;
   flex-direction: column;
 
   &:hover {
-    transform: translateY(-1px); /* Subtle hover effect */
+    transform: translateY(-1px);
   }
 
   form {
@@ -169,23 +194,20 @@ const Section = styled.div`
 const SectionTitle = styled.h2`
   display: flex;
   align-items: center;
-  gap: 10px; /* Reduced gap */
-  font-size: 18px; /* Adjusted font size */
+  gap: 10px;
+  font-size: 18px;
   font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 1rem; /* Reduced margin */
-  padding-bottom: 0.8rem; /* Reduced padding */
-  border-bottom: 1px solid #f0f0f0; /* Thinner border */
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
 `
 
 const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(200px, 1fr)
-  ); /* Adjusted min-width */
-  gap: 1rem; /* Reduced gap */
-  margin-bottom: 1rem; /* Reduced margin */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
 `
 
 const PasswordFormGrid = styled(FormGrid)`
@@ -197,8 +219,8 @@ const PasswordFormGrid = styled(FormGrid)`
 const FormField = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px; /* Reduced gap */
-  margin-bottom: 0.8rem; /* Reduced margin */
+  gap: 6px;
+  margin-bottom: 0.8rem;
 `
 
 const Label = styled.label`
@@ -207,85 +229,92 @@ const Label = styled.label`
 `
 
 const Input = styled.input`
-  padding: 10px; /* Reduced padding */
-  border: 1px solid #ccc; /* Updated border color */
-  border-radius: 4px; /* Reduced border-radius */
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
   font-size: 14px;
   transition: all 0.2s ease;
 
   &:focus {
-    border-color: ${PRIMARY_COLOR};
-    box-shadow: 0 0 0 2px rgba(16, 93, 141, 0.2); /* Updated box-shadow color */
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(16, 93, 141, 0.2);
     outline: none;
   }
 `
 
 const Select = styled.select`
-  padding: 10px; /* Reduced padding */
-  border: 1px solid #ccc; /* Updated border color */
-  border-radius: 4px; /* Reduced border-radius */
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
   font-size: 14px;
   background-color: white;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:focus {
-    border-color: ${PRIMARY_COLOR};
-    box-shadow: 0 0 0 2px rgba(16, 93, 141, 0.2); /* Updated box-shadow color */
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(16, 93, 141, 0.2);
     outline: none;
   }
 `
 
 const ErrorText = styled.p`
-  color: #dc3545;
-  font-size: 13px; /* Adjusted font size */
+  color: var(--error-color);
+  font-size: 13px;
 `
 
 const ActionButton = styled.button`
-  padding: 10px 20px; /* Reduced padding */
-  background-color: ${PRIMARY_COLOR};
+  padding: 10px 20px;
+  background-color: ${props =>
+    props.disabled ? "#ccc" : "var(--primary-color)"};
   color: white;
   border: none;
-  border-radius: 4px; /* Reduced border-radius */
+  border-radius: 4px;
   font-weight: 500;
-  cursor: pointer;
+  cursor: ${props => (props.disabled ? "not-allowed" : "pointer")};
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #0f4a6a; /* Darker shade for hover */
-    transform: translateY(-1px);
+    background-color: ${props => (props.disabled ? "#ccc" : "#0f4a6a")};
+    transform: ${props => (props.disabled ? "none" : "translateY(-1px)")};
   }
 
   &:active {
-    transform: translateY(0);
+    transform: ${props => (props.disabled ? "none" : "translateY(0)")};
   }
 `
 
 const ButtonContainer = styled.div`
-  margin-top: 0.8rem; /* Reduced margin */
-  padding-top: 0.8rem; /* Reduced padding */
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+`
+
+const SectionDivider = styled.div`
+  height: 1px;
+  background: #e9ecef;
+  margin: 2rem 0;
+  width: 100%;
+`
+
+const SectionDescription = styled.p`
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
 `
 
 const ProfilePage = () => {
   const { t } = useTranslation()
   const userData = useSelector(state => state.user.user)
-
-  // console.log(userData)
-
-  const [departments, setDepartments] = useState([])
   const [passForm, setPassForm] = useState({
     old_password: "",
     password: "",
     confirm_password: "",
   })
-
   const [passError, setPassError] = useState({
     old_password: "",
     password: "",
     confirm_password: "",
   })
-
-
 
   const [profileForm, setProfileForm] = useState({
     name: userData?.name || "",
@@ -301,7 +330,6 @@ const ProfilePage = () => {
     password: "",
     profile_image: "",
     roles: userData?.roles || "",
-
   })
 
   const [profileError, setProfileError] = useState({
@@ -319,8 +347,6 @@ const ProfilePage = () => {
     profile_image: "",
     roles: "",
   })
-
-  const [modal, setModal] = useState(false)
 
   useEffect(() => {
     if (userData) {
@@ -341,20 +367,6 @@ const ProfilePage = () => {
       })
     }
   }, [userData])
-
-
-
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await getPublicDepartments()
-        setDepartments(res.data.departments || [])
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    fetchDepartments()
-  }, [])
 
   const handleChangePass = e => {
     const { name, value } = e.target
@@ -413,7 +425,7 @@ const ProfilePage = () => {
       if (res.data.status === 401) {
         setPassError({ old_password: res.data.message })
       } else {
-        toast.success(res.data.message)
+        toast.success(t("პროფილი წარმატებით განახლდა"))
         setProfileError({
           name: "",
           sur_name: "",
@@ -428,7 +440,6 @@ const ProfilePage = () => {
           password: "",
           profile_image: "",
         })
-        setModal(true)
       }
     } catch (err) {
       for (const [key, value] of Object.entries(err.response.data)) {
@@ -438,16 +449,22 @@ const ProfilePage = () => {
     }
   }
 
-  const toggleModal = () => {
-    setModal(!modal)
-  }
-
   const profileImageSrc = userData?.profile_image
     ? `${process.env.REACT_APP_BASE_URL}/${userData.profile_image}`
     : NoAvatarIcon
 
+  const isProfileFormChanged = () => {
+    return (
+      profileForm.name !== userData?.name ||
+      profileForm.sur_name !== userData?.sur_name ||
+      profileForm.email !== userData?.email ||
+      profileForm.mobile_number !== userData?.mobile_number ||
+      profileForm.profile_image
+    )
+  }
+
   return (
-    <Container>
+    <Container className="mb-4">
       <PageHeader>
         <HeaderContent>
           <ImageSection>
@@ -480,8 +497,7 @@ const ProfilePage = () => {
             <UserRole>
               <DepartmentBadge>{userData?.department?.name}</DepartmentBadge>
               {userData?.roles?.map(role => (
-
-              <RoleBadge key={role.id}>{role.name}</RoleBadge>
+                <RoleBadge key={role.id}>{role.name}</RoleBadge>
               ))}
             </UserRole>
           </UserInfo>
@@ -492,8 +508,63 @@ const ProfilePage = () => {
         <Section>
           <SectionTitle>
             <FiUser size={20} />
-            <span>{t("პირადი ინფორმაცია")}</span>
+            <span>{t("ზოგადი ინფორმაცია")}</span>
           </SectionTitle>
+          <SectionDescription>
+            {t("თქვენი პროფილის ძირითადი ინფორმაცია")}
+          </SectionDescription>
+
+          <InfoGrid>
+            <InfoItem>
+              <InfoLabel>{t("სახელი")}</InfoLabel>
+              <InfoValue>{userData?.name}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>{t("გვარი")}</InfoLabel>
+              <InfoValue>{userData?.sur_name}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>{t("პირადი ნომერი")}</InfoLabel>
+              <InfoValue>{userData?.id_number || "-"}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>{t("დაბადების თარიღი")}</InfoLabel>
+              <InfoValue>{userData?.date_of_birth || "-"}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>{t("პოზიცია")}</InfoLabel>
+              <InfoValue>{userData?.position || "-"}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>{t("მდებარეობა")}</InfoLabel>
+              <InfoValue>{userData?.location || "-"}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>{t("დაწყების თარიღი")}</InfoLabel>
+              <InfoValue>{userData?.working_start_date || "-"}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>{t("მობილური")}</InfoLabel>
+              <InfoValue>{userData?.mobile_number || "-"}</InfoValue>
+            </InfoItem>
+            <InfoItem>
+              <InfoLabel>{t("ელ-ფოსტა")}</InfoLabel>
+              <InfoValue>{userData?.email}</InfoValue>
+            </InfoItem>
+          </InfoGrid>
+        </Section>
+
+        <SectionDivider />
+
+        <Section>
+          <SectionTitle>
+            <FiMail size={20} />
+            <span>{t("პროფილის განახლება")}</span>
+          </SectionTitle>
+          <SectionDescription>
+            {t("განაახლეთ თქვენი პროფილის ინფორმაცია")}
+          </SectionDescription>
+
           <form onSubmit={submitProfileForm}>
             <FormGrid>
               <FormField>
@@ -522,37 +593,6 @@ const ProfilePage = () => {
                 )}
               </FormField>
 
-              {/* <FormField>
-                <Label>{t("დეპარტამენტი")}</Label>
-                <Select
-                  disabled
-                  name="department_id"
-                  value={profileForm?.department?.name}
-                  onChange={handleChangeProfile}
-                >
-                  {departments.map(dep => (
-                    <option key={dep.id} value={dep.id}>
-                      {dep?.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormField> */}
-
-              <FormField>
-                <Label>{t("დეპარტამენტი")}</Label>
-                <Input
-                  disabled
-                  type="text"
-                  name="department_id"
-                  value={profileForm?.department?.name}
-                  onChange={handleChangeProfile}
-                />
-                {profileError?.sur_name && (
-                  <ErrorText>{profileError.sur_name}</ErrorText>
-                )}
-              </FormField>
-
-
               <FormField>
                 <Label>{t("ელ-ფოსტა")}</Label>
                 <Input
@@ -561,20 +601,44 @@ const ProfilePage = () => {
                   value={profileForm.email}
                   onChange={handleChangeProfile}
                 />
+                {profileError?.email && (
+                  <ErrorText>{profileError.email}</ErrorText>
+                )}
+              </FormField>
+
+              <FormField>
+                <Label>{t("მობილური")}</Label>
+                <Input
+                  type="text"
+                  name="mobile_number"
+                  value={profileForm.mobile_number}
+                  onChange={handleChangeProfile}
+                />
+                {profileError?.mobile_number && (
+                  <ErrorText>{profileError.mobile_number}</ErrorText>
+                )}
               </FormField>
             </FormGrid>
 
             <ButtonContainer>
-              <ActionButton type="submit">{t("შენახვა")}</ActionButton>
+              <ActionButton type="submit" disabled={!isProfileFormChanged()}>
+                {t("შენახვა")}
+              </ActionButton>
             </ButtonContainer>
           </form>
         </Section>
 
+        <SectionDivider />
+
         <Section>
           <SectionTitle>
             <FiLock size={20} />
-            <span>{t("პაროლის შვლილება")}</span>
+            <span>{t("პაროლის შეცვლა")}</span>
           </SectionTitle>
+          <SectionDescription>
+            {t("უსაფრთხოების მიზნით, შეცვალეთ თქვენი პაროლი პერიოდულად")}
+          </SectionDescription>
+
           <form onSubmit={submitPassForm}>
             <PasswordFormGrid>
               <FormField>
@@ -615,25 +679,12 @@ const ProfilePage = () => {
             </PasswordFormGrid>
 
             <ButtonContainer>
-              <ActionButton type="submit" variant="secondary">
-                {t("შეცვლა")}
-              </ActionButton>
+              <ActionButton type="submit">{t("შეცვლა")}</ActionButton>
             </ButtonContainer>
           </form>
         </Section>
       </ContentGrid>
-
-      <Modal isOpen={modal} toggle={toggleModal} centered>
-        <ModalHeader toggle={toggleModal}>
-          {t("პროფილის განახლება")}
-        </ModalHeader>
-        <ModalBody>{t("პროფილი წარმატებით განახლდა")}</ModalBody>
-        <ModalFooter>
-          <Button color="primary" onClick={toggleModal}>
-            {t("დახურვა")}
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <ToastContainer />
     </Container>
   )
 }

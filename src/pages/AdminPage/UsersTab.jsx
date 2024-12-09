@@ -106,6 +106,10 @@ const UsersTab = ({
         accessor: "name",
       },
       {
+        Header: "პირადი ნომერი",
+        accessor: "user_id",
+      },
+      {
         Header: "ელ-ფოსტა",
         accessor: "email",
         disableSortBy: true,
@@ -258,7 +262,7 @@ const UsersTab = ({
       mobile_number: user.mobile_number || "-",
       working_start_date: user.working_start_date || null,
       status: user.status || "pending",
-      department_id: user.department_id,
+      user_id: user.id_number || "-",
     }))
   }, [users])
 
@@ -266,6 +270,7 @@ const UsersTab = ({
     const data = [
       [
         "სახელი",
+        "პირადი ნომერი",
         "ელ-ფოსტა",
         "დეპარტამენტი",
         "მობილური",
@@ -274,6 +279,7 @@ const UsersTab = ({
       ],
       ...transformedUsers.map(user => [
         user.name,
+        user.user_id,
         user.email,
         user.department,
         user.mobile_number,
@@ -323,7 +329,7 @@ const UsersTab = ({
             },
           },
         ]}
-        searchableFields={["name", "email", "department", "mobile_number"]}
+        searchableFields={["name", "email", "department", "mobile_number", "user_id"]}
         enableSearch={true}
         initialPageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}

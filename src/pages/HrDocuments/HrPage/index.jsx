@@ -92,25 +92,43 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
   }
 }
 
-const validationSchema = Yup.object().shape({
-  first_name: Yup.string().required("სახელი აუცილებელია"),
-  last_name: Yup.string().required("გვარი აუცილებელია"),
-  documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
-  id_number: Yup.string().required("პირადი ნომერი აუცილებელია"),
-  position: Yup.string().required("პოზიცია აუცილებელია"),
-  
-  purpose: Yup.string().when("documentType", {
-    is: type =>
-      type === DOCUMENT_TYPES.PAID_EMPLOYMENT ||
-      type === DOCUMENT_TYPES.PAID_PROBATION,
-    then: () => Yup.string().required("მიზანი აუცილებელია"),
-  }),
-})
+
+
+
 
 const forUserValidationSchema = activeTab => {
+  const validationSchema = Yup.object().shape({
+    documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
+    idNumber: Yup.string().required("პირადი ნომერი აუცილებელია"),
+    position: Yup.string().required("პოზიცია აუცილებელია"),
+    
+    purpose: Yup.string().when("documentType", {
+      is: type =>
+        type === DOCUMENT_TYPES.PAID_EMPLOYMENT ||
+        type === DOCUMENT_TYPES.PAID_PROBATION,
+      then: () => Yup.string().required("მიზანი აუცილებელია"),
+    }),
+  })
+
+
   if (activeTab === "2") {
     return validationSchema.shape({
-      selectedUser: Yup.string().required("მომხმარებლის არჩევა აუცილებელია"),
+      // selectedUser: Yup.string().required("მომხმარებლის არჩევა აუცილებელია"),
+      
+      
+      firstName: Yup.string().required("სახელი აუცილებელია"),
+      lastName: Yup.string().required("გვარი აუცილებელია"),
+      documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
+      idNumber: Yup.string().required("პირადი ნომერი აუცილებელია"),
+      position: Yup.string().required("პოზიცია აუცილებელია"),
+
+      purpose: Yup.string().when("documentType", {
+        is: type =>
+          type === DOCUMENT_TYPES.PAID_EMPLOYMENT ||
+          type === DOCUMENT_TYPES.PAID_PROBATION,
+        then: () => Yup.string().required("მიზანი აუცილებელია"),
+      }),
+
     })
   }
   return validationSchema
@@ -126,7 +144,7 @@ const HrPage = () => {
   const [lastName, setLastName] = useState("")
   const [position, setPosition] = useState("")
   const [idNumber, setIdNumber] = useState("")
-  const [goal, setGoal] = useState("")
+  const [purpose, setPurpose] = useState("")
   const [selectedUser, setSelectedUser] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
   const { hasPermission, isAdmin } = usePermissions()
@@ -188,6 +206,7 @@ const HrPage = () => {
       //     await updateUserIdNumber(updateData)
       //   }
       // }
+      
       const documentData = {
         name: values.documentType,
         user_id: currentUser.id,
@@ -195,10 +214,12 @@ const HrPage = () => {
         last_name: lastName,
         position,
         id_number: idNumber,
-        purpose: goal,
+        purpose: purpose,
 
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
+
+      console.log(documentData)
 
       
 
@@ -318,7 +339,7 @@ const HrPage = () => {
                         currentUser,
                         selectedUser
                       )}
-                      validationSchema={forUserValidationSchema(activeTab)}
+                      // validationSchema={forUserValidationSchema(activeTab)}
                       onSubmit={handleDocumentSubmit}
                     >
                       {({ values, isSubmitting }) => (
@@ -436,10 +457,10 @@ const HrPage = () => {
                                       <div className="col-md-6">
                                         <Label className="form-label">სახელი</Label>
                                         
-                                          <Field type="text" name="first_name" className="form-control" value={firstName} onChange={e => setFirstName(e.target.value)} />
+                                          <Field type="text" name="firstName" className="form-control" value={firstName} onChange={e => setFirstName(e.target.value)} />
                                         
                                         <ErrorMessage
-                                          name="first_name"
+                                          name="firstName"
                                           component="div"
                                           className="text-danger mt-1"
                                         />
@@ -447,10 +468,10 @@ const HrPage = () => {
                                       <div className="col-md-6">
                                         <Label className="form-label">გვარი</Label>
                                         
-                                          <Field type="text" name="last_name" className="form-control" value={lastName} onChange={e => setLastName(e.target.value)} />
+                                          <Field type="text" name="lastName" className="form-control" value={lastName} onChange={e => setLastName(e.target.value)} />
                                         
                                         <ErrorMessage
-                                          name="last_name"
+                                          name="lastName"
                                           component="div"
                                           className="text-danger mt-1"
                                         />
@@ -489,9 +510,9 @@ const HrPage = () => {
                                     </div>
 
                                     {/* Selected User Info (editable) */}
-                                    {/* {renderUserInfo(selectedUser, true)} */}
+                                    {renderUserInfo(selectedUser, true)}
 
-                                    <div className="row g-3 mb-4">
+                                    {/* <div className="row g-3 mb-4">
                                       <div className="col-md-6">
                                         <Label className="form-label">პირადი ნომერი</Label>
                                         
@@ -513,7 +534,7 @@ const HrPage = () => {
                                           className="text-danger mt-1"
                                         />
                                       </div>
-                                    </div>
+                                    </div> */}
 
 
 
@@ -527,8 +548,8 @@ const HrPage = () => {
                                           type="text"
                                           name="purpose"
                                           className="form-control"
-                                          value={goal}
-                                          onChange={e => setGoal(e.target.value)}
+                                          value={purpose}
+                                          onChange={e => setPurpose(e.target.value)}
                                         />
                                         <ErrorMessage
                                           name="purpose"

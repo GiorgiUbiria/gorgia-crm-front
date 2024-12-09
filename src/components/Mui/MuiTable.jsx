@@ -518,7 +518,7 @@ const MuiTable = ({
                       <TableCell
                         {...cell.getCellProps()}
                         key={cell.column.id}
-                        sx={{ py: 1.5 }}
+                        sx={{ py: 0.75 }}
                       >
                         {cell.render("Cell")}
                       </TableCell>

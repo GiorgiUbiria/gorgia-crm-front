@@ -238,7 +238,7 @@ export const getMenuConfig = (
       label: t("IT მხარდაჭერა"),
     },
     {
-      to: "/support/maintenance",
+      to: "/support/farm-tasks",
       icon: BsTools,
       label: t("სამეურნეო Tasks"),
     },
