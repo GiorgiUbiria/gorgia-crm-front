@@ -3,7 +3,6 @@ import {
   deleteUser,
   approveDepartmentMember,
   rejectDepartmentMember,
-  updateDepartmentMember,
 } from "services/admin/department"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"

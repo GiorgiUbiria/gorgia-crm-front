@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { getDailyList } from "services/daily"
 import { getDepartments } from "services/auth"
 import Button from "@mui/material/Button"
@@ -7,8 +8,10 @@ import useIsAdmin from "hooks/useIsAdmin"
 import { Row, Col } from "reactstrap"
 import AddDailyModal from "./AddDailyModal"
 import Breadcrumbs from "components/Common/Breadcrumb"
+import * as XLSX from "xlsx"
 
 const Dailies = () => {
+  const navigate = useNavigate()
   const isAdmin = useIsAdmin()
   const [addDailyModal, setAddDailyModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -52,6 +55,10 @@ const Dailies = () => {
     fetchDepartments()
   }, [])
 
+  const handleRowClick = (row) => {
+    navigate(`/tools/daily-results/${row.original.id}`)
+  }
+
   const columns = useMemo(
     () => [
       {
@@ -71,14 +78,18 @@ const Dailies = () => {
       {
         Header: "საკითხი",
         accessor: "name",
+        disableSortBy: true,
       },
       {
         Header: "დეპარტამენტი",
         accessor: "user.department.name",
+        disableSortBy: true,
       },
       {
         Header: "სახელი/გვარი",
-        accessor: "user.name",
+        accessor: "user",
+        disableSortBy: true,
+        Cell: ({ value }) => value.name + " " + value.sur_name || "-",
       },
     ],
     []
@@ -91,30 +102,28 @@ const Dailies = () => {
     },
   ]
 
-  const exportToCSV = () => {
-    const csvRows = []
-    const headers = columns.map(col => col.Header)
-    csvRows.push(headers.join(","))
+  const exportToExcel = () => {
+    const data = [
+      [
+        "დეპარტამენტი",
+        "საკითხის ნომერი",
+        "თარიღი",
+        "საკ��თხი",
+        "სახელი/გვარი",
+      ],
+      ...dailiesData.data.map(daily => [
+        daily.user.department.name,
+        daily.id,
+        daily.date,
+        daily.description,
+        daily.user.name + " " + daily.user.sur_name || "-",
+      ]),
+    ]
 
-    dailiesData.data.forEach(row => {
-      const values = columns.map(col => {
-        const accessor = col.accessor.split(".")
-        let value = row
-        accessor.forEach(key => {
-          value = value ? value[key] : ""
-        })
-        return `"${value || ""}"`
-      })
-      csvRows.push(values.join(","))
-    })
-
-    const csvContent = `data:text/csv;charset=utf-8,${csvRows.join("\n")}`
-    const link = document.createElement("a")
-    link.href = encodeURI(csvContent)
-    link.setAttribute("download", "დღიური_შეფასებები.csv")
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Users")
+    XLSX.writeFile(wb, "დღის საკითხები.xlsx")
   }
 
   return (
@@ -130,10 +139,10 @@ const Dailies = () => {
                   <Button
                     variant="outlined"
                     color="primary"
-                    onClick={exportToCSV}
+                    onClick={exportToExcel}
                   >
                     <i className="bx bx-export me-1"></i>
-                    CSV გადმოწერა
+                    Excel გადმოწერა
                   </Button>
                 )}
                 <Button
@@ -161,6 +170,8 @@ const Dailies = () => {
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}
             isLoading={isLoading}
+            onRowClick={handleRowClick}
+            rowClassName="cursor-pointer hover:bg-gray-50"
           />
         </div>
 
