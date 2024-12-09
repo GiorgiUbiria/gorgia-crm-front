@@ -37,7 +37,7 @@ import { usePermissions } from "hooks/usePermissions"
 import { useNavigate } from "react-router-dom"
 
 const DOCUMENT_TYPES = {
-  PAID_EMPLOYMENT: "ხელფასიანი ცნობა",
+  PAID_EMPLOYMENT: "შელფასიანი ცნობა",
   UNPAID_EMPLOYMENT: "უხელფასო ცნობა",
   PAID_PROBATION: "გამოსაცდელი ვადით ხელფასიანი",
   UNPAID_PROBATION: "გამოსაცდელი ვადით უხელფასო",
@@ -68,17 +68,19 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
     return {
       documentType: "",
       id_number: currentUser?.id_number || "",
-      position: currentUser?.position || "",
+      position: currentUser?.department?.name || "",
       working_start_date: currentUser?.working_start_date || "",
       purpose: "",
     }
   } else if (activeTab === "2") {
     return {
-      selectedUser: selectedUser?.id || "",
+      // selectedUser: selectedUser?.id || "",
+      first_name: "",
+      last_name: "",
       documentType: "",
-      id_number: selectedUser?.id_number || "",
-      position: selectedUser?.position || "",
-      working_start_date: selectedUser?.working_start_date || "",
+      id_number: "",
+      position: "",
+      working_start_date: "",
       purpose: "",
     }
   } else {
@@ -92,43 +94,24 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
   }
 }
 
-
-
-
+const validationSchema = Yup.object().shape({
+  documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
+  id_number: Yup.string().required("პირადი ნომერი აუცილებელია"),
+  position: Yup.string().required("პოზიცია აუცილებელია"),
+  purpose: Yup.string().when("documentType", {
+    is: type =>
+      type === DOCUMENT_TYPES.PAID_EMPLOYMENT ||
+      type === DOCUMENT_TYPES.PAID_PROBATION,
+    then: () => Yup.string().required("მიზანი აუცილებელია"),
+  }),
+})
 
 const forUserValidationSchema = activeTab => {
-  const validationSchema = Yup.object().shape({
-    documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
-    idNumber: Yup.string().required("პირადი ნომერი აუცილებელია"),
-    position: Yup.string().required("პოზიცია აუცილებელია"),
-    
-    purpose: Yup.string().when("documentType", {
-      is: type =>
-        type === DOCUMENT_TYPES.PAID_EMPLOYMENT ||
-        type === DOCUMENT_TYPES.PAID_PROBATION,
-      then: () => Yup.string().required("მიზანი აუცილებელია"),
-    }),
-  })
-
-
   if (activeTab === "2") {
     return validationSchema.shape({
       // selectedUser: Yup.string().required("მომხმარებლის არჩევა აუცილებელია"),
-      
-      
-      firstName: Yup.string().required("სახელი აუცილებელია"),
-      lastName: Yup.string().required("გვარი აუცილებელია"),
-      documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
-      idNumber: Yup.string().required("პირადი ნომერი აუცილებელია"),
-      position: Yup.string().required("პოზიცია აუცილებელია"),
-
-      purpose: Yup.string().when("documentType", {
-        is: type =>
-          type === DOCUMENT_TYPES.PAID_EMPLOYMENT ||
-          type === DOCUMENT_TYPES.PAID_PROBATION,
-        then: () => Yup.string().required("მიზანი აუცილებელია"),
-      }),
-
+      first_name: Yup.string().required("მომხმარებლის სახელი აუცილებელია"),
+      last_name: Yup.string().required("მომხმარებლის გვარი აუცილებელია"),
     })
   }
   return validationSchema
@@ -140,14 +123,11 @@ const HrPage = () => {
   const [currentUser, setCurrentUser] = useState(reduxUser)
   const { users, loading: usersLoading } = useFetchUsers()
   const [selectedUserId, setSelectedUserId] = useState("")
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [position, setPosition] = useState("")
-  const [idNumber, setIdNumber] = useState("")
-  const [purpose, setPurpose] = useState("")
   const [selectedUser, setSelectedUser] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
   const { hasPermission, isAdmin } = usePermissions()
+
+
 
   const isHrMember = currentUser?.department_id === 8
   const isHrDepartmentHead =
@@ -169,59 +149,43 @@ const HrPage = () => {
   }, [activeTab, selectedUserId, users])
 
   const handleDocumentSubmit = async (values, { setSubmitting, resetForm }) => {
-    console.log('here')
-
     try {
-      // const contextUser = activeTab === "1" ? currentUser : selectedUser
+      const contextUser = currentUser
 
       // if (!contextUser) {
       //   toast.error("მომხმარებლის მონაცემები არ მოიძებნა")
       //   return
       // }
 
-      // const data = {
-      //   first_name: firstName,
-      //   last_name: lastName,
-      //   position,
-      //   id_number: idNumber,
-      //   purpose: goal,
-      // }
-      // await updateUserIdNumberById(data, currentUser.id)
+      if (
+        (activeTab === "2" || isAdmin) &&
+        (values.id_number !== contextUser.id_number ||
+          values.position !== contextUser.position)
+      ) {
+        const updateData = {
+          id_number: values.id_number,
+          position: values.position,
+        }
+        if(activeTab === "1"){
+          await updateUserIdNumber(updateData)
+        }
+      }
 
-      // if (
-      //   (activeTab === "2" || isAdmin) &&
-      //   (values.id_number !== currentUser.id_number ||
-      //     values.position !== currentUser.position)
-      // ) {
-      //   const updateData = {
-      //     id_number: values.id_number,
-      //     position: values.position,
-      //     first_name: firstName,
-      //     last_name: lastName,
-      //   }
+      console.log(values)
+      // CHECK
 
-      //   if (activeTab === "2") {
-      //     await updateUserIdNumberById(updateData, currentUser.id)
-      //   } else {
-      //     await updateUserIdNumber(updateData)
-      //   }
-      // }
-      
       const documentData = {
         name: values.documentType,
-        user_id: currentUser.id,
-        first_name: firstName,
-        last_name: lastName,
-        position,
-        id_number: idNumber,
-        purpose: purpose,
-
+        user_id: contextUser.id,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        type: activeTab,
+        position: activeTab === "2" ? values.position : null,
+        id_number: activeTab === "2" ? values.id_number : null,
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
 
-      console.log(documentData)
-
-      
+      // console.log(documentData)
 
       await createHrDocument(documentData)
       toast.success("დოკუმენტი წარმატებით შეიქმნა")
@@ -232,6 +196,7 @@ const HrPage = () => {
         navigate("/hr/documents/my-requests")
       }
     } catch (err) {
+      console.log(err)
       console.error("Error creating HR document:", err)
       toast.error("დოკუმენტის შექმნა ვერ მოხერხდა")
     } finally {
@@ -241,39 +206,120 @@ const HrPage = () => {
 
   
 
-  const renderUserInfo = (user, isEditable = false) => (
-    <div className="row g-3 mb-4">
+
+  const renderUserInfo = (user, labelText, name, isEditable = false) => (
+    // <div className="row g-3 mb-4">
+
+    //   <div className="col-md-6">
+    //     <Label className="form-label">პირადი ნომერი</Label>
+    //     {isEditable ? (
+    //       <Field type="text" name="id_number" className="form-control" />
+    //     ) : (
+    //       <p className="form-control-plaintext border rounded p-2">
+    //         {user?.id_number}
+    //       </p>
+    //     )}
+    //     <ErrorMessage
+    //       name="id_number"
+    //       component="div"
+    //       className="text-danger mt-1"
+    //     />
+    //   </div>
+
+   
+
+
       <div className="col-md-6">
-        <Label className="form-label">პირადი ნომერი</Label>
+        <Label className="form-label">{labelText}</Label>
         {isEditable ? (
-          <Field type="text" name="id_number" className="form-control" />
+          <Field type="text" name={name} className="form-control" />
         ) : (
           <p className="form-control-plaintext border rounded p-2">
-            {user?.id_number}
+            {user?.department?.name}
           </p>
         )}
         <ErrorMessage
-          name="id_number"
+          name={name}
           component="div"
           className="text-danger mt-1"
         />
       </div>
-      <div className="col-md-6">
-        <Label className="form-label">პოზიცია</Label>
-        {isEditable ? (
-          <Field type="text" name="position" className="form-control" />
-        ) : (
-          <p className="form-control-plaintext border rounded p-2">
-            {user?.position}
-          </p>
-        )}
+      
+    // </div>
+  )
+
+  const renderUserForm = (values, tab) => (
+      <>
+      {tab === 2 && (
+        <div className="row g-3 mb-4">
+          {renderUserInfo(selectedUser, 'სახელი', 'first_name', true)}
+          {renderUserInfo(selectedUser, 'გვარი', 'last_name', true)}
+        </div>
+      )}
+      <div className="mb-4">
+        <Label className="form-label">
+          დოკუმენტის ტიპი
+        </Label>
+        <Field
+          as="select"
+          name="documentType"
+          className="form-select"
+        >
+          <option value="">
+            აირჩიეთ დოკუმენტის ტიპი
+          </option>
+          {Object.entries(DOCUMENT_TYPES).map(
+            ([key, type]) => (
+              <option
+                key={key}
+                value={type}
+                disabled={tab === 1 && isDocumentTypeDisabled(type)}
+              >
+                {type}
+              </option>
+            )
+          )}
+        </Field>
         <ErrorMessage
-          name="position"
+          name="documentType"
           component="div"
           className="text-danger mt-1"
         />
+        {getDocumentTypeHelpText(
+          values.documentType
+        ) && (
+          <div className="text-warning mt-1">
+            <i className="bx bx-info-circle me-1"></i>
+            {getDocumentTypeHelpText(
+              values.documentType
+            )}
+          </div>
+        )}
       </div>
-    </div>
+
+      {/* User Info */}
+      <div className="row g-3 mb-4">
+        {renderUserInfo(currentUser,'პირადი ნომერი', 'id_number', isAdmin)}
+        {renderUserInfo(currentUser, 'პოზიცია', 'position', isAdmin)}
+      </div>
+
+      {/* Purpose field for paid documents */}
+      {isPaidDocument(values.documentType) && (
+        <div className="mb-4">
+          <Label className="form-label">მიზანი</Label>
+          <Field
+            type="text"
+            name="purpose"
+            className="form-control"
+          />
+          <ErrorMessage
+            name="purpose"
+            component="div"
+            className="text-danger mt-1"
+          />
+        </div>
+      )}
+      </>
   )
 
   const isDocumentTypeDisabled = type => {
@@ -339,227 +385,19 @@ const HrPage = () => {
                         currentUser,
                         selectedUser
                       )}
-                      // validationSchema={forUserValidationSchema(activeTab)}
+                      validationSchema={forUserValidationSchema(activeTab)}
                       onSubmit={handleDocumentSubmit}
                     >
                       {({ values, isSubmitting }) => (
                         <Form>
                           <TabContent activeTab={activeTab}>
                             <TabPane tabId="1">
-                              {/* Document Type Selection */}
-                              <div className="mb-4">
-                                <Label className="form-label">
-                                  დოკუმენტის ტიპი
-                                </Label>
-                                <Field
-                                  as="select"
-                                  name="documentType"
-                                  className="form-select"
-                                >
-                                  <option value="">
-                                    აირჩიეთ დოკუმენტის ტიპი
-                                  </option>
-                                  {Object.entries(DOCUMENT_TYPES).map(
-                                    ([key, type]) => (
-                                      <option
-                                        key={key}
-                                        value={type}
-                                        disabled={isDocumentTypeDisabled(type)}
-                                      >
-                                        {type}
-                                      </option>
-                                    )
-                                  )}
-                                </Field>
-                                <ErrorMessage
-                                  name="documentType"
-                                  component="div"
-                                  className="text-danger mt-1"
-                                />
-                                {getDocumentTypeHelpText(
-                                  values.documentType
-                                ) && (
-                                  <div className="text-warning mt-1">
-                                    <i className="bx bx-info-circle me-1"></i>
-                                    {getDocumentTypeHelpText(
-                                      values.documentType
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* User Info */}
-                              {renderUserInfo(currentUser, isAdmin)}
-
-                              {/* Purpose field for paid documents */}
-                              {isPaidDocument(values.documentType) && (
-                                <div className="mb-4">
-                                  <Label className="form-label">მიზანი</Label>
-                                  <Field
-                                    type="text"
-                                    name="purpose"
-                                    className="form-control"
-                                  />
-                                  <ErrorMessage
-                                    name="purpose"
-                                    component="div"
-                                    className="text-danger mt-1"
-                                  />
-                                </div>
-                              )}
+                              {renderUserForm(values, 1)}
                             </TabPane>
 
                             {canAccessOtherTab && (
                               <TabPane tabId="2">
-                                {/* User Selection */}
-
-                                {/* <div className="mb-4">
-                                  <Label className="form-label">
-                                    მომხმარებელი
-                                  </Label>
-                                  <Field
-                                    type="text"
-                                    name="selectedUser"
-                                    className="form-control"
-                                    value={firstName}
-                                    onChange={e => setFirstName(e.target.value)}
-                                    onChange={e => {
-                                      setSelectedUserId(e.target.value)
-                                      const formik = e.target.form?.formik
-                                      if (formik) {
-                                        formik.setFieldValue(
-                                          "selectedUser",
-                                          e.target.value
-                                        )
-                                      }
-                                    }}
-                                    value={selectedUserId}
-                                  >
-                                    <option value="">
-                                      აირჩიეთ მომხმარებელი
-                                    </option>
-                                    {users.map(user => (
-                                      <option key={user.id} value={user.id}>
-                                        {user.name} (ID: {user.id_number})
-                                      </option>
-                                    ))}
-                                  </Field>
-                                  <ErrorMessage
-                                    name="selectedUser"
-                                    component="div"
-                                    className="text-danger mt-1"
-                                  />
-                                </div> */}
-
-
-
-                                <div className="row g-3 mb-4">
-                                      <div className="col-md-6">
-                                        <Label className="form-label">სახელი</Label>
-                                        
-                                          <Field type="text" name="firstName" className="form-control" value={firstName} onChange={e => setFirstName(e.target.value)} />
-                                        
-                                        <ErrorMessage
-                                          name="firstName"
-                                          component="div"
-                                          className="text-danger mt-1"
-                                        />
-                                      </div>
-                                      <div className="col-md-6">
-                                        <Label className="form-label">გვარი</Label>
-                                        
-                                          <Field type="text" name="lastName" className="form-control" value={lastName} onChange={e => setLastName(e.target.value)} />
-                                        
-                                        <ErrorMessage
-                                          name="lastName"
-                                          component="div"
-                                          className="text-danger mt-1"
-                                        />
-                                      </div>
-                                    </div>
-
-                                {/* Document Type and User Info */}
-                                
-                                  <>
-                                    {/* Document Type Selection */}
-                                    <div className="mb-4">
-                                      <Label className="form-label">
-                                        დოკუმენტის ტიპი
-                                      </Label>
-                                      <Field
-                                        as="select"
-                                        name="documentType"
-                                        className="form-select"
-                                      >
-                                        <option value="">
-                                          აირჩიეთ დოკუმენტის ტიპი
-                                        </option>
-                                        {Object.entries(DOCUMENT_TYPES).map(
-                                          ([key, type]) => (
-                                            <option key={key} value={type}>
-                                              {type}
-                                            </option>
-                                          )
-                                        )}
-                                      </Field>
-                                      <ErrorMessage
-                                        name="documentType"
-                                        component="div"
-                                        className="text-danger mt-1"
-                                      />
-                                    </div>
-
-                                    {/* Selected User Info (editable) */}
-                                    {renderUserInfo(selectedUser, true)}
-
-                                    {/* <div className="row g-3 mb-4">
-                                      <div className="col-md-6">
-                                        <Label className="form-label">პირადი ნომერი</Label>
-                                        
-                                          <Field type="text" name="id_number" className="form-control" value={idNumber} onChange={e => setIdNumber(e.target.value)} />
-                                        
-                                        <ErrorMessage
-                                          name="id_number"
-                                          component="div"
-                                          className="text-danger mt-1"
-                                        />
-                                      </div>
-                                      <div className="col-md-6">
-                                        <Label className="form-label">პოზიცია</Label>
-                                          <Field type="text" name="position" className="form-control" value={position} onChange={e => setPosition(e.target.value)} />
-                                        
-                                        <ErrorMessage
-                                          name="position"
-                                          component="div"
-                                          className="text-danger mt-1"
-                                        />
-                                      </div>
-                                    </div> */}
-
-
-
-                                    {/* Purpose field for paid documents */}
-                                    {isPaidDocument(values.documentType) && (
-                                      <div className="mb-4">
-                                        <Label className="form-label">
-                                          მიზანი
-                                        </Label>
-                                        <Field
-                                          type="text"
-                                          name="purpose"
-                                          className="form-control"
-                                          value={purpose}
-                                          onChange={e => setPurpose(e.target.value)}
-                                        />
-                                        <ErrorMessage
-                                          name="purpose"
-                                          component="div"
-                                          className="text-danger mt-1"
-                                        />
-                                      </div>
-                                    )}
-                                  </>
-                                
+                                {renderUserForm(values, 2)}
                               </TabPane>
                             )}
                           </TabContent>
