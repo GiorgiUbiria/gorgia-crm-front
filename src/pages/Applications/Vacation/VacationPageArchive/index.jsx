@@ -116,8 +116,9 @@ const VacationPageArchive = () => {
         accessor: "id",
       },
       {
-        Header: "სახელი",
-        accessor: "user.name",
+        Header: "მოითხოვა",
+        accessor: "requested_by",
+        disableSortBy: true,
       },
       {
         Header: "შვებულების ტიპი",
@@ -185,6 +186,11 @@ const VacationPageArchive = () => {
           </span>
         ),
       },
+      {
+        Header: "შეამოწმა",
+        accessor: "reviewed_by",
+        disableSortBy: true,
+      },
     ],
     []
   )
@@ -194,9 +200,8 @@ const VacationPageArchive = () => {
     status: STATUS_MAPPING[vacation.status] || vacation.status,
     start_date: vacation.start_date,
     end_date: vacation.end_date,
-    // user: {
-    //   name: vacation.user.name + " " + vacation.user.sur_name,
-    // },
+    requested_by: vacation.user?.name + " " + vacation.user?.sur_name || "არ არის მითითებული",
+    reviewed_by: vacation.reviewed_by?.name + " " + vacation.reviewed_by?.sur_name || "არ არის მითითებული",
     comment: vacation.comment,
     type_of_vacations: vacation.type_of_vocations
       ? TYPE_MAPPING[vacation.type_of_vocations] || vacation.type_of_vocations
@@ -244,7 +249,7 @@ const VacationPageArchive = () => {
               columns={columns}
               filterOptions={filterOptions}
               enableSearch={true}
-              searchableFields={["user.name", "user.id"]}
+              searchableFields={["requested_by", "reviewed_by"]}
               initialPageSize={10}
               renderRowDetails={expandedRow}
             />
