@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
-import { Row, Col, Card, CardBody } from "reactstrap"
+import { Row, Col, Card, CardBody, Nav, NavItem } from "reactstrap"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import MuiTable from "../../components/Mui/MuiTable"
 import {
   getDepartmentAgreements,
   downloadAgreement as downloadAgreementService,
 } from "services/agreement"
+import {getDepartmentAgreements as getDeliveryDepartmentAgreements} from 'services/deliveryAgreement'
+import {getDepartmentAgreements as getMarketingDepartmentAgreements} from 'services/marketingAgreement'
+import {getDepartmentAgreements as getServiceDepartmentAgreements} from 'services/serviceAgreement'
 import { toast, ToastContainer } from "react-toastify"
 import {
   BsBank,
@@ -15,6 +18,9 @@ import {
   BsPerson,
   BsVoicemail,
 } from "react-icons/bs"
+import { NavLink } from "react-router-dom"
+import classnames from "classnames"
+import { getPurchaseList } from "services/purchase"
 
 const handleDownload = async agreementId => {
   try {
@@ -53,6 +59,12 @@ const STATUS_MAPPING = {
 const LawyerPageArchive = () => {
   document.title = "ხელშეკრულებების არქივი | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
+  const [purchases, setPurchases] = useState([])
+  const [deliveries, setDeliveries] = useState([])
+  const [marketings, setMarketing] = useState([])
+  const [services, setServices] = useState([])
+  const [activeTab, setActiveTab] = useState("1")
+  
 
   const fetchAgreements = async () => {
     try {
@@ -63,8 +75,47 @@ const LawyerPageArchive = () => {
     }
   }
 
+  const fetchPurchases = async () => {
+    try {
+      const response = await getPurchaseList()
+      setPurchases(response.data.data)
+    } catch (err) {
+      console.error("Error fetching agreements:", err)
+    }
+  }
+  const fetchDeliveries = async () => {
+    try {
+      const response = await getDeliveryDepartmentAgreements()
+      setDeliveries(response.data.data)
+    } catch (err) {
+      console.error("Error fetching agreements:", err)
+    }
+  }
+  const fetchMarketing = async () => {
+    try {
+      const response = await getMarketingDepartmentAgreements()
+      setMarketing(response.data.data)
+    } catch (err) {
+      console.error("Error fetching agreements:", err)
+    }
+  }
+  const fetchServices = async () => {
+    try {
+      const response = await getServiceDepartmentAgreements()
+      setServices(response.data.data)
+    } catch (err) {
+      console.error("Error fetching agreements:", err)
+    }
+  }
+
+
+
   useEffect(() => {
     fetchAgreements()
+    fetchPurchases()
+    fetchDeliveries()
+    fetchMarketing()
+    fetchServices()
   }, [])
 
   const transformedAgreements = useMemo(() => {
@@ -330,8 +381,33 @@ const LawyerPageArchive = () => {
           </Row>
           <Row>
             <Col xl={12}>
+              
               <Card>
+
+              {/* <Nav tabs className="nav-tabs-custom">
+                    <NavItem>
+                      <NavLink
+                        className={classnames({ active: activeTab === "1" })}
+                        onClick={() => setActiveTab("1")}
+                        >
+                        მიღება ჩაბარების არქივი
+                      </NavLink>
+                    </NavItem>
+                    <NavItem>
+                      <NavLink
+                        className={classnames({ active: activeTab === "2" })}
+                        onClick={() => setActiveTab("2")}
+                        >
+                        ნასყიდობის ხელშეკრულება
+                      </NavLink>
+                    </NavItem>
+                    
+                    
+                    
+                  </Nav> */}
+              
                 <CardBody>
+                
                   <MuiTable
                     columns={columns}
                     data={transformedAgreements}
