@@ -41,6 +41,7 @@ import Calendar from "../pages/Calendar/index"
 import Chat from "../pages/Chat/Chat"
 import Dashboard from "../pages/Dashboard/index"
 import TaskList from "../pages/JobPages/JobList"
+import FarmTaskDetails from "../pages/FarmDetails"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
@@ -214,7 +215,8 @@ const authProtectedRoutes = [
   // Support & Tasks
   { path: "/support/it-tasks", component: <TaskList /> },
   { path: "/support/it-tasks/:id", component: <JobDetails /> },
-  { path: "/support/maintenance", component: <FarmWork /> },
+  { path: "/support/farm-tasks", component: <FarmWork /> },
+  { path: "/support/farm-tasks/:id", component: <FarmTaskDetails /> },
 
   // Communication
   { path: "/communication/chat", component: <Chat /> },
