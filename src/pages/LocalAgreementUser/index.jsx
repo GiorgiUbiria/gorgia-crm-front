@@ -71,25 +71,27 @@ const LocalAgreementUser = () => {
       return {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: agreement.created_at,
+        created_at: new Date(agreement.created_at).toLocaleDateString(),
+        updated_at: new Date(agreement.updated_at).toLocaleString(),
         executor_firm_name: agreement.executor_firm_name,
-        executor_id_number: agreement.executor_id_number,
-        executor_home_address: agreement.executor_home_address,
-        executor_full_name: agreement.executor_full_name,
-        executor_position: agreement.executor_position,
-        executor_bank_account: agreement.executor_bank_account,
-        executor_bank_name: agreement.executor_bank_name,
-        service_type: agreement.service_type,
-        service_term: agreement.service_term,
-        service_cost: agreement.service_cost,
+        requested_by: agreement.user.name + " " + agreement.user.sur_name,
         expanded: {
           executor_factual_address: agreement.executor_factual_address,
+          executor_firm_name: agreement.executor_firm_name,
+          executor_id_number: agreement.executor_id_number,
+          executor_home_address: agreement.executor_home_address,
+          executor_full_name: agreement.executor_full_name,
+          executor_position: agreement.executor_position,
+          executor_bank_account: agreement.executor_bank_account,
+          executor_bank_name: agreement.executor_bank_name,
+          agreement_automatic_renewal:
+            agreement.agreement_automatic_renewal === 1 ? "კი" : "არა",
+          exclusivity: agreement.exclusivity === 1 ? "კი" : "არა",
+          agreement_active_term: agreement.agreement_active_term,
+          exclusive_placement: agreement.exclusive_placement,
           executor_bank_swift: agreement.executor_bank_swift,
           director_full_name: agreement.director_full_name,
           director_id_number: agreement.director_id_number,
-          service_place: agreement.service_place,
-          service_payment_details: agreement.service_payment_details,
-          service_active_term: agreement.service_active_term,
           rejection_reason: agreement.rejection_reason || null,
           requested_by: agreement.user.name + " " + agreement.user.sur_name,
         },
@@ -104,55 +106,20 @@ const LocalAgreementUser = () => {
         accessor: "id",
       },
       {
+        Header: "მოითხოვა",
+        accessor: "requested_by",
+      },
+      {
         Header: "შემსრულებელი ფირმის დასახელება",
         accessor: "executor_firm_name",
       },
       {
-        Header: "საიდენტიფიკაციო ნომერი",
-        accessor: "executor_id_number",
+        Header: "მოთხოვნის თარიღი",
+        accessor: "created_at",
       },
       {
-        Header: "იურიდიული მისამართი",
-        accessor: "executor_home_address",
-      },
-      {
-        Header: "შემსრულებლის სახელი",
-        accessor: "executor_full_name",
-      },
-      {
-        Header: "თანამდებობა",
-        accessor: "executor_position",
-      },
-      {
-        Header: "საბანკო ანგარიში",
-        accessor: "executor_bank_account",
-      },
-      {
-        Header: "ბანკის დასახელება",
-        accessor: "executor_bank_name",
-      },
-      {
-        Header: "მომსახურების ტიპი",
-        accessor: "service_type",
-      },
-      {
-        Header: "მომსახურების ვადა",
-        accessor: "service_term",
-        Cell: ({ value }) => `${value} დღე`,
-      },
-      {
-        Header: "მომსახურების ღირებულება",
-        accessor: "service_cost",
-        Cell: ({ value }) => (
-          <div>
-            {value
-              ? new Intl.NumberFormat("ka-GE", {
-                  style: "currency",
-                  currency: "GEL",
-                }).format(value)
-              : "N/A"}
-          </div>
-        ),
+        Header: "დამტკიცების თარიღი",
+        accessor: "updated_at",
       },
       {
         Header: "სტატუსი",
@@ -218,7 +185,6 @@ const LocalAgreementUser = () => {
 
     return (
       <div className="p-4 bg-light rounded">
-        {/* Rejection reason banner */}
         {row.expanded.rejection_reason && (
           <div className="alert alert-danger d-flex align-items-center mb-4">
             <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -227,101 +193,190 @@ const LocalAgreementUser = () => {
             </div>
           </div>
         )}
+        <div className="d-flex align-items-center mb-4 gap-2 text-muted">
+          <BsPerson className="fs-3 text-primary" />
+          <strong>მოითხოვა:</strong>
+          <span className="ms-2">{row.expanded.requested_by}</span>
+        </div>
 
-        {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            {/* Factual Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ფაქტიური მისამართი</div>
-                  <div className="fw-medium">{row.expanded.executor_factual_address}</div>
+                  <div className="text-muted small">ფაქტობრივი მისამართი</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_factual_address}
+                  </div>
                 </div>
               </div>
             </Col>
-
-            {/* Bank Swift */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">საცხოვრებელი მისამართი</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_home_address}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    დემსრულებელი ფირმის დასახელება
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_firm_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებელი ფირმის საიდენტიფიკაციო ნომერი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_id_number}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებელი სრული სახელი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_full_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">შემსრულებელი პოზიცია</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_position}
+                  </div>
+                </div>
+              </div>
+            </Col>
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">SWIFT კოდი</div>
-                  <div className="fw-medium">{row.expanded.executor_bank_swift}</div>
+                  <div className="text-muted small">ბაბანკო ანგარიში</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_account}
+                  </div>
                 </div>
               </div>
             </Col>
-
-            {/* Director Info */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ბანკის დასახელება</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ბანკის SWIFT კოდი</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_swift}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ავტომატური განახლება</div>
+                  <div className="fw-medium">
+                    {row.expanded.agreement_automatic_renewal}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ექსკლუზიურობა</div>
+                  <div className="fw-medium">{row.expanded.exclusivity}</div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    ხელშეკრულების აქტიური ვადა
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.agreement_active_term}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ექსკლუზიური განთავსება</div>
+                  <div className="fw-medium">
+                    {row.expanded.exclusive_placement}
+                  </div>
+                </div>
+              </div>
+            </Col>
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">დირექტორის ინფორმაცია</div>
                   <div className="fw-medium">
-                    {row.expanded.director_full_name} ({row.expanded.director_id_number})
+                    {row.expanded.director_full_name} (
+                    {row.expanded.director_id_number})
                   </div>
                 </div>
               </div>
             </Col>
-
-            {/* Service Place */}
+          </Row>
+          <Row className="mt-4">
             <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsMap className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">მომსახურების ადგილი</div>
-                  <div className="fw-medium">{row.expanded.service_place}</div>
-                </div>
-              </div>
-            </Col>
-
-            {/* Payment Details */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCreditCard className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">გადახდის დეტალები</div>
-                  <div className="fw-medium">{row.expanded.service_payment_details}</div>
-                </div>
-              </div>
-            </Col>
-
-            {/* Service Active Term */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">მომსახურების აქტიური ვადა</div>
-                  <div className="fw-medium">{row.expanded.service_active_term}</div>
-                </div>
-              </div>
-            </Col>
-
-            {/* Created Date */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">შექმნის თარიღი</div>
-                  <div className="fw-medium">{row.created_at}</div>
-                </div>
-              </div>
+              {row.status === "approved" && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleDownload(row.id)}
+                >
+                  <i className="bx bx-download me-2"></i>
+                  ხელშეკრულების ჩამოტვირთვა
+                </button>
+              )}
             </Col>
           </Row>
         </div>
-
-        {/* Download button for approved agreements */}
-        {row.status === "approved" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => handleDownload(row.id)}
-          >
-            <i className="bx bx-download me-2"></i>
-            ხელშეკრულების ჩამოტვირთვა
-          </button>
-        )}
       </div>
     )
   }, [])
@@ -348,7 +403,10 @@ const LocalAgreementUser = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["executor_firm_name", "executor_full_name"]}
+                    searchableFields={[
+                      "executor_firm_name",
+                      "executor_full_name",
+                    ]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}
@@ -364,4 +422,4 @@ const LocalAgreementUser = () => {
   )
 }
 
-export default LocalAgreementUser 
+export default LocalAgreementUser
