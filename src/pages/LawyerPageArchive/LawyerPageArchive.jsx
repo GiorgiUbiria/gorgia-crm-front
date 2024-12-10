@@ -6,9 +6,6 @@ import {
   getDepartmentAgreements,
   downloadAgreement as downloadAgreementService,
 } from "services/agreement"
-import {getDepartmentAgreements as getDeliveryDepartmentAgreements} from 'services/deliveryAgreement'
-import {getDepartmentAgreements as getMarketingDepartmentAgreements} from 'services/marketingAgreement'
-import {getDepartmentAgreements as getServiceDepartmentAgreements} from 'services/serviceAgreement'
 import { toast, ToastContainer } from "react-toastify"
 import {
   BsBank,
@@ -18,9 +15,6 @@ import {
   BsPerson,
   BsVoicemail,
 } from "react-icons/bs"
-import { NavLink } from "react-router-dom"
-import classnames from "classnames"
-import { getPurchaseList } from "services/purchase"
 
 const handleDownload = async agreementId => {
   try {
@@ -59,12 +53,6 @@ const STATUS_MAPPING = {
 const LawyerPageArchive = () => {
   document.title = "ხელშეკრულებების არქივი | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
-  const [purchases, setPurchases] = useState([])
-  const [deliveries, setDeliveries] = useState([])
-  const [marketings, setMarketing] = useState([])
-  const [services, setServices] = useState([])
-  const [activeTab, setActiveTab] = useState("1")
-  
 
   const fetchAgreements = async () => {
     try {
@@ -75,47 +63,8 @@ const LawyerPageArchive = () => {
     }
   }
 
-  const fetchPurchases = async () => {
-    try {
-      const response = await getPurchaseList()
-      setPurchases(response.data.data)
-    } catch (err) {
-      console.error("Error fetching agreements:", err)
-    }
-  }
-  const fetchDeliveries = async () => {
-    try {
-      const response = await getDeliveryDepartmentAgreements()
-      setDeliveries(response.data.data)
-    } catch (err) {
-      console.error("Error fetching agreements:", err)
-    }
-  }
-  const fetchMarketing = async () => {
-    try {
-      const response = await getMarketingDepartmentAgreements()
-      setMarketing(response.data.data)
-    } catch (err) {
-      console.error("Error fetching agreements:", err)
-    }
-  }
-  const fetchServices = async () => {
-    try {
-      const response = await getServiceDepartmentAgreements()
-      setServices(response.data.data)
-    } catch (err) {
-      console.error("Error fetching agreements:", err)
-    }
-  }
-
-
-
   useEffect(() => {
     fetchAgreements()
-    fetchPurchases()
-    fetchDeliveries()
-    fetchMarketing()
-    fetchServices()
   }, [])
 
   const transformedAgreements = useMemo(() => {
@@ -123,8 +72,10 @@ const LawyerPageArchive = () => {
       return {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: agreement.created_at,
-        price: agreement.product_cost,
+        created_at: new Date(agreement.created_at).toLocaleDateString(),
+        updated_at: new Date(agreement.updated_at).toLocaleString(),
+        requested_by: agreement.user.name + " " + agreement.user.sur_name,
+        contract_initiator: agreement.contract_initiator_name,
         contragent: {
           name: agreement.contragent_name,
           id: agreement.contragent_id,
@@ -144,7 +95,23 @@ const LawyerPageArchive = () => {
           product_payment_term: agreement.product_payment_term,
           bank_account: agreement.bank_account,
           rejection_reason: agreement.rejection_reason || null,
+          price: agreement.product_cost,
           requested_by: agreement.user.name + " " + agreement.user.sur_name,
+          status: STATUS_MAPPING[agreement.status] || agreement.status,
+          created_at: new Date(agreement.created_at).toLocaleDateString(),
+          updated_at: new Date(agreement.updated_at).toLocaleString(),
+          requested_by: agreement.user.name + " " + agreement.user.sur_name,
+          contragent: {
+            name: agreement.contragent_name,
+            id: agreement.contragent_id,
+            address: agreement.contragent_address,
+            phone: agreement.contragent_phone_number,
+            email: agreement.contragent_email,
+          },
+          director: {
+            name: agreement.contragent_director_name,
+            phone: agreement.contragent_director_phone_number,
+          },
         },
       }
     })
@@ -157,46 +124,24 @@ const LawyerPageArchive = () => {
         accessor: "id",
       },
       {
-        Header: "კონტრაგენტის დასახელება/სახელი და გვარი",
+        Header: "მოითხოვა",
+        accessor: "requested_by",
+      },
+      {
+        Header: "კონტრაგენტის დასახელება",
         accessor: "contragent.name",
       },
       {
-        Header: "პირადი ნომერი/საიდენტიფიკაციო კოდი",
-        accessor: "contragent.id",
+        Header: "ხელშეკრულების ინი���იატორი",
+        accessor: "contract_initiator",
       },
       {
-        Header: "მისამართი",
-        accessor: "contragent.address",
+        Header: "მოთხოვნის თარიღი",
+        accessor: "created_at",
       },
       {
-        Header: "ტელეფონის ნომერი",
-        accessor: "contragent.phone",
-      },
-      {
-        Header: "ელ.ფოსტა",
-        accessor: "contragent.email",
-      },
-      {
-        Header: "დირექტორის სახელი და გვარი",
-        accessor: "director.name",
-      },
-      {
-        Header: "დირექტორის ტელეფონის ნომერი",
-        accessor: "director.phone",
-      },
-      {
-        Header: "პროდუქციის ღირებულება",
-        accessor: "price",
-        Cell: ({ value }) => (
-          <div>
-            {value
-              ? new Intl.NumberFormat("ka-GE", {
-                  style: "currency",
-                  currency: "GEL",
-                }).format(value)
-              : "N/A"}
-          </div>
-        ),
+        Header: "დადასტურების თარიღი",
+        accessor: "updated_at",
       },
       {
         Header: "სტატუსი",
@@ -350,19 +295,82 @@ const LawyerPageArchive = () => {
                 </div>
               </div>
             </Col>
+            {/* Additional Fields */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-dollar fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">ფასი</div>
+                  <div className="fw-medium">{row.expanded.price} ₾</div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-building fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">კონტრაგენტის მისამართი</div>
+                  <div className="fw-medium">
+                    {row.expanded.contragent.address}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-phone fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">კონტრაგენტის ტელეფონი</div>
+                  <div className="fw-medium">
+                    {row.expanded.contragent.phone}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-envelope fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">კონტრაგენტის ელფოსტა</div>
+                  <div className="fw-medium">
+                    {row.expanded.contragent.email}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-user fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">დირექტორის სახელი</div>
+                  <div className="fw-medium">{row.expanded.director.name}</div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-phone-call fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">დირექტორის ტელეფონი</div>
+                  <div className="fw-medium">{row.expanded.director.phone}</div>
+                </div>
+              </div>
+            </Col>
+          </Row>
+          <Row className="mt-4">
+            <Col md={12}>
+              {row.status === "approved" && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleDownload(row.id)}
+                >
+                  <i className="bx bx-download me-2"></i>
+                  ხელშეკრულების ჩამოტვირთვა
+                </button>
+              )}
+            </Col>
           </Row>
         </div>
-
-        {/* Download Button */}
-        {row.status === "approved" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => handleDownload(row.id)}
-          >
-            <i className="bx bx-download me-2"></i>
-            ხელშეკრულების ჩამოტვირთვა
-          </button>
-        )}
       </div>
     )
   }, [])
@@ -381,10 +389,8 @@ const LawyerPageArchive = () => {
           </Row>
           <Row>
             <Col xl={12}>
-              
               <Card>
-
-              {/* <Nav tabs className="nav-tabs-custom">
+                {/* <Nav tabs className="nav-tabs-custom">
                     <NavItem>
                       <NavLink
                         className={classnames({ active: activeTab === "1" })}
@@ -405,9 +411,8 @@ const LawyerPageArchive = () => {
                     
                     
                   </Nav> */}
-              
+
                 <CardBody>
-                
                   <MuiTable
                     columns={columns}
                     data={transformedAgreements}
