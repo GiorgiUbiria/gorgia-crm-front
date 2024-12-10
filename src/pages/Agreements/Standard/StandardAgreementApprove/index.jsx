@@ -75,19 +75,17 @@ const StandardAgreementApprove = () => {
     fetchAgreements()
   }, [])
 
-  const handleUpdateStatus = async (
-    agreementId,
-    status,
-    rejectionReason
-  ) => {
+  const handleUpdateStatus = async (agreementId, status, additionalData) => {
     if (status === "approved") {
       setIsProcessing(true)
     }
 
+    console.log(additionalData, status, agreementId)
+
     try {
-      const response = await updateAgreementStatus(agreementId, status, {
-        rejection_reason: rejectionReason,
-      })
+      const response = await updateAgreementStatus(agreementId, status, additionalData)
+
+      console.log(response)
 
       setAgreements(prevAgreements =>
         prevAgreements.map(agreement =>
@@ -131,7 +129,9 @@ const StandardAgreementApprove = () => {
       alert("გთხოვთ მიუთითოთ უარყოფის მიზეზი")
       return
     }
-    await handleUpdateStatus(agreementId, type, null, rejectionComment)
+    await handleUpdateStatus(agreementId, type, {
+      rejection_reason: type === "rejected" ? rejectionComment : null
+    })
     setRejectionComment("")
     handleModalClose()
   }
@@ -165,15 +165,15 @@ const StandardAgreementApprove = () => {
         Header: "სტატუსის ცვლილების თარიღი",
         accessor: row => {
           switch (row.status) {
-            case 'approved':
-              return row.accepted_at;
-            case 'rejected':
-              return row.rejected_at;
+            case "approved":
+              return row.accepted_at
+            case "rejected":
+              return row.rejected_at
             default:
-              return '-';
+              return "-"
           }
         },
-        id: 'status_date',
+        id: "status_date",
       },
       {
         Header: "სტატუსი",
@@ -254,8 +254,12 @@ const StandardAgreementApprove = () => {
         status: STATUS_MAPPING[agreement.status] || agreement.status,
         created_at: new Date(agreement.created_at).toLocaleDateString(),
         updated_at: new Date(agreement.updated_at).toLocaleString(),
-        accepted_at: new Date(agreement.accepted_at).toLocaleString(),
-        rejected_at: new Date(agreement.rejected_at).toLocaleString(),
+        accepted_at: agreement.accepted_at
+          ? new Date(agreement.accepted_at).toLocaleString()
+          : "-",
+        rejected_at: agreement.rejected_at
+          ? new Date(agreement.rejected_at).toLocaleString()
+          : "-",
         requested_by: agreement.user.name + " " + agreement.user.sur_name,
         contract_initiator: agreement.contract_initiator_name,
         contragent: {

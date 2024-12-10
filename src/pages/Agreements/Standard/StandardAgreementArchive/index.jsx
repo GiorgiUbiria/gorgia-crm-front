@@ -74,6 +74,12 @@ const StandardAgreementArchive = () => {
         status: STATUS_MAPPING[agreement.status] || agreement.status,
         created_at: new Date(agreement.created_at).toLocaleDateString(),
         updated_at: new Date(agreement.updated_at).toLocaleString(),
+        accepted_at: agreement.accepted_at
+          ? new Date(agreement.accepted_at).toLocaleString()
+          : "-",
+        rejected_at: agreement.rejected_at
+          ? new Date(agreement.rejected_at).toLocaleString()
+          : "-",
         requested_by: agreement.user.name + " " + agreement.user.sur_name,
         contract_initiator: agreement.contract_initiator_name,
         contragent: {
@@ -143,8 +149,18 @@ const StandardAgreementArchive = () => {
         accessor: "created_at",
       },
       {
-        Header: "დადასტურების თარიღი",
-        accessor: "updated_at",
+        Header: "სტატუსის ცვლილების თარიღი",
+        accessor: row => {
+          switch (row.status) {
+            case "approved":
+              return row.accepted_at
+            case "rejected":
+              return row.rejected_at
+            default:
+              return "-"
+          }
+        },
+        id: "status_date",
       },
       {
         Header: "სტატუსი",
