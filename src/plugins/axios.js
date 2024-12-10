@@ -11,6 +11,7 @@ const defaultInstance = axios.create({
     Accept: "application/json",
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 })
 
 defaultInstance.interceptors.request.use(
