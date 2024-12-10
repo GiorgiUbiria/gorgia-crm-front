@@ -143,46 +143,24 @@ const LawyerPageApprove = () => {
         accessor: "id",
       },
       {
-        Header: "კონტრაგენტის დასახელება/სახელი და გვარი",
+        Header: "მოითხოვა",
+        accessor: "requested_by",
+      },
+      {
+        Header: "კონტრაგენტის დასახელება",
         accessor: "contragent.name",
       },
       {
-        Header: "პირადი ნომერი/საიდენტიფიკაციო კოდი",
-        accessor: "contragent.id",
+        Header: "ხელშეკრულების ინი���იატორი",
+        accessor: "contract_initiator",
       },
       {
-        Header: "მისამართი",
-        accessor: "contragent.address",
+        Header: "მოთხოვნის თარიღი",
+        accessor: "created_at",
       },
       {
-        Header: "ტელეფონის ნომერი",
-        accessor: "contragent.phone",
-      },
-      {
-        Header: "ელ.ფოსტა",
-        accessor: "contragent.email",
-      },
-      {
-        Header: "დირექტორის სახელი და გვარი",
-        accessor: "director.name",
-      },
-      {
-        Header: "დირექტორის ტელეფონის ნომერი",
-        accessor: "director.phone",
-      },
-      {
-        Header: "პროდუქციის ღირებულება",
-        accessor: "price",
-        Cell: ({ value }) => (
-          <div>
-            {value
-              ? new Intl.NumberFormat("ka-GE", {
-                  style: "currency",
-                  currency: "GEL",
-                }).format(value)
-              : "N/A"}
-          </div>
-        ),
+        Header: "დადასტურების თარიღი",
+        accessor: "updated_at",
       },
       {
         Header: "სტატუსი",
@@ -260,8 +238,10 @@ const LawyerPageApprove = () => {
       return {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: agreement.created_at,
-        price: agreement.product_cost,
+        created_at: new Date(agreement.created_at).toLocaleDateString(),
+        updated_at: new Date(agreement.updated_at).toLocaleString(),
+        requested_by: agreement.user.name + " " + agreement.user.sur_name,
+        contract_initiator: agreement.contract_initiator_name,
         contragent: {
           name: agreement.contragent_name,
           id: agreement.contragent_id,
@@ -281,7 +261,23 @@ const LawyerPageApprove = () => {
           product_payment_term: agreement.product_payment_term,
           bank_account: agreement.bank_account,
           rejection_reason: agreement.rejection_reason || null,
+          price: agreement.product_cost,
           requested_by: agreement.user.name + " " + agreement.user.sur_name,
+          status: STATUS_MAPPING[agreement.status] || agreement.status,
+          created_at: new Date(agreement.created_at).toLocaleDateString(),
+          updated_at: new Date(agreement.updated_at).toLocaleString(),
+          requested_by: agreement.user.name + " " + agreement.user.sur_name,
+          contragent: {
+            name: agreement.contragent_name,
+            id: agreement.contragent_id,
+            address: agreement.contragent_address,
+            phone: agreement.contragent_phone_number,
+            email: agreement.contragent_email,
+          },
+          director: {
+            name: agreement.contragent_director_name,
+            phone: agreement.contragent_director_phone_number,
+          },
         },
       }
     })
@@ -389,6 +385,67 @@ const LawyerPageApprove = () => {
                 <div>
                   <div className="text-muted small">საბანკო ანგარიში</div>
                   <div className="fw-medium">{row.expanded.bank_account}</div>
+                </div>
+              </div>
+            </Col>
+            {/* Additional Fields */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-dollar fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">ფასი</div>
+                  <div className="fw-medium">{row.expanded.price} ₾</div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-building fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">კონტრაგენტის მისამართი</div>
+                  <div className="fw-medium">
+                    {row.expanded.contragent.address}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-phone fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">კონტრაგენტის ტელეფონი</div>
+                  <div className="fw-medium">
+                    {row.expanded.contragent.phone}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-envelope fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">კონტრაგენტის ელფოსტა</div>
+                  <div className="fw-medium">
+                    {row.expanded.contragent.email}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-user fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">დირექტორის სახელი</div>
+                  <div className="fw-medium">{row.expanded.director.name}</div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-phone-call fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">დირექტორის ტელეფონი</div>
+                  <div className="fw-medium">{row.expanded.director.phone}</div>
                 </div>
               </div>
             </Col>
