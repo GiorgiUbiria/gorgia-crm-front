@@ -12,17 +12,16 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departments }) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     name: "",
-    department: "",
     description: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleInputChange = (e) => {
+  const handleInputChange = e => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault()
     try {
       setIsSubmitting(true)
@@ -32,7 +31,6 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departments }) => {
       setFormData({
         date: new Date().toISOString().split("T")[0],
         name: "",
-        department: "",
         description: "",
       })
     } catch (error) {
@@ -71,23 +69,6 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departments }) => {
           />
           <TextField
             fullWidth
-            select
-            label="დეპარტამენტი"
-            name="department"
-            value={formData.department}
-            onChange={handleInputChange}
-            required
-            margin="normal"
-            disabled={isSubmitting}
-          >
-            {departments.map((dept) => (
-              <MenuItem key={dept.id} value={dept.id}>
-                {dept.name}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            fullWidth
             multiline
             rows={4}
             label="აღწერა"
@@ -100,7 +81,12 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departments }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={toggle}>გაუქმება</Button>
-          <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={isSubmitting}
+          >
             დამატება
           </Button>
         </DialogActions>
@@ -109,4 +95,4 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departments }) => {
   )
 }
 
-export default AddDailyModal 
+export default AddDailyModal

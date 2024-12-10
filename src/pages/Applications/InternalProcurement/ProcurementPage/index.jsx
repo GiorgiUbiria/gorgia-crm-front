@@ -24,8 +24,6 @@ import { useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import { procurementSchema } from "./validationSchema"
 import useFetchUser from "hooks/useFetchUser"
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUpload } from '@fortawesome/free-solid-svg-icons'
 
 const InputWithError = ({
   formik,

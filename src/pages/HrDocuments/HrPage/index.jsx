@@ -94,6 +94,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
   }
 }
 
+
 const validationSchema = Yup.object().shape({
   documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
   id_number: Yup.string().required("პირადი ნომერი აუცილებელია"),
