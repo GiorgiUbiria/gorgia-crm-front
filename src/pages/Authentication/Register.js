@@ -228,7 +228,7 @@ const Register = () => {
                       </div>
 
                       <div className="mb-3">
-                        <Label className="form-label">პეპარტამენტი</Label>
+                        <Label className="form-label">დეპარტამენტი</Label>
                         <Input
                           type="select"
                           name="department_id"
@@ -259,13 +259,13 @@ const Register = () => {
                       </div>
 
                       <div className="mb-3">
-                        <Label className="form-label">მობილურის ნომერი</Label>
+                        <Label className="form-label">ტელეფონის ნომერი</Label>
                         <Input
                           name="mobile_number"
                           id="mobile_number"
                           className="form-control"
-                          type="text"
-                          placeholder="ჩაწერეთ მობილურის ნომერი"
+                          type="tel"
+                          placeholder="ჩაწერეთ ტელეფონის ნომერი"
                           onChange={validation.handleChange}
                           onBlur={validation.handleBlur}
                           value={validation.values.mobile_number || ""}

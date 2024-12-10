@@ -176,6 +176,11 @@ const PurchasePageApprove = () => {
         accessor: "id",
       },
       {
+        Header: "მოითხოვა",
+        accessor: "requested_by",
+        disableSortBy: true,
+      },
+      {
         Header: "თარიღი",
         accessor: "created_at",
         sortType: "basic",
@@ -281,6 +286,7 @@ const PurchasePageApprove = () => {
 
   const transformedPurchases = purchases.map(purchase => ({
     id: purchase.id,
+    requested_by: purchase.user?.name + " " + purchase.user?.sur_name || "არ არის მითითებული",
     status: STATUS_MAPPING[purchase.status] || purchase.status,
     created_at: purchase.created_at,
     user: {

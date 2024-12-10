@@ -51,16 +51,22 @@ const ExpandedRowContent = ({ rowData }) => {
     { label: "მივლინების მიზანი", value: rowData.purpose_of_trip },
     { label: "აღწერა", value: rowData.description },
     { label: "მივლინების მოწყობა", value: rowData.business_trip_arrangement },
-    { label: "მოსალოდნელი შედეგი", value: rowData.expected_result_business_trip },
+    {
+      label: "მოსალოდნელი შედეგი",
+      value: rowData.expected_result_business_trip,
+    },
     { label: "ფაქტობრივი შედეგი", value: rowData.actual_result },
     { label: "მივლინების ტიპი", value: rowData.trip_type },
-    { label: "ხარჯები", value: `
+    {
+      label: "ხარჯები",
+      value: `
       სამივლინებო: ${rowData.expense_vocation}
       ტრანსპორტი: ${rowData.expense_transport}
       საცხოვრებელი: ${rowData.expense_living}
       კვება: ${rowData.expense_meal}
       ჯამური: ${rowData.total_expense}
-    `},
+    `,
+    },
   ]
 
   return (
@@ -108,8 +114,8 @@ const TripPageArchive = () => {
         accessor: "id",
       },
       {
-        Header: "სახელი",
-        accessor: "user.name",
+        Header: "მოითხოვა",
+        accessor: "requested_by",
         disableSortBy: true,
       },
       {
@@ -176,6 +182,11 @@ const TripPageArchive = () => {
           </span>
         ),
       },
+      {
+        Header: "შეამოწმა",
+        accessor: "reviewed_by",
+        disableSortBy: true,
+      },
     ],
     []
   )
@@ -188,6 +199,8 @@ const TripPageArchive = () => {
     purpose_of_trip: trip.purpose_of_trip,
     start_date: new Date(trip.start_date).toLocaleDateString(),
     end_date: new Date(trip.end_date).toLocaleDateString(),
+    requested_by: trip.user?.name + " " + trip.user?.sur_name || "არ არის მითითებული",
+    reviewed_by: trip.reviewed_by?.name + " " + trip.reviewed_by?.sur_name || "არ არის მითითებული",
     user: {
       name: trip.performer_name,
       id: trip.id_code_or_personal_number,
@@ -239,7 +252,7 @@ const TripPageArchive = () => {
                 filterOptions={filterOptions}
                 initialPageSize={10}
                 enableSearch={true}
-                searchableFields={["user.name", "user.id"]}
+                searchableFields={["requested_by", "reviewed_by"]}
                 renderRowDetails={expandedRow}
               />
             </Col>

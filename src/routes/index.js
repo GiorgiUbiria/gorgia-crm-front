@@ -14,6 +14,7 @@ import VacationPage from "pages/Applications/Vacation/VacationPage"
 import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
 import MakeComment from "pages/Comment/MakeComment"
 import Dailies from "pages/Dailies"
+import Daily from "pages/Daily"
 import FarmWork from "pages/FarmWork"
 import HeadPage from "pages/HeadPage"
 import HrPage from "pages/HrDocuments/HrPage"
@@ -41,6 +42,7 @@ import Calendar from "../pages/Calendar/index"
 import Chat from "../pages/Chat/Chat"
 import Dashboard from "../pages/Dashboard/index"
 import TaskList from "../pages/JobPages/JobList"
+import FarmTaskDetails from "../pages/FarmDetails"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
@@ -214,7 +216,8 @@ const authProtectedRoutes = [
   // Support & Tasks
   { path: "/support/it-tasks", component: <TaskList /> },
   { path: "/support/it-tasks/:id", component: <JobDetails /> },
-  { path: "/support/maintenance", component: <FarmWork /> },
+  { path: "/support/farm-tasks", component: <FarmWork /> },
+  { path: "/support/farm-tasks/:id", component: <FarmTaskDetails /> },
 
   // Communication
   { path: "/communication/chat", component: <Chat /> },
@@ -230,6 +233,7 @@ const authProtectedRoutes = [
   { path: "/tools/notes", component: <NotesPage /> },
   { path: "/tools/notes/:id", component: <NotesEditor /> },
   { path: "/tools/daily-results", component: <Dailies /> },
+  { path: "/tools/daily-results/:id", component: <Daily /> },
 ]
 
 const publicRoutes = [
