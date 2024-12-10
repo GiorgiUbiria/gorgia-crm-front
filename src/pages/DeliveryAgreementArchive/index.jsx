@@ -111,14 +111,17 @@ const DeliveryAgreementArchive = () => {
       {
         Header: "მოითხოვა",
         accessor: "requested_by",
+        disableSortBy: true,
       },
       {
         Header: "იურიდიული პირის დასახელება",
         accessor: "jursdictional_unit.name",
+        disableSortBy: true,
       },
       {
         Header: "ხელშეკრულების ტიპი",
         accessor: "agreement_type",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -131,6 +134,7 @@ const DeliveryAgreementArchive = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -351,7 +355,10 @@ const DeliveryAgreementArchive = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["jursdictional_unit.name"]}
+                    searchableFields={[
+                      "jursdictional_unit.name",
+                      "requested_by",
+                    ]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}

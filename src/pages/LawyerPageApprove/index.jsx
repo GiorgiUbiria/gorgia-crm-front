@@ -145,14 +145,17 @@ const LawyerPageApprove = () => {
       {
         Header: "მოითხოვა",
         accessor: "requested_by",
+        disableSortBy: true,
       },
       {
         Header: "კონტრაგენტის დასახელება",
         accessor: "contragent.name",
+        disableSortBy: true,
       },
       {
         Header: "ხელშეკრულების ინიციატორი",
         accessor: "contract_initiator",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -165,6 +168,7 @@ const LawyerPageApprove = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -477,7 +481,7 @@ const LawyerPageApprove = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["contragent.name"]}
+                    searchableFields={["contragent.name", "requested_by"]}
                     filterOptions={filterOptions}
                     renderRowDetails={renderRowDetails}
                   />

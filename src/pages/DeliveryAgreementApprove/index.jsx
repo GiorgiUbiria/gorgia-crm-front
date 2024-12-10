@@ -150,14 +150,17 @@ const DeliveryAgreementApprove = () => {
       {
         Header: "მოითხოვა",
         accessor: "requested_by",
+        disableSortBy: true,
       },
       {
         Header: "იურიდიული პირის დასახელება",
         accessor: "jursdictional_unit.name",
+        disableSortBy: true,
       },
       {
         Header: "ხელშეკრულების ტიპი",
         accessor: "agreement_type",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -170,6 +173,7 @@ const DeliveryAgreementApprove = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -394,6 +398,17 @@ const DeliveryAgreementApprove = () => {
                 </div>
               </div>
             </Col>
+
+            {/* Price */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-dollar fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">ფასი</div>
+                  <div className="fw-medium">{row.expanded.cost} ₾</div>
+                </div>
+              </div>
+            </Col>
           </Row>
         </div>
       </div>
@@ -422,7 +437,10 @@ const DeliveryAgreementApprove = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["jursdictional_unit.name"]}
+                    searchableFields={[
+                      "jursdictional_unit.name",
+                      "requested_by",
+                    ]}
                     filterOptions={filterOptions}
                     renderRowDetails={renderRowDetails}
                   />

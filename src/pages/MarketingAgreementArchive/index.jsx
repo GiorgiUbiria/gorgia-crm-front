@@ -110,10 +110,12 @@ const MarketingAgreementArchive = () => {
       {
         Header: "მოითხოვა",
         accessor: "requested_by",
+        disableSortBy: true,
       },
       {
         Header: "სახელწოდება (საფირმო)",
         accessor: "executor_firm_name",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -126,6 +128,7 @@ const MarketingAgreementArchive = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -212,7 +215,7 @@ const MarketingAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ფახელწოდება (საფირმო)</div>
+                  <div className="text-muted small">სახელწოდება (საფირმო)</div>
                   <div className="fw-medium">
                     {row.expanded.executor_firm_name}
                   </div>
@@ -225,9 +228,7 @@ const MarketingAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">
-                    გარკეტინგული სერვისის ტიპი
-                  </div>
+                  <div className="text-muted small">სერვისის სახეობა</div>
                   <div className="fw-medium">
                     {row.expanded.marketing_service_type}
                   </div>
@@ -240,9 +241,7 @@ const MarketingAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">
-                    მარკეტინგული სერვისის ვადა
-                  </div>
+                  <div className="text-muted small">სერვისის ვადა</div>
                   <div className="fw-medium">
                     {row.expanded.marketing_service_term}
                   </div>
@@ -266,7 +265,9 @@ const MarketingAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">შემსრულებლის ID ნომერი</div>
+                  <div className="text-muted small">
+                    შემსრულებლის პირადი ნომერი/საიდენტიფიკაციო კოდი
+                  </div>
                   <div className="fw-medium">
                     {row.expanded.executor_id_number}
                   </div>
@@ -279,9 +280,7 @@ const MarketingAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">
-                    შექსრულებლის სახლის მისამართი
-                  </div>
+                  <div className="text-muted small">სახლის მისამართი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_home_address}
                   </div>
@@ -466,10 +465,7 @@ const MarketingAgreementArchive = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={[
-                      "executor_firm_name",
-                      "requested_by",
-                    ]}
+                    searchableFields={["executor_firm_name", "requested_by"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}

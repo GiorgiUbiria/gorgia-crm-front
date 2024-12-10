@@ -75,6 +75,7 @@ const ServiceAgreementArchive = () => {
         updated_at: new Date(agreement.updated_at).toLocaleString(),
         executor_firm_name: agreement.executor_firm_name,
         service_type: agreement.service_type,
+        requested_by: agreement.user.name + " " + agreement.user.sur_name,
         expanded: {
           service_cost: agreement.service_cost,
           service_term: agreement.service_term,
@@ -105,12 +106,19 @@ const ServiceAgreementArchive = () => {
         accessor: "id",
       },
       {
+        Header: "მოითხოვა",
+        accessor: "requested_by",
+        disableSortBy: true,
+      },
+      {
         Header: "სახელწოდება (საფირმო)",
         accessor: "executor_firm_name",
+        disableSortBy: true,
       },
       {
         Header: "მომსახურების სახეობა",
         accessor: "service_type",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -123,6 +131,7 @@ const ServiceAgreementArchive = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -209,7 +218,7 @@ const ServiceAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ფაქტიური მისამართი</div>
+                  <div className="text-muted small">ფაქტობრივი მისამართი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_factual_address}
                   </div>
@@ -222,7 +231,7 @@ const ServiceAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">SWIFT კოდი</div>
+                  <div className="text-muted small">ბანკის კოდი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_bank_swift}
                   </div>
@@ -288,7 +297,9 @@ const ServiceAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">შემსრულებლის ID ნომერი</div>
+                  <div className="text-muted small">
+                    შემსრულებლის პირადი ნომერი/საიდენტიფიკაციო კოდი
+                  </div>
                   <div className="fw-medium">
                     {row.expanded.executor_id_number}
                   </div>
@@ -301,9 +312,7 @@ const ServiceAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">
-                    შემსრულებლის სახლის მისამართი
-                  </div>
+                  <div className="text-muted small">სახლის მისამართი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_home_address}
                   </div>
@@ -435,10 +444,7 @@ const ServiceAgreementArchive = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={[
-                      "executor_firm_name",
-                      "executor_full_name",
-                    ]}
+                    searchableFields={["executor_firm_name", "requested_by"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}

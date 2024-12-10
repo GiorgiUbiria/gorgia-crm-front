@@ -129,10 +129,12 @@ const UserAgreements = () => {
       {
         Header: "კონტრაგენტის დასახელება",
         accessor: "contragent.name",
+        disableSortBy: true,
       },
       {
         Header: "ხელშეკრულების ინიციატორი",
         accessor: "contract_initiator",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -145,6 +147,7 @@ const UserAgreements = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",

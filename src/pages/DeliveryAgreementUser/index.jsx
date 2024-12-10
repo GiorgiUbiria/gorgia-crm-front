@@ -114,10 +114,12 @@ const DeliveryAgreementUser = () => {
       {
         Header: "იურიდიული პირის დასახელება",
         accessor: "jursdictional_unit.name",
+        disableSortBy: true,
       },
       {
         Header: "ხელშეკრულების ტიპი",
         accessor: "agreement_type",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -130,6 +132,7 @@ const DeliveryAgreementUser = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
