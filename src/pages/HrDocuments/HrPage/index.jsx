@@ -92,10 +92,6 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
   }
 }
 
-
-
-
-
 const forUserValidationSchema = activeTab => {
   const validationSchema = Yup.object().shape({
     documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
@@ -110,12 +106,8 @@ const forUserValidationSchema = activeTab => {
     }),
   })
 
-
   if (activeTab === "2") {
     return validationSchema.shape({
-      // selectedUser: Yup.string().required("მომხმარებლის არჩევა აუცილებელია"),
-      
-      
       firstName: Yup.string().required("სახელი აუცილებელია"),
       lastName: Yup.string().required("გვარი აუცილებელია"),
       documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),

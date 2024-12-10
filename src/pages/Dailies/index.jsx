@@ -56,7 +56,6 @@ const Dailies = () => {
   }, [])
 
   const handleRowClick = row => {
-    console.log(row)
     navigate(`/tools/daily-results/${row.id}`)
   }
 
@@ -121,12 +120,32 @@ const Dailies = () => {
     XLSX.writeFile(wb, "დღის საკითხები.xlsx")
   }
 
+  const expandedRow = row => {
+    return (
+      <div className="p-4 bg-white rounded shadow-sm">
+        <div className="d-flex flex-column">
+          <h5 className="mb-2 text-primary">საკითხის დეტალები</h5>
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <span className="fw-bold text-secondary">საკითხი:</span>
+            <span className="text-dark">{row.description}</span>
+          </div>
+          <div className="d-flex justify-content-between align-items-center">
+            <span className="fw-bold text-secondary">თარიღი:</span>
+            <span className="text-dark">
+              {new Date(row.date).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="page-content bg-gray-50">
+    <div className="page-content bg-gray-100">
       <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
         <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="შეფასებები" />
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow p-6">
           <Row className="mb-3">
             <Col className="d-flex justify-content-between align-items-center">
               <div style={{ display: "flex", gap: "1rem" }}>
@@ -166,6 +185,7 @@ const Dailies = () => {
             onPageSizeChange={setPageSize}
             isLoading={isLoading}
             onRowClick={handleRowClick}
+            renderRowDetails={expandedRow}
             rowClassName="cursor-pointer hover:bg-gray-50"
           />
         </div>
