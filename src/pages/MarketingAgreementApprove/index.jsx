@@ -315,7 +315,9 @@ const MarketingAgreementApprove = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">გარკეტინგული სერვისის ტიპი</div>
+                  <div className="text-muted small">
+                    გარკეტინგული სერვისის ტიპი
+                  </div>
                   <div className="fw-medium">
                     {row.expanded.marketing_service_type}
                   </div>
@@ -328,7 +330,9 @@ const MarketingAgreementApprove = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">მარკეტინგული სერვისის ვადა</div>
+                  <div className="text-muted small">
+                    მარკეტინგული სერვისის ვადა
+                  </div>
                   <div className="fw-medium">
                     {row.expanded.marketing_service_term}
                   </div>
@@ -342,9 +346,7 @@ const MarketingAgreementApprove = () => {
                 <BsBank className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">სერვისის ღირებულება</div>
-                  <div className="fw-medium">
-                    {row.expanded.service_cost}
-                  </div>
+                  <div className="fw-medium">{row.expanded.service_cost}</div>
                 </div>
               </div>
             </Col>
@@ -367,7 +369,9 @@ const MarketingAgreementApprove = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">შექსრულებლის სახლის მისამართი</div>
+                  <div className="text-muted small">
+                    შექსრულებლის სახლის მისამართი
+                  </div>
                   <div className="fw-medium">
                     {row.expanded.executor_home_address}
                   </div>
@@ -380,7 +384,9 @@ const MarketingAgreementApprove = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">შემსრულებლის სრული სახელი</div>
+                  <div className="text-muted small">
+                    შემსრულებლის სრული სახელი
+                  </div>
                   <div className="fw-medium">
                     {row.expanded.executor_full_name}
                   </div>
@@ -406,7 +412,9 @@ const MarketingAgreementApprove = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">შემსრულებლის საბანკო ანგარიში</div>
+                  <div className="text-muted small">
+                    შემსრულებლის საბანკო ანგარიში
+                  </div>
                   <div className="fw-medium">
                     {row.expanded.executor_bank_account}
                   </div>
@@ -419,7 +427,9 @@ const MarketingAgreementApprove = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">შემსრულებლის ბანკის სახელი</div>
+                  <div className="text-muted small">
+                    შემსრულებლის ბანკის სახელი
+                  </div>
                   <div className="fw-medium">
                     {row.expanded.executor_bank_name}
                   </div>
@@ -432,7 +442,7 @@ const MarketingAgreementApprove = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ფაქტობრივი მისამართი</div>
+                  <div className="text-muted small">ფ���ქტობრივი მისამართი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_factual_address}
                   </div>
@@ -533,10 +543,7 @@ const MarketingAgreementApprove = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={[
-                      "executor_firm_name",
-                      "requested_by",
-                    ]}
+                    searchableFields={["executor_firm_name", "requested_by"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}
