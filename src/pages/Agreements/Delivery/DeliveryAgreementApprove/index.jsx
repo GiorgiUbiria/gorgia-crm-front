@@ -77,7 +77,7 @@ const DeliveryAgreementApprove = () => {
     console.log(additionalData, status, agreementId)
 
     try {
-      const response = await updateAgreementStatus(
+      const response = await updateDeliveryAgreementStatus(
         agreementId,
         status,
         additionalData

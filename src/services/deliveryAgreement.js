@@ -1,7 +1,10 @@
 import defaultInstance from "plugins/axios"
 
 export const createAgreement = async data => {
-  const response = await defaultInstance.post("/api/acceptance-delivery-agreements", data)
+  const response = await defaultInstance.post(
+    "/api/acceptance-delivery-agreements",
+    data
+  )
   return response.data
 }
 
