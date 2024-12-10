@@ -31,20 +31,16 @@ export const getMenuConfig = (
       icon: BsHouseDoor,
       label: t("მთავარი გვერდი"),
     },
-    ...(isAdmin || isDepartmentHead
-      ? [
-          {
-            key: "admin",
-            icon: BsGear,
-            label: t("სამართავი პანელი"),
-            submenu: [
-              { to: "/admin/dashboard", label: t("მთავარი") },
-              { to: "/admin/approvals", label: t("ვიზირება") },
-              { to: "/admin/archive", icon: BsArchive, label: t("არქივი") },
-            ],
-          },
-        ]
-      : []),
+    (isAdmin || isDepartmentHead) && {
+      key: "admin",
+      icon: BsGear,
+      label: t("სამართავი პანელი"),
+      submenu: [
+        { to: "/admin/dashboard", label: t("მთავარი") },
+        { to: "/admin/approvals", label: t("ვიზირება") },
+        { to: "/admin/archive", icon: BsArchive, label: t("არქივი") },
+      ],
+    },
     {
       to: "/profile",
       icon: BsPerson,
@@ -167,16 +163,13 @@ export const getMenuConfig = (
               to: "/legal/contracts/purchase/archive",
               label: t("არქივი"),
             },
-            {
-              to: "/legal/contracts/purchase/my-requests",
-              label: t("გაგზავნილი"),
-            },
+            { to: "/legal/contracts/purchase/my-requests", label: t("გაგზავნილი") },
           ],
         },
         {
           key: "delivery",
           to: "/legal/contracts/delivery",
-          label: t("მიღება-ჩაბარების ხელშეკრულება"),
+          label: t("მიღება-ჩაბარების აქტი"),
           submenu: [
             isAdmin && {
               to: "/legal/contracts/delivery/approve",
@@ -195,7 +188,7 @@ export const getMenuConfig = (
         {
           key: "marketing",
           to: "/legal/contracts/marketing",
-          label: t("მარკეტინგის ხელშეკრულება"),
+          label: t("მარკეტინგული მომსახურების ხელშეკრულება"),
           submenu: [
             isAdmin && {
               to: "/legal/contracts/marketing/approve",
@@ -205,10 +198,7 @@ export const getMenuConfig = (
               to: "/legal/contracts/marketing/archive",
               label: t("არქივი"),
             },
-            {
-              to: "/legal/contracts/marketing/my-requests",
-              label: t("გაგზავნილი"),
-            },
+            { to: "/legal/contracts/marketing/my-requests", label: t("გაგზავნილი") },
           ],
         },
         {
@@ -233,20 +223,11 @@ export const getMenuConfig = (
         {
           to: "/legal/contracts/local",
           key: "local",
-          label: t("ადგილობრივი ხელშეკრულება"),
+          label: t("ადგილობრივი შესყიდვის ხელშეკრულება"),
           submenu: [
-            isAdmin && {
-              to: "/legal/contracts/local/approve",
-              label: t("ვიზირება"),
-            },
-            isAdmin && {
-              to: "/legal/contracts/local/archive",
-              label: t("არქივი"),
-            },
-            {
-              to: "/legal/contracts/local/my-requests",
-              label: t("გაგზავნილი"),
-            },
+            isAdmin && { to: "/legal/contracts/local/approve", label: t("ვიზირება") },
+            isAdmin && { to: "/legal/contracts/local/archive", label: t("არქივი") },
+            { to: "/legal/contracts/local/my-requests", label: t("გაგზავნილი") },
           ],
         },
       ],
