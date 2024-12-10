@@ -108,11 +108,6 @@ const UserTrip = () => {
         accessor: "id",
       },
       {
-        Header: "მოითხოვა",
-        accessor: "requested_by",
-        disableSortBy: true,
-      },
-      {
         Header: "ადგილი",
         accessor: "place_of_trip",
         disableSortBy: true,
@@ -193,7 +188,6 @@ const UserTrip = () => {
     purpose_of_trip: trip.purpose_of_trip,
     start_date: new Date(trip.start_date).toLocaleDateString(),
     end_date: new Date(trip.end_date).toLocaleDateString(),
-    requested_by: trip.user?.name + " " + trip.user?.sur_name || "არ არის მითითებული",
     reviewed_by: trip.reviewed_by?.name + " " + trip.reviewed_by?.sur_name || "არ არის მითითებული",
     user: {
       name: trip.performer_name,

@@ -14,6 +14,7 @@ import VacationPage from "pages/Applications/Vacation/VacationPage"
 import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
 import MakeComment from "pages/Comment/MakeComment"
 import Dailies from "pages/Dailies"
+import Daily from "pages/Daily"
 import FarmWork from "pages/FarmWork"
 import HeadPage from "pages/HeadPage"
 import HrPage from "pages/HrDocuments/HrPage"
@@ -232,6 +233,7 @@ const authProtectedRoutes = [
   { path: "/tools/notes", component: <NotesPage /> },
   { path: "/tools/notes/:id", component: <NotesEditor /> },
   { path: "/tools/daily-results", component: <Dailies /> },
+  { path: "/tools/daily-results/:id", component: <Daily /> },
 ]
 
 const publicRoutes = [

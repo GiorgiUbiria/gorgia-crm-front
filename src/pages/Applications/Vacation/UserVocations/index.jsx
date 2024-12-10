@@ -35,6 +35,14 @@ const typeMap = {
     label: "ადმინისტრაციული",
     color: "#FFA500",
   },
+  maternity: {
+    label: "დეკრეტული",
+    color: "#757575",
+  },
+  unknown: {
+    label: "უცნობი",
+    color: "#757575",
+  },
 }
 
 const STATUS_MAPPING = {
@@ -47,46 +55,134 @@ const TYPE_MAPPING = {
   paid: "paid",
   unpaid: "unpaid",
   administrative: "administrative",
+  maternity: "maternity",
+  unknown: "unknown",
 }
 
 const ExpandedRowContent = ({ rowData }) => {
-  const details = [
-    { label: "შვებულების ტიპი", value: rowData.type_of_vocations },
-    { label: "მიზეზი", value: rowData.reason },
-    { label: "ხანგრძლივობა", value: `${rowData.duration} დღე` },
-    { label: "სამუშაო დღეები", value: [
-      rowData.monday === "yes" && "ორშაბათი",
-      rowData.tuesday === "yes" && "სამშაბათი",
-      rowData.wednesday === "yes" && "ოთხშაბათი",
-      rowData.thursday === "yes" && "ხუთშაბათი",
-      rowData.friday === "yes" && "პარასკევი",
-      rowData.saturday === "yes" && "შაბათი",
-      rowData.sunday === "yes" && "კვირა",
-    ].filter(Boolean).join(", ") },
-    { label: "დეპარტამენტის დამტკიცება", value: rowData.department_approval },
-    { label: "HR-ის დამტკიცება", value: rowData.hr_approval },
-    { label: "დეპარტამენტის დამტკიცების თარიღი", value: rowData.department_approval_at },
-    { label: "HR-ის დამტკიცების თარიღი", value: rowData.hr_approval_at },
-  ]
+  if (!rowData) return null
 
   return (
-    <div className="p-3 bg-light rounded">
-      {rowData.comment && (
-        <div className="mb-3">
-          <span className="fw-bold text-danger">უარყოფის მიზეზი: </span>
-          <p className="mb-0">{rowData.comment}</p>
+    <div className="p-4 bg-light rounded">
+      {rowData.expandedRow.comment && (
+        <div className="alert alert-danger d-flex align-items-center mb-4">
+          <i className="bx bx-error-circle me-2 fs-5"></i>
+          <div>
+            <strong>კომენტარი:</strong> {rowData.expandedRow.comment}
+          </div>
         </div>
       )}
-      <div className="row g-2">
-        {details.map((detail, index) => (
-          <div key={index} className="col-md-6">
-            <span className="fw-bold">{detail.label}: </span>
-            <span>{detail.value || "არ არის მითითებული"}</span>
-          </div>
-        ))}
+
+      <div className="border rounded p-4 bg-white mb-4">
+        <Row className="g-4">
+          <Col md={12}>
+            <h6 className="mb-3">დასვენების დღეები:</h6>
+            <div className="d-flex flex-wrap gap-3">
+              {[
+                { day: "ორშაბათი", value: rowData.expandedRow.monday },
+                { day: "სამშაბათი", value: rowData.expandedRow.tuesday },
+                { day: "ოთხშაბათი", value: rowData.expandedRow.wednesday },
+                { day: "ხუთშაბათი", value: rowData.expandedRow.thursday },
+                { day: "პარასკევი", value: rowData.expandedRow.friday },
+                { day: "შაბათი", value: rowData.expandedRow.saturday },
+                { day: "კვირა", value: rowData.expandedRow.sunday },
+              ].map((item, index) => (
+                <div key={index} className="d-flex align-items-center gap-2">
+                  <i
+                    className={`bx ${
+                      item.value === "yes"
+                        ? "bx-check text-success"
+                        : "bx-x text-danger"
+                    }`}
+                  ></i>
+                  <span>{item.day}</span>
+                </div>
+              ))}
+            </div>
+          </Col>
+          <Col md={6}>
+            <div className="d-flex flex-column gap-2">
+              <div>
+                <strong>დეპარტამენტის დასტური:</strong>{" "}
+                <span
+                  className={`badge bg-${
+                    rowData.expandedRow.department_approval === "pending"
+                      ? "warning"
+                      : rowData.expandedRow.department_approval === "approved"
+                      ? "success"
+                      : "danger"
+                  }`}
+                >
+                  {rowData.expandedRow.department_approval}
+                </span>
+              </div>
+              <div>
+                <strong>HR-ის დასტური:</strong>{" "}
+                <span
+                  className={`badge bg-${
+                    rowData.expandedRow.hr_approval === "pending"
+                      ? "warning"
+                      : rowData.expandedRow.hr_approval === "approved"
+                      ? "success"
+                      : "danger"
+                  }`}
+                >
+                  {rowData.expandedRow.hr_approval}
+                </span>
+              </div>
+            </div>
+          </Col>
+          <Col md={6}>
+            <div className="d-flex flex-column gap-2">
+              <div>
+                <strong>შექმნის თარიღი:</strong>{" "}
+                {new Date(rowData.expandedRow.created_at).toLocaleDateString()}
+              </div>
+              {rowData.expandedRow.reviewed_at && (
+                <div>
+                  <strong>განხილვის თარიღი:</strong>{" "}
+                  {new Date(
+                    rowData.expandedRow.reviewed_at
+                  ).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          </Col>
+        </Row>
       </div>
     </div>
   )
+}
+
+const calculateDuration = (startDate, endDate, restDays) => {
+  if (!startDate || !endDate) return 0
+
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  let totalDays = 0
+
+  start.setHours(0, 0, 0, 0)
+  end.setHours(0, 0, 0, 0)
+
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dayOfWeek = d.getDay()
+    const dayMap = {
+      0: "sunday",
+      1: "monday",
+      2: "tuesday",
+      3: "wednesday",
+      4: "thursday",
+      5: "friday",
+      6: "saturday",
+    }
+
+    const currentDay = dayMap[dayOfWeek]
+    if (restDays[currentDay] !== "yes") {
+      totalDays++
+    }
+  }
+
+  return Math.max(1, totalDays)
 }
 
 const UserVocation = () => {
@@ -115,11 +211,6 @@ const UserVocation = () => {
       {
         Header: "#",
         accessor: "id",
-      },
-      {
-        Header: "მოითხოვა",
-        accessor: "requested_by",
-        disableSortBy: true,
       },
       {
         Header: "შვებულების ტიპი",
@@ -153,6 +244,16 @@ const UserVocation = () => {
         ),
       },
       {
+        Header: "დღეების რაოდენობა",
+        accessor: "duration",
+        Cell: ({ value }) => (
+          <div className="text-center">
+            {value} {value === 1 ? "დღე" : "დღე"}
+          </div>
+        ),
+      },
+      {
+        Header: "სტატუსი",
         accessor: "status",
         disableSortBy: true,
         Cell: ({ value }) => (
@@ -201,12 +302,36 @@ const UserVocation = () => {
     status: STATUS_MAPPING[vacation.status] || vacation.status,
     start_date: vacation.start_date,
     end_date: vacation.end_date,
-    requested_by: vacation.user?.name + " " + vacation.user?.sur_name || "არ არის მითითებული",
-    reviewed_by: vacation.reviewed_by?.name + " " + vacation.reviewed_by?.sur_name || "არ არის მითითებული",
+    reviewed_by: vacation.reviewed_by
+      ? vacation.reviewed_by.name + " " + vacation.reviewed_by.sur_name
+      : "არ არის მითითებული",
     comment: vacation.comment,
     type_of_vacations: vacation.type_of_vocations
       ? TYPE_MAPPING[vacation.type_of_vocations] || vacation.type_of_vocations
       : "უცნობი",
+    expandedRow: {
+      comment: vacation.comment,
+      monday: vacation.monday,
+      tuesday: vacation.tuesday,
+      wednesday: vacation.wednesday,
+      thursday: vacation.thursday,
+      friday: vacation.friday,
+      saturday: vacation.saturday,
+      sunday: vacation.sunday,
+      department_approval: vacation.department_approval,
+      hr_approval: vacation.hr_approval,
+      created_at: vacation.created_at,
+      reviewed_at: vacation.reviewed_at,
+    },
+    duration: calculateDuration(vacation.start_date, vacation.end_date, {
+      monday: vacation.monday,
+      tuesday: vacation.tuesday,
+      wednesday: vacation.wednesday,
+      thursday: vacation.thursday,
+      friday: vacation.friday,
+      saturday: vacation.saturday,
+      sunday: vacation.sunday,
+    }),
   }))
 
   const filterOptions = [
@@ -226,6 +351,8 @@ const UserVocation = () => {
         paid: "ანაზღაურებადი",
         unpaid: "არანაზღაურებადი",
         administrative: "ადმინისტრაციული",
+        maternity: "დეკრეტული",
+        unknown: "უცნობი",
       },
     },
   ]
@@ -250,7 +377,7 @@ const UserVocation = () => {
               columns={columns}
               filterOptions={filterOptions}
               enableSearch={true}
-              searchableFields={["requested_by", "reviewed_by"]}
+              searchableFields={["reviewed_by"]}
               initialPageSize={10}
               renderRowDetails={expandedRow}
             />

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { getDailyList } from "services/daily"
 import { getDepartments } from "services/auth"
 import Button from "@mui/material/Button"
@@ -7,8 +8,10 @@ import useIsAdmin from "hooks/useIsAdmin"
 import { Row, Col } from "reactstrap"
 import AddDailyModal from "./AddDailyModal"
 import Breadcrumbs from "components/Common/Breadcrumb"
+import * as XLSX from "xlsx"
 
 const Dailies = () => {
+  const navigate = useNavigate()
   const isAdmin = useIsAdmin()
   const [addDailyModal, setAddDailyModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -52,6 +55,10 @@ const Dailies = () => {
     fetchDepartments()
   }, [])
 
+  const handleRowClick = row => {
+    navigate(`/tools/daily-results/${row.id}`)
+  }
+
   const columns = useMemo(
     () => [
       {
@@ -71,14 +78,18 @@ const Dailies = () => {
       {
         Header: "საკითხი",
         accessor: "name",
+        disableSortBy: true,
       },
       {
         Header: "დეპარტამენტი",
         accessor: "user.department.name",
+        disableSortBy: true,
       },
       {
         Header: "სახელი/გვარი",
-        accessor: "user.name",
+        accessor: "user",
+        disableSortBy: true,
+        Cell: ({ value }) => value.name + " " + value.sur_name || "-",
       },
     ],
     []
@@ -91,38 +102,50 @@ const Dailies = () => {
     },
   ]
 
-  const exportToCSV = () => {
-    const csvRows = []
-    const headers = columns.map(col => col.Header)
-    csvRows.push(headers.join(","))
+  const exportToExcel = () => {
+    const data = [
+      ["დეპარტამენტი", "საკითხის ნომერი", "თარიღი", "საკ��თხი", "სახელი/გვარი"],
+      ...dailiesData.data.map(daily => [
+        daily.user.department.name,
+        daily.id,
+        daily.date,
+        daily.description,
+        daily.user.name + " " + daily.user.sur_name || "-",
+      ]),
+    ]
 
-    dailiesData.data.forEach(row => {
-      const values = columns.map(col => {
-        const accessor = col.accessor.split(".")
-        let value = row
-        accessor.forEach(key => {
-          value = value ? value[key] : ""
-        })
-        return `"${value || ""}"`
-      })
-      csvRows.push(values.join(","))
-    })
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Users")
+    XLSX.writeFile(wb, "დღის საკითხები.xlsx")
+  }
 
-    const csvContent = `data:text/csv;charset=utf-8,${csvRows.join("\n")}`
-    const link = document.createElement("a")
-    link.href = encodeURI(csvContent)
-    link.setAttribute("download", "დღიური_შეფასებები.csv")
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const expandedRow = row => {
+    return (
+      <div className="p-4 bg-white rounded shadow-sm">
+        <div className="d-flex flex-column">
+          <h5 className="mb-2 text-primary">საკითხის დეტალები</h5>
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <span className="fw-bold text-secondary">საკითხი:</span>
+            <span className="text-dark">{row.description}</span>
+          </div>
+          <div className="d-flex justify-content-between align-items-center">
+            <span className="fw-bold text-secondary">თარიღი:</span>
+            <span className="text-dark">
+              {new Date(row.date).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="page-content bg-gray-50">
+    <div className="page-content bg-gray-100">
       <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
         <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="შეფასებები" />
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow p-6">
           <Row className="mb-3">
             <Col className="d-flex justify-content-between align-items-center">
               <div style={{ display: "flex", gap: "1rem" }}>
@@ -130,10 +153,10 @@ const Dailies = () => {
                   <Button
                     variant="outlined"
                     color="primary"
-                    onClick={exportToCSV}
+                    onClick={exportToExcel}
                   >
                     <i className="bx bx-export me-1"></i>
-                    CSV გადმოწერა
+                    Excel გადმოწერა
                   </Button>
                 )}
                 <Button
@@ -161,6 +184,9 @@ const Dailies = () => {
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}
             isLoading={isLoading}
+            onRowClick={handleRowClick}
+            renderRowDetails={expandedRow}
+            rowClassName="cursor-pointer hover:bg-gray-50"
           />
         </div>
 
