@@ -126,14 +126,17 @@ const LawyerPageArchive = () => {
       {
         Header: "მოითხოვა",
         accessor: "requested_by",
+        disableSortBy: true,
       },
       {
         Header: "კონტრაგენტის დასახელება",
         accessor: "contragent.name",
+        disableSortBy: true,
       },
       {
         Header: "ხელშეკრულების ინიციატორი",
         accessor: "contract_initiator",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -146,6 +149,7 @@ const LawyerPageArchive = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -390,28 +394,6 @@ const LawyerPageArchive = () => {
           <Row>
             <Col xl={12}>
               <Card>
-                {/* <Nav tabs className="nav-tabs-custom">
-                    <NavItem>
-                      <NavLink
-                        className={classnames({ active: activeTab === "1" })}
-                        onClick={() => setActiveTab("1")}
-                        >
-                        მიღება ჩაბარების არქივი
-                      </NavLink>
-                    </NavItem>
-                    <NavItem>
-                      <NavLink
-                        className={classnames({ active: activeTab === "2" })}
-                        onClick={() => setActiveTab("2")}
-                        >
-                        ნასყიდობის ხელშეკრულება
-                      </NavLink>
-                    </NavItem>
-                    
-                    
-                    
-                  </Nav> */}
-
                 <CardBody>
                   <MuiTable
                     columns={columns}
@@ -419,7 +401,7 @@ const LawyerPageArchive = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["contragent.name"]}
+                    searchableFields={["contragent.name", "requested_by"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}

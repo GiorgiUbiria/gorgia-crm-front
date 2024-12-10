@@ -108,10 +108,12 @@ const LocalAgreementArchive = () => {
       {
         Header: "მოითხოვა",
         accessor: "requested_by",
+        disableSortBy: true,
       },
       {
         Header: "შემსრულებელი ფირმის დასახელება",
         accessor: "executor_firm_name",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -124,6 +126,7 @@ const LocalAgreementArchive = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -228,7 +231,7 @@ const LocalAgreementArchive = () => {
                 <BsPerson className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">
-                    დემსრულებელი ფირმის დასახელება
+                    შემსრულებელი ფირმის დასახელება
                   </div>
                   <div className="fw-medium">
                     {row.expanded.executor_firm_name}
@@ -254,7 +257,7 @@ const LocalAgreementArchive = () => {
                 <BsPerson className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">
-                    შემსრულებელი სრული სახელი
+                    შემსრულებლის სრული სახელი
                   </div>
                   <div className="fw-medium">
                     {row.expanded.executor_full_name}
@@ -266,7 +269,7 @@ const LocalAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">შემსრულებელი პოზიცია</div>
+                  <div className="text-muted small">შემსრულებლის პოზიცია</div>
                   <div className="fw-medium">
                     {row.expanded.executor_position}
                   </div>
@@ -277,7 +280,7 @@ const LocalAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ბაბანკო ანგარიში</div>
+                  <div className="text-muted small">საბანკო ანგარიში</div>
                   <div className="fw-medium">
                     {row.expanded.executor_bank_account}
                   </div>
@@ -299,7 +302,7 @@ const LocalAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ბანკის SWIFT კოდი</div>
+                  <div className="text-muted small">ბანკის კოდი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_bank_swift}
                   </div>
@@ -343,7 +346,7 @@ const LocalAgreementArchive = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ექსკლუზიური განთავსება</div>
+                  <div className="text-muted small">ექსკლუზივის ადგილმდებარეობა</div>
                   <div className="fw-medium">
                     {row.expanded.exclusive_placement}
                   </div>
@@ -403,7 +406,7 @@ const LocalAgreementArchive = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["executor_firm_name"]}
+                    searchableFields={["executor_firm_name", "requested_by"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}

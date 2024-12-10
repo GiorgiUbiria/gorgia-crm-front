@@ -66,7 +66,6 @@ const ServiceAgreementUser = () => {
     fetchAgreements()
   }, [])
 
-
   const transformedAgreements = useMemo(() => {
     return agreements.map(agreement => {
       return {
@@ -108,10 +107,12 @@ const ServiceAgreementUser = () => {
       {
         Header: "სახელწოდება (საფირმო)",
         accessor: "executor_firm_name",
+        disableSortBy: true,
       },
       {
         Header: "მომსახურების სახეობა",
         accessor: "service_type",
+        disableSortBy: true,
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -124,6 +125,7 @@ const ServiceAgreementUser = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -210,7 +212,7 @@ const ServiceAgreementUser = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ფაქტიური მისამართი</div>
+                  <div className="text-muted small">ფაქტობრივი მისამართი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_factual_address}
                   </div>
@@ -223,7 +225,7 @@ const ServiceAgreementUser = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">SWIFT კოდი</div>
+                  <div className="text-muted small">ბანკის კოდი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_bank_swift}
                   </div>
@@ -289,7 +291,9 @@ const ServiceAgreementUser = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">შემსრულებლის ID ნომერი</div>
+                  <div className="text-muted small">
+                    შემსრულებლის პირადი ნომერი/საიდენტიფიკაციო კოდი
+                  </div>
                   <div className="fw-medium">
                     {row.expanded.executor_id_number}
                   </div>
@@ -302,9 +306,7 @@ const ServiceAgreementUser = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">
-                    შემსრულებლის სახლის მისამართი
-                  </div>
+                  <div className="text-muted small">სახლის მისამართი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_home_address}
                   </div>
@@ -436,7 +438,7 @@ const ServiceAgreementUser = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["executor_firm_name", "executor_full_name"]}
+                    searchableFields={["executor_firm_name"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}
@@ -452,4 +454,4 @@ const ServiceAgreementUser = () => {
   )
 }
 
-export default ServiceAgreementUser 
+export default ServiceAgreementUser
