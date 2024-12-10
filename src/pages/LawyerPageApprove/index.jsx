@@ -151,7 +151,7 @@ const LawyerPageApprove = () => {
         accessor: "contragent.name",
       },
       {
-        Header: "ხელშეკრულების ინი���იატორი",
+        Header: "ხელშეკრულების ინიციატორი",
         accessor: "contract_initiator",
       },
       {

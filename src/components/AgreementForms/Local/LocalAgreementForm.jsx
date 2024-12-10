@@ -472,7 +472,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               <Col lg="6">
                 <div className="mb-3">
                   <Label for="executor_bank_swift">
-                    SWIFT კოდი
+                    ბანკის კოდი
                   </Label>
                   <Input
                     type="text"
@@ -482,7 +482,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
                     id="executor_bank_swift"
                     value={formData.executor_bank_swift}
                     onChange={handleInputChange}
-                    placeholder="ჩაწერეთ 8-ნიშნა SWIFT კოდი..."
+                    placeholder="მაგ. BAGAGE22"
                     maxLength={8}
                   />
                   {errors.executor_bank_swift && (
