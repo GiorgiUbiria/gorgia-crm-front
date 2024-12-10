@@ -89,16 +89,16 @@ const AgreementRequest = () => {
                           ნასყიდობის ხელშეკრულება
                         </option>
                         <option value={AGREEMENT_TYPES.DELIVERY}>
-                          მიღება-ჩაბარების ხელშეკრულება
+                          მიღება-ჩაბარების აქტი
                         </option>
                         <option value={AGREEMENT_TYPES.MARKETING}>
-                          მარკეტინგის ხელშეკრულება
+                          მარკეტინგული მომსახურების ხელშეკრულება
                         </option>
                         <option value={AGREEMENT_TYPES.SERVICE}>
                           მომსახურების ხელშეკრულება
                         </option>
                         <option value={AGREEMENT_TYPES.LOCAL}>
-                          ადგილობრივი ხელშეკრულება
+                          ადგილობრივი შესყიდვის ხელშეკრულება
                         </option>
                       </Input>
                     </div>
