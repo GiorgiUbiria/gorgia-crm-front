@@ -81,7 +81,7 @@ const Daily = () => {
     document.getElementById("commentInput")?.focus()
   }
 
-  const renderComment = (comment, isReply = false, parentComment = null) => (
+  const renderComment = (comment, isReply = false) => (
     <div
       key={comment.id}
       className={`comment-item mb-3 ${isReply ? "ps-5" : ""}`}
@@ -112,12 +112,6 @@ const Daily = () => {
                   )}
                 </h6>
                 <small className="text-muted d-block">
-                  {isReply && parentComment && (
-                    <span className="me-2">
-                      <i className="bx bx-reply me-1"></i>
-                      პასუხი: <strong>{parentComment.user?.name} {parentComment.user?.sur_name}</strong> •
-                    </span>
-                  )}
                   {formatDate(comment.created_at)}
                 </small>
               </div>
@@ -136,7 +130,7 @@ const Daily = () => {
       </div>
       {Array.isArray(comment.replies) && comment.replies.length > 0 && (
         <div className="replies-container mt-2">
-          {comment.replies.map(reply => renderComment(reply, true, comment))}
+          {comment.replies.map(reply => renderComment(reply, true))}
         </div>
       )}
     </div>
