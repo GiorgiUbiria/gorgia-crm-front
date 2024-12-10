@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
 import { Row, Col, Card, CardBody } from "reactstrap"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
-import { getDepartmentAgreements, downloadAgreement } from "services/localAgreement"
+import {
+  getDepartmentAgreements,
+  downloadAgreement,
+} from "services/localAgreement"
 import {
   BsBank,
   BsCalendar,
@@ -68,20 +71,24 @@ const LocalAgreementArchive = () => {
       return {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: agreement.created_at,
+        created_at: new Date(agreement.created_at).toLocaleDateString(),
+        updated_at: new Date(agreement.updated_at).toLocaleString(),
         executor_firm_name: agreement.executor_firm_name,
-        executor_id_number: agreement.executor_id_number,
-        executor_home_address: agreement.executor_home_address,
-        executor_full_name: agreement.executor_full_name,
-        executor_position: agreement.executor_position,
-        executor_bank_account: agreement.executor_bank_account,
-        executor_bank_name: agreement.executor_bank_name,
-        agreement_automatic_renewal: agreement.agreement_automatic_renewal === 1 ? "კი" : "არა",
-        exclusivity: agreement.exclusivity === 1 ? "კი" : "არა",
-        agreement_active_term: agreement.agreement_active_term,
-        exclusive_placement: agreement.exclusive_placement,
+        requested_by: agreement.user.name + " " + agreement.user.sur_name,
         expanded: {
           executor_factual_address: agreement.executor_factual_address,
+          executor_firm_name: agreement.executor_firm_name,
+          executor_id_number: agreement.executor_id_number,
+          executor_home_address: agreement.executor_home_address,
+          executor_full_name: agreement.executor_full_name,
+          executor_position: agreement.executor_position,
+          executor_bank_account: agreement.executor_bank_account,
+          executor_bank_name: agreement.executor_bank_name,
+          agreement_automatic_renewal:
+            agreement.agreement_automatic_renewal === 1 ? "კი" : "არა",
+          exclusivity: agreement.exclusivity === 1 ? "კი" : "არა",
+          agreement_active_term: agreement.agreement_active_term,
+          exclusive_placement: agreement.exclusive_placement,
           executor_bank_swift: agreement.executor_bank_swift,
           director_full_name: agreement.director_full_name,
           director_id_number: agreement.director_id_number,
@@ -99,32 +106,27 @@ const LocalAgreementArchive = () => {
         accessor: "id",
       },
       {
-        Header: "ფირმის დასახელება",
+        Header: "მოითხოვა",
+        accessor: "requested_by",
+        disableSortBy: true,
+      },
+      {
+        Header: "შემსრულებელი ფირმის დასახელება",
         accessor: "executor_firm_name",
+        disableSortBy: true,
       },
       {
-        Header: "საიდენტიფიკაციო ნომერი",
-        accessor: "executor_id_number",
+        Header: "მოთხოვნის თარიღი",
+        accessor: "created_at",
       },
       {
-        Header: "იურიდიული მისამართი",
-        accessor: "executor_home_address",
-      },
-      {
-        Header: "შემსრულებლის სახელი",
-        accessor: "executor_full_name",
-      },
-      {
-        Header: "ავტომატური განახლება",
-        accessor: "agreement_automatic_renewal",
-      },
-      {
-        Header: "ექსკლუზიურობა",
-        accessor: "exclusivity",
+        Header: "დამტკიცების თარიღი",
+        accessor: "updated_at",
       },
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -145,18 +147,18 @@ const LocalAgreementArchive = () => {
                   value === "pending"
                     ? "#fff3e0"
                     : value === "rejected"
-                      ? "#ffebee"
-                      : value === "approved"
-                        ? "#e8f5e9"
-                        : "#f5f5f5",
+                    ? "#ffebee"
+                    : value === "approved"
+                    ? "#e8f5e9"
+                    : "#f5f5f5",
                 color:
                   value === "pending"
                     ? "#e65100"
                     : value === "rejected"
-                      ? "#c62828"
-                      : value === "approved"
-                        ? "#2e7d32"
-                        : "#757575",
+                    ? "#c62828"
+                    : value === "approved"
+                    ? "#2e7d32"
+                    : "#757575",
               }}
             >
               <i className={`bx ${status.icon} me-2`}></i>
@@ -215,11 +217,138 @@ const LocalAgreementArchive = () => {
             </Col>
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">საცხოვრებელი მისამართი</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_home_address}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებელი ფირმის დასახელება
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_firm_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებელი ფირმის საიდენტიფიკაციო ნომერი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_id_number}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებლის სრული სახელი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_full_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">შემსრულებლის პოზიცია</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_position}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">საბანკო ანგარიში</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_account}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ბანკის დასახელება</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">ბანკის კოდი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_bank_swift}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ავტომატური განახლება</div>
+                  <div className="fw-medium">
+                    {row.expanded.agreement_automatic_renewal}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ექსკლუზიურობა</div>
+                  <div className="fw-medium">{row.expanded.exclusivity}</div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    ხელშეკრულების აქტიური ვადა
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.agreement_active_term}
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ექსკლუზივის ადგილმდებარეობა</div>
+                  <div className="fw-medium">
+                    {row.expanded.exclusive_placement}
                   </div>
                 </div>
               </div>
@@ -236,60 +365,21 @@ const LocalAgreementArchive = () => {
                 </div>
               </div>
             </Col>
+          </Row>
+          <Row className="mt-4">
             <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsMap className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">ექსკლუზიური ადგილი</div>
-                  <div className="fw-medium">{row.exclusive_placement ? row.exclusive_placement : "არა"}</div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCreditCard className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">ბანკის ანგარიში</div>
-                  <div className="fw-medium">
-                    {row.executor_bank_account}
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">
-                    ხელშეკრულების აქტივობის ვადა
-                  </div>
-                  <div className="fw-medium">
-                    {row.agreement_active_term}
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">შექმნის თარიღი</div>
-                  <div className="fw-medium">{new Date(row.created_at).toLocaleDateString()}</div>
-                </div>
-              </div>
+              {row.status === "approved" && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleDownload(row.id)}
+                >
+                  <i className="bx bx-download me-2"></i>
+                  ხელშეკრულების ჩამოტვირთვა
+                </button>
+              )}
             </Col>
           </Row>
         </div>
-
-        {row.status === "approved" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => handleDownload(row.id)}
-          >
-            <i className="bx bx-download me-2"></i>
-            ხელშეკრულების ჩამოტვირთვა
-          </button>
-        )}
       </div>
     )
   }, [])
@@ -316,9 +406,9 @@ const LocalAgreementArchive = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={["executor_firm_name", "executor_full_name"]}
+                    searchableFields={["executor_firm_name", "requested_by"]}
                     filterOptions={filterOptions}
-                    onRowClick={() => { }}
+                    onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}
                   />
                 </CardBody>
@@ -333,4 +423,3 @@ const LocalAgreementArchive = () => {
 }
 
 export default LocalAgreementArchive
-
