@@ -1,13 +1,5 @@
 import React, { useState } from "react"
-import {
-  Form,
-  Input,
-  Label,
-  Row,
-  Col,
-  TabContent,
-  TabPane,
-} from "reactstrap"
+import { Form, Input, Label, Row, Col, TabContent, TabPane } from "reactstrap"
 import classnames from "classnames"
 import { toast } from "react-toastify"
 import { createAgreement } from "services/agreement"
@@ -50,16 +42,26 @@ const StandardAgreementForm = ({ onSuccess }) => {
 
     switch (field) {
       case "contragent_name":
-      case "contragent_id":
+        if (!value && value !== 0) errorMsg = "This field is required"
       case "contragent_address":
+        if (!value && value !== 0) errorMsg = "This field is required"
       case "contragent_email":
+        if (!value && value !== 0) errorMsg = "This field is required"
       case "contragent_director_name":
+        if (!value && value !== 0) errorMsg = "This field is required"
       case "product_delivery_address":
+        if (!value && value !== 0) errorMsg = "This field is required"
       case "bank_account":
+        if (!value && value !== 0) errorMsg = "This field is required"
+      case "contragent_id":
+        if (!value && value !== 0) errorMsg = "This field is required"
       case "contract_initiator_name":
         if (!value && value !== 0) errorMsg = "This field is required"
         break
       case "contragent_phone_number":
+        if (!value && value !== 0) errorMsg = "This field is required"
+        else if (value.length > 20) errorMsg = "Maximum length is 20 characters"
+        break
       case "contragent_director_phone_number":
         if (!value && value !== 0) errorMsg = "This field is required"
         else if (value.length > 20) errorMsg = "Maximum length is 20 characters"
@@ -231,25 +233,53 @@ const StandardAgreementForm = ({ onSuccess }) => {
     }
   }
 
-  const hasStepErrors = (stepNumber) => {
+  const hasStepErrors = stepNumber => {
     const stepFields = {
-      1: ['contragent_name', 'contragent_id', 'contragent_address', 'contragent_phone_number', 'contragent_email', 'bank_account'],
-      2: ['contragent_director_name', 'contragent_director_phone_number', 'conscription_term', 'product_delivery_address', 'product_cost', 'product_payment_term'],
-      3: ['contract_initiator_name']
-    };
+      1: [
+        "contragent_name",
+        "contragent_id",
+        "contragent_address",
+        "contragent_phone_number",
+        "contragent_email",
+        "bank_account",
+      ],
+      2: [
+        "contragent_director_name",
+        "contragent_director_phone_number",
+        "conscription_term",
+        "product_delivery_address",
+        "product_cost",
+        "product_payment_term",
+      ],
+      3: ["contract_initiator_name"],
+    }
 
-    return stepFields[stepNumber]?.some(field => errors[field]);
-  };
+    return stepFields[stepNumber]?.some(field => errors[field])
+  }
 
-  const hasStepData = (stepNumber) => {
+  const hasStepData = stepNumber => {
     const stepFields = {
-      1: ['contragent_name', 'contragent_id', 'contragent_address', 'contragent_phone_number', 'contragent_email', 'bank_account'],
-      2: ['contragent_director_name', 'contragent_director_phone_number', 'conscription_term', 'product_delivery_address', 'product_cost', 'product_payment_term'],
-      3: ['contract_initiator_name']
-    };
+      1: [
+        "contragent_name",
+        "contragent_id",
+        "contragent_address",
+        "contragent_phone_number",
+        "contragent_email",
+        "bank_account",
+      ],
+      2: [
+        "contragent_director_name",
+        "contragent_director_phone_number",
+        "conscription_term",
+        "product_delivery_address",
+        "product_cost",
+        "product_payment_term",
+      ],
+      3: ["contract_initiator_name"],
+    }
 
-    return stepFields[stepNumber]?.some(field => formData[field]);
-  };
+    return stepFields[stepNumber]?.some(field => formData[field])
+  }
 
   return (
     <div className="form-content">
@@ -263,9 +293,11 @@ const StandardAgreementForm = ({ onSuccess }) => {
             key={index}
             className={classnames("step", {
               active: activeTab === index + 1,
-              completed: passedSteps.includes(index + 1) && !hasStepErrors(index + 1),
-              'has-error': hasStepErrors(index + 1),
-              disabled: !passedSteps.includes(index + 1) && !hasStepData(index + 1),
+              completed:
+                passedSteps.includes(index + 1) && !hasStepErrors(index + 1),
+              "has-error": hasStepErrors(index + 1),
+              disabled:
+                !passedSteps.includes(index + 1) && !hasStepData(index + 1),
             })}
             onClick={() =>
               passedSteps.includes(index + 1) && toggleTab(index + 1)
@@ -630,7 +662,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                   <i className="mdi mdi-check-circle-outline text-success display-4" />
                 </div>
                 <div>
-                  <h5>შეკვეთა წარმატები�� დასრულდა!</h5>
+                  <h5>შეკვეთა წარმატებით დასრულდა!</h5>
                   <p className="text-muted">
                     თქვენი შეკვეთა წარმატებით შესრულდა.
                   </p>
