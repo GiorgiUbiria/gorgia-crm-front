@@ -136,6 +136,12 @@ const LocalAgreementApprove = () => {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
         created_at: new Date(agreement.created_at).toLocaleDateString(),
+        accepted_at: agreement.accepted_at
+          ? new Date(agreement.accepted_at).toLocaleString()
+          : "-",
+        rejected_at: agreement.rejected_at
+          ? new Date(agreement.rejected_at).toLocaleString()
+          : "-",
         updated_at: new Date(agreement.updated_at).toLocaleString(),
         executor_firm_name: agreement.executor_firm_name,
         requested_by: agreement.user.name + " " + agreement.user.sur_name,
@@ -184,8 +190,18 @@ const LocalAgreementApprove = () => {
         accessor: "created_at",
       },
       {
-        Header: "დამტკიცების თარიღი",
-        accessor: "updated_at",
+        Header: "სტატუსის ცვლილების თარიღი",
+        accessor: row => {
+          switch (row.status) {
+            case "approved":
+              return row.accepted_at
+            case "rejected":
+              return row.rejected_at
+            default:
+              return "-"
+          }
+        },
+        id: "status_date",
       },
       {
         Header: "სტატუსი",
