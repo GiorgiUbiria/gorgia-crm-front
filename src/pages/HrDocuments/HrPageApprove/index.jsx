@@ -96,9 +96,9 @@ const HrPageApprove = () => {
     status: STATUS_MAPPING[document.status] || document.status,
     created_at: document.created_at,
     user: {
-      name: document.type === 1 ? document.user.name : document.first_name,
-      id: document.type === 1 ?  document.user.id_number : document.id_number,
-      position: document.type === 1 ? document.user.position : document.position,
+      name: document.is_other_user !== 1 ? document.user.name : document.first_name,
+      id: document.is_other_user !== 1 ?  document.user.id_number : document.id_number,
+      position: document.is_other_user !== 1 ? document.user.position : document.position,
     },
     name: document.name,
     salary: document.salary,
