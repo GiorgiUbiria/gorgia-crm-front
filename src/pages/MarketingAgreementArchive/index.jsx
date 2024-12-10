@@ -72,18 +72,22 @@ const MarketingAgreementArchive = () => {
       return {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: agreement.created_at,
+        created_at: new Date(agreement.created_at).toLocaleDateString(),
+        updated_at: new Date(agreement.updated_at).toLocaleString(),
+        requested_by: agreement.user.name + " " + agreement.user.sur_name,
         executor_firm_name: agreement.executor_firm_name,
-        executor_id_number: agreement.executor_id_number,
-        executor_home_address: agreement.executor_home_address,
-        executor_full_name: agreement.executor_full_name,
-        executor_position: agreement.executor_position,
-        executor_bank_account: agreement.executor_bank_account,
-        executor_bank_name: agreement.executor_bank_name,
         marketing_service_type: agreement.marketing_service_type,
-        marketing_service_term: agreement.marketing_service_term,
-        service_cost: agreement.service_cost,
         expanded: {
+          executor_firm_name: agreement.executor_firm_name,
+          marketing_service_type: agreement.marketing_service_type,
+          marketing_service_term: agreement.marketing_service_term,
+          service_cost: agreement.service_cost,
+          executor_id_number: agreement.executor_id_number,
+          executor_home_address: agreement.executor_home_address,
+          executor_full_name: agreement.executor_full_name,
+          executor_position: agreement.executor_position,
+          executor_bank_account: agreement.executor_bank_account,
+          executor_bank_name: agreement.executor_bank_name,
           executor_factual_address: agreement.executor_factual_address,
           executor_bank_swift: agreement.executor_bank_swift,
           director_full_name: agreement.director_full_name,
@@ -104,55 +108,20 @@ const MarketingAgreementArchive = () => {
         accessor: "id",
       },
       {
-        Header: "სახელწოდება (საფირმო)/სახელი, გვარი",
+        Header: "მოითხოვა",
+        accessor: "requested_by",
+      },
+      {
+        Header: "სახელწოდება (საფირმო)",
         accessor: "executor_firm_name",
       },
       {
-        Header: "საიდენტიფიკაციო ნოდი/პირადი ნომერი",
-        accessor: "executor_id_number",
+        Header: "მოთხოვნის თარიღი",
+        accessor: "created_at",
       },
       {
-        Header: "იურიდიული/საცხოვრებელი მისამართი",
-        accessor: "executor_home_address",
-      },
-      {
-        Header: "შარმომადგენლის (ხელმომწერი პირი) სახელი, გვარი",
-        accessor: "executor_full_name",
-      },
-      {
-        Header: "თანამდებობა",
-        accessor: "executor_position",
-      },
-      {
-        Header: "საბანკო ანგარიში",
-        accessor: "executor_bank_account",
-      },
-      {
-        Header: "ბანკის დასახელება",
-        accessor: "executor_bank_name",
-      },
-      {
-        Header: "მარკეტინგული მომსახურების სახეობა",
-        accessor: "marketing_service_type",
-      },
-      {
-        Header: "მარკეტინგული მომსახურების ვადა",
-        accessor: "marketing_service_term",
-        Cell: ({ value }) => `${value} დღე`,
-      },
-      {
-        Header: "ხელშეკრულების ფასი",
-        accessor: "service_cost",
-        Cell: ({ value }) => (
-          <div>
-            {value
-              ? new Intl.NumberFormat("ka-GE", {
-                  style: "currency",
-                  currency: "GEL",
-                }).format(value)
-              : "N/A"}
-          </div>
-        ),
+        Header: "დადასტურების თარიღი",
+        accessor: "updated_at",
       },
       {
         Header: "სტატუსი",
@@ -238,7 +207,147 @@ const MarketingAgreementArchive = () => {
         {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            {/* Factual Address */}
+            {/* Executor Firm Name */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ფახელწოდება (საფირმო)</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_firm_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Marketing Service Type */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCreditCard className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    გარკეტინგული სერვისის ტიპი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.marketing_service_type}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Marketing Service Term */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCalendar className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    მარკეტინგული სერვისის ვადა
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.marketing_service_term}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Service Cost */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">სერვისის ღირებულება</div>
+                  <div className="fw-medium">{row.expanded.service_cost}</div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor ID Number */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">შემსრულებლის ID ნომერი</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_id_number}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Home Address */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsMap className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შექსრულებლის სახლის მისამართი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_home_address}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Full Name */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებლის სრული სახელი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_full_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Position */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">შემსრულებლის პოზიცია</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_position}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Bank Account */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებლის საბანკო ანგარიში
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_account}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Bank Name */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებლის ბანკის სახელი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Factual Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -251,7 +360,7 @@ const MarketingAgreementArchive = () => {
               </div>
             </Col>
 
-            {/* Bank Swift */}
+            {/* Executor Bank Swift */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -317,18 +426,20 @@ const MarketingAgreementArchive = () => {
               </div>
             </Col>
           </Row>
+          <Row className="mt-4">
+            <Col md={12}>
+              {row.status === "approved" && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleDownload(row.id)}
+                >
+                  <i className="bx bx-download me-2"></i>
+                  ხელშეკრულების ჩამოტვირთვა
+                </button>
+              )}
+            </Col>
+          </Row>
         </div>
-
-        {/* Download button for approved agreements */}
-        {row.status === "approved" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => handleDownload(row.id)}
-          >
-            <i className="bx bx-download me-2"></i>
-            ხელშეკრულების ჩამოტვირთვა
-          </button>
-        )}
       </div>
     )
   }, [])
@@ -357,7 +468,7 @@ const MarketingAgreementArchive = () => {
                     enableSearch={true}
                     searchableFields={[
                       "executor_firm_name",
-                      "executor_full_name",
+                      "requested_by",
                     ]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}

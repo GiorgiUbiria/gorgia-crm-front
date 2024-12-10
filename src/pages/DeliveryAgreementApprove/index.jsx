@@ -317,8 +317,7 @@ const DeliveryAgreementApprove = () => {
                 <div>
                   <div className="text-muted small">იურიდიული პირი</div>
                   <div className="fw-medium">
-                    {row.expanded.jursdictional_unit.name} (
-                    {row.expanded.jursdictional_unit.id})
+                    {row.jursdictional_unit.name} ({row.jursdictional_unit.id})
                   </div>
                 </div>
               </div>
@@ -331,7 +330,7 @@ const DeliveryAgreementApprove = () => {
                 <div>
                   <div className="text-muted small">მისამართი</div>
                   <div className="fw-medium">
-                    {row.expanded.jursdictional_unit.address}
+                    {row.jursdictional_unit.address}
                   </div>
                 </div>
               </div>
@@ -343,7 +342,7 @@ const DeliveryAgreementApprove = () => {
                 <BsCreditCard className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">ხელშეკრულების ტიპი</div>
-                  <div className="fw-medium">{row.expanded.agreement_type}</div>
+                  <div className="fw-medium">{row.agreement_type}</div>
                 </div>
               </div>
             </Col>
@@ -355,7 +354,7 @@ const DeliveryAgreementApprove = () => {
                 <div>
                   <div className="text-muted small">ღირებულება</div>
                   <div className="fw-medium">
-                    {row.expanded.cost}, {row.expanded.cost_type}
+                    {row.expanded.cost} {row.expanded.cost_type}
                   </div>
                 </div>
               </div>
@@ -364,24 +363,11 @@ const DeliveryAgreementApprove = () => {
             {/* Director */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
+                <BsPerson className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">დირექტორი</div>
                   <div className="fw-medium">
                     {row.expanded.director.name} ({row.expanded.director.id})
-                  </div>
-                </div>
-              </div>
-            </Col>
-
-            {/* Created Date */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsBank className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">შექმნის თარიღი</div>
-                  <div className="fw-medium">
-                    {new Date(row.created_at).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -398,13 +384,13 @@ const DeliveryAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Price */}
+            {/* Created Date */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
-                <i className="bx bx-dollar fs-7 text-primary"></i>
+                <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ფასი</div>
-                  <div className="fw-medium">{row.expanded.cost} ₾</div>
+                  <div className="text-muted small">შექმნის თარიღი</div>
+                  <div className="fw-medium">{row.created_at}</div>
                 </div>
               </div>
             </Col>
