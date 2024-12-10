@@ -127,10 +127,6 @@ const UserAgreements = () => {
         accessor: "id",
       },
       {
-        Header: "მოითხოვა",
-        accessor: "requested_by",
-      },
-      {
         Header: "კონტრაგენტის დასახელება",
         accessor: "contragent.name",
       },
