@@ -158,19 +158,19 @@ const HrPage = () => {
       //   return
       // }
 
-      if (
-        (activeTab === "2" || isAdmin) &&
-        (values.id_number !== contextUser.id_number ||
-          values.position !== contextUser.position)
-      ) {
-        const updateData = {
-          id_number: values.id_number,
-          position: values.position,
-        }
-        if(activeTab === "1"){
-          await updateUserIdNumber(updateData)
-        }
-      }
+      // if (
+      //   (activeTab === "2" || isAdmin) &&
+      //   (values.id_number !== contextUser.id_number ||
+      //     values.position !== contextUser.position)
+      // ) {
+      //   const updateData = {
+      //     id_number: values.id_number,
+      //     position: values.position,
+      //   }
+      //   if(activeTab === "1"){
+      //     await updateUserIdNumber(updateData)
+      //   }
+      // }
 
       console.log(values)
       // CHECK
@@ -180,7 +180,7 @@ const HrPage = () => {
         user_id: contextUser.id,
         first_name: values.first_name,
         last_name: values.last_name,
-        type: activeTab,
+        is_other_user: activeTab === "2" ? 1 : 0,
         position: activeTab === "2" ? values.position : null,
         id_number: activeTab === "2" ? values.id_number : null,
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
