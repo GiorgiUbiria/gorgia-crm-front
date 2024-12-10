@@ -75,23 +75,31 @@ const DeliveryAgreementUser = () => {
       return {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: agreement.created_at,
-        cost: agreement.sum_cost,
-        cost_type: agreement.sum_cost_type,
+        requested_by: agreement.user.name + " " + agreement.user.sur_name,
+        created_at: new Date(agreement.created_at).toLocaleDateString(),
+        updated_at: new Date(agreement.updated_at).toLocaleString(),
         jursdictional_unit: {
           name: agreement.jursdictional_name,
           id: agreement.jursdictional_id_number,
           address: agreement.jursdictional_address,
         },
         agreement_type: agreement.agreement_type,
-        director: {
-          name: agreement.director_full_name,
-          id: agreement.director_id_number,
-        },
         expanded: {
+          jursdictional_unit: {
+            name: agreement.jursdictional_name,
+            id: agreement.jursdictional_id_number,
+            address: agreement.jursdictional_address,
+          },
           action_act: agreement.action_act,
           rejection_reason: agreement.rejection_reason || null,
           requested_by: agreement.user.name + " " + agreement.user.sur_name,
+          agreement_type: agreement.agreement_type,
+          cost: agreement.sum_cost,
+          cost_type: agreement.sum_cost_type,
+          director: {
+            name: agreement.director_full_name,
+            id: agreement.director_id_number,
+          },
         },
       }
     })
@@ -106,48 +114,25 @@ const DeliveryAgreementUser = () => {
       {
         Header: "იურიდიული პირის დასახელება",
         accessor: "jursdictional_unit.name",
-      },
-      {
-        Header: "საიდენტიფიკაციო კოდი",
-        accessor: "jursdictional_unit.id",
-      },
-      {
-        Header: "მისამართი",
-        accessor: "jursdictional_unit.address",
+        disableSortBy: true,
       },
       {
         Header: "ხელშეკრულების ტიპი",
         accessor: "agreement_type",
+        disableSortBy: true,
       },
       {
-        Header: "დირექტორის სახელი და გვარი",
-        accessor: "director.name",
+        Header: "მოთხოვნის თარიღი",
+        accessor: "created_at",
       },
       {
-        Header: "დირექტორის პირადი ნომერი",
-        accessor: "director.id",
-      },
-      {
-        Header: "ჯამური ღირებულება",
-        accessor: "cost",
-        Cell: ({ value, row }) => (
-          <div>
-            {value
-              ? new Intl.NumberFormat("ka-GE", {
-                  style: "currency",
-                  currency: "GEL",
-                }).format(value)
-              : "N/A"}
-          </div>
-        ),
-      },
-      {
-        Header: "ღირებულების ტიპი",
-        accessor: "cost_type",
+        Header: "დადასტურების თარიღი",
+        accessor: "updated_at",
       },
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -229,30 +214,6 @@ const DeliveryAgreementUser = () => {
         {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            {/* Agreement Type */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCreditCard className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">ხელშეკრულების ტიპი</div>
-                  <div className="fw-medium">{row.agreement_type}</div>
-                </div>
-              </div>
-            </Col>
-
-            {/* Cost */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsVoicemail className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">ღირებულება</div>
-                  <div className="fw-medium">
-                    {row.cost} {row.cost_type}
-                  </div>
-                </div>
-              </div>
-            </Col>
-
             {/* Jurisdictional Unit */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
@@ -260,7 +221,8 @@ const DeliveryAgreementUser = () => {
                 <div>
                   <div className="text-muted small">იურიდიული პირი</div>
                   <div className="fw-medium">
-                    {row.jursdictional_unit.name} ({row.jursdictional_unit.id})
+                    {row.expanded.jursdictional_unit.name} (
+                    {row.expanded.jursdictional_unit.id})
                   </div>
                 </div>
               </div>
@@ -273,7 +235,31 @@ const DeliveryAgreementUser = () => {
                 <div>
                   <div className="text-muted small">მისამართი</div>
                   <div className="fw-medium">
-                    {row.jursdictional_unit.address}
+                    {row.expanded.jursdictional_unit.address}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Agreement Type */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCreditCard className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ხელშეკრულების ტიპი</div>
+                  <div className="fw-medium">{row.expanded.agreement_type}</div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Cost */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsVoicemail className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">ღირებულება</div>
+                  <div className="fw-medium">
+                    {row.expanded.cost}, {row.expanded.cost_type}
                   </div>
                 </div>
               </div>
@@ -286,7 +272,7 @@ const DeliveryAgreementUser = () => {
                 <div>
                   <div className="text-muted small">დირექტორი</div>
                   <div className="fw-medium">
-                    {row.director.name} ({row.director.id})
+                    {row.expanded.director.name} ({row.expanded.director.id})
                   </div>
                 </div>
               </div>
@@ -298,23 +284,49 @@ const DeliveryAgreementUser = () => {
                 <BsBank className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">შექმნის თარიღი</div>
-                  <div className="fw-medium">{row.created_at}</div>
+                  <div className="fw-medium">
+                    {new Date(row.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Action Act */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-notepad fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">მოქმედების აქტი</div>
+                  <div className="fw-medium">{row.expanded.action_act}</div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Price */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <i className="bx bx-dollar fs-7 text-primary"></i>
+                <div>
+                  <div className="text-muted small">ფასი</div>
+                  <div className="fw-medium">{row.expanded.cost} ₾</div>
                 </div>
               </div>
             </Col>
           </Row>
+          <Row className="mt-4">
+            <Col md={12}>
+              {row.status === "approved" && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleDownload(row.id)}
+                >
+                  <i className="bx bx-download me-2"></i>
+                  ხელშეკრულების ჩამოტვირთვა
+                </button>
+              )}
+            </Col>
+          </Row>
         </div>
-
-        {/* Download button for approved agreements */}
-        {row.status === "approved" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => handleDownload(row.id)}
-          >
-            <i className="bx bx-download me-2"></i>
-            ხელშეკრულების ჩამოტვირთვა
-          </button>
-        )}
       </div>
     )
   }, [])

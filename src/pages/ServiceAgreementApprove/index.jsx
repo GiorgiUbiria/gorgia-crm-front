@@ -135,21 +135,23 @@ const ServiceAgreementApprove = () => {
       return {
         id: agreement.id,
         status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: agreement.created_at,
+        created_at: new Date(agreement.created_at).toLocaleDateString(),
+        updated_at: new Date(agreement.updated_at).toLocaleString(),
         executor_firm_name: agreement.executor_firm_name,
-        executor_id_number: agreement.executor_id_number,
-        executor_home_address: agreement.executor_home_address,
-        executor_full_name: agreement.executor_full_name,
-        executor_position: agreement.executor_position,
-        executor_bank_account: agreement.executor_bank_account,
-        executor_bank_name: agreement.executor_bank_name,
         service_type: agreement.service_type,
-        service_term: agreement.service_term,
-        service_cost: agreement.service_cost,
+        requested_by: agreement.user.name + " " + agreement.user.sur_name,
         expanded: {
+          service_cost: agreement.service_cost,
+          service_term: agreement.service_term,
           executor_factual_address: agreement.executor_factual_address,
           executor_bank_swift: agreement.executor_bank_swift,
           director_full_name: agreement.director_full_name,
+          executor_id_number: agreement.executor_id_number,
+          executor_home_address: agreement.executor_home_address,
+          executor_full_name: agreement.executor_full_name,
+          executor_position: agreement.executor_position,
+          executor_bank_account: agreement.executor_bank_account,
+          executor_bank_name: agreement.executor_bank_name,
           director_id_number: agreement.director_id_number,
           service_place: agreement.service_place,
           service_payment_details: agreement.service_payment_details,
@@ -168,59 +170,32 @@ const ServiceAgreementApprove = () => {
         accessor: "id",
       },
       {
-        Header: "შემსრულებელი ფირმის დასახელება",
+        Header: "მოითხოვა",
+        accessor: "requested_by",
+        disableSortBy: true,
+      },
+      {
+        Header: "სახელწოდება (საფირმო)",
         accessor: "executor_firm_name",
+        disableSortBy: true,
       },
       {
-        Header: "საიდენტიფიკაციო ნომერი",
-        accessor: "executor_id_number",
-      },
-      {
-        Header: "იურიდიული მისამართი",
-        accessor: "executor_home_address",
-      },
-      {
-        Header: "შემსრულებლის სახელი",
-        accessor: "executor_full_name",
-      },
-      {
-        Header: "თანამდებობა",
-        accessor: "executor_position",
-      },
-      {
-        Header: "საბანკო ანგარიში",
-        accessor: "executor_bank_account",
-      },
-      {
-        Header: "ბანკის დასახელება",
-        accessor: "executor_bank_name",
-      },
-      {
-        Header: "მომსახურების ტიპი",
+        Header: "მომსახურების სახეობა",
         accessor: "service_type",
+        disableSortBy: true,
       },
       {
-        Header: "მომსახურების ვადა",
-        accessor: "service_term",
-        Cell: ({ value }) => `${value} დღე`,
+        Header: "მოთხოვნის თარიღი",
+        accessor: "created_at",
       },
       {
-        Header: "მომსახურების ღირებულება",
-        accessor: "service_cost",
-        Cell: ({ value }) => (
-          <div>
-            {value
-              ? new Intl.NumberFormat("ka-GE", {
-                  style: "currency",
-                  currency: "GEL",
-                }).format(value)
-              : "N/A"}
-          </div>
-        ),
+        Header: "დამტკიცების თარიღი",
+        accessor: "updated_at",
       },
       {
         Header: "სტატუსი",
         accessor: "status",
+        disableSortBy: true,
         Cell: ({ value }) => {
           const status = statusMap[value] || {
             label: "უცნობი",
@@ -282,7 +257,7 @@ const ServiceAgreementApprove = () => {
                 size="small"
                 onClick={() => handleModalOpen("rejected", row.original.id)}
               >
-                უარყო���ა
+                უარყოფა
               </Button>
             </div>
           ),
@@ -328,12 +303,12 @@ const ServiceAgreementApprove = () => {
         {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            {/* Factual Address */}
+            {/* ფაქტიური მისამართი */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ფაქტიური მისამართი</div>
+                  <div className="text-muted small">ფაქტობრივი მისამართი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_factual_address}
                   </div>
@@ -341,12 +316,12 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Bank Swift */}
+            {/* SWIFT კოდი */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">SWIFT კოდი</div>
+                  <div className="text-muted small">ბანკის კოდი</div>
                   <div className="fw-medium">
                     {row.expanded.executor_bank_swift}
                   </div>
@@ -354,7 +329,7 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Director Info */}
+            {/* დირექტორის ინფორმაცია */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -368,7 +343,7 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Service Place */}
+            {/* მომსახურების ადგილი */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -379,7 +354,7 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Payment Details */}
+            {/* გადახდის დეტალები */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -392,7 +367,7 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Service Active Term */}
+            {/* მომსახურების აქტიური ვადა */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
@@ -407,13 +382,114 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Created Date */}
+            {/* Executor ID Number */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებლის პირადი ნომერი/საიდენტიფიკაციო კოდი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_id_number}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Home Address */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">სახლის მისამართი</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_home_address}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Full Name */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებლის სრული სახელი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_full_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Position */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">შემსრულებლის პოზიცია</div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_position}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Bank Account */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებლის საბანკო ანგარიში
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_account}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Executor Bank Name */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsBank className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    შემსრულებლის ბანკის სახელი
+                  </div>
+                  <div className="fw-medium">
+                    {row.expanded.executor_bank_name}
+                  </div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Service Cost */}
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-2">
+                <BsCreditCard className="fs-7 text-primary" />
+                <div>
+                  <div className="text-muted small">
+                    მომსახურების ღირებულება
+                  </div>
+                  <div className="fw-medium">{row.expanded.service_cost} ₾</div>
+                </div>
+              </div>
+            </Col>
+
+            {/* Service Term */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">შექმნის თარიღი</div>
-                  <div className="fw-medium">{row.created_at}</div>
+                  <div className="text-muted small">მომსახურების ვადა</div>
+                  <div className="fw-medium">
+                    {row.expanded.service_term} დღე
+                  </div>
                 </div>
               </div>
             </Col>
@@ -445,10 +521,7 @@ const ServiceAgreementApprove = () => {
                     initialPageSize={10}
                     pageSizeOptions={[5, 10, 15, 20]}
                     enableSearch={true}
-                    searchableFields={[
-                      "executor_firm_name",
-                      "executor_full_name",
-                    ]}
+                    searchableFields={["executor_firm_name", "requested_by"]}
                     filterOptions={filterOptions}
                     onRowClick={() => {}}
                     renderRowDetails={renderRowDetails}
