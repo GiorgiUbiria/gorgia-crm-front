@@ -283,13 +283,24 @@ const MuiTable = ({
             p: 2,
             borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             gap: 2,
             backgroundColor: "background.default",
           }}
         >
           {enableSearch && searchableFields.length > 0 && (
-            <Box sx={{ display: "flex", gap: 2, flex: 1 }}>
-              <FormControl size="small" sx={{ minWidth: 200 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 2,
+                flex: 1,
+              }}
+            >
+              <FormControl
+                size="small"
+                sx={{ minWidth: { xs: "100%", sm: 200 } }}
+              >
                 <InputLabel sx={{ color: "text.secondary" }}>
                   საძიებო ველი
                 </InputLabel>
@@ -334,13 +345,24 @@ const MuiTable = ({
                   flex: 1,
                   backgroundColor: "background.paper",
                   borderRadius: 1,
+                  width: { xs: "100%", sm: "auto" },
                 }}
               />
             </Box>
           )}
           {filterOptions.length > 0 && (
-            <Box sx={{ display: "flex", gap: 1, minWidth: 300 }}>
-              <FormControl size="small" sx={{ minWidth: 140 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 1,
+                minWidth: { xs: "100%", sm: 300 },
+              }}
+            >
+              <FormControl
+                size="small"
+                sx={{ minWidth: { xs: "100%", sm: 140 } }}
+              >
                 <InputLabel sx={{ color: "text.secondary" }}>ფილტრი</InputLabel>
                 <Select
                   name="field"
@@ -368,7 +390,10 @@ const MuiTable = ({
                 </Select>
               </FormControl>
               {filterField && (
-                <FormControl size="small" sx={{ minWidth: 140 }}>
+                <FormControl
+                  size="small"
+                  sx={{ minWidth: { xs: "100%", sm: 140 } }}
+                >
                   <InputLabel sx={{ color: "text.secondary" }}>
                     ფილტრი
                   </InputLabel>
