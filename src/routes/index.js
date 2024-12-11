@@ -22,14 +22,39 @@ import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import UserHrDocuments from "pages/HrDocuments/UserHrDocuments"
 import InvoicePage from "pages/InvoicePage/InvoicePage"
 import JobDetails from "pages/JobPages/JobDetails"
-import LawyerPage from "pages/LawyerPage"
-import LawyerPageApprove from "pages/LawyerPageApprove"
-import LawyerPageArchive from "pages/LawyerPageArchive/LawyerPageArchive"
+
+// Request Agreement
+import AgreementRequest from "pages/Agreements/AgreementRequest"
+
+// Standard Agreements
+import StandardAgreementApprove from "pages/Agreements/Standard/StandardAgreementApprove"
+import StandardAgreementArchive from "pages/Agreements/Standard/StandardAgreementArchive"
+import StandardAgreementUser from "pages/Agreements/Standard/StandardAgreementUser"
+
+// Delivery Agreements
+import DeliveryAgreementArchive from "pages/Agreements/Delivery/DeliveryAgreementArchive"
+import DeliveryAgreementUser from "pages/Agreements/Delivery/DeliveryAgreementUser"
+import DeliveryAgreementApprove from "pages/Agreements/Delivery/DeliveryAgreementApprove"
+
+// Marketing Agreements
+import MarketingAgreementApprove from "pages/Agreements/Marketing/MarketingAgreementApprove"
+import MarketingAgreementArchive from "pages/Agreements/Marketing/MarketingAgreementArchive"
+import MarketingAgreementUser from "pages/Agreements/Marketing/MarketingAgreementUser"
+
+// Service Agreements
+import ServiceAgreementApprove from "pages/Agreements/Service/ServiceAgreementApprove"
+import ServiceAgreementArchive from "pages/Agreements/Service/ServiceAgreementArchive"
+import ServiceAgreementUser from "pages/Agreements/Service/ServiceAgreementUser"
+
+// Local Agreements
+import LocalAgreementApprove from "pages/Agreements/Local/LocalAgreementApprove"
+import LocalAgreementArchive from "pages/Agreements/Local/LocalAgreementArchive"
+import LocalAgreementUser from "pages/Agreements/Local/LocalAgreementUser"
+
 import LeadsPage from "pages/LeadsPage/LeadsPage"
 import NotesEditor from "pages/NotesEditor"
 import NotesPage from "pages/NotesPage"
 import ProfilePage from "pages/ProfilePage"
-import UserAgreements from "pages/UserAgreements"
 import VipLeadDetailPage from "pages/VipLeadsPage/VipLeadDetailPage"
 import VipLeadsPage from "pages/VipLeadsPage/VipLeadsPage"
 import VisitorsTraffic from "pages/VisitorsTraffic/VisitorsTraffic"
@@ -46,18 +71,6 @@ import FarmTaskDetails from "../pages/FarmDetails"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
-import DeliveryAgreementArchive from "pages/DeliveryAgreementArchive"
-import DeliveryAgreementUser from "pages/DeliveryAgreementUser"
-import DeliveryAgreementApprove from "pages/DeliveryAgreementApprove"
-import MarketingAgreementApprove from "pages/MarketingAgreementApprove"
-import MarketingAgreementArchive from "pages/MarketingAgreementArchive"
-import MarketingAgreementUser from "pages/MarketingAgreementUser"
-import ServiceAgreementApprove from "pages/ServiceAgreementApprove"
-import ServiceAgreementArchive from "pages/ServiceAgreementArchive"
-import ServiceAgreementUser from "pages/ServiceAgreementUser"
-import LocalAgreementApprove from "pages/LocalAgreementApprove"
-import LocalAgreementArchive from "pages/LocalAgreementArchive"
-import LocalAgreementUser from "pages/LocalAgreementUser"
 
 const authProtectedRoutes = [
   // Dashboard & Main Routes
@@ -147,19 +160,19 @@ const authProtectedRoutes = [
   },
 
   // Legal Documents
-  { path: "/legal/contracts/new", component: <LawyerPage /> },
+  { path: "/legal/contracts/new", component: <AgreementRequest /> },
 
   {
     path: "/legal/contracts/purchase/approve",
-    component: <LawyerPageApprove />,
+    component: <StandardAgreementApprove />,
   },
   {
     path: "/legal/contracts/purchase/archive",
-    component: <LawyerPageArchive />,
+    component: <StandardAgreementArchive />,
   },
   {
     path: "/legal/contracts/purchase/my-requests",
-    component: <UserAgreements />,
+    component: <StandardAgreementUser />,
   },
 
   {
