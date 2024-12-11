@@ -61,12 +61,12 @@ const HrPageArchive = () => {
     created_at: document.created_at,
     user: {
       name:
-      document.type === 1 ?
+      document.is_other_user !== 1 ?
         document.user?.name && document.user?.sur_name
           ? `${document.user.name} ${document.user.sur_name}`
           : "N/A" : `${document.first_name} ${document.last_name}`,
-      id: document.type === 1 ? document.user.id_number : document.id_number,
-      position: document.type === 1 ? document.user.position : document.position,
+      id: document.is_other_user !== 1 ? document.user.id_number : document.id_number,
+      position: document.is_other_user !== 1 ? document.user.position : document.position,
     },
     name: document.name,
     salary: document.salary,
