@@ -24,7 +24,7 @@ import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
 import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
 import TripPageApprove from "pages/Applications/BusinessTrip/TripPageApprove/TripPageApprove"
-import LawyerPageApprove from "pages/LawyerPageApprove"
+import LawyerPageApprove from "pages/Agreements/Standard/StandardAgreementApprove"
 
 const HeadPage = () => {
   const navigate = useNavigate()

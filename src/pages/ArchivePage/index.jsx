@@ -16,7 +16,7 @@ import {
 } from "reactstrap"
 import classnames from "classnames"
 
-import LawyerPageArchive from "pages/LawyerPageArchive/LawyerPageArchive"
+import LawyerPageArchive from "pages/Agreements/Standard/StandardAgreementArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import ProcurementPageArchive from "pages/Applications/InternalProcurement/ProcurementPageArchive"

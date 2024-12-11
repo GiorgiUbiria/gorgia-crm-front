@@ -466,12 +466,29 @@ const ProfilePage = () => {
   return (
     <Container className="mb-4">
       <PageHeader>
-        <HeaderContent>
-          <ImageSection>
+        <HeaderContent
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <ImageSection
+            sx={{
+              flex: { xs: "0 0 auto", sm: "0 0 150px" },
+              textAlign: "center",
+            }}
+          >
             <ProfileImageWrapper>
               <ProfileImage
                 src={profileImageSrc}
                 alt={`${userData?.name} ${userData?.sur_name}`}
+                sx={{
+                  width: { xs: "100px", sm: "150px" },
+                  height: { xs: "100px", sm: "150px" },
+                  borderRadius: "50%",
+                }}
               />
               <UploadOverlay htmlFor="profile-image-upload">
                 <FiCamera size={16} />
@@ -490,11 +507,27 @@ const ProfilePage = () => {
               />
             </ProfileImageWrapper>
           </ImageSection>
-          <UserInfo>
-            <UserName>
+          <UserInfo
+            sx={{ textAlign: { xs: "center", sm: "left" }, width: "100%" }}
+          >
+            <UserName
+              sx={{
+                fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                wordBreak: "break-word",
+              }}
+            >
               {userData?.name} {userData?.sur_name}
             </UserName>
-            <UserRole>
+            <UserRole
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 1,
+                justifyContent: { xs: "center", sm: "flex-start" },
+                flexWrap: "wrap",
+                textAlign: { xs: "center", sm: "left" },
+              }}
+            >
               <DepartmentBadge>{userData?.department?.name}</DepartmentBadge>
               {userData?.roles?.map(role => (
                 <RoleBadge key={role.id}>{role.name}</RoleBadge>
