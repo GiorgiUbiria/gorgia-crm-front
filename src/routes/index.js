@@ -72,181 +72,364 @@ import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 
+// Route configuration objects
+const dashboardRoutes = {
+  path: "/dashboard",
+  component: <Dashboard />,
+}
+
+const profileRoutes = {
+  path: "/profile",
+  component: <ProfilePage />,
+}
+
+const adminRoutes = {
+  path: "/admin",
+  children: {
+    dashboard: {
+      path: "/admin/dashboard",
+      component: <AdminPage />,
+      permission: "admin.access",
+    },
+    approvals: {
+      path: "/admin/approvals",
+      component: <HeadPage />,
+      permission: "admin.approvals",
+    },
+    visitors: {
+      path: "/admin/visitors",
+      component: <VisitorsTraffic />,
+    },
+    paymentMonitoring: {
+      path: "/admin/payment-monitoring",
+      component: <InvoicePage />,
+    },
+    archive: {
+      path: "/admin/archive",
+      component: <ArchivePage />,
+    },
+  },
+}
+
+const applicationsRoutes = {
+  path: "/applications",
+  children: {
+    purchases: {
+      path: "/applications/purchases",
+      children: {
+        new: {
+          path: "/applications/purchases/new",
+          component: <ProcurementPage />,
+        },
+        approve: {
+          path: "/applications/purchases/approve",
+          component: <PurchasePageApprove />,
+        },
+        archive: {
+          path: "/applications/purchases/archive",
+          component: <ProcurementPageArchive />,
+        },
+        myRequests: {
+          path: "/applications/purchases/my-requests",
+          component: <UserProcurement />,
+        },
+      },
+    },
+    vacation: {
+      path: "/applications/vacation",
+      children: {
+        new: {
+          path: "/applications/vacation/new",
+          component: <VacationPage />,
+        },
+        approve: {
+          path: "/applications/vacation/approve",
+          component: <VacationPageApprove />,
+        },
+        archive: {
+          path: "/applications/vacation/archive",
+          component: <VacationPageArchive />,
+        },
+        myRequests: {
+          path: "/applications/vacation/my-requests",
+          component: <UserVocation />,
+        },
+      },
+    },
+    businessTrip: {
+      path: "/applications/business-trip",
+      children: {
+        new: {
+          path: "/applications/business-trip/new",
+          component: <BusinessPage />,
+        },
+        approve: {
+          path: "/applications/business-trip/approve",
+          component: <TripPageApprove />,
+        },
+        archive: {
+          path: "/applications/business-trip/archive",
+          component: <TripPageArchive />,
+        },
+        myRequests: {
+          path: "/applications/business-trip/my-requests",
+          component: <UserTrip />,
+        },
+      },
+    },
+  },
+}
+
+const hrRoutes = {
+  path: "/hr",
+  children: {
+    documents: {
+      path: "/hr/documents",
+      children: {
+        new: {
+          path: "/hr/documents/new",
+          component: <HrPage />,
+        },
+        approve: {
+          path: "/hr/documents/approve",
+          component: <HrPageApprove />,
+          permission: "hr-documents.manage",
+          departmentId: 8,
+        },
+        archive: {
+          path: "/hr/documents/archive",
+          component: <HrPageArchive />,
+          permission: "hr-documents.view",
+          departmentId: 8,
+        },
+        myRequests: {
+          path: "/hr/documents/my-requests",
+          component: <UserHrDocuments />,
+        },
+      },
+    },
+  },
+}
+
+const legalRoutes = {
+  path: "/legal",
+  children: {
+    contracts: {
+      path: "/legal/contracts",
+      children: {
+        new: {
+          path: "/legal/contracts/new",
+          component: <AgreementRequest />,
+        },
+        purchase: {
+          path: "/legal/contracts/purchase",
+          children: {
+            approve: {
+              path: "/legal/contracts/purchase/approve",
+              component: <StandardAgreementApprove />,
+            },
+            archive: {
+              path: "/legal/contracts/purchase/archive",
+              component: <StandardAgreementArchive />,
+            },
+            myRequests: {
+              path: "/legal/contracts/purchase/my-requests",
+              component: <StandardAgreementUser />,
+            },
+          },
+        },
+        delivery: {
+          path: "/legal/contracts/delivery",
+          children: {
+            approve: {
+              path: "/legal/contracts/delivery/approve",
+              component: <DeliveryAgreementApprove />,
+            },
+            archive: {
+              path: "/legal/contracts/delivery/archive",
+              component: <DeliveryAgreementArchive />,
+            },
+            myRequests: {
+              path: "/legal/contracts/delivery/my-requests",
+              component: <DeliveryAgreementUser />,
+            },
+          },
+        },
+        marketing: {
+          path: "/legal/contracts/marketing",
+          children: {
+            approve: {
+              path: "/legal/contracts/marketing/approve",
+              component: <MarketingAgreementApprove />,
+            },
+            archive: {
+              path: "/legal/contracts/marketing/archive",
+              component: <MarketingAgreementArchive />,
+            },
+            myRequests: {
+              path: "/legal/contracts/marketing/my-requests",
+              component: <MarketingAgreementUser />,
+            },
+          },
+        },
+        service: {
+          path: "/legal/contracts/service",
+          children: {
+            approve: {
+              path: "/legal/contracts/service/approve",
+              component: <ServiceAgreementApprove />,
+            },
+            archive: {
+              path: "/legal/contracts/service/archive",
+              component: <ServiceAgreementArchive />,
+            },
+            myRequests: {
+              path: "/legal/contracts/service/my-requests",
+              component: <ServiceAgreementUser />,
+            },
+          },
+        },
+        local: {
+          path: "/legal/contracts/local",
+          children: {
+            approve: {
+              path: "/legal/contracts/local/approve",
+              component: <LocalAgreementApprove />,
+            },
+            archive: {
+              path: "/legal/contracts/local/archive",
+              component: <LocalAgreementArchive />,
+            },
+            myRequests: {
+              path: "/legal/contracts/local/my-requests",
+              component: <LocalAgreementUser />,
+            },
+          },
+        },
+      },
+    },
+  },
+}
+
+const supportRoutes = {
+  path: "/support",
+  children: {
+    itTasks: {
+      path: "/support/it-tasks",
+      component: <TaskList />,
+    },
+    itTaskDetails: {
+      path: "/support/it-tasks/:id",
+      component: <JobDetails />,
+    },
+    farmTasks: {
+      path: "/support/farm-tasks",
+      component: <FarmWork />,
+    },
+    farmTaskDetails: {
+      path: "/support/farm-tasks/:id",
+      component: <FarmTaskDetails />,
+    },
+  },
+}
+
+const communicationRoutes = {
+  path: "/communication",
+  children: {
+    chat: {
+      path: "/communication/chat",
+      component: <Chat />,
+    },
+    comments: {
+      path: "/communication/comments/:id",
+      component: <MakeComment />,
+    },
+  },
+}
+
+const leadsRoutes = {
+  path: "/leads",
+  children: {
+    vip: {
+      path: "/leads/vip",
+      component: <VipLeadsPage />,
+    },
+    vipDetails: {
+      path: "/leads/vip/:id",
+      component: <VipLeadDetailPage />,
+    },
+    corporate: {
+      path: "/leads/corporate",
+      component: <LeadsPage />,
+    },
+  },
+}
+
+const toolsRoutes = {
+  path: "/tools",
+  children: {
+    calendar: {
+      path: "/tools/calendar",
+      component: <Calendar />,
+    },
+    notes: {
+      path: "/tools/notes",
+      component: <NotesPage />,
+    },
+    noteDetails: {
+      path: "/tools/notes/:id",
+      component: <NotesEditor />,
+    },
+    dailyResults: {
+      path: "/tools/daily-results",
+      component: <Dailies />,
+    },
+    dailyResultDetails: {
+      path: "/tools/daily-results/:id",
+      component: <Daily />,
+    },
+  },
+}
+
+// Helper function to flatten nested routes
+const flattenRoutes = routeObj => {
+  const routes = []
+
+  const addRoute = route => {
+    const { children, ...routeData } = route
+    if (routeData.path) {
+      routes.push(routeData)
+    }
+    if (children) {
+      Object.values(children).forEach(child => {
+        if (typeof child === "object") {
+          addRoute(child)
+        }
+      })
+    }
+  }
+
+  addRoute(routeObj)
+  return routes
+}
+
+// Combine all protected routes
 const authProtectedRoutes = [
-  // Dashboard & Main Routes
   {
     path: "/",
     exact: true,
     component: <Navigate to="/dashboard" />,
   },
-  { path: "/dashboard", component: <Dashboard /> },
-  { path: "/profile", component: <ProfilePage /> },
-
-  // Admin Routes
-  {
-    path: "/admin/dashboard",
-    component: <AdminPage />,
-    permission: "admin.access",
-  },
-  {
-    path: "/admin/approvals",
-    component: <HeadPage />,
-    permission: "admin.approvals",
-  },
-  { path: "/admin/visitors", component: <VisitorsTraffic /> },
-  { path: "/admin/payment-monitoring", component: <InvoicePage /> },
-  { path: "/admin/archive", component: <ArchivePage /> },
-
-  // Applications Routes
-  // -- Internal Purchases
-  { path: "/applications/purchases/new", component: <ProcurementPage /> },
-  {
-    path: "/applications/purchases/approve",
-    component: <PurchasePageApprove />,
-  },
-  {
-    path: "/applications/purchases/archive",
-    component: <ProcurementPageArchive />,
-  },
-  {
-    path: "/applications/purchases/my-requests",
-    component: <UserProcurement />,
-  },
-
-  // -- Vacation Requests
-  { path: "/applications/vacation/new", component: <VacationPage /> },
-  {
-    path: "/applications/vacation/approve",
-    component: <VacationPageApprove />,
-  },
-  {
-    path: "/applications/vacation/archive",
-    component: <VacationPageArchive />,
-  },
-  { path: "/applications/vacation/my-requests", component: <UserVocation /> },
-
-  // -- Business Trips
-  { path: "/applications/business-trip/new", component: <BusinessPage /> },
-  {
-    path: "/applications/business-trip/approve",
-    component: <TripPageApprove />,
-  },
-  {
-    path: "/applications/business-trip/archive",
-    component: <TripPageArchive />,
-  },
-  { path: "/applications/business-trip/my-requests", component: <UserTrip /> },
-
-  // HR Documents
-  {
-    path: "/hr/documents/new",
-    component: <HrPage />,
-  },
-  {
-    path: "/hr/documents/approve",
-    component: <HrPageApprove />,
-    permission: "hr-documents.manage",
-    departmentId: 8,
-  },
-  {
-    path: "/hr/documents/archive",
-    component: <HrPageArchive />,
-    permission: "hr-documents.view",
-    departmentId: 8,
-  },
-  {
-    path: "/hr/documents/my-requests",
-    component: <UserHrDocuments />,
-  },
-
-  // Legal Documents
-  { path: "/legal/contracts/new", component: <AgreementRequest /> },
-
-  {
-    path: "/legal/contracts/purchase/approve",
-    component: <StandardAgreementApprove />,
-  },
-  {
-    path: "/legal/contracts/purchase/archive",
-    component: <StandardAgreementArchive />,
-  },
-  {
-    path: "/legal/contracts/purchase/my-requests",
-    component: <StandardAgreementUser />,
-  },
-
-  {
-    path: "/legal/contracts/delivery/approve",
-    component: <DeliveryAgreementApprove />,
-  },
-  {
-    path: "/legal/contracts/delivery/archive",
-    component: <DeliveryAgreementArchive />,
-  },
-  {
-    path: "/legal/contracts/delivery/my-requests",
-    component: <DeliveryAgreementUser />,
-  },
-
-  {
-    path: "/legal/contracts/marketing/approve",
-    component: <MarketingAgreementApprove />,
-  },
-  {
-    path: "/legal/contracts/marketing/archive",
-    component: <MarketingAgreementArchive />,
-  },
-  {
-    path: "/legal/contracts/marketing/my-requests",
-    component: <MarketingAgreementUser />,
-  },
-  {
-    path: "/legal/contracts/service/approve",
-    component: <ServiceAgreementApprove />,
-  },
-  {
-    path: "/legal/contracts/service/archive",
-    component: <ServiceAgreementArchive />,
-  },
-  {
-    path: "/legal/contracts/service/my-requests",
-    component: <ServiceAgreementUser />,
-  },
-
-  {
-    path: "/legal/contracts/local/approve",
-    component: <LocalAgreementApprove />,
-  },
-  {
-    path: "/legal/contracts/local/archive",
-    component: <LocalAgreementArchive />,
-  },
-  {
-    path: "/legal/contracts/local/my-requests",
-    component: <LocalAgreementUser />,
-  },
-
-  // Support & Tasks
-  { path: "/support/it-tasks", component: <TaskList /> },
-  { path: "/support/it-tasks/:id", component: <JobDetails /> },
-  { path: "/support/farm-tasks", component: <FarmWork /> },
-  { path: "/support/farm-tasks/:id", component: <FarmTaskDetails /> },
-
-  // Communication
-  { path: "/communication/chat", component: <Chat /> },
-  { path: "/communication/comments/:id", component: <MakeComment /> },
-
-  // Leads Management
-  { path: "/leads/vip", component: <VipLeadsPage /> },
-  { path: "/leads/vip/:id", component: <VipLeadDetailPage /> },
-  { path: "/leads/corporate", component: <LeadsPage /> },
-
-  // Tools & Utilities
-  { path: "/tools/calendar", component: <Calendar /> },
-  { path: "/tools/notes", component: <NotesPage /> },
-  { path: "/tools/notes/:id", component: <NotesEditor /> },
-  { path: "/tools/daily-results", component: <Dailies /> },
-  { path: "/tools/daily-results/:id", component: <Daily /> },
+  ...flattenRoutes(dashboardRoutes),
+  ...flattenRoutes(profileRoutes),
+  ...flattenRoutes(adminRoutes),
+  ...flattenRoutes(applicationsRoutes),
+  ...flattenRoutes(hrRoutes),
+  ...flattenRoutes(legalRoutes),
+  ...flattenRoutes(supportRoutes),
+  ...flattenRoutes(communicationRoutes),
+  ...flattenRoutes(leadsRoutes),
+  ...flattenRoutes(toolsRoutes),
 ]
 
 const publicRoutes = [
