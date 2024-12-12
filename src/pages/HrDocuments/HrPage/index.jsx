@@ -209,27 +209,6 @@ const HrPage = () => {
 
 
   const renderUserInfo = (user, labelText, name, isEditable = false) => (
-    // <div className="row g-3 mb-4">
-
-    //   <div className="col-md-6">
-    //     <Label className="form-label">პირადი ნომერი</Label>
-    //     {isEditable ? (
-    //       <Field type="text" name="id_number" className="form-control" />
-    //     ) : (
-    //       <p className="form-control-plaintext border rounded p-2">
-    //         {user?.id_number}
-    //       </p>
-    //     )}
-    //     <ErrorMessage
-    //       name="id_number"
-    //       component="div"
-    //       className="text-danger mt-1"
-    //     />
-    //   </div>
-
-   
-
-
       <div className="col-md-6">
         <Label className="form-label">{labelText}</Label>
         {isEditable ? (
@@ -245,8 +224,6 @@ const HrPage = () => {
           className="text-danger mt-1"
         />
       </div>
-      
-    // </div>
   )
 
   const renderUserForm = (values, tab) => (
