@@ -186,6 +186,7 @@
   "devDependencies": {
     "eslint-config-standard-react": "^9.2.0",
     "eslint-plugin-react": "^7.20.6",
+    "eslint-plugin-react-hooks": "^5.1.0",
     "prettier": "^2.1.1",
     "source-map-explorer": "^2.5.3"
   }

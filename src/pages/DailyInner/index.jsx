@@ -9,7 +9,7 @@ import Avatar from "@mui/material/Avatar"
 import Chip from "@mui/material/Chip"
 import MentionsInput from "components/Common/MentionsInput"
 
-const Daily = () => {
+const DailyInner = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [daily, setDaily] = useState(null)
@@ -406,4 +406,4 @@ const CommentItem = React.memo(
 )
 CommentItem.displayName = "CommentItem"
 
-export default Daily
+export default DailyInner

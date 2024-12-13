@@ -24,13 +24,7 @@ import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 
 const ArchivePage = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false)
-  const [chosenArchiveItem, setChosenArchiveItem] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
-
-  const openModal = data => {
-    setModalIsOpen(true)
-    setChosenArchiveItem(data)
-  }
 
   const closeModal = () => {
     setModalIsOpen(false)

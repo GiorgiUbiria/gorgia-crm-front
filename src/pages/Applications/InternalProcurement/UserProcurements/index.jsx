@@ -118,7 +118,6 @@ const ExpandedRowContent = ({ rowData }) => {
 const UserProcurement = () => {
   document.title = "ჩემი შესყიდვები | Gorgia LLC"
   const [procurements, setProcurements] = useState([])
-  const [loading, setLoading] = useState(false)
 
   const fetchProcurements = async () => {
     try {

@@ -10,7 +10,6 @@ import {
   createMeeting, 
   updateMeeting, 
   deleteMeeting,
-  updateAttendeeStatus 
 } from '../../services/meetingService';
 import Select from 'react-select';
 
@@ -21,7 +20,6 @@ import moment from 'moment-timezone';
 
 const MeetingCalendar = () => {
   const [modal, setModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentMeeting, setCurrentMeeting] = useState({
@@ -148,45 +146,6 @@ const MeetingCalendar = () => {
         ...prev,
         [field]: newDate
       }));
-    }
-  };
-
-  const getTimeSlots = () => {
-    const slots = [];
-    for (let i = 0; i < 24; i++) {
-      for (let j = 0; j < 2; j++) {
-        const hour = i.toString().padStart(2, '0');
-        const minute = (j * 30).toString().padStart(2, '0');
-        slots.push(`${hour}:${minute}`);
-      }
-    }
-    return slots;
-  };
-
-  const slotDuration = '00:15:00';
-  
-  const renderToolbar = {
-    left: 'prev,next today',
-    center: 'title',
-    right: 'scheduleButton dayGridMonth,timeGridWeek,timeGridDay'
-  };
-
-  const customButtons = {
-    scheduleButton: {
-      text: 'შეხვედრის დაგეგმვა',
-      click: () => {
-        const now = new Date();
-        resetForm();
-        setCurrentMeeting({
-          title: '',
-          start: now,
-          end: new Date(now.getTime() + 60 * 60 * 1000),
-          invitees: [],
-          reason: '',
-          comments: ''
-        });
-        setModal(true);
-      }
     }
   };
 

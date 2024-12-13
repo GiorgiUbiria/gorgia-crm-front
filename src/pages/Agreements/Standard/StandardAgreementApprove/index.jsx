@@ -25,7 +25,7 @@ import {
   BsVoicemail,
 } from "react-icons/bs"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { toast, ToastContainer } from "react-toastify"
+import { ToastContainer } from "react-toastify"
 
 const statusMap = {
   pending: {
@@ -282,7 +282,6 @@ const StandardAgreementApprove = () => {
           bank_account: agreement.bank_account,
           rejection_reason: agreement.rejection_reason || null,
           price: agreement.product_cost,
-          requested_by: agreement.user.name + " " + agreement.user.sur_name,
           status: STATUS_MAPPING[agreement.status] || agreement.status,
           created_at: new Date(agreement.created_at).toLocaleDateString(),
           updated_at: new Date(agreement.updated_at).toLocaleString(),

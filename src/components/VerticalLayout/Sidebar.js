@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 
 import logo from "../../assets/images/gorgia-logo-04.png";
 
-const Sidebar = props => {
+const Sidebar = () => {
   return (
     <React.Fragment>
       <div className="vertical-menu">

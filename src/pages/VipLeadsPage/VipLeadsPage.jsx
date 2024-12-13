@@ -18,7 +18,6 @@ import {
   deleteVipLead,
 } from "../../services/vipLeadsService"
 import Breadcrumbs from "components/Common/Breadcrumb"
-import useIsAdmin from "hooks/useIsAdmin"
 import MuiTable from "components/Mui/MuiTable"
 import Dialog from "@mui/material/Dialog"
 import DialogActions from "@mui/material/DialogActions"
@@ -38,7 +37,6 @@ const VipLeadsPage = () => {
     type: null,
     leadId: null,
   })
-  const isAdmin = useIsAdmin()
 
   const fetchVipLeads = async () => {
     try {

@@ -7,7 +7,6 @@ import useIsAdmin from "hooks/useIsAdmin"
 import { usePermissions } from "hooks/usePermissions"
 import useIsDepartmentHead from "hooks/useIsDepartmentHead"
 import MenuItem from "./MenuItem"
-import { useSelector } from "react-redux"
 import { getMenuConfig } from "./menuConfig"
 import useMenuState from "./useMenuState"
 
@@ -15,7 +14,6 @@ const SidebarContent = ({ t }) => {
   const ref = useRef()
   const isAdmin = useIsAdmin()
   const isDepartmentHead = useIsDepartmentHead()
-  const user = useSelector(state => state.user.user)
   const location = useLocation()
   const { hasPermission, userDepartmentId } = usePermissions()
 

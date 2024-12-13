@@ -8,6 +8,7 @@ import useIsAdmin from "hooks/useIsAdmin"
 import { Row, Col } from "reactstrap"
 import AddDailyModal from "./AddDailyModal"
 import Breadcrumbs from "components/Common/Breadcrumb"
+import useUserRoles from "hooks/useUserRoles"
 import * as XLSX from "xlsx"
 
 const INITIAL_STATE = {
@@ -21,10 +22,11 @@ const INITIAL_STATE = {
 
 const PAGE_SIZE_OPTIONS = [5, 10, 15, 20]
 
-const Dailies = () => {
+const DailiesInner = () => {
   const navigate = useNavigate()
   const isAdmin = useIsAdmin()
   const user = JSON.parse(sessionStorage.getItem("authUser"))
+  const userRoles = useUserRoles()
 
   const [state, setState] = useState(INITIAL_STATE)
   const {
@@ -44,18 +46,31 @@ const Dailies = () => {
     try {
       updateState({ isLoading: true })
       const params = { page: currentPage, limit: pageSize }
-      const { dailies } = await getDailies("regular", params)
-      const sortedData = dailies.data.sort(
+
+      let dailiesResponse
+
+      if (
+        userRoles.includes("admin") ||
+        userRoles.includes("department_head")
+      ) {
+        dailiesResponse = await getDailies("department_head", params)
+      } else if (userRoles.includes("user")) {
+        dailiesResponse = await getDailies("user", params)
+      } else {
+        dailiesResponse = { dailies: { data: [], total: 0 } }
+      }
+
+      const sortedData = dailiesResponse.dailies.data.sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
       )
       updateState({
         dailiesData: {
           data: sortedData,
-          total: dailies.total,
+          total: dailiesResponse.dailies.total,
         },
       })
     } catch (error) {
-      console.error("Error fetching regular dailies:", error)
+      console.error("Error fetching department head dailies:", error)
     } finally {
       updateState({ isLoading: false })
     }
@@ -81,7 +96,7 @@ const Dailies = () => {
   }, [])
 
   const handleRowClick = row => {
-    navigate(`/tools/daily-results/${row.id}`)
+    navigate(`/tools/inner-daily-results/${row.id}`)
   }
 
   const transformedDailies = useMemo(() => {
@@ -164,8 +179,8 @@ const Dailies = () => {
 
     const ws = XLSX.utils.aoa_to_sheet(data)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Regular Dailies")
-    XLSX.writeFile(wb, "Regular_Dailies.xlsx")
+    XLSX.utils.book_append_sheet(wb, ws, "Department Head Dailies")
+    XLSX.writeFile(wb, "Department_Head_Dailies.xlsx")
   }
 
   const renderExpandedRow = row => (
@@ -189,7 +204,7 @@ const Dailies = () => {
   return (
     <div className="page-content bg-gray-100">
       <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
-        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="შეფა��ებები" />
+        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="შეპარტამენტისედან პასუხები" />
 
         <div className="bg-white rounded-xl shadow p-6">
           <Row className="mb-3">
@@ -241,11 +256,11 @@ const Dailies = () => {
           toggle={() => updateState({ addDailyModal: false })}
           onDailyAdded={fetchDailies}
           departmentId={user.department_id}
-          type="regular"
+          type="department_head"
         />
       </div>
     </div>
   )
 }
 
-export default Dailies
+export default DailiesInner

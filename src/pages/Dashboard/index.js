@@ -1,23 +1,14 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { Container, Row, Col, Card, CardBody, Badge } from "reactstrap"
-import { useSelector, useDispatch } from "react-redux"
-import { createSelector } from "reselect"
+import { useDispatch } from "react-redux"
 import { getChartsData as onGetChartsData } from "../../store/actions"
 import Breadcrumbs from "../../components/Common/Breadcrumb"
 import { withTranslation } from "react-i18next"
 import { ToastContainer } from "react-toastify"
 
-const Dashboard = props => {
+const Dashboard = () => {
   const dispatch = useDispatch()
 
-  const DashboardProperties = createSelector(
-    state => state.Dashboard,
-    dashboard => ({
-      chartsData: dashboard.chartsData,
-    })
-  )
-
-  const { chartsData } = useSelector(DashboardProperties)
 
   useEffect(() => {
     dispatch(onGetChartsData("yearly"))

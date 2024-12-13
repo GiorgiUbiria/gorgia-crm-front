@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col, Card, CardBody } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getUserAgreemnets } from "services/localAgreement"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { toast, ToastContainer } from "react-toastify"
+import { ToastContainer } from "react-toastify"
 import { expandedRows } from "./expandedRows"
 
 const statusMap = {
@@ -28,16 +28,6 @@ const STATUS_MAPPING = {
   pending: "pending",
   approved: "approved",
   rejected: "rejected",
-}
-
-const handleDownload = async agreementId => {
-  try {
-    await downloadAgreement(agreementId)
-    toast.success("ხელშეკრულება წარმა��ებით ჩამოიტვირთა")
-  } catch (error) {
-    console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
-  }
 }
 
 const LocalAgreementUser = () => {

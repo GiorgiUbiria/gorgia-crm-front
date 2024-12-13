@@ -8,8 +8,6 @@ import { fetchUser } from "services/user"
 const Overview = ({ task }) => {
   const [isTaskStarted, setIsTaskStarted] = useState(false)
   const [startTime, setStartTime] = useState(null)
-  const [endTime, setEndTime] = useState(null)
-  const [elapsedTime, setElapsedTime] = useState(null)
   const [user, setUser] = useState({})
 
   useEffect(() => {

@@ -2,17 +2,13 @@ import React, { useEffect, useState, useMemo, useCallback } from "react"
 import { Row, Col, Card, CardBody } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import {
-  getUserAgreemnets,
-  downloadMarketingAgreement as downloadAgreementService,
-} from "services/marketingAgreement"
+import { getUserAgreemnets, downloadAgreement } from "services/marketingAgreement"
 import {
   BsBank,
   BsCalendar,
   BsCreditCard,
   BsMap,
   BsPerson,
-  BsVoicemail,
 } from "react-icons/bs"
 import { toast, ToastContainer } from "react-toastify"
 
@@ -42,7 +38,7 @@ const STATUS_MAPPING = {
 
 const handleDownload = async agreementId => {
   try {
-    await downloadMarketingAgreement(agreementId)
+    await downloadAgreement(agreementId)
     toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
   } catch (error) {
     console.error("Download failed:", error)

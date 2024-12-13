@@ -1,13 +1,5 @@
 import React, { useState } from "react"
-import {
-  Form,
-  Input,
-  Label,
-  Row,
-  Col,
-  TabContent,
-  TabPane,
-} from "reactstrap"
+import { Form, Input, Label, Row, Col, TabContent, TabPane } from "reactstrap"
 import classnames from "classnames"
 import { toast } from "react-toastify"
 import { createAgreement } from "services/localAgreement"
@@ -47,7 +39,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
   const validateField = (field, value) => {
     let errorMsg = ""
 
-    if (value === undefined) return true;
+    if (value === undefined) return true
 
     switch (field) {
       case "executor_firm_name":
@@ -59,12 +51,15 @@ const LocalAgreementForm = ({ onSuccess }) => {
       case "executor_bank_name":
       case "director_full_name":
         if (!value?.trim()) errorMsg = "This field is required"
-        else if (value.length > 255) errorMsg = "Maximum length is 255 characters"
-        break;
+        else if (value.length > 255)
+          errorMsg = "Maximum length is 255 characters"
+        break
       case "exclusive_placement":
-        if (formData.exclusivity && !value?.trim()) errorMsg = "This field is required"
-        else if (value?.length > 255) errorMsg = "Maximum length is 255 characters"
-        break;
+        if (formData.exclusivity && !value?.trim())
+          errorMsg = "This field is required"
+        else if (value?.length > 255)
+          errorMsg = "Maximum length is 255 characters"
+        break
       case "executor_id_number":
       case "director_id_number":
         if (!value) errorMsg = "This field is required"
@@ -94,17 +89,17 @@ const LocalAgreementForm = ({ onSuccess }) => {
   const validateForm = () => {
     let isValid = true
     Object.keys(formData).forEach(field => {
-      if (field === 'exclusive_placement' && !formData.exclusivity) {
-        return;
+      if (field === "exclusive_placement" && !formData.exclusivity) {
+        return
       }
-      if (field === 'file_path') {
-        return;
+      if (field === "file_path") {
+        return
       }
-      if (field === 'agreement_automatic_renewal' || field === 'exclusivity') {
-        return;
+      if (field === "agreement_automatic_renewal" || field === "exclusivity") {
+        return
       }
       if (!validateField(field, formData[field])) {
-        isValid = false;
+        isValid = false
       }
     })
 
@@ -128,9 +123,12 @@ const LocalAgreementForm = ({ onSuccess }) => {
     const formDataToSend = new FormData()
 
     Object.entries(formData).forEach(([key, value]) => {
-      if (key === 'exclusive_placement') {
-        formDataToSend.append(key, formData.exclusivity ? value : 'არ არის მითითებული');
-        return;
+      if (key === "exclusive_placement") {
+        formDataToSend.append(
+          key,
+          formData.exclusivity ? value : "არ არის მითითებული"
+        )
+        return
       }
 
       if (value !== "" && value !== null && value !== undefined) {
@@ -181,17 +179,20 @@ const LocalAgreementForm = ({ onSuccess }) => {
     if (error.response) {
       switch (error.response.status) {
         case 400:
-          toast.error("არასწორი მოაცემები. გთხოვთ შამოწმოთ შეყვანილი ინფორმაცია")
+          toast.error(
+            "არასწორი მოაცემები. გთხოვთ შამოწმოთ შეყვანილი ინფორმაცია"
+          )
           break
         case 401:
           toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
           break
-        case 422:
+        case 422: {
           const validationErrors = error.response.data.errors
           Object.keys(validationErrors).forEach(key => {
             toast.error(validationErrors[key][0])
           })
           break
+        }
         case 500:
           toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
           break
@@ -219,25 +220,61 @@ const LocalAgreementForm = ({ onSuccess }) => {
     }
   }
 
-  const hasStepErrors = (stepNumber) => {
+  const hasStepErrors = stepNumber => {
     const stepFields = {
-      1: ['executor_firm_name', 'executor_id_number', 'executor_home_address', 'executor_factual_address', 'executor_full_name', 'executor_position'],
-      2: ['executor_bank_account', 'executor_bank_name', 'executor_bank_swift', 'director_full_name', 'director_id_number'],
-      3: ['agreement_active_term', 'exclusivity', 'exclusive_placement', 'agreement_automatic_renewal']
-    };
+      1: [
+        "executor_firm_name",
+        "executor_id_number",
+        "executor_home_address",
+        "executor_factual_address",
+        "executor_full_name",
+        "executor_position",
+      ],
+      2: [
+        "executor_bank_account",
+        "executor_bank_name",
+        "executor_bank_swift",
+        "director_full_name",
+        "director_id_number",
+      ],
+      3: [
+        "agreement_active_term",
+        "exclusivity",
+        "exclusive_placement",
+        "agreement_automatic_renewal",
+      ],
+    }
 
-    return stepFields[stepNumber]?.some(field => errors[field]);
-  };
+    return stepFields[stepNumber]?.some(field => errors[field])
+  }
 
-  const hasStepData = (stepNumber) => {
+  const hasStepData = stepNumber => {
     const stepFields = {
-      1: ['executor_firm_name', 'executor_id_number', 'executor_home_address', 'executor_factual_address', 'executor_full_name', 'executor_position'],
-      2: ['executor_bank_account', 'executor_bank_name', 'executor_bank_swift', 'director_full_name', 'director_id_number'],
-      3: ['agreement_active_term', 'exclusivity', 'exclusive_placement', 'agreement_automatic_renewal']
-    };
+      1: [
+        "executor_firm_name",
+        "executor_id_number",
+        "executor_home_address",
+        "executor_factual_address",
+        "executor_full_name",
+        "executor_position",
+      ],
+      2: [
+        "executor_bank_account",
+        "executor_bank_name",
+        "executor_bank_swift",
+        "director_full_name",
+        "director_id_number",
+      ],
+      3: [
+        "agreement_active_term",
+        "exclusivity",
+        "exclusive_placement",
+        "agreement_automatic_renewal",
+      ],
+    }
 
-    return stepFields[stepNumber]?.some(field => formData[field]);
-  };
+    return stepFields[stepNumber]?.some(field => formData[field])
+  }
 
   return (
     <div className="form-content">
@@ -251,9 +288,11 @@ const LocalAgreementForm = ({ onSuccess }) => {
             key={index}
             className={classnames("step", {
               active: activeTab === index + 1,
-              completed: passedSteps.includes(index + 1) && !hasStepErrors(index + 1),
-              'has-error': hasStepErrors(index + 1),
-              disabled: !passedSteps.includes(index + 1) && !hasStepData(index + 1),
+              completed:
+                passedSteps.includes(index + 1) && !hasStepErrors(index + 1),
+              "has-error": hasStepErrors(index + 1),
+              disabled:
+                !passedSteps.includes(index + 1) && !hasStepData(index + 1),
             })}
             onClick={() =>
               passedSteps.includes(index + 1) && toggleTab(index + 1)
@@ -296,9 +335,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               </Col>
               <Col lg="6">
                 <div className="mb-3">
-                  <Label for="executor_id_number">
-                    საიდენტიფიკაციო ნომერი
-                  </Label>
+                  <Label for="executor_id_number">საიდენტიფიკაციო ნომერი</Label>
                   <Input
                     type="text"
                     className={classnames("form-control", {
@@ -322,9 +359,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
             <Row>
               <Col lg="6">
                 <div className="mb-3">
-                  <Label for="executor_home_address">
-                    იურიდიული მისამართი
-                  </Label>
+                  <Label for="executor_home_address">იურიდიული მისამართი</Label>
                   <Input
                     type="text"
                     className={classnames("form-control", {
@@ -446,9 +481,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               </Col>
               <Col lg="6">
                 <div className="mb-3">
-                  <Label for="executor_bank_name">
-                    ბანკის დასახელება
-                  </Label>
+                  <Label for="executor_bank_name">ბანკის დასახელება</Label>
                   <Input
                     type="text"
                     className={classnames("form-control", {
@@ -471,9 +504,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
             <Row>
               <Col lg="6">
                 <div className="mb-3">
-                  <Label for="executor_bank_swift">
-                    ბანკის კოდი
-                  </Label>
+                  <Label for="executor_bank_swift">ბანკის კოდი</Label>
                   <Input
                     type="text"
                     className={classnames("form-control", {
@@ -562,7 +593,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
                     id="agreement_active_term"
                     value={formData.agreement_active_term}
                     onChange={handleInputChange}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={new Date().toISOString().split("T")[0]}
                   />
                   {errors.agreement_active_term && (
                     <div className="form-error">
@@ -580,14 +611,19 @@ const LocalAgreementForm = ({ onSuccess }) => {
                       className="form-check-input"
                       id="agreement_automatic_renewal"
                       checked={formData.agreement_automatic_renewal}
-                      onChange={e => handleInputChange({
-                        target: {
-                          id: 'agreement_automatic_renewal',
-                          value: e.target.checked
-                        }
-                      })}
+                      onChange={e =>
+                        handleInputChange({
+                          target: {
+                            id: "agreement_automatic_renewal",
+                            value: e.target.checked,
+                          },
+                        })
+                      }
                     />
-                    <Label className="form-check-label" for="agreement_automatic_renewal">
+                    <Label
+                      className="form-check-label"
+                      for="agreement_automatic_renewal"
+                    >
                       ავტომატური განახლება
                     </Label>
                   </div>
@@ -597,12 +633,14 @@ const LocalAgreementForm = ({ onSuccess }) => {
                       className="form-check-input"
                       id="exclusivity"
                       checked={formData.exclusivity}
-                      onChange={e => handleInputChange({
-                        target: {
-                          id: 'exclusivity',
-                          value: e.target.checked
-                        }
-                      })}
+                      onChange={e =>
+                        handleInputChange({
+                          target: {
+                            id: "exclusivity",
+                            value: e.target.checked,
+                          },
+                        })
+                      }
                     />
                     <Label className="form-check-label" for="exclusivity">
                       ექსკლუზიურობა

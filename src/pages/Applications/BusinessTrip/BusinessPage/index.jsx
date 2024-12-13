@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import {
   Card,
   CardBody,
@@ -21,8 +21,6 @@ const BusinessPage = () => {
   document.title = "მივლინების მოთხოვნა | Gorgia LLC"
   const navigate = useNavigate()
   const [errors, setErrors] = useState({})
-  const [list, setList] = useState([])
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
 
   const [formData, setFormData] = useState({
     trip_type: "regional",

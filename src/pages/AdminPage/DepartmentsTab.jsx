@@ -43,7 +43,7 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
   }
 
   const handleConfirmAction = async () => {
-    const { type, departmentId } = confirmModal
+    const { departmentId } = confirmModal
     try {
       await deleteDepartment(departmentId)
       onDepartmentDeleted()
