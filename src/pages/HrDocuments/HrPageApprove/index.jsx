@@ -301,85 +301,9 @@ const HrPageApprove = () => {
     handleModalClose()
   }
 
-  // const forUserValidationSchema = () => {
-  //     return validationSchema.shape({
-  //       first_name: Yup.string().required("მომხმარებლის სახელი აუცილებელია"),
-  //       last_name: Yup.string().required("მომხმარებლის გვარი აუცილებელია"),
-  //     })
-  // }
-
-
-    const handleDocumentSubmit = async (values, { setSubmitting, resetForm }) => {
-
-      console.log(formData)
-      return;
-
-      // try {
-        // const contextUser = currentUser
-  
-        // if (!contextUser) {
-        //   toast.error("მომხმარებლის მონაცემები არ მოიძებნა")
-        //   return
-        // }
-  
-        // if (
-        //   (activeTab === "2" || isAdmin) &&
-        //   (values.id_number !== contextUser.id_number ||
-        //     values.position !== contextUser.position)
-        // ) {
-        //   const updateData = {
-        //     id_number: values.id_number,
-        //     position: values.position,
-        //   }
-        //   if(activeTab === "1"){
-        //     await updateUserIdNumber(updateData)
-        //   }
-        // }
-  
-        console.log(values)
-        // CHECK
-  
-        // const documentData = {
-        //   name: values.documentType,
-        //   user_id: contextUser.id,
-        //   first_name: values.first_name,
-        //   last_name: values.last_name,
-        //   is_other_user: activeTab === "2" ? 1 : 0,
-        //   position: activeTab === "2" ? values.position : null,
-        //   id_number: activeTab === "2" ? values.id_number : null,
-        //   ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
-        // }
-  
-        // console.log(documentData)
-  
-        // await createHrDocument(documentData)
-        // toast.success("დოკუმენტი წარმატებით შეიქმნა")
-  
-        // if (canAccessOtherTab && activeTab === "2") {
-        //   navigate("/hr/documents/approve")
-        // } else {
-        //   navigate("/hr/documents/my-requests")
-        // }
-      // } catch (err) {
-      //   console.log(err)
-      //   console.error("Error creating HR document:", err)
-      //   toast.error("დოკუმენტის შექმნა ვერ მოხერხდა")
-      // } finally {
-      //   setSubmitting(false)
-      // }
-    }
-
-
-
 const isDocumentTypeDisabled = type => {
 
   return false
-}
-
-const hasWorkedSixMonths = startDate => {
-  if (!startDate) return false
-  const sixMonthsAgo = moment().subtract(6, "months")
-  return moment(startDate).isBefore(sixMonthsAgo)
 }
 
   const getDocumentTypeHelpText = type => {
@@ -430,14 +354,11 @@ const hasWorkedSixMonths = startDate => {
                 </form>
                     <Formik
                       enableReinitialize
-                      initialValues={formData}
-                      // validationSchema={forUserValidationSchema()}
-                      onSubmit={handleDocumentSubmit}
+                      initialValues={formData}                      
                     >
                       {({ values }) => (
                         <Form>
                           <TabContent> 
-                              {/* {renderUserForm(values, 2)} */}
                               {selectedStatus === "approved" && 
                               <>
                                   <div className="row g-3 mb-4">
@@ -483,13 +404,11 @@ const hasWorkedSixMonths = startDate => {
                                     <option value="">
                                       აირჩიეთ დოკუმენტის ტიპი
                                     </option>
-                                    {/* {console.log(Object.entries(DOCUMENT_TYPES))} */}
                                     {Object.entries(DOCUMENT_TYPES).map(
                                       ([key, type]) => (
                                         <option
                                           key={key}
                                           value={type}
-                                          // disabled={isDocumentTypeDisabled(type)}
                                         >
                                           {type}
                                         </option>
@@ -538,9 +457,6 @@ const hasWorkedSixMonths = startDate => {
                                     className="text-danger mt-1"
                                   />
                                 </div>
-
-                                  {/* {renderUserInfo('პირადი ნომერი', 'id_number')} */}
-                                  {/* {renderUserInfo('პოზიცია', 'position')} */}
                                 </div>
 
                                 {/* Purpose field for paid documents */}
