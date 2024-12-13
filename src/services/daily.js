@@ -33,6 +33,7 @@ export const getDepartmentHeadDaily = async id => {
     const response = await defaultInstance.get(
       `/api/department-head-dailies/${id}`
     )
+    console.log(response)
     const { daily, department, user } = response.data
     return { daily, department, user }
   } catch (error) {
