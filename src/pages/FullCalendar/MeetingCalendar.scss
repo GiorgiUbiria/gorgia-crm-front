@@ -113,228 +113,220 @@
 }
 
 .calendar-card {
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  
   .fc {
-    // Header styles
+    max-width: 100%;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
     .fc-toolbar {
       padding: 1rem;
-      margin-bottom: 0.5rem;
-      
-      .fc-button-primary {
-        background: #0056b3;
-        border-color: #004085;
-        font-weight: 500;
-        padding: 0.5rem 1rem;
-        
-        &:hover {
-          background: #003d7a;
-          border-color: #002752;
-        }
-        
-        &:disabled {
-          background: #6c757d;
-          border-color: #545b62;
-        }
-      }
-      
-      .fc-scheduleButton-button {
-        background: #28a745;
-        border-color: #1e7e34;
-        
-        &:hover {
-          background: #218838;
-          border-color: #1e7e34;
-        }
-      }
-    }
-    
-    // Calendar body styles
-    .fc-view-harness {
-      background: #fff;
-      
-      .fc-day {
-        &:hover {
-          background: #f8f9fa;
-        }
-      }
-      
-      .fc-event {
-        background: #0056b3;
-        border: none;
-        padding: 2px 4px;
-        margin: 1px 0;
-        cursor: pointer;
-        
-        &:hover {
-          background: #003d7a;
-        }
-        
-        .fc-event-title {
-          font-weight: 500;
-        }
-      }
-    }
-  }
-}
-
-// Modal Styles
-.meeting-modal {
-  .modal-content {
-    border-radius: 8px;
-    
-    .modal-header {
       background: #f8f9fa;
-      border-bottom: 1px solid #dee2e6;
-      padding: 1rem 1.5rem;
-      
-      .modal-title {
-        font-weight: 600;
-        color: #212529;
-      }
-    }
-    
-    .modal-body {
-      padding: 1.5rem;
-      
-      .form-group {
-        margin-bottom: 1rem;
-        
-        label {
-          font-weight: 500;
-          color: #495057;
-          margin-bottom: 0.5rem;
-        }
-        
-        .form-control {
-          border: 1px solid #ced4da;
-          border-radius: 4px;
-          padding: 0.5rem 0.75rem;
+      border-radius: 4px 4px 0 0;
+
+      .fc-button-group {
+        .fc-button-primary {
+          background: #556ee6;
+          border-color: #556ee6;
+          
+          &:hover {
+            background: #485ec4;
+            border-color: #485ec4;
+          }
           
           &:focus {
-            border-color: #0056b3;
-            box-shadow: 0 0 0 0.2rem rgba(0, 86, 179, 0.25);
-          }
-        }
-        
-        .time-input {
-          background: #fff;
-          color: #212529;
-        }
-      }
-      
-      // React-Select custom styles
-      .basic-multi-select {
-        .select__control {
-          border-color: #ced4da;
-          
-          &:hover {
-            border-color: #0056b3;
-          }
-          
-          &--is-focused {
-            border-color: #0056b3;
-            box-shadow: 0 0 0 0.2rem rgba(0, 86, 179, 0.25);
-          }
-        }
-        
-        .select__option {
-          &--is-focused {
-            background: #e9ecef;
-          }
-          
-          &--is-selected {
-            background: #0056b3;
+            box-shadow: 0 0 0 0.2rem rgba(85, 110, 230, 0.25);
           }
         }
       }
+
+      .fc-today-button {
+        background: #34c38f;
+        border-color: #34c38f;
+        
+        &:hover {
+          background: #2ca67a;
+          border-color: #2ca67a;
+        }
+      }
+    }
+
+    .fc-view-harness {
+      background: #fff;
+    }
+
+    .fc-daygrid-day {
+      &:hover {
+        background: #f8f9fa;
+      }
+    }
+
+    .fc-event {
+      cursor: pointer;
+      padding: 2px 4px;
+      margin: 1px 0;
+      border-radius: 3px;
+      font-size: 0.85em;
       
-      // Button styles
-      .btn {
-        padding: 0.5rem 1.5rem;
-        font-weight: 500;
-        
-        &-primary {
-          background: #0056b3;
-          border-color: #004085;
-          
-          &:hover {
-            background: #003d7a;
-            border-color: #002752;
-          }
-        }
-        
-        &-danger {
-          background: #dc3545;
-          border-color: #bd2130;
-          
-          &:hover {
-            background: #c82333;
-            border-color: #bd2130;
-          }
-        }
+      &:hover {
+        filter: brightness(0.9);
+      }
+
+      .fc-event-content {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .fc-event-time {
+        font-size: 0.8em;
+        opacity: 0.8;
+      }
+    }
+
+    .fc-timegrid-slot {
+      height: 2.5em;
+    }
+  }
+}
+
+// Status-based colors for events
+.fc-event-content {
+  &.status-pending {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+  }
+  
+  &.status-accepted {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+  }
+  
+  &.status-declined {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+  }
+  
+  &.status-tentative {
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+  }
+}
+
+// Loading spinner
+.calendar-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+// Filter buttons
+.calendar-filters {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  
+  .btn-group {
+    .btn {
+      padding: 0.375rem 1rem;
+      
+      &:not(:last-child) {
+        margin-right: 0.5rem;
       }
     }
   }
 }
 
-.time-input {
-  height: 38px;
-  width: 100%;
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: #495057;
-  background-color: #fff;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  position: relative;
+// Modal styles
+.meeting-modal {
+  .modal-content {
+    border-radius: 6px;
+  }
+
+  .modal-header {
+    background: #f8f9fa;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .meeting-form {
+    padding: 1rem;
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .time-input {
+      &::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+      }
+    }
+
+    .basic-multi-select {
+      .select__control {
+        border-color: #ced4da;
+        
+        &:hover {
+          border-color: #80bdff;
+        }
+        
+        &--is-focused {
+          border-color: #80bdff;
+          box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+      }
+
+      .select__menu {
+        z-index: 1100;
+      }
+    }
+  }
+}
+
+// React-tooltip styles
+#meeting-tooltip {
+  z-index: 1100 !important;
+  max-width: 300px !important;
+  padding: 8px 12px !important;
+  background-color: #333 !important;
+  color: #fff !important;
+  font-size: 0.85rem !important;
+  line-height: 1.4 !important;
+  border-radius: 4px !important;
+  white-space: pre-line !important;
   
-  &::-webkit-calendar-picker-indicator {
-    background-color: transparent;
-    cursor: pointer;
-    position: absolute;
-    right: 8px;
-    padding: 4px;
-    opacity: 0.7;
-    
-    &:hover {
-      opacity: 1;
-      background-color: rgba(0, 0, 0, 0.05);
-      border-radius: 3px;
+  &.show {
+    opacity: 0.95 !important;
+  }
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .calendar-card {
+    .fc {
+      .fc-toolbar {
+        flex-direction: column;
+        gap: 0.5rem;
+        
+        .fc-toolbar-chunk {
+          display: flex;
+          justify-content: center;
+          width: 100%;
+        }
+      }
     }
   }
   
-  &::-webkit-datetime-edit {
-    padding: 0;
-  }
-  
-  &::-webkit-datetime-edit-fields-wrapper {
-    padding: 0;
-  }
-  
-  &::-webkit-datetime-edit-text {
-    color: #495057;
-    padding: 0 2px;
-  }
-  
-  &::-webkit-datetime-edit-hour-field,
-  &::-webkit-datetime-edit-minute-field,
-  &::-webkit-datetime-edit-day-field,
-  &::-webkit-datetime-edit-month-field,
-  &::-webkit-datetime-edit-year-field {
-    padding: 0 2px;
-  }
-  
-  &::-webkit-inner-spin-button {
-    display: none;
-  }
-  
-  &:focus {
-    border-color: #80bdff;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  .meeting-modal {
+    .modal-dialog {
+      margin: 0.5rem;
+    }
   }
 }
