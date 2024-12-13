@@ -106,7 +106,8 @@ const HrPageApprove = () => {
       comment: "",
       salary: "",
       salary_text: "",
-      template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name),
+      template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) + 1,
+      document_number: "",
     }))
   }
 
@@ -360,7 +361,7 @@ const HrPageApprove = () => {
 
             <div className="mt-4">
               <form></form>
-              <Formik enableReinitialize initialValues={formData}>
+              <Formik enableReinitialize initialValues={formData} >
                 {({ values }) => (
                   <Form>
                     <TabContent>
@@ -414,7 +415,34 @@ const HrPageApprove = () => {
                             </div>
                           </div>
 
-                          <div className="mb-4">
+                            {/* User Info */}
+                            <div className="row g-3 mb-4">
+                            <div className="col-md-6">
+                              <Label className="form-label">
+                                დოკუმენტის ნომერი
+                              </Label>
+
+                              <Field
+                                type="text"
+                                name="document_number"
+                                value={formData.document_number}
+                                onChange={e =>
+                                  setFormData(data => ({
+                                    ...data,
+                                    document_number: e.target.value,
+                                  }))
+                                }
+                                className="form-control"
+                              />
+
+                              <ErrorMessage
+                                name="document_number"
+                                component="div"
+                                className="text-danger mt-1"
+                              />
+                            </div>
+
+                            <div className="col-md-6">
                             <Label className="form-label">
                               დოკუმენტის ტიპი
                             </Label>
@@ -451,6 +479,9 @@ const HrPageApprove = () => {
                               </div>
                             )}
                           </div>
+                          </div>
+
+                          
 
                           {/* User Info */}
                           <div className="row g-3 mb-4">
