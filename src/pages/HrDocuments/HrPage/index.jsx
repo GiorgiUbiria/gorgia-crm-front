@@ -1,31 +1,17 @@
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState } from "react"
 import {
   createHrDocument,
-  getCurrentUserHrDocuments,
-  getHrDocuments,
 } from "services/hrDocument"
-import {
-  updateUserIdNumberById,
-  updateUserIdNumber,
-  fetchUser,
-} from "services/user"
 import { useSelector } from "react-redux"
 import * as Yup from "yup"
 import moment from "moment"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import useFetchUsers from "hooks/useFetchUsers"
-import useIsAdmin from "hooks/useIsAdmin"
-import MuiTable from "components/Mui/MuiTable"
+import { usePermissions } from "hooks/usePermissions"
 import {
   Row,
   Col,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Input,
-  FormFeedback,
   Label,
 } from "reactstrap"
 import { Formik, Form, Field, ErrorMessage } from "formik"
@@ -33,7 +19,6 @@ import classnames from "classnames"
 import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
 import { Button } from "reactstrap"
-import { usePermissions } from "hooks/usePermissions"
 import { useNavigate } from "react-router-dom"
 
 const DOCUMENT_TYPES = {
@@ -63,7 +48,7 @@ const hasWorkedSixMonths = startDate => {
   return moment(startDate).isBefore(sixMonthsAgo)
 }
 
-const getInitialValues = (activeTab, currentUser, selectedUser) => {
+const getInitialValues = (activeTab, currentUser) => {
   if (activeTab === "1") {
     return {
       documentType: "",
@@ -75,7 +60,6 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
     }
   } else if (activeTab === "2") {
     return {
-      // selectedUser: selectedUser?.id || "",
       first_name: "",
       last_name: "",
       documentType: "",
@@ -97,7 +81,6 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
   }
 }
 
-
 const validationSchema = Yup.object().shape({
   documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
   id_number: Yup.string().required("პირადი ნომერი აუცილებელია"),
@@ -113,7 +96,6 @@ const validationSchema = Yup.object().shape({
 const forUserValidationSchema = activeTab => {
   if (activeTab === "2") {
     return validationSchema.shape({
-      // selectedUser: Yup.string().required("მომხმარებლის არჩევა აუცილებელია"),
       first_name: Yup.string().required("მომხმარებლის სახელი აუცილებელია"),
       last_name: Yup.string().required("მომხმარებლის გვარი აუცილებელია"),
     })
@@ -125,13 +107,10 @@ const HrPage = () => {
   const navigate = useNavigate()
   const reduxUser = useSelector(state => state.user.user)
   const [currentUser, setCurrentUser] = useState(reduxUser)
-  const { users, loading: usersLoading } = useFetchUsers()
-  const [selectedUserId, setSelectedUserId] = useState("")
+  const { users } = useFetchUsers()
   const [selectedUser, setSelectedUser] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
-  const { hasPermission, isAdmin } = usePermissions()
-
-
+  const { isAdmin } = usePermissions()
 
   const isHrMember = currentUser?.department_id === 8
   const isHrDepartmentHead =
@@ -144,39 +123,17 @@ const HrPage = () => {
   }, [reduxUser])
 
   useEffect(() => {
-    if (activeTab === "2" && selectedUserId) {
-      const user = users.find(u => u.id === parseInt(selectedUserId))
+    if (activeTab === "2" && selectedUser) {
+      const user = users.find(u => u.id === parseInt(selectedUser))
       setSelectedUser(user || null)
     } else {
       setSelectedUser(null)
     }
-  }, [activeTab, selectedUserId, users])
+  }, [activeTab, selectedUser, users])
 
-  const handleDocumentSubmit = async (values, { setSubmitting, resetForm }) => {
+  const handleDocumentSubmit = async (values, { setSubmitting }) => {
     try {
       const contextUser = currentUser
-
-      // if (!contextUser) {
-      //   toast.error("მომხმარებლის მონაცემები არ მოიძებნა")
-      //   return
-      // }
-
-      // if (
-      //   (activeTab === "2" || isAdmin) &&
-      //   (values.id_number !== contextUser.id_number ||
-      //     values.position !== contextUser.position)
-      // ) {
-      //   const updateData = {
-      //     id_number: values.id_number,
-      //     position: values.position,
-      //   }
-      //   if(activeTab === "1"){
-      //     await updateUserIdNumber(updateData)
-      //   }
-      // }
-
-      console.log(values)
-      // CHECK
 
       const documentData = {
         name: values.documentType,
@@ -190,8 +147,6 @@ const HrPage = () => {
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
 
-      // console.log(documentData)
-
       await createHrDocument(documentData)
       toast.success("დოკუმენტი წარმატებით შეიქმნა")
 
@@ -201,16 +156,12 @@ const HrPage = () => {
         navigate("/hr/documents/my-requests")
       }
     } catch (err) {
-      console.log(err)
       console.error("Error creating HR document:", err)
       toast.error("დოკუმენტის შექმნა ვერ მოხერხდა")
     } finally {
       setSubmitting(false)
     }
   }
-
-  
-
 
   const renderUserInfo = (user, labelText, name, isEditable = false) => (
       <div className="col-md-6">
@@ -251,7 +202,7 @@ const HrPage = () => {
             აირჩიეთ დოკუმენტის ტიპი
           </option>
           {Object.entries(DOCUMENT_TYPES).map(
-            ([key, type], i) => (
+            ([key, type]) => (
               <option
                 key={key}
                 value={type}
@@ -364,8 +315,7 @@ const HrPage = () => {
                       enableReinitialize
                       initialValues={getInitialValues(
                         activeTab,
-                        currentUser,
-                        selectedUser
+                        currentUser
                       )}
                       validationSchema={forUserValidationSchema(activeTab)}
                       onSubmit={handleDocumentSubmit}
