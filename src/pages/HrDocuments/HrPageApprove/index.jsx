@@ -38,7 +38,7 @@ const STATUS_MAPPING = {
 }
 
 const DOCUMENT_TYPES = {
-  PAID_EMPLOYMENT: "შელფასიანი ცნობა",
+  PAID_EMPLOYMENT: "ხელფასიანი ცნობა",
   UNPAID_EMPLOYMENT: "უხელფასო ცნობა",
   PAID_PROBATION: "გამოსაცდელი ვადით ხელფასიანი",
   UNPAID_PROBATION: "გამოსაცდელი ვადით უხელფასო",
@@ -69,20 +69,11 @@ const HrPageApprove = () => {
   const [selectedStatus, setSelectedStatus] = useState(null)
   const [selectedDocumentId, setSelectedDocumentId] = useState(null)
   const [comment, setComment] = useState("")
-  
-  const initialValues = {
-    first_name: currentDocument.is_other_user !== 1 ? currentDocument.user.name : currentDocument.first_name,
-    last_name: currentDocument.is_other_user !== 1 ? currentDocument.user.sur_name : currentDocument.last_name,
-    documentType: Object.values(DOCUMENT_TYPES).find(val => val === currentDocument.name),
-    id_number: currentDocument.is_other_user !== 1 ? currentDocument.user.id_number : currentDocument.id_number,
-    position: currentDocument.is_other_user !== 1 ? currentDocument.user.position : currentDocument.position,
-    working_start_date: "",
-    purpose: currentDocument?.purpose,
-    comment: "",
-  }
+
   const [formData, setFormData] = useState({})
 
-  console.log(formData)
+  // console.log(formData)
+
 
   const fetchDocuments = async () => {
     try {
@@ -93,13 +84,22 @@ const HrPageApprove = () => {
     }
   }
 
-  const fetchDocument = async (hrDocumentId) => {
-    try {
-      const response = await getHrDocument(hrDocumentId)
-      setCurrentDocument(response.data)
-    } catch (err) {
-      console.error("Error fetching HR document:", err)
-    }
+  const findDocument = async (documentId) => {
+    const response = await getHrDocuments()
+    const documentData = response.data.find(d => d.id === documentId)
+    setFormData(data => ({
+      ...data,
+      user_id: documentData?.user?.id,
+      is_other_user: documentData?.is_other_user !== 1 ? false : true, 
+      first_name: documentData?.is_other_user !== 1 ? documentData?.user?.name : documentData?.first_name,
+      last_name: documentData?.is_other_user !== 1 ? documentData?.user?.sur_name : documentData?.last_name,
+      documentType: documentData?.name,
+      id_number: documentData.is_other_user !== 1 ? documentData?.user?.id_number : documentData?.id_number,
+      position: documentData?.is_other_user !== 1 ? documentData?.user?.position : documentData?.position,
+      working_start_date: "",
+      purpose: documentData?.purpose,
+      comment: "",
+    }))
   }
 
   useEffect(() => {
@@ -258,8 +258,7 @@ const HrPageApprove = () => {
                 <Button
                   onClick={() => {
                     handleModalOpen("approved", row.original.id)
-                    fetchDocument(row.original.id)
-                    setFormData(initialValues)
+                    findDocument(row.original.id)
                   }}
                   color="success"
                   variant="contained"
@@ -298,7 +297,7 @@ const HrPageApprove = () => {
   }
 
   const handleConfirm = () => {
-    handleUpdateStatus(selectedDocumentId, selectedStatus, { comment })
+    handleUpdateStatus(selectedDocumentId, selectedStatus, formData)
     handleModalClose()
   }
 
@@ -312,10 +311,10 @@ const HrPageApprove = () => {
 
     const handleDocumentSubmit = async (values, { setSubmitting, resetForm }) => {
 
-      console.log(values)
+      console.log(formData)
       return;
 
-      try {
+      // try {
         // const contextUser = currentUser
   
         // if (!contextUser) {
@@ -340,110 +339,37 @@ const HrPageApprove = () => {
         console.log(values)
         // CHECK
   
-        const documentData = {
-          name: values.documentType,
-          user_id: contextUser.id,
-          first_name: values.first_name,
-          last_name: values.last_name,
-          is_other_user: activeTab === "2" ? 1 : 0,
-          position: activeTab === "2" ? values.position : null,
-          id_number: activeTab === "2" ? values.id_number : null,
-          ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
-        }
+        // const documentData = {
+        //   name: values.documentType,
+        //   user_id: contextUser.id,
+        //   first_name: values.first_name,
+        //   last_name: values.last_name,
+        //   is_other_user: activeTab === "2" ? 1 : 0,
+        //   position: activeTab === "2" ? values.position : null,
+        //   id_number: activeTab === "2" ? values.id_number : null,
+        //   ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
+        // }
   
         // console.log(documentData)
   
-        await createHrDocument(documentData)
-        toast.success("დოკუმენტი წარმატებით შეიქმნა")
+        // await createHrDocument(documentData)
+        // toast.success("დოკუმენტი წარმატებით შეიქმნა")
   
-        if (canAccessOtherTab && activeTab === "2") {
-          navigate("/hr/documents/approve")
-        } else {
-          navigate("/hr/documents/my-requests")
-        }
-      } catch (err) {
-        console.log(err)
-        console.error("Error creating HR document:", err)
-        toast.error("დოკუმენტის შექმნა ვერ მოხერხდა")
-      } finally {
-        setSubmitting(false)
-      }
+        // if (canAccessOtherTab && activeTab === "2") {
+        //   navigate("/hr/documents/approve")
+        // } else {
+        //   navigate("/hr/documents/my-requests")
+        // }
+      // } catch (err) {
+      //   console.log(err)
+      //   console.error("Error creating HR document:", err)
+      //   toast.error("დოკუმენტის შექმნა ვერ მოხერხდა")
+      // } finally {
+      //   setSubmitting(false)
+      // }
     }
 
-    
-  const renderUserForm = (values, tab) => (
-    <>
-    {tab === 2 && (
-      <div className="row g-3 mb-4">
-        {renderUserInfo('სახელი', 'first_name')}
-        {renderUserInfo('გვარი', 'last_name')}
-      </div>
-    )}
-    <div className="mb-4">
-      <Label className="form-label">
-        დოკუმენტის ტიპი
-      </Label>
-      <Field
-        as="select"
-        name="documentType"
-        className="form-select"
-      >
-        <option value="">
-          აირჩიეთ დოკუმენტის ტიპი
-        </option>
-        {Object.entries(DOCUMENT_TYPES).map(
-          ([key, type]) => (
-            <option
-              key={key}
-              value={type}
-              disabled={tab === 1 && isDocumentTypeDisabled(type)}
-            >
-              {type}
-            </option>
-          )
-        )}
-      </Field>
-      <ErrorMessage
-        name="documentType"
-        component="div"
-        className="text-danger mt-1"
-      />
-      {getDocumentTypeHelpText(
-        values.documentType
-      ) && (
-        <div className="text-warning mt-1">
-          <i className="bx bx-info-circle me-1"></i>
-          {getDocumentTypeHelpText(
-            values.documentType
-          )}
-        </div>
-      )}
-    </div>
 
-    {/* User Info */}
-    <div className="row g-3 mb-4">
-      {renderUserInfo('პირადი ნომერი', 'id_number')}
-      {renderUserInfo('პოზიცია', 'position')}
-    </div>
-
-    {/* Purpose field for paid documents */}
-    {isPaidDocument(values.documentType) && (
-      <div className="mb-4">
-        <Label className="form-label">მიზანი</Label>
-        <Field
-          type="text"
-          name="purpose"
-          className="form-control"
-        />
-        <ErrorMessage
-          name="purpose"
-          component="div"
-          className="text-danger mt-1"
-        />
-      </div>
-    )}
-    </>
-)
 
 const isDocumentTypeDisabled = type => {
 
@@ -462,20 +388,6 @@ const hasWorkedSixMonths = startDate => {
     }
     return null
   }
-
-    const renderUserInfo = (labelText, name) => (
-        <div className="col-md-6">
-          <Label className="form-label">{labelText}</Label>
-          
-            <Field type="text" name={name}  className="form-control" />
-          
-          <ErrorMessage
-            name={name}
-            component="div"
-            className="text-danger mt-1"
-          />
-        </div>
-    )
 
   return (
     <React.Fragment>
@@ -509,20 +421,149 @@ const hasWorkedSixMonths = startDate => {
                 ? "დოკუმენტის დამტკიცება"
                 : "დოკუმენტის უარყოფა"}
             </DialogTitle>
-                {selectedStatus === "approved" ? (
+               
 
                 
                 <div className="mt-4">
+                <form>
+
+                </form>
                     <Formik
                       enableReinitialize
-                      initialValues={initialValues}
+                      initialValues={formData}
                       // validationSchema={forUserValidationSchema()}
                       onSubmit={handleDocumentSubmit}
                     >
                       {({ values }) => (
                         <Form>
                           <TabContent> 
-                              {renderUserForm(values, 2)}
+                              {/* {renderUserForm(values, 2)} */}
+                              {selectedStatus === "approved" && 
+                              <>
+                                  <div className="row g-3 mb-4">
+                                  <div className="col-md-6">
+                                    <Label className="form-label">სახელი</Label>
+                                    
+                                      <Field type="text" name="first_name" value={formData.first_name} onChange={e => setFormData(data => ({...data, first_name: e.target.value}))}  className="form-control" />
+                                    
+                                    <ErrorMessage
+                                      name='first_name'
+                                      component="div"
+                                      className="text-danger mt-1"
+                                    />
+                                  </div>
+
+                                  
+                                  <div className="col-md-6">
+                                    <Label className="form-label">გვარი</Label>
+                                    
+                                      <Field type="text" name="last_name" value={formData.last_name} onChange={e => setFormData(data => ({...data, last_name: e.target.value}))}  className="form-control" />
+                                    
+                                    <ErrorMessage
+                                      name='last_name'
+                                      component="div"
+                                      className="text-danger mt-1"
+                                    />
+                                  </div>
+
+
+                                  </div>
+                               
+                                <div className="mb-4">
+                                  <Label className="form-label">
+                                    დოკუმენტის ტიპი
+                                  </Label>
+                                  <Field
+                                    as="select"
+                                    name="documentType"
+                                    className="form-select"
+                                    value={formData.documentType}
+                                    onChange={e => setFormData(data => ({...data, documentType: e.target.value}))}
+                                  >
+                                    <option value="">
+                                      აირჩიეთ დოკუმენტის ტიპი
+                                    </option>
+                                    {/* {console.log(Object.entries(DOCUMENT_TYPES))} */}
+                                    {Object.entries(DOCUMENT_TYPES).map(
+                                      ([key, type]) => (
+                                        <option
+                                          key={key}
+                                          value={type}
+                                          // disabled={isDocumentTypeDisabled(type)}
+                                        >
+                                          {type}
+                                        </option>
+                                      )
+                                    )}
+                                  </Field>
+                                  <ErrorMessage
+                                    name="documentType"
+                                    component="div"
+                                    className="text-danger mt-1"
+                                  />
+                                  {getDocumentTypeHelpText(
+                                    values.documentType
+                                  ) && (
+                                    <div className="text-warning mt-1">
+                                      <i className="bx bx-info-circle me-1"></i>
+                                      {getDocumentTypeHelpText(
+                                        values.documentType
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* User Info */}
+                                <div className="row g-3 mb-4">
+                                <div className="col-md-6">
+                                  <Label className="form-label">პირადო ნომერი</Label>
+                                  
+                                    <Field type="text" name='id_number' value={formData.id_number} onChange={e => setFormData(data => ({...data, id_number: e.target.value}))}  className="form-control"  />
+                                  
+                                  <ErrorMessage
+                                    name='id_number'
+                                    component="div"
+                                    className="text-danger mt-1"
+                                  />
+                                </div>
+
+                                <div className="col-md-6">
+                                  <Label className="form-label">პოზიცია</Label>
+                                  
+                                    <Field type="text" name='position' value={formData.position} onChange={e => setFormData(data => ({...data, position: e.target.value}))}  className="form-control"  />
+                                  
+                                  <ErrorMessage
+                                    name='position'
+                                    component="div"
+                                    className="text-danger mt-1"
+                                  />
+                                </div>
+
+                                  {/* {renderUserInfo('პირადი ნომერი', 'id_number')} */}
+                                  {/* {renderUserInfo('პოზიცია', 'position')} */}
+                                </div>
+
+                                {/* Purpose field for paid documents */}
+                                {isPaidDocument(values.documentType) && (
+                                  <div className="mb-4">
+                                    <Label className="form-label">მიზანი</Label>
+                                    <Field
+                                      type="text"
+                                      name="purpose"
+                                      className="form-control"
+                                      value={formData.purpose}
+                                      onChange={e => setFormData(data => ({...data, purpose: e.target.value}))}
+                                    />
+                                    <ErrorMessage
+                                      name="purpose"
+                                      component="div"
+                                      className="text-danger mt-1"
+                                    />
+                                  </div>
+                                )}
+                                </>
+                              }
+
 
                               <TextField
                                 name="comment"
@@ -530,31 +571,15 @@ const hasWorkedSixMonths = startDate => {
                                 label="კომენტარი"
                                 type="text"
                                 fullWidth
-                                value={comment}
-                                onChange={e => setComment(e.target.value)}
+                                value={formData.comment}
+                                onChange={e => setFormData(data => ({...data, comment: e.target.value}))}
                               />
                           </TabContent>
                         </Form>
                       )}
                     </Formik>
                   </div>
-                  ) : (
-
-                  
-
-             <DialogContent>
-              <TextField
-                autoFocus
-                name="comment"
-                margin="dense"
-                label="კომენტარი"
-                type="text"
-                fullWidth
-                value={comment}
-                onChange={e => setComment(e.target.value)}
-              />
-            </DialogContent>
-          )}
+                 
             <DialogActions>
               <Button onClick={handleModalClose}>გაუქმება</Button>
               <Button
