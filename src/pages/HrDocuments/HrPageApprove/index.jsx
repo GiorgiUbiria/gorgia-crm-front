@@ -9,7 +9,7 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material"
-import { Row, Col, TabContent, Label } from "reactstrap"
+import { Row, Col, TabContent, Label, Spinner } from "reactstrap"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 
 const statusMap = {
@@ -63,6 +63,7 @@ const HrPageApprove = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState(null)
   const [selectedDocumentId, setSelectedDocumentId] = useState(null)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const [formData, setFormData] = useState({})
 
@@ -120,6 +121,7 @@ const HrPageApprove = () => {
     status,
     additionalData = {}
   ) => {
+    setIsProcessing(true)
     try {
       const response = await updateHrDocumentStatus(
         documentId,
@@ -138,6 +140,10 @@ const HrPageApprove = () => {
       }
     } catch (err) {
       console.error("Error updating document status:", err)
+    }
+    finally{
+      fetchDocuments()
+      setIsProcessing(false)
     }
   }
 
@@ -338,6 +344,14 @@ const HrPageApprove = () => {
               />
             </Col>
           </Row>
+          {isProcessing ? (
+            <div className="text-center">
+              <Spinner color="primary" />
+              <p className="mt-2">
+                გთხოვთ დაელოდოთ, მიმდინარეობს დამუშავება...
+              </p>
+            </div>
+          ) : (
           <MuiTable
             data={transformedHrDocuments}
             columns={columns}
@@ -352,6 +366,7 @@ const HrPageApprove = () => {
             ]}
             renderRowDetails={row => <div>{row.comment}</div>}
           />
+          )}
           <Dialog open={modalOpen} onClose={handleModalClose}>
             <DialogTitle>
               {selectedStatus === "approved"
