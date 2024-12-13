@@ -71,6 +71,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       position: currentUser?.department?.name || "",
       working_start_date: currentUser?.working_start_date || "",
       purpose: "",
+      template_num: "",
     }
   } else if (activeTab === "2") {
     return {
@@ -82,6 +83,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       position: "",
       working_start_date: "",
       purpose: "",
+      template_num: "",
     }
   } else {
     return {
@@ -90,6 +92,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       position: "",
       working_start_date: "",
       purpose: "",
+      template_num: "",
     }
   }
 }
@@ -183,6 +186,7 @@ const HrPage = () => {
         is_other_user: activeTab === "2" ? 1 : 0,
         position: activeTab === "2" ? values.position : null,
         id_number: activeTab === "2" ? values.id_number : null,
+        template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === values.documentType) + 1,
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
 
@@ -209,27 +213,6 @@ const HrPage = () => {
 
 
   const renderUserInfo = (user, labelText, name, isEditable = false) => (
-    // <div className="row g-3 mb-4">
-
-    //   <div className="col-md-6">
-    //     <Label className="form-label">პირადი ნომერი</Label>
-    //     {isEditable ? (
-    //       <Field type="text" name="id_number" className="form-control" />
-    //     ) : (
-    //       <p className="form-control-plaintext border rounded p-2">
-    //         {user?.id_number}
-    //       </p>
-    //     )}
-    //     <ErrorMessage
-    //       name="id_number"
-    //       component="div"
-    //       className="text-danger mt-1"
-    //     />
-    //   </div>
-
-   
-
-
       <div className="col-md-6">
         <Label className="form-label">{labelText}</Label>
         {isEditable ? (
@@ -245,8 +228,6 @@ const HrPage = () => {
           className="text-danger mt-1"
         />
       </div>
-      
-    // </div>
   )
 
   const renderUserForm = (values, tab) => (
@@ -270,7 +251,7 @@ const HrPage = () => {
             აირჩიეთ დოკუმენტის ტიპი
           </option>
           {Object.entries(DOCUMENT_TYPES).map(
-            ([key, type]) => (
+            ([key, type], i) => (
               <option
                 key={key}
                 value={type}
