@@ -75,7 +75,9 @@ const HrPageApprove = () => {
     }
   }
 
+
   const findDocument = async documentId => {
+    
     const response = await getHrDocuments()
     const documentData = response.data.find(d => d.id === documentId)
     setFormData(data => ({
@@ -102,6 +104,9 @@ const HrPageApprove = () => {
       working_start_date: "",
       purpose: documentData?.purpose,
       comment: "",
+      salary: "",
+      salary_text: "",
+      template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name),
     }))
   }
 
@@ -301,7 +306,6 @@ const HrPageApprove = () => {
     setModalOpen(false)
     setSelectedStatus(null)
     setSelectedDocumentId(null)
-    setComment("")
     setFormData({})
   }
 
@@ -498,9 +502,60 @@ const HrPageApprove = () => {
                               />
                             </div>
                           </div>
-
                           {/* Purpose field for paid documents */}
                           {isPaidDocument(values.documentType) && (
+                            <>
+                          <div className="row g-3 mb-4">
+                            <div className="col-md-6">
+                              <Label className="form-label">
+                                ანაზღაურება
+                              </Label>
+
+                              <Field
+                                type="text"
+                                name="salary"
+                                value={formData.salary}
+                                onChange={e =>
+                                  setFormData(data => ({
+                                    ...data,
+                                    salary: e.target.value,
+                                  }))
+                                }
+                                className="form-control"
+                                />
+
+                              <ErrorMessage
+                                name="salary"
+                                component="div"
+                                className="text-danger mt-1"
+                                />
+                            </div>
+
+                            <div className="col-md-6">
+                              <Label className="form-label">ანაზღაურება (ტექსტური)</Label>
+
+                              <Field
+                                type="text"
+                                name="salary_text"
+                                value={formData.salary_text}
+                                onChange={e =>
+                                  setFormData(data => ({
+                                    ...data,
+                                    salary_text: e.target.value,
+                                  }))
+                                }
+                                className="form-control"
+                                />
+
+                              <ErrorMessage
+                                name="salary_text"
+                                component="div"
+                                className="text-danger mt-1"
+                                />
+                            </div>
+                          </div>
+
+                          
                             <div className="mb-4">
                               <Label className="form-label">მიზანი</Label>
                               <Field
@@ -514,13 +569,14 @@ const HrPageApprove = () => {
                                     purpose: e.target.value,
                                   }))
                                 }
-                              />
+                                />
                               <ErrorMessage
                                 name="purpose"
                                 component="div"
                                 className="text-danger mt-1"
-                              />
+                                />
                             </div>
+                                </>
                           )}
                         </>
                       )}
