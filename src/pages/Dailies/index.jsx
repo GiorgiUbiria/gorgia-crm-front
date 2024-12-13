@@ -14,7 +14,6 @@ const INITIAL_STATE = {
   currentPage: 1,
   pageSize: 10,
   dailiesData: { data: [], total: 0 },
-  departments: [],
   isLoading: false,
   addDailyModal: false,
 }
@@ -27,14 +26,7 @@ const Dailies = () => {
   const user = JSON.parse(sessionStorage.getItem("authUser"))
 
   const [state, setState] = useState(INITIAL_STATE)
-  const {
-    currentPage,
-    pageSize,
-    dailiesData,
-    departments,
-    isLoading,
-    addDailyModal,
-  } = state
+  const { currentPage, pageSize, dailiesData, isLoading, addDailyModal } = state
 
   const updateState = newState => {
     setState(prev => ({ ...prev, ...newState }))
@@ -45,13 +37,10 @@ const Dailies = () => {
       updateState({ isLoading: true })
       const params = { page: currentPage, limit: pageSize }
       const { dailies } = await getDailies("regular", params)
-      const sortedData = dailies.data.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      )
       updateState({
         dailiesData: {
-          data: sortedData,
-          total: dailies.total,
+          data: dailies,
+          total: dailies.length,
         },
       })
     } catch (error) {
@@ -72,6 +61,7 @@ const Dailies = () => {
 
   useEffect(() => {
     fetchDailies()
+    console.log(dailiesData)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize])
 
@@ -87,6 +77,7 @@ const Dailies = () => {
   const transformedDailies = useMemo(() => {
     return dailiesData.data.map(daily => ({
       ...daily,
+      user_full_name: `${daily.user.name} ${daily.user.sur_name}`,
     }))
   }, [dailiesData])
 
@@ -113,12 +104,12 @@ const Dailies = () => {
       },
       {
         Header: "დეპარტამენტი",
-        accessor: "departmentName",
+        accessor: "department.name",
         disableSortBy: true,
       },
       {
         Header: "სახელი/გვარი",
-        accessor: "user_id",
+        accessor: "user_full_name",
         disableSortBy: true,
       },
     ],
@@ -126,22 +117,29 @@ const Dailies = () => {
   )
 
   const filterOptions = useMemo(() => {
-    const departmentOptions = departments
-      .filter(dept => dept.type === "department")
-      .map(department => ({
-        value: department.name,
-        label: department.name,
-      }))
+    const uniqueDepartments = [
+      ...new Set(dailiesData.data.map(daily => daily.department?.id)),
+    ]
+      .filter(Boolean)
+      .map(deptId => {
+        const daily = dailiesData.data.find(d => d.department?.id === deptId)
+        return {
+          value: deptId,
+          label: daily?.department?.name || "",
+        }
+      })
       .sort((a, b) => a.label.localeCompare(b.label))
+
+    console.log("Unique Departments:", uniqueDepartments)
 
     return [
       {
-        field: "departmentName",
+        field: "department.id",
         label: "დეპარტამენტი",
-        options: [{ value: "", label: "ყველა" }, ...departmentOptions],
+        options: [{ value: "", label: "ყველა" }, ...uniqueDepartments],
       },
     ]
-  }, [departments])
+  }, [dailiesData.data])
 
   const exportToExcel = () => {
     const headers = [
@@ -154,7 +152,7 @@ const Dailies = () => {
     const data = [
       headers,
       ...transformedDailies.map(daily => [
-        daily.departmentName,
+        daily.department.name,
         daily.id,
         daily.date,
         daily.description,
@@ -189,7 +187,7 @@ const Dailies = () => {
   return (
     <div className="page-content bg-gray-100">
       <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
-        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="შეფა��ებები" />
+        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="დღის შედეგები" />
 
         <div className="bg-white rounded-xl shadow p-6">
           <Row className="mb-3">
@@ -221,7 +219,7 @@ const Dailies = () => {
             columns={columns}
             data={transformedDailies}
             filterOptions={filterOptions}
-            searchableFields={["name", "departmentName"]}
+            searchableFields={["name", "department.name"]}
             enableSearch={true}
             initialPageSize={pageSize}
             pageSizeOptions={PAGE_SIZE_OPTIONS}
