@@ -28,7 +28,7 @@ const Daily = () => {
           getDepartmentHeadDaily(id),
           getPublicDepartments(),
         ])
-        setDaily(dailyResponse.data)
+        setDaily(dailyResponse.daily)
         const departmentsArray = Array.isArray(departmentsResponse.data)
           ? departmentsResponse.data
           : departmentsResponse.data?.departments || []
@@ -45,7 +45,7 @@ const Daily = () => {
   }, [id])
 
   const handleCommentSubmit = useCallback(
-    async e => {
+    async (e) => {
       e.preventDefault()
       if (!comment.trim()) return
 
@@ -53,41 +53,32 @@ const Daily = () => {
         const response = await createDailyComment({
           daily_id: id,
           comment,
-          parent_id: replyTo?.id,
+          parent_id: replyTo?.id || null,
         })
         const newComment = response.data
         setComment("")
         setReplyTo(null)
-        setDaily(prevDaily => {
+        setDaily((prevDaily) => {
           if (!prevDaily) return prevDaily
-          if (!replyTo) {
-            return {
-              ...prevDaily,
-              comments: [...prevDaily.comments, newComment],
-            }
-          } else {
-            const addReply = comments =>
-              comments.map(c => {
-                if (c.id === replyTo.id) {
-                  return {
+
+          if (replyTo) {
+            const updatedComments = prevDaily.comments.map((c) =>
+              c.id === replyTo.id
+                ? {
                     ...c,
-                    replies: c.replies
-                      ? [...c.replies, newComment]
-                      : [newComment],
+                    replies: [...(c.replies || []), newComment],
                   }
-                }
-                if (c.replies) {
-                  return {
+                : {
                     ...c,
-                    replies: addReply(c.replies),
+                    replies: c.replies ? c.replies.map((r) => r.id === replyTo.id ? { ...r, replies: [...(r.replies || []), newComment] } : r) : [],
                   }
-                }
-                return c
-              })
-            return {
-              ...prevDaily,
-              comments: addReply(prevDaily.comments),
-            }
+            )
+            return { ...prevDaily, comments: updatedComments }
+          }
+
+          return {
+            ...prevDaily,
+            comments: [...(prevDaily.comments || []), newComment],
           }
         })
       } catch (err) {
@@ -98,7 +89,7 @@ const Daily = () => {
     [comment, replyTo, id]
   )
 
-  const formatDate = useCallback(dateString => {
+  const formatDate = useCallback((dateString) => {
     return new Date(dateString).toLocaleDateString("ka-GE", {
       year: "numeric",
       month: "long",
@@ -108,7 +99,7 @@ const Daily = () => {
     })
   }, [])
 
-  const handleReply = useCallback(comment => {
+  const handleReply = useCallback((comment) => {
     setReplyTo(comment)
     document.getElementById("commentInput")?.focus()
   }, [])
@@ -128,12 +119,14 @@ const Daily = () => {
   )
 
   const memoizedDepartments = useMemo(
-    () =>
-      departments.map(dept => ({
+    () => {
+      console.log("departments in useMemo:", departments);
+      return departments.map((dept) => ({
         id: dept.id,
         display: dept.name,
         type: "department",
-      })),
+      }))
+    },
     [departments]
   )
 
@@ -157,28 +150,7 @@ const Daily = () => {
         <Container fluid>
           <div className="text-center">
             <h3 className="text-danger">{error}</h3>
-            <Button
-              color="primary"
-              onClick={() => navigate("/tools/daily-results")}
-            >
-              დაბრუნება
-            </Button>
-          </div>
-        </Container>
-      </div>
-    )
-  }
-
-  if (!daily) {
-    return (
-      <div className="page-content">
-        <Container fluid>
-          <div className="text-center">
-            <h3>Daily task not found</h3>
-            <Button
-              color="primary"
-              onClick={() => navigate("/tools/daily-results")}
-            >
+            <Button color="primary" onClick={() => navigate("/tools/daily-results")}>
               დაბრუნება
             </Button>
           </div>
@@ -190,29 +162,30 @@ const Daily = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem={daily.name} />
+        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem={daily?.name || ""} />
 
-        <Row>
-          <Col>
-            <Card>
-              <CardBody>
-                <DailyHeader daily={daily} formatDate={formatDate} />
-                <DailyContent daily={daily} />
-                <CommentsSection
-                  daily={daily}
-                  comment={comment}
-                  setComment={setComment}
-                  handleCommentSubmit={handleCommentSubmit}
-                  replyTo={replyTo}
-                  setReplyTo={setReplyTo}
-                  departments={departments}
-                  renderComment={renderComment}
-                  memoizedDepartments={memoizedDepartments}
-                />
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+        {daily && (
+          <Row>
+            <Col>
+              <Card>
+                <CardBody>
+                  <DailyHeader daily={daily} formatDate={formatDate} />
+                  <DailyContent daily={daily} />
+                  <CommentsSection
+                    daily={daily}
+                    comment={comment}
+                    setComment={setComment}
+                    handleCommentSubmit={handleCommentSubmit}
+                    replyTo={replyTo}
+                    setReplyTo={setReplyTo}
+                    renderComment={renderComment}
+                    memoizedDepartments={memoizedDepartments}
+                  />
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        )}
       </Container>
     </div>
   )
@@ -222,9 +195,7 @@ const DailyHeader = React.memo(({ daily, formatDate }) => (
   <div className="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h4 className="card-title mb-1">{daily.name}</h4>
-      <small className="text-muted d-block">
-        შეიქმნა: {formatDate(daily.created_at)}
-      </small>
+      <small className="text-muted d-block">შეიქმნა: {formatDate(daily.date)}</small>
     </div>
     <div className="d-flex align-items-center">
       <Chip
@@ -233,11 +204,7 @@ const DailyHeader = React.memo(({ daily, formatDate }) => (
         variant="outlined"
         className="me-2"
       />
-      <Chip
-        label={daily.user?.department?.name}
-        color="primary"
-        variant="outlined"
-      />
+      <Chip label={daily.department?.name} color="primary" variant="outlined" />
     </div>
   </div>
 ))
@@ -289,8 +256,7 @@ const CommentsSection = React.memo(
   }) => (
     <div className="comments-section mt-5">
       <h5 className="mb-4">
-        კომენტარები{" "}
-        <span className="text-muted">({daily.comments?.length || 0})</span>
+        კომენტარები <span className="text-muted">({daily.comments?.length || 0})</span>
       </h5>
 
       <Form onSubmit={handleCommentSubmit} className="mb-4">
@@ -310,17 +276,13 @@ const CommentsSection = React.memo(
           <MentionsInput
             id="commentInput"
             value={comment}
-            onChange={e => setComment(e.target.value)}
+            onChange={(e) => setComment(e.target.value)}
             placeholder={replyTo ? "დაწერეთ პასუხი..." : "დაწერეთ კომენტარი..."}
             mentions={memoizedDepartments}
           />
           <div className="text-end mt-3">
             {replyTo && (
-              <Button
-                color="light"
-                className="me-2"
-                onClick={() => setReplyTo(null)}
-              >
+              <Button color="light" className="me-2" onClick={() => setReplyTo(null)}>
                 გაუქმება
               </Button>
             )}
@@ -334,8 +296,8 @@ const CommentsSection = React.memo(
       <div className="comments-list">
         {Array.isArray(daily.comments) &&
           daily.comments
-            .filter(comment => !comment.parent_id)
-            .map(comment => renderComment(comment))}
+            .filter((comment) => !comment.parent_id)
+            .map((comment) => renderComment(comment))}
       </div>
     </div>
   )
@@ -357,7 +319,7 @@ const CommentItem = React.memo(
         )}
         <div className="d-flex align-items-start">
           <Avatar
-            src={comment.user?.avatar}
+            src={comment.user?.profile_image}
             alt={comment.user?.name}
             className="me-2"
             sx={{ width: 32, height: 32 }}
@@ -372,11 +334,7 @@ const CommentItem = React.memo(
                     {comment.user?.name} {comment.user?.sur_name}
                   </span>
                   {comment.department && (
-                    <Chip
-                      label={comment.department.name}
-                      size="small"
-                      className="ms-2"
-                    />
+                    <Chip label={comment.department.name} size="small" className="ms-2" />
                   )}
                 </h6>
                 <small className="text-muted d-block">
@@ -398,7 +356,7 @@ const CommentItem = React.memo(
       </div>
       {Array.isArray(comment.replies) && comment.replies.length > 0 && (
         <div className="replies-container mt-2">
-          {comment.replies.map(reply => renderComment(reply, level + 1))}
+          {comment.replies.map((reply) => renderComment(reply, level + 1))}
         </div>
       )}
     </div>

@@ -28,7 +28,7 @@ const DailyInner = () => {
           getDepartmentHeadDaily(id),
           getPublicDepartments(),
         ])
-        setDaily(dailyResponse.data)
+        setDaily(dailyResponse.daily)
         const departmentsArray = Array.isArray(departmentsResponse.data)
           ? departmentsResponse.data
           : departmentsResponse.data?.departments || []
