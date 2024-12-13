@@ -59,14 +59,10 @@ const DailiesInner = () => {
       } else {
         dailiesResponse = { dailies: { data: [], total: 0 } }
       }
-
-      const sortedData = dailiesResponse.dailies.data.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      )
       updateState({
         dailiesData: {
-          data: sortedData,
-          total: dailiesResponse.dailies.total,
+          data: dailiesResponse.dailies,
+          total: dailiesResponse.dailies.length,
         },
       })
     } catch (error) {
@@ -102,6 +98,7 @@ const DailiesInner = () => {
   const transformedDailies = useMemo(() => {
     return dailiesData.data.map(daily => ({
       ...daily,
+      user_full_name: `${daily.user.name} ${daily.user.sur_name}`,
     }))
   }, [dailiesData])
 
@@ -128,12 +125,12 @@ const DailiesInner = () => {
       },
       {
         Header: "დეპარტამენტი",
-        accessor: "departmentName",
+        accessor: "department.name",
         disableSortBy: true,
       },
       {
         Header: "სახელი/გვარი",
-        accessor: "user_id",
+        accessor: "user_full_name",
         disableSortBy: true,
       },
     ],
@@ -151,7 +148,7 @@ const DailiesInner = () => {
 
     return [
       {
-        field: "departmentName",
+        field: "department.name",
         label: "დეპარტამენტი",
         options: [{ value: "", label: "ყველა" }, ...departmentOptions],
       },
@@ -169,7 +166,7 @@ const DailiesInner = () => {
     const data = [
       headers,
       ...transformedDailies.map(daily => [
-        daily.departmentName,
+        daily.department.name,
         daily.id,
         daily.date,
         daily.description,
@@ -204,7 +201,7 @@ const DailiesInner = () => {
   return (
     <div className="page-content bg-gray-100">
       <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
-        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="შეპარტამენტისედან პასუხები" />
+        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="დეპარტამენტის დღის შედეგები" />
 
         <div className="bg-white rounded-xl shadow p-6">
           <Row className="mb-3">
@@ -236,7 +233,7 @@ const DailiesInner = () => {
             columns={columns}
             data={transformedDailies}
             filterOptions={filterOptions}
-            searchableFields={["name", "departmentName"]}
+            searchableFields={["name", "department.name"]}
             enableSearch={true}
             initialPageSize={pageSize}
             pageSizeOptions={PAGE_SIZE_OPTIONS}
