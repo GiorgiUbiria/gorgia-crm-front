@@ -71,6 +71,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       position: currentUser?.department?.name || "",
       working_start_date: currentUser?.working_start_date || "",
       purpose: "",
+      template_num: "",
     }
   } else if (activeTab === "2") {
     return {
@@ -82,6 +83,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       position: "",
       working_start_date: "",
       purpose: "",
+      template_num: "",
     }
   } else {
     return {
@@ -90,6 +92,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       position: "",
       working_start_date: "",
       purpose: "",
+      template_num: "",
     }
   }
 }
@@ -183,6 +186,7 @@ const HrPage = () => {
         is_other_user: activeTab === "2" ? 1 : 0,
         position: activeTab === "2" ? values.position : null,
         id_number: activeTab === "2" ? values.id_number : null,
+        template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === values.documentType) + 1,
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
 
@@ -247,7 +251,7 @@ const HrPage = () => {
             აირჩიეთ დოკუმენტის ტიპი
           </option>
           {Object.entries(DOCUMENT_TYPES).map(
-            ([key, type]) => (
+            ([key, type], i) => (
               <option
                 key={key}
                 value={type}
