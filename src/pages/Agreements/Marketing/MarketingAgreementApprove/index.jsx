@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import {
   Row,
   Col,
@@ -24,7 +24,7 @@ import {
   BsPerson,
 } from "react-icons/bs"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { toast, ToastContainer } from "react-toastify"
+import { ToastContainer } from "react-toastify"
 
 const statusMap = {
   pending: {

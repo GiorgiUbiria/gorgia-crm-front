@@ -47,7 +47,7 @@ const TaskList = () => {
   const [isLoading, setLoading] = useState(true)
   const [deleteModal, setDeleteModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [itemsPerPage] = useState(10)
   const [expandedRows, setExpandedRows] = useState([])
   const [sortConfig, setSortConfig] = useState({
     key: "created_at",
@@ -528,7 +528,7 @@ const TaskList = () => {
           )}
           <Modal isOpen={modal} toggle={toggleModal}>
             <ModalHeader toggle={toggleModal} tag="h4">
-              {!!isEdit ? "Edit Task" : "Add Task"}
+              {isEdit ? "Edit Task" : "Add Task"}
             </ModalHeader>
             <ModalBody>
               <Form

@@ -210,12 +210,13 @@ const MarketingAgreementForm = ({ onSuccess }) => {
         case 401:
           toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
           break
-        case 422:
+        case 422: {
           const validationErrors = error.response.data.errors
           Object.keys(validationErrors).forEach(key => {
             toast.error(validationErrors[key][0])
           })
           break
+        }
         case 500:
           toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
           break

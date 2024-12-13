@@ -8,8 +8,6 @@ import { fetchUser } from "services/user"
 const Overview = ({ task }) => {
   const [isTaskStarted, setIsTaskStarted] = useState(false)
   const [startTime, setStartTime] = useState(null)
-  const [endTime, setEndTime] = useState(null)
-  const [elapsedTime, setElapsedTime] = useState(null)
   const [user, setUser] = useState({})
 
   useEffect(() => {
@@ -43,8 +41,7 @@ const Overview = ({ task }) => {
       const finishTime = new Date()
       setEndTime(finishTime)
 
-      // Calculate the elapsed time in minutes
-      const timeDiff = (finishTime - startTime) / 1000 / 60 // converting milliseconds to minutes
+      const timeDiff = (finishTime - startTime) / 1000 / 60 
       setElapsedTime(timeDiff)
 
       try {

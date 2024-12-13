@@ -6,8 +6,10 @@ import DialogTitle from "@mui/material/DialogTitle"
 import Button from "@mui/material/Button"
 import TextField from "@mui/material/TextField"
 import { createDaily } from "services/daily"
+import useUserRoles from "hooks/useUserRoles"
 
 const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
+  const roles = useUserRoles()
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     name: "",
@@ -23,9 +25,13 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
 
   const handleSubmit = async e => {
     e.preventDefault()
+    if (!roles.includes("user") && !roles.includes("admin")) {
+      console.error("User does not have the necessary role.")
+      return
+    }
     try {
       setIsSubmitting(true)
-      await createDaily('department_head', formData)
+      await createDaily("regular", formData)
       onDailyAdded()
       toggle()
       setFormData({

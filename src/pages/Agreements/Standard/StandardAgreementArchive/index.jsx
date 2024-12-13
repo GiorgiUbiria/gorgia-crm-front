@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
-import { Row, Col, Card, CardBody, Nav, NavItem } from "reactstrap"
+import { Row, Col, Card, CardBody } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import {
@@ -106,7 +106,6 @@ const StandardAgreementArchive = () => {
           status: STATUS_MAPPING[agreement.status] || agreement.status,
           created_at: new Date(agreement.created_at).toLocaleDateString(),
           updated_at: new Date(agreement.updated_at).toLocaleString(),
-          requested_by: agreement.user.name + " " + agreement.user.sur_name,
           contragent: {
             name: agreement.contragent_name,
             id: agreement.contragent_id,

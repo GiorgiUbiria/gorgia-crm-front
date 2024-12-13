@@ -3,7 +3,6 @@ import PropTypes from "prop-types"
 import Box from "@mui/material/Box"
 import Collapse from "@mui/material/Collapse"
 import IconButton from "@mui/material/IconButton"
-import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
 import TableCell from "@mui/material/TableCell"
 import TableContainer from "@mui/material/TableContainer"
@@ -107,7 +106,6 @@ const MuiTable = ({
   onRowClick,
   enableSearch = false,
   searchableFields = [],
-  actions = [],
   renderRowDetails,
   filterOptions = [],
 }) => {
@@ -172,7 +170,6 @@ const MuiTable = ({
     setPageSize,
     state: { pageIndex, pageSize },
     setGlobalFilter,
-    setFilter,
     headerGroups,
     prepareRow,
     page,
@@ -641,7 +638,6 @@ MuiTable.propTypes = {
   onRowClick: PropTypes.func,
   enableSearch: PropTypes.bool,
   searchableFields: PropTypes.arrayOf(PropTypes.string),
-  actions: PropTypes.array,
   renderRowDetails: PropTypes.func,
   filterOptions: PropTypes.arrayOf(
     PropTypes.shape({

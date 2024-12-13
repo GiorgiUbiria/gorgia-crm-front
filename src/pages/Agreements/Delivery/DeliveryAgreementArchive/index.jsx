@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col, Card, CardBody } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import { getDepartmentAgreements as getDeliveryDepartmentAgreements } from "services/deliveryAgreement"
-import { toast, ToastContainer } from "react-toastify"
+import { ToastContainer } from "react-toastify"
 import { expandedRows } from "./expandedRows"
 
 const statusMap = {

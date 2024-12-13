@@ -169,10 +169,12 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
           toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
           break
         case 422:
-          const validationErrors = error.response.data.errors
-          Object.keys(validationErrors).forEach(key => {
-            toast.error(validationErrors[key][0])
-          })
+          {
+            const validationErrors = error.response.data.errors;
+            Object.keys(validationErrors).forEach(key => {
+              toast.error(validationErrors[key][0])
+            });
+          }
           break
         case 500:
           console.log(error.response)

@@ -13,7 +13,6 @@ import {
   BsCreditCard,
   BsMap,
   BsPerson,
-  BsVoicemail,
 } from "react-icons/bs"
 
 const handleDownload = async agreementId => {

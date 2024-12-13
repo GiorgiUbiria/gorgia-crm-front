@@ -43,18 +43,25 @@ const StandardAgreementForm = ({ onSuccess }) => {
     switch (field) {
       case "contragent_name":
         if (!value && value !== 0) errorMsg = "This field is required"
+        break
       case "contragent_address":
         if (!value && value !== 0) errorMsg = "This field is required"
+        break
       case "contragent_email":
         if (!value && value !== 0) errorMsg = "This field is required"
+        break
       case "contragent_director_name":
         if (!value && value !== 0) errorMsg = "This field is required"
+        break
       case "product_delivery_address":
         if (!value && value !== 0) errorMsg = "This field is required"
+        break
       case "bank_account":
         if (!value && value !== 0) errorMsg = "This field is required"
+        break
       case "contragent_id":
         if (!value && value !== 0) errorMsg = "This field is required"
+        break
       case "contract_initiator_name":
         if (!value && value !== 0) errorMsg = "This field is required"
         break
@@ -192,6 +199,8 @@ const StandardAgreementForm = ({ onSuccess }) => {
   }
 
   const handleError = error => {
+    const validationErrors = error.response?.data?.errors
+    
     if (error.response) {
       switch (error.response.status) {
         case 400:
@@ -201,10 +210,11 @@ const StandardAgreementForm = ({ onSuccess }) => {
           toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
           break
         case 422:
-          const validationErrors = error.response.data.errors
-          Object.keys(validationErrors).forEach(key => {
-            toast.error(validationErrors[key][0])
-          })
+          if (validationErrors) {
+            Object.keys(validationErrors).forEach(key => {
+              toast.error(validationErrors[key][0])
+            })
+          }
           break
         case 500:
           toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
@@ -351,7 +361,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                     id="contragent_id"
                     value={formData.contragent_id}
                     onChange={handleInputChange}
-                    placeholder="ჩაწერეთ საიდენტიფიკაციო კოდი..."
+                    placeholder="ჩაწერეთ საი���ენტიფიკაციო კოდი..."
                   />
                   {errors.contragent_id && (
                     <div className="form-error">
@@ -441,7 +451,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                     id="bank_account"
                     value={formData.bank_account}
                     onChange={handleInputChange}
-                    placeholder="ჩაწერეთ საბანკო რეკვიზიტები..."
+                    placeholder="ჩაწერეთ ს���ბანკო რეკვიზიტები..."
                   />
                   {errors.bank_account && (
                     <div className="form-error">

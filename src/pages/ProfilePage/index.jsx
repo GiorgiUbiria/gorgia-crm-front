@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react"
 import { changePassword, updateUser } from "../../services/user"
-import { getPublicDepartments } from "../../services/admin/department"
 import { useTranslation } from "react-i18next"
 import { useSelector } from "react-redux"
 import { FiCamera, FiUser, FiMail, FiLock } from "react-icons/fi"
@@ -233,22 +232,6 @@ const Input = styled.input`
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 14px;
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(16, 93, 141, 0.2);
-    outline: none;
-  }
-`
-
-const Select = styled.select`
-  padding: 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 14px;
-  background-color: white;
-  cursor: pointer;
   transition: all 0.2s ease;
 
   &:focus {

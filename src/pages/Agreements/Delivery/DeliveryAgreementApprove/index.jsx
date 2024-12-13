@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import {
   Row,
   Col,
@@ -17,7 +17,7 @@ import {
   updateAgreementStatus as updateDeliveryAgreementStatus,
 } from "services/deliveryAgreement"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { toast, ToastContainer } from "react-toastify"
+import { ToastContainer } from "react-toastify"
 import { expandedRows } from "./expandedRows"
 
 const statusMap = {

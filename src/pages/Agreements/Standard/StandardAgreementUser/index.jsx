@@ -109,7 +109,6 @@ const StandardAgreementUser = () => {
           status: STATUS_MAPPING[agreement.status] || agreement.status,
           created_at: new Date(agreement.created_at).toLocaleDateString(),
           updated_at: new Date(agreement.updated_at).toLocaleString(),
-          requested_by: agreement.user.name + " " + agreement.user.sur_name,
           contragent: {
             name: agreement.contragent_name,
             id: agreement.contragent_id,

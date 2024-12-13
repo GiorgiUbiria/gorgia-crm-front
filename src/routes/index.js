@@ -13,14 +13,15 @@ import UserVocation from "pages/Applications/Vacation/UserVocations"
 import VacationPage from "pages/Applications/Vacation/VacationPage"
 import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
 import MakeComment from "pages/Comment/MakeComment"
-import Dailies from "pages/Dailies"
+import Dailies from "pages/Dailies/index.jsx"
 import Daily from "pages/Daily"
+import DailiesInner from "pages/DailiesInner/index.jsx"
+import DailyInner from "pages/DailyInner"
 import FarmWork from "pages/FarmWork"
 import HeadPage from "pages/HeadPage"
 import HrPage from "pages/HrDocuments/HrPage"
 import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import UserHrDocuments from "pages/HrDocuments/UserHrDocuments"
-import InvoicePage from "pages/InvoicePage/InvoicePage"
 import JobDetails from "pages/JobPages/JobDetails"
 
 // Request Agreement
@@ -72,7 +73,6 @@ import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 
-// Route configuration objects
 const dashboardRoutes = {
   path: "/dashboard",
   component: <Dashboard />,
@@ -99,10 +99,6 @@ const adminRoutes = {
     visitors: {
       path: "/admin/visitors",
       component: <VisitorsTraffic />,
-    },
-    paymentMonitoring: {
-      path: "/admin/payment-monitoring",
-      component: <InvoicePage />,
     },
     archive: {
       path: "/admin/archive",
@@ -383,15 +379,24 @@ const toolsRoutes = {
     dailyResults: {
       path: "/tools/daily-results",
       component: <Dailies />,
+      permission: "daily-results.view-own",
     },
     dailyResultDetails: {
       path: "/tools/daily-results/:id",
       component: <Daily />,
+      permission: "daily-results.view-own",
+    },
+    innerDailyResults: {
+      path: "/tools/inner-daily-results",
+      component: <DailiesInner />,
+    },
+    innerDailyResultDetails: {
+      path: "/tools/inner-daily-results/:id",
+      component: <DailyInner />,
     },
   },
 }
 
-// Helper function to flatten nested routes
 const flattenRoutes = routeObj => {
   const routes = []
 
@@ -413,7 +418,6 @@ const flattenRoutes = routeObj => {
   return routes
 }
 
-// Combine all protected routes
 const authProtectedRoutes = [
   {
     path: "/",

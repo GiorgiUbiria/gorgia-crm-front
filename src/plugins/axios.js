@@ -2,7 +2,7 @@ import axios from "axios"
 
 axios.defaults.withCredentials = true
 
-const baseURL = process.env.REACT_APP_BASE_URL
+const baseURL = process.env.REACT_APP_API_URL
 
 const defaultInstance = axios.create({
   baseURL,

@@ -41,8 +41,6 @@ const VipLeadDetailPage = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const {
     comments,
-    isLoading: commentsLoading,
-    error,
     fetchComments,
     addComment,
     deleteComment,

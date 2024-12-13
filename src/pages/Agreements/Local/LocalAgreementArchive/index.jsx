@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col, Card, CardBody } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getDepartmentAgreements } from "services/localAgreement"

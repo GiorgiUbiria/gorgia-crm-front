@@ -1,11 +1,8 @@
 import PropTypes from "prop-types"
-import React, { useState } from "react"
+import React from "react"
 
 import { connect } from "react-redux"
 import { Link } from "react-router-dom"
-
-// Reactstrap
-import { Dropdown } from "reactstrap"
 
 import NotificationDropdown from "../CommonForBoth/TopbarDropdown/NotificationDropdown"
 import ProfileMenu from "../CommonForBoth/TopbarDropdown/ProfileMenu"

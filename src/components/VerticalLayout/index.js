@@ -38,12 +38,10 @@ const Layout = props => {
     }));
 
   const {
-    isPreloader,
     leftSideBarThemeImage,
     layoutWidth,
     leftSideBarType,
     topbarTheme,
-    showRightSidebar,
     leftSideBarTheme,
     layoutModeType
   } = useSelector(selectLayoutProperties);
