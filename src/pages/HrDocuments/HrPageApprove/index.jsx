@@ -9,7 +9,7 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material"
-import { Row, Col, TabContent, Label } from "reactstrap"
+import { Row, Col, TabContent, Label, Spinner } from "reactstrap"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 
 const statusMap = {
@@ -63,6 +63,7 @@ const HrPageApprove = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState(null)
   const [selectedDocumentId, setSelectedDocumentId] = useState(null)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const [formData, setFormData] = useState({})
 
@@ -75,7 +76,9 @@ const HrPageApprove = () => {
     }
   }
 
+
   const findDocument = async documentId => {
+    
     const response = await getHrDocuments()
     const documentData = response.data.find(d => d.id === documentId)
     setFormData(data => ({
@@ -102,6 +105,10 @@ const HrPageApprove = () => {
       working_start_date: "",
       purpose: documentData?.purpose,
       comment: "",
+      salary: "",
+      salary_text: "",
+      template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) + 1,
+      document_number: "",
     }))
   }
 
@@ -114,6 +121,7 @@ const HrPageApprove = () => {
     status,
     additionalData = {}
   ) => {
+    setIsProcessing(true)
     try {
       const response = await updateHrDocumentStatus(
         documentId,
@@ -132,6 +140,10 @@ const HrPageApprove = () => {
       }
     } catch (err) {
       console.error("Error updating document status:", err)
+    }
+    finally{
+      fetchDocuments()
+      setIsProcessing(false)
     }
   }
 
@@ -301,7 +313,6 @@ const HrPageApprove = () => {
     setModalOpen(false)
     setSelectedStatus(null)
     setSelectedDocumentId(null)
-    setComment("")
     setFormData({})
   }
 
@@ -333,6 +344,14 @@ const HrPageApprove = () => {
               />
             </Col>
           </Row>
+          {isProcessing ? (
+            <div className="text-center">
+              <Spinner color="primary" />
+              <p className="mt-2">
+                გთხოვთ დაელოდოთ, მიმდინარეობს დამუშავება...
+              </p>
+            </div>
+          ) : (
           <MuiTable
             data={transformedHrDocuments}
             columns={columns}
@@ -347,6 +366,7 @@ const HrPageApprove = () => {
             ]}
             renderRowDetails={row => <div>{row.comment}</div>}
           />
+          )}
           <Dialog open={modalOpen} onClose={handleModalClose}>
             <DialogTitle>
               {selectedStatus === "approved"
@@ -356,7 +376,7 @@ const HrPageApprove = () => {
 
             <div className="mt-4">
               <form></form>
-              <Formik enableReinitialize initialValues={formData}>
+              <Formik enableReinitialize initialValues={formData} >
                 {({ values }) => (
                   <Form>
                     <TabContent>
@@ -410,7 +430,34 @@ const HrPageApprove = () => {
                             </div>
                           </div>
 
-                          <div className="mb-4">
+                            {/* User Info */}
+                            <div className="row g-3 mb-4">
+                            <div className="col-md-6">
+                              <Label className="form-label">
+                                დოკუმენტის ნომერი
+                              </Label>
+
+                              <Field
+                                type="text"
+                                name="document_number"
+                                value={formData.document_number}
+                                onChange={e =>
+                                  setFormData(data => ({
+                                    ...data,
+                                    document_number: e.target.value,
+                                  }))
+                                }
+                                className="form-control"
+                              />
+
+                              <ErrorMessage
+                                name="document_number"
+                                component="div"
+                                className="text-danger mt-1"
+                              />
+                            </div>
+
+                            <div className="col-md-6">
                             <Label className="form-label">
                               დოკუმენტის ტიპი
                             </Label>
@@ -447,6 +494,9 @@ const HrPageApprove = () => {
                               </div>
                             )}
                           </div>
+                          </div>
+
+                          
 
                           {/* User Info */}
                           <div className="row g-3 mb-4">
@@ -498,9 +548,60 @@ const HrPageApprove = () => {
                               />
                             </div>
                           </div>
-
                           {/* Purpose field for paid documents */}
                           {isPaidDocument(values.documentType) && (
+                            <>
+                          <div className="row g-3 mb-4">
+                            <div className="col-md-6">
+                              <Label className="form-label">
+                                ანაზღაურება
+                              </Label>
+
+                              <Field
+                                type="text"
+                                name="salary"
+                                value={formData.salary}
+                                onChange={e =>
+                                  setFormData(data => ({
+                                    ...data,
+                                    salary: e.target.value,
+                                  }))
+                                }
+                                className="form-control"
+                                />
+
+                              <ErrorMessage
+                                name="salary"
+                                component="div"
+                                className="text-danger mt-1"
+                                />
+                            </div>
+
+                            <div className="col-md-6">
+                              <Label className="form-label">ანაზღაურება (ტექსტური)</Label>
+
+                              <Field
+                                type="text"
+                                name="salary_text"
+                                value={formData.salary_text}
+                                onChange={e =>
+                                  setFormData(data => ({
+                                    ...data,
+                                    salary_text: e.target.value,
+                                  }))
+                                }
+                                className="form-control"
+                                />
+
+                              <ErrorMessage
+                                name="salary_text"
+                                component="div"
+                                className="text-danger mt-1"
+                                />
+                            </div>
+                          </div>
+
+                          
                             <div className="mb-4">
                               <Label className="form-label">მიზანი</Label>
                               <Field
@@ -514,13 +615,14 @@ const HrPageApprove = () => {
                                     purpose: e.target.value,
                                   }))
                                 }
-                              />
+                                />
                               <ErrorMessage
                                 name="purpose"
                                 component="div"
                                 className="text-danger mt-1"
-                              />
+                                />
                             </div>
+                                </>
                           )}
                         </>
                       )}
