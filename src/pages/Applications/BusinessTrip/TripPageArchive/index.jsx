@@ -45,46 +45,173 @@ const TYPE_MAPPING = {
 }
 
 const ExpandedRowContent = ({ rowData }) => {
-  const details = [
-    { label: "მივლინების ადგილი", value: rowData.place_of_trip },
-    { label: "მივლინების საფუძველი", value: rowData.business_trip_basis },
-    { label: "მივლინების მიზანი", value: rowData.purpose_of_trip },
-    { label: "აღწერა", value: rowData.description },
-    { label: "მივლინების მოწყობა", value: rowData.business_trip_arrangement },
-    {
-      label: "მოსალოდნელი შედეგი",
-      value: rowData.expected_result_business_trip,
+  if (!rowData) return null
+
+  const {
+    start_date,
+    end_date,
+    requested_for,
+    departure_location,
+    arrival_location,
+    expanded: {
+      purpose,
+      substitute: {
+        substitute_name,
+        substitute_position,
+        substitute_department,
+      },
+      review: { reviewed_by, reviewed_at, rejection_reason },
+      vehicle: { vehicle_model, vehicle_plate, fuel_cost, vehicle_expense },
+      costs: { food_cost, accommodation_cost, transportation_cost },
     },
-    { label: "ფაქტობრივი შედეგი", value: rowData.actual_result },
-    { label: "მივლინების ტიპი", value: rowData.trip_type },
-    {
-      label: "ხარჯები",
-      value: `
-      სამივლინებო: ${rowData.expense_vocation}
-      ტრანსპორტი: ${rowData.expense_transport}
-      საცხოვრებელი: ${rowData.expense_living}
-      კვება: ${rowData.expense_meal}
-      ჯამური: ${rowData.total_expense}
-    `,
-    },
-  ]
+  } = rowData
 
   return (
-    <div className="p-3 bg-light rounded">
-      {rowData.comment && (
-        <div className="mb-3">
-          <span className="fw-bold text-danger">უარყოფის მიზეზი: </span>
-          <p className="mb-0">{rowData.comment}</p>
-        </div>
-      )}
-      <div className="row g-2">
-        {details.map((detail, index) => (
-          <div key={index} className="col-md-6">
-            <span className="fw-bold">{detail.label}: </span>
-            <span>{detail.value || "არ არის მითითებული"}</span>
+    <div className="p-3 bg-white rounded">
+      <Row className="g-3">
+        <Col md={6}>
+          <div className="border rounded p-3 mb-3">
+            <div className="d-flex align-items-center mb-2">
+              <i className="bx bx-map-pin me-2 text-primary"></i>
+              <h6 className="mb-0">მარშრუტი და დეტალები</h6>
+            </div>
+            <div className="d-flex align-items-center mb-2">
+              <small className="text-muted">{departure_location}</small>
+              <i className="bx bx-right-arrow-alt mx-2"></i>
+              <small className="text-muted">{arrival_location}</small>
+            </div>
+            <div className="d-flex gap-3">
+              <small>
+                <i className="bx bx-calendar me-1"></i>
+                {start_date} - {end_date}
+              </small>
+              <small>
+                <i className="bx bx-user me-1"></i>
+                {requested_for}
+              </small>
+            </div>
           </div>
-        ))}
-      </div>
+
+          {vehicle_expense && (
+            <div className="border rounded p-3 mb-3">
+              <div className="d-flex align-items-center mb-2">
+                <i className="bx bx-car me-2 text-primary"></i>
+                <h6 className="mb-0">ავტომობილის ინფორმაცია</h6>
+              </div>
+              {vehicle_expense === true ? (
+                <div className="d-flex flex-wrap gap-3">
+                  <small>
+                    <i className="bx bx-car me-1"></i>
+                    {vehicle_model}
+                  </small>
+                  <small>
+                    <i className="bx bx-tag me-1"></i>
+                    {vehicle_plate}
+                  </small>
+                  <small>
+                    <i className="bx bx-gas-pump me-1"></i>
+                    {fuel_cost} ₾/100კმ
+                  </small>
+                </div>
+              ) : (
+                <small>საკუთარი ავტომობილის გარეშე</small>
+              )}
+            </div>
+          )}
+        </Col>
+
+        <Col md={6}>
+          <div className="border rounded p-3 mb-3">
+            <div className="d-flex align-items-center mb-2">
+              <i className="bx bx-money me-2 text-primary"></i>
+              <h6 className="mb-0">ხარჯები</h6>
+            </div>
+            <div className="d-flex flex-wrap gap-3">
+              <div
+                className="bg-light rounded p-2"
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                <i className="bx bx-restaurant me-1"></i>
+                <small>კვება: {food_cost} ₾</small>
+              </div>
+              <div
+                className="bg-light rounded p-2"
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                <i className="bx bx-hotel me-1"></i>
+                <small>საცხოვრებელი: {accommodation_cost} ₾</small>
+              </div>
+              <div
+                className="bg-light rounded p-2"
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                <i className="bx bx-train me-1"></i>
+                <small>ტრანსპორტი: {transportation_cost} ₾</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="border rounded p-3">
+            <div className="d-flex align-items-center mb-2">
+              <i className="bx bx-user-pin me-2 text-primary"></i>
+              <h6 className="mb-0">შემცვლელი</h6>
+            </div>
+            <div className="d-flex flex-column gap-1">
+              <small>
+                <i className="bx bx-user me-1"></i>
+                {substitute_name}
+              </small>
+              <small>
+                <i className="bx bx-briefcase me-1"></i>
+                {substitute_position}
+              </small>
+              <small>
+                <i className="bx bx-building me-1"></i>
+                {substitute_department}
+              </small>
+            </div>
+          </div>
+        </Col>
+
+        <Col md={12}>
+          <div className="border rounded p-3">
+            <Row>
+              <Col md={6}>
+                <div className="d-flex align-items-center mb-2">
+                  <i className="bx bx-target-lock me-2 text-primary"></i>
+                  <h6 className="mb-0">მიზანი</h6>
+                </div>
+                <small className="text-muted">{purpose}</small>
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center mb-2">
+                  <i className="bx bx-check-circle me-2 text-primary"></i>
+                  <h6 className="mb-0">განხილვა</h6>
+                </div>
+                {reviewed_by && (
+                  <small>
+                    <i className="bx bx-user me-1"></i>
+                    {reviewed_by} - {reviewed_at}
+                  </small>
+                )}
+                {rejection_reason && (
+                  <small
+                    className="d-block text-danger mt-1"
+                    style={{
+                      color: "#dc3545",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <i className="bx bx-x-circle me-1"></i>
+                    {rejection_reason}
+                  </small>
+                )}
+              </Col>
+            </Row>
+          </div>
+        </Col>
+      </Row>
     </div>
   )
 }
@@ -97,7 +224,7 @@ const TripPageArchive = () => {
   const fetchTrips = async () => {
     try {
       const response = await getAllTripsList()
-      setTrips(response.data.business)
+      setTrips(response.data.business_trips)
     } catch (err) {
       console.error("Error fetching trip requests:", err)
     }
@@ -119,13 +246,18 @@ const TripPageArchive = () => {
         disableSortBy: true,
       },
       {
-        Header: "ადგილი",
-        accessor: "place_of_trip",
+        Header: "მომთხოვნი პირი",
+        accessor: "requested_for",
         disableSortBy: true,
       },
       {
-        Header: "მიზეზი",
-        accessor: "purpose_of_trip",
+        Header: "გამგზავრების ადგილი",
+        accessor: "departure_location",
+        disableSortBy: true,
+      },
+      {
+        Header: "დანიშნულების ადგილი",
+        accessor: "arrival_location",
         disableSortBy: true,
       },
       {
@@ -139,8 +271,15 @@ const TripPageArchive = () => {
       {
         Header: "ტიპი",
         accessor: "trip_type",
+        disableSortBy: true,
         Cell: ({ value }) => (
-          <span>
+          <span
+            style={{
+              color: typeMap[value].color,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
             <i className={`bx ${typeMap[value].icon} me-2`}></i>
             {typeMap[value].label}
           </span>
@@ -149,7 +288,6 @@ const TripPageArchive = () => {
       {
         Header: "სტატუსი",
         accessor: "status",
-        disableSortBy: true,
         Cell: ({ value }) => (
           <span
             style={{
@@ -182,11 +320,6 @@ const TripPageArchive = () => {
           </span>
         ),
       },
-      {
-        Header: "შეამოწმა",
-        accessor: "reviewed_by",
-        disableSortBy: true,
-      },
     ],
     []
   )
@@ -195,19 +328,45 @@ const TripPageArchive = () => {
     id: trip.id,
     trip_type: TYPE_MAPPING[trip.trip_type] || trip.trip_type,
     status: STATUS_MAPPING[trip.status] || trip.status,
-    place_of_trip: trip.place_of_trip,
-    purpose_of_trip: trip.purpose_of_trip,
     start_date: new Date(trip.start_date).toLocaleDateString(),
     end_date: new Date(trip.end_date).toLocaleDateString(),
-    requested_by: trip.user?.name + " " + trip.user?.sur_name || "არ არის მითითებული",
-    reviewed_by: trip.reviewed_by?.name + " " + trip.reviewed_by?.sur_name || "არ არის მითითებული",
-    user: {
-      name: trip.performer_name,
-      id: trip.id_code_or_personal_number,
-      position: trip.service_description,
-      location: trip.legal_or_actual_address,
+    requested_by: trip.user?.name + " " + trip.user?.sur_name,
+    requested_at: new Date(trip.created_at).toLocaleDateString(),
+    requested_for: `${trip.employee_name || ""} | ${trip.position || ""} | ${
+      trip.department || ""
+    }`,
+    departure_location: trip.departure_location,
+    arrival_location: trip.arrival_location,
+    expanded: {
+      purpose: trip.purpose,
+      substitute: {
+        substitute_name: trip.substitute_name,
+        substitute_position: trip.substitute_position,
+        substitute_department: trip.substitute_department,
+      },
+      review: {
+        reviewed_by: trip.reviewed_by
+          ? trip.reviewed_by?.name + " " + trip.reviewed_by?.sur_name
+          : "ჯერ არ არის განხილული",
+        reviewed_at: trip.reviewed_at
+          ? new Date(trip.reviewed_at).toLocaleDateString()
+          : "-",
+        rejection_reason: trip.rejection_reason || "",
+      },
+      vehicle: {
+        vehicle_model: trip.vehicle_model,
+        vehicle_plate: trip.vehicle_plate,
+        fuel_cost: trip.fuel_cost,
+        vehicle_expense: trip.vehicle_expense
+          ? "საკუთარი ავტომობილით"
+          : "საკუთარი ავტომობილის გარეშე",
+      },
+      costs: {
+        food_cost: trip.food_cost,
+        accommodation_cost: trip.accommodation_cost,
+        transportation_cost: trip.transportation_cost,
+      },
     },
-    comment: trip.comment,
   }))
 
   const filterOptions = [
@@ -252,7 +411,12 @@ const TripPageArchive = () => {
                 filterOptions={filterOptions}
                 initialPageSize={10}
                 enableSearch={true}
-                searchableFields={["requested_by", "reviewed_by"]}
+                searchableFields={[
+                  "requested_by",
+                  "reviewed_by",
+                  "departure_location",
+                  "arrival_location",
+                ]}
                 renderRowDetails={expandedRow}
               />
             </Col>

@@ -14,8 +14,8 @@ export const createTrip = async data => {
 
 export const updateTripStatus = async (id, status, comment = null) => {
   const data = {
-    status,
-    comment,
+    approval_status: status,
+    rejection_reason: comment,
   }
   return defaultInstance.put(`/api/business-trip/${id}/status`, data)
 }
