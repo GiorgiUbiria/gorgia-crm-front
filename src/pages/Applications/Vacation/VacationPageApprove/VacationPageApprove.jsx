@@ -9,13 +9,19 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
-  ModalFooter,
 } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getVacations } from "../../../../services/admin/vacation"
 import { updateVacationStatus } from "../../../../services/vacation"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
+import {
+  BiCheck,
+  BiX,
+  BiQuestionMark,
+  BiXCircle,
+  BiArrowBack,
+} from "react-icons/bi"
 
 const statusMap = {
   pending: {
@@ -70,7 +76,16 @@ const TYPE_MAPPING = {
 const ExpandedRowContent = ({ rowData }) => {
   if (!rowData) return null
 
-  const { holiday_days, substitute, review } = rowData.expanded
+  const {
+    start_date,
+    end_date,
+    requested_for,
+    expanded: {
+      holiday_days,
+      substitute: { substitute_name, substitute_position },
+      review: { reviewed_by, reviewed_at, rejection_reason },
+    },
+  } = rowData
 
   const dayMapGe = {
     is_monday: "ორშაბათი",
@@ -87,54 +102,91 @@ const ExpandedRowContent = ({ rowData }) => {
     .map(([dayKey]) => dayMapGe[dayKey] || dayKey)
 
   return (
-    <div className="p-4 bg-light rounded">
-      <div className="row">
-        <div className="col-md-4">
-          <h5>შვებულების დღეები</h5>
-          {selectedDays.length > 0 ? (
-            <ul className="list-unstyled">
+    <div className="p-3 bg-white rounded">
+      <Row className="g-3">
+        <Col md={6}>
+          <div className="border rounded p-3 mb-3">
+            <div className="d-flex align-items-center mb-2">
+              <i className="bx bx-calendar me-2 text-primary"></i>
+              <h6 className="mb-0">შვებულების დეტალები</h6>
+            </div>
+            <div className="d-flex gap-3">
+              <small style={{ display: "flex", alignItems: "center" }}>
+                <i className="bx bx-calendar me-1"></i>
+                {start_date} - {end_date}
+              </small>
+              <small style={{ display: "flex", alignItems: "center" }}>
+                <i className="bx bx-user me-1"></i>
+                {requested_for}
+              </small>
+            </div>
+          </div>
+
+          <div className="border rounded p-3">
+            <div className="d-flex align-items-center mb-2">
+              <i className="bx bx-calendar-check me-2 text-primary"></i>
+              <h6 className="mb-0">შვებულების დღეები</h6>
+            </div>
+            <div className="d-flex flex-wrap gap-2">
               {selectedDays.map((day, index) => (
-                <li key={index}>
-                  <span className="badge bg-primary">{day}</span>
-                </li>
+                <div
+                  key={index}
+                  className="bg-light rounded p-2"
+                  style={{ display: "flex", alignItems: "center" }}
+                >
+                  <i className="bx bx-calendar-event me-1"></i>
+                  <small>{day}</small>
+                </div>
               ))}
-            </ul>
-          ) : (
-            <p>შვებულების დღეები დანიშნული არ არის.</p>
-          )}
-        </div>
+            </div>
+          </div>
+        </Col>
 
-        <div className="col-md-4">
-          <h5>შემცვლელი პირი</h5>
-          <p>
-            <strong>სახელი:</strong> {substitute?.substitute_name || "უცნობია"}
-          </p>
-          <p>
-            <strong>პოზიცია:</strong>{" "}
-            {substitute?.substitute_position || "უცნობია"}
-          </p>
-          <p>
-            <strong>დეპარტამენტი:</strong>{" "}
-            {substitute?.substitute_department || "უცნობია"}
-          </p>
-        </div>
+        <Col md={6}>
+          <div className="border rounded p-3 mb-3">
+            <div className="d-flex align-items-center mb-2">
+              <i className="bx bx-user-pin me-2 text-primary"></i>
+              <h6 className="mb-0">შემცვლელი</h6>
+            </div>
+            <div className="d-flex flex-column gap-1">
+              <small style={{ display: "flex", alignItems: "center" }}>
+                <i className="bx bx-user me-1"></i>
+                {substitute_name}
+              </small>
+              <small style={{ display: "flex", alignItems: "center" }}>
+                <i className="bx bx-briefcase me-1"></i>
+                {substitute_position}
+              </small>
+            </div>
+          </div>
 
-        <div className="col-md-4">
-          <h5>განხილვა</h5>
-          <p>
-            <strong>განიხილა:</strong> {review?.reviewed_by || "უცნობია"}
-          </p>
-          <p>
-            <strong>განიხილვის თარიღი:</strong>{" "}
-            {review?.reviewed_at || "უცნობია"}
-          </p>
-          {review?.rejection_reason && (
-            <p>
-              <strong>უარყოფის მიზეზი:</strong> {review.rejection_reason}
-            </p>
-          )}
-        </div>
-      </div>
+          <div className="border rounded p-3">
+            <div className="d-flex align-items-center mb-2">
+              <i className="bx bx-check-circle me-2 text-primary"></i>
+              <h6 className="mb-0">განხილვა</h6>
+            </div>
+            {reviewed_by && (
+              <small style={{ display: "flex", alignItems: "center" }}>
+                <i className="bx bx-user me-1"></i>
+                {reviewed_by} - {reviewed_at}
+              </small>
+            )}
+            {rejection_reason && (
+              <small
+                className="d-block text-danger mt-1"
+                style={{
+                  color: "#dc3545",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <i className="bx bx-x-circle me-1"></i>
+                {rejection_reason}
+              </small>
+            )}
+          </div>
+        </Col>
+      </Row>
     </div>
   )
 }
@@ -352,7 +404,6 @@ const VacationPageApprove = () => {
       substitute: {
         substitute_name: vacation.substitute_name || "უცნობია",
         substitute_position: vacation.substitute_position || "უცნობია",
-        substitute_department: vacation.substitute_department || "უცნობია",
       },
       review: {
         reviewed_by: vacation.reviewed_by
@@ -421,34 +472,40 @@ const VacationPageApprove = () => {
         <ModalHeader toggle={() => setConfirmModal(false)}>
           დაადასტურეთ მოქმედება
         </ModalHeader>
-        <ModalBody>
-          დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
+        <ModalBody className="text-center">
+          <BiQuestionMark className="text-warning" size={48} />
+          <p className="mb-4">
+            დარწმუნებული ხართ, რომ გსურთ შვებულების მოთხოვნის დამტკიცება?
+          </p>
+          <div className="d-flex justify-content-center gap-2">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleConfirmAction}
+              startIcon={<BiCheck />}
+            >
+              დადასტურება
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setConfirmModal(false)}
+              startIcon={<BiX />}
+            >
+              გაუქმება
+            </Button>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleConfirmAction}
-          >
-            დადასტურება
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setConfirmModal(false)}
-          >
-            გაუქმება
-          </Button>
-        </ModalFooter>
       </Modal>
       <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
         <ModalHeader toggle={() => setRejectionModal(false)}>
+          <BiXCircle className="text-danger me-2" size={24} />
           უარყოფის მიზეზი
         </ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>
-              <Label for="rejectionComment">
+              <Label for="rejectionComment" className="fw-bold mb-2">
                 გთხოვთ მიუთითოთ უარყოფის მიზეზი
               </Label>
               <Input
@@ -459,27 +516,31 @@ const VacationPageApprove = () => {
                 onChange={e => setRejectionComment(e.target.value)}
                 rows="4"
                 required
+                className="mb-3"
+                placeholder="შეიყვანეთ უარყოფის დეტალური მიზეზი..."
               />
             </FormGroup>
           </Form>
+          <div className="d-flex justify-content-end gap-2">
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleRejectionSubmit}
+              disabled={!rejectionComment.trim()}
+              startIcon={<BiXCircle />}
+            >
+              უარყოფა
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setRejectionModal(false)}
+              startIcon={<BiArrowBack />}
+            >
+              გაუქმება
+            </Button>
+          </div>
         </ModalBody>
-        <ModalFooter>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleRejectionSubmit}
-            disabled={!rejectionComment.trim()}
-          >
-            უარყოფა
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setRejectionModal(false)}
-          >
-            გაუქმება
-          </Button>
-        </ModalFooter>
       </Modal>
     </React.Fragment>
   )

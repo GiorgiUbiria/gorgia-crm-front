@@ -39,19 +39,33 @@ const InputWithError = React.memo(function InputWithError({
   return (
     <div className="mb-3">
       <Label for={name}>{label}</Label>
-      <Input
-        type={type}
-        id={name}
-        name={name}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        value={formik.values[name]}
-        invalid={formik.touched[name] && Boolean(formik.errors[name])}
-        disabled={disabled}
-        {...props}
-      >
-        {children}
-      </Input>
+      {type === "select" ? (
+        <Input
+          type={type}
+          id={name}
+          name={name}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values[name]}
+          invalid={formik.touched[name] && Boolean(formik.errors[name])}
+          disabled={disabled}
+          {...props}
+        >
+          {children}
+        </Input>
+      ) : (
+        <Input
+          type={type}
+          id={name}
+          name={name}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values[name]}
+          invalid={formik.touched[name] && Boolean(formik.errors[name])}
+          disabled={disabled}
+          {...props}
+        />
+      )}
       {formik.touched[name] && formik.errors[name] && (
         <div className="text-danger mt-1">{formik.errors[name]}</div>
       )}
@@ -121,7 +135,6 @@ const BusinessPage = () => {
     return Math.max(1, totalDays)
   }, [])
 
-  // Initial values for "My Trip" (Tab 1)
   const initialValuesMyTrip = useMemo(
     () => ({
       trip_type: "",
@@ -129,7 +142,6 @@ const BusinessPage = () => {
       department: user?.department?.name || "",
       position: user?.position || "",
       substitute_name: "",
-      substitute_department: "",
       substitute_position: "",
       start_date: "",
       end_date: "",
@@ -144,12 +156,10 @@ const BusinessPage = () => {
       vehicle_model: "",
       vehicle_plate: "",
       fuel_cost: 0,
-      final_cost: 0,
     }),
     [user]
   )
 
-  // Initial values for "Employee Trip" (Tab 2)
   const initialValuesEmployeeTrip = useMemo(
     () => ({
       trip_type: "",
@@ -157,7 +167,6 @@ const BusinessPage = () => {
       department: "",
       position: "",
       substitute_name: "",
-      substitute_department: "",
       substitute_position: "",
       start_date: "",
       end_date: "",
@@ -172,56 +181,52 @@ const BusinessPage = () => {
       vehicle_model: "",
       vehicle_plate: "",
       fuel_cost: 0,
-      final_cost: 0,
     }),
     []
   )
 
-  // Formik for "My Trip" (Tab 1)
+  const calculateFinalCost = values => {
+    const {
+      accommodation_cost = 0,
+      transportation_cost = 0,
+      food_cost = 0,
+      fuel_cost = 0,
+    } = values
+    return (
+      Number(accommodation_cost) +
+      Number(transportation_cost) +
+      Number(food_cost) +
+      (values.vehicle_expense ? Number(fuel_cost) : 0)
+    )
+  }
+
   const formikMyTrip = useFormik({
     initialValues: initialValuesMyTrip,
     validationSchema: businessSchema,
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        // Assign default values if vehicle_expense is false
+        const final_cost = calculateFinalCost(values)
         const submitData = {
-          trip_type: values.trip_type,
-          employee_name: values.employee_name,
-          department: values.department,
-          position: values.position,
-          substitute_name: values.substitute_name,
-          substitute_department: values.substitute_department,
-          substitute_position: values.substitute_position,
+          ...values,
           start_date: values.start_date
             ? new Date(values.start_date).toISOString().split("T")[0]
             : "",
           end_date: values.end_date
             ? new Date(values.end_date).toISOString().split("T")[0]
             : "",
-          duration_days: values.duration_days,
-          purpose: values.purpose,
-          departure_location: values.departure_location,
-          arrival_location: values.arrival_location,
           accommodation_cost: Number(values.accommodation_cost),
           transportation_cost: Number(values.transportation_cost),
           food_cost: Number(values.food_cost),
-          vehicle_expense: values.vehicle_expense,
-          vehicle_model: values.vehicle_expense
-            ? values.vehicle_model
-            : "არ არის მითითებული",
-          vehicle_plate: values.vehicle_expense
-            ? values.vehicle_plate
-            : "არ არის მითითებული",
           fuel_cost: values.vehicle_expense ? Number(values.fuel_cost) : 0,
-          final_cost: Number(values.final_cost),
+          final_cost,
         }
 
         console.log("Submitting My Trip data:", submitData)
 
         const res = await createBusinessTrip(submitData)
         if (res.status === 200) {
-          toast.success("მივლინება წარმატებით იქცა!", {
+          toast.success("მივლინება წარმატებით გაიგ��ავნა", {
             position: "top-right",
             autoClose: 3000,
           })
@@ -232,7 +237,6 @@ const BusinessPage = () => {
               employee_name: `${user.name} ${user.sur_name}`,
               department: user.department?.name || "",
               position: user.position || "",
-              // Other fields will reset to their initial values or the specified defaults
             },
           })
           navigate("/applications/business-trip/my-requests")
@@ -254,50 +258,33 @@ const BusinessPage = () => {
     },
   })
 
-  // Formik for "Employee Trip" (Tab 2)
   const formikEmployeeTrip = useFormik({
     initialValues: initialValuesEmployeeTrip,
     validationSchema: businessSchema,
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
+        const final_cost = calculateFinalCost(values)
         const submitData = {
-          trip_type: values.trip_type,
-          employee_name: values.employee_name,
-          department: values.department,
-          position: values.position,
-          substitute_name: values.substitute_name,
-          substitute_department: values.substitute_department,
-          substitute_position: values.substitute_position,
+          ...values,
           start_date: values.start_date
             ? new Date(values.start_date).toISOString().split("T")[0]
             : "",
           end_date: values.end_date
             ? new Date(values.end_date).toISOString().split("T")[0]
             : "",
-          duration_days: values.duration_days,
-          purpose: values.purpose,
-          departure_location: values.departure_location,
-          arrival_location: values.arrival_location,
           accommodation_cost: Number(values.accommodation_cost),
           transportation_cost: Number(values.transportation_cost),
           food_cost: Number(values.food_cost),
-          vehicle_expense: values.vehicle_expense,
-          vehicle_model: values.vehicle_expense
-            ? values.vehicle_model
-            : "არ არის მითითებული",
-          vehicle_plate: values.vehicle_expense
-            ? values.vehicle_plate
-            : "არ არის მითითებული",
           fuel_cost: values.vehicle_expense ? Number(values.fuel_cost) : 0,
-          final_cost: Number(values.final_cost),
+          final_cost,
         }
 
         console.log("Submitting Employee Trip data:", submitData)
 
         const res = await createBusinessTrip(submitData)
         if (res.status === 200) {
-          toast.success("მივლინება წარმატებით იქცა!", {
+          toast.success("მივლინება წარმატებით გაიგზავნა", {
             position: "top-right",
             autoClose: 3000,
           })
@@ -322,7 +309,6 @@ const BusinessPage = () => {
     },
   })
 
-  // Calculate duration whenever relevant fields change for My Trip
   useEffect(() => {
     const newDuration = calculateDuration(
       formikMyTrip.values.start_date,
@@ -340,7 +326,6 @@ const BusinessPage = () => {
     formikMyTrip,
   ])
 
-  // Calculate duration whenever relevant fields change for Employee Trip
   useEffect(() => {
     const newDuration = calculateDuration(
       formikEmployeeTrip.values.start_date,
@@ -364,7 +349,6 @@ const BusinessPage = () => {
       if (tab !== activeTab) {
         setActiveTab(tab)
         if (tab === "1") {
-          // Reset My Trip form to initial values with user info
           formikMyTrip.resetForm({
             values: {
               ...initialValuesMyTrip,
@@ -374,7 +358,6 @@ const BusinessPage = () => {
             },
           })
         } else if (tab === "2") {
-          // Reset Employee Trip form
           formikEmployeeTrip.resetForm()
         }
       }
@@ -382,7 +365,6 @@ const BusinessPage = () => {
     [activeTab, formikMyTrip, formikEmployeeTrip, initialValuesMyTrip, user]
   )
 
-  // Handle vehicle_expense as a boolean for My Trip
   const handleVehicleExpenseChangeMyTrip = useCallback(
     e => {
       const value = e.target.value === "true"
@@ -391,7 +373,6 @@ const BusinessPage = () => {
     [formikMyTrip]
   )
 
-  // Handle vehicle_expense as a boolean for Employee Trip
   const handleVehicleExpenseChangeEmployeeTrip = useCallback(
     e => {
       const value = e.target.value === "true"
@@ -399,6 +380,42 @@ const BusinessPage = () => {
     },
     [formikEmployeeTrip]
   )
+
+  const handleCostChangeMyTrip = useCallback(() => {
+    formikMyTrip.setFieldValue(
+      "final_cost",
+      calculateFinalCost(formikMyTrip.values)
+    )
+  }, [formikMyTrip.values])
+
+  const handleCostChangeEmployeeTrip = useCallback(() => {
+    formikEmployeeTrip.setFieldValue(
+      "final_cost",
+      calculateFinalCost(formikEmployeeTrip.values)
+    )
+  }, [formikEmployeeTrip.values])
+
+  useEffect(() => {
+    handleCostChangeMyTrip()
+  }, [
+    formikMyTrip.values.accommodation_cost,
+    formikMyTrip.values.transportation_cost,
+    formikMyTrip.values.food_cost,
+    formikMyTrip.values.fuel_cost,
+    formikMyTrip.values.vehicle_expense,
+    handleCostChangeMyTrip,
+  ])
+
+  useEffect(() => {
+    handleCostChangeEmployeeTrip()
+  }, [
+    formikEmployeeTrip.values.accommodation_cost,
+    formikEmployeeTrip.values.transportation_cost,
+    formikEmployeeTrip.values.food_cost,
+    formikEmployeeTrip.values.fuel_cost,
+    formikEmployeeTrip.values.vehicle_expense,
+    handleCostChangeEmployeeTrip,
+  ])
 
   if (userLoading || departmentsLoading) {
     return (
@@ -416,6 +433,258 @@ const BusinessPage = () => {
     )
   }
 
+  const renderForm = (formik, handleVehicleExpenseChange, currentTab) => (
+    <Form onSubmit={formik.handleSubmit}>
+      {/* Business Trip Type */}
+      <h5 className="mt-4">მივლინების ტიპი</h5>
+      <InputWithError
+        formik={formik}
+        name="trip_type"
+        label="მივლინების ტიპი"
+        type="select"
+      >
+        <option value="">აირჩიეთ ტიპი</option>
+        <option value="regional">რეგიონალური</option>
+        <option value="international">საერთაშორისო</option>
+      </InputWithError>
+
+      {/* Business Trip Place */}
+      <h5 className="mt-4">მივლინების ადგილი</h5>
+      <div className="row">
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="departure_location"
+            label="გასვლის ადგილი"
+          />
+        </div>
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="arrival_location"
+            label="ჩასვლის ადგილი"
+          />
+        </div>
+      </div>
+
+      {/* Reason */}
+      <h5 className="mt-4">მივლინების მიზანი</h5>
+      <InputWithError
+        formik={formik}
+        name="purpose"
+        label="მივლინების მიზანი"
+        type="textarea"
+      />
+
+      {/* Period */}
+      <h5 className="mt-4">ხანგრძლივობა</h5>
+      <div className="row">
+        <div className="col-md-4">
+          <InputWithError
+            formik={formik}
+            name="start_date"
+            label="დაწყების თარიღი"
+            type="date"
+          />
+        </div>
+        <div className="col-md-4">
+          <InputWithError
+            formik={formik}
+            name="end_date"
+            label="დასრულების თარიღი"
+            type="date"
+          />
+        </div>
+        <div className="col-md-4">
+          <Label for="duration_days">ხანგრძლივობა დღეებში</Label>
+          <Input
+            type="text"
+            id="duration_days"
+            name="duration_days"
+            value={formik.values.duration_days}
+            readOnly
+          />
+        </div>
+      </div>
+
+      {/* Employee Info */}
+      <h5 className="mt-4">თანამშრომლის ინფორმაცია</h5>
+      <div className="row">
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="employee_name"
+            label="სახელი და გვარი"
+            disabled={currentTab === "1"}
+          />
+        </div>
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="department"
+            label="დეპარტამენტი"
+            type={formik.values.employee_name ? "text" : "select"}
+            disabled={currentTab === "1"}
+          >
+            {!formik.values.employee_name && (
+              <>
+                <option value="">აირჩიეთ დეპარტამენტი</option>
+                {departments.map(dept => (
+                  <option key={dept.id} value={dept.name}>
+                    {dept.name}
+                  </option>
+                ))}
+              </>
+            )}
+          </InputWithError>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="position"
+            label="პოზიცია"
+            disabled={currentTab === "1"}
+          />
+        </div>
+      </div>
+
+      {/* Substitute Info */}
+      <h5 className="mt-4">შემცვლელის ინფორმაცია</h5>
+      <div className="row">
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="substitute_name"
+            label="შემცვლელის სახელი"
+          />
+        </div>
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="substitute_position"
+            label="შემცვლელის პოზიცია"
+          />
+        </div>
+      </div>
+
+      {/* Finances */}
+      <h5 className="mt-4">ფინანსები</h5>
+      <div className="row">
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="accommodation_cost"
+            label="სასტუმროს ღირებულება"
+            type="number"
+          />
+        </div>
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="transportation_cost"
+            label="მოგზაურობის ღირებულება"
+            type="number"
+          />
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-6">
+          <InputWithError
+            formik={formik}
+            name="food_cost"
+            label="საკვების ღირებულება"
+            type="number"
+          />
+        </div>
+        <div className="col-md-6">
+          <Label for="vehicle_expense">ტრანსპორტის ხარჯი</Label>
+          <Input
+            type="select"
+            id="vehicle_expense"
+            name="vehicle_expense"
+            onChange={handleVehicleExpenseChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.vehicle_expense}
+            invalid={
+              formik.touched.vehicle_expense &&
+              Boolean(formik.errors.vehicle_expense)
+            }
+          >
+            <option value="">აირჩიეთ</option>
+            <option value={true}>დიახ</option>
+            <option value={false}>არა</option>
+          </Input>
+          {formik.touched.vehicle_expense && formik.errors.vehicle_expense && (
+            <div className="text-danger mt-1">
+              {formik.errors.vehicle_expense}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Finances Extra if Vehicle Expense is Chosen */}
+      {formik.values.vehicle_expense && (
+        <>
+          <h5 className="mt-4">ტრანსპორტის დეტალები</h5>
+          <div className="row">
+            <div className="col-md-6">
+              <InputWithError
+                formik={formik}
+                name="vehicle_model"
+                label="ავტომობილის მოდელი"
+              />
+            </div>
+            <div className="col-md-6">
+              <InputWithError
+                formik={formik}
+                name="vehicle_plate"
+                label="ავტომობილის ნომერი"
+              />
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-md-6">
+              <InputWithError
+                formik={formik}
+                name="fuel_cost"
+                label="საწვავის ღირებულება/100კმ"
+                type="number"
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Final Cost */}
+      <h5 className="mt-4">საბოლოო თანხა</h5>
+      <div className="row">
+        <div className="col-md-6">
+          <Label for="final_cost">საბოლოო ღირებულება</Label>
+          <Input
+            type="number"
+            id="final_cost"
+            name="final_cost"
+            value={formik.values.final_cost}
+            readOnly
+          />
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <div className="d-flex justify-content-end mt-4">
+        <Button
+          type="submit"
+          color="primary"
+          disabled={!formik.isValid || formik.isSubmitting}
+        >
+          {formik.isSubmitting ? "იგზავნება..." : "გაგზავნა"}
+        </Button>
+      </div>
+    </Form>
+  )
+
   return (
     <>
       <div className="page-content">
@@ -432,7 +701,9 @@ const BusinessPage = () => {
                     <Nav tabs className="mb-3">
                       <NavItem>
                         <NavLink
-                          className={classnames({ active: activeTab === "1" })}
+                          className={classnames({
+                            active: activeTab === "1",
+                          })}
                           onClick={() => toggleTab("1")}
                           style={{ cursor: "pointer" }}
                         >
@@ -441,7 +712,9 @@ const BusinessPage = () => {
                       </NavItem>
                       <NavItem>
                         <NavLink
-                          className={classnames({ active: activeTab === "2" })}
+                          className={classnames({
+                            active: activeTab === "2",
+                          })}
                           onClick={() => toggleTab("2")}
                           style={{ cursor: "pointer" }}
                         >
@@ -455,530 +728,20 @@ const BusinessPage = () => {
 
                   <TabContent activeTab={activeTab}>
                     <TabPane tabId="1">
-                      <Form onSubmit={formikMyTrip.handleSubmit}>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="employee_name"
-                              label="სახელი და გვარი"
-                              disabled
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="department"
-                              label="დეპარტამენტი"
-                              type="text"
-                              disabled
-                            />
-                          </div>
-                        </div>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="position"
-                              label="პოზიცია"
-                              disabled
-                            />
-                          </div>
-                        </div>
-
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="substitute_name"
-                              label="შემცვლელის სახელი"
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="substitute_department"
-                              label="შემცვლელის დეპარტამენტი"
-                              type="select"
-                            >
-                              <option value="">აირჩიეთ დეპარტამენტი</option>
-                              {departments.map(dept => (
-                                <option key={dept.id} value={dept.name}>
-                                  {dept.name}
-                                </option>
-                              ))}
-                            </InputWithError>
-                          </div>
-                        </div>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="substitute_position"
-                              label="შემცვლელის პოზიცია"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="trip_type"
-                              label="მივლინების ტიპი"
-                              type="select"
-                            >
-                              <option value="">აირჩიეთ ტიპი</option>
-                              <option value="regional">რეგიონალური</option>
-                              <option value="international">
-                                საერთაშორისო
-                              </option>
-                            </InputWithError>
-                          </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="purpose"
-                              label="მივლინების მიზანი"
-                              type="textarea"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="departure_location"
-                              label="გასვლის ადგილი"
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="arrival_location"
-                              label="ჩასვლის ადგილი"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="accommodation_cost"
-                              label="სასტუმროს ღირებულება"
-                              type="number"
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="transportation_cost"
-                              label="მოგზაურობის ღირებულება"
-                              type="number"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="food_cost"
-                              label="საკვების ღირებულება"
-                              type="number"
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <Label for="vehicle_expense">
-                              ტრანსპორტის ხარჯი
-                            </Label>
-                            <Input
-                              type="select"
-                              id="vehicle_expense"
-                              name="vehicle_expense"
-                              onChange={handleVehicleExpenseChangeMyTrip}
-                              onBlur={formikMyTrip.handleBlur}
-                              value={formikMyTrip.values.vehicle_expense}
-                              invalid={
-                                formikMyTrip.touched.vehicle_expense &&
-                                Boolean(formikMyTrip.errors.vehicle_expense)
-                              }
-                            >
-                              <option value="">აირჩიეთ</option>
-                              <option value={true}>დიახ</option>
-                              <option value={false}>არა</option>
-                            </Input>
-                            {formikMyTrip.touched.vehicle_expense &&
-                              formikMyTrip.errors.vehicle_expense && (
-                                <div className="text-danger mt-1">
-                                  {formikMyTrip.errors.vehicle_expense}
-                                </div>
-                              )}
-                          </div>
-                        </div>
-
-                        {formikMyTrip.values.vehicle_expense && (
-                          <>
-                            <div className="row">
-                              <div className="col-md-6">
-                                <InputWithError
-                                  formik={formikMyTrip}
-                                  name="vehicle_model"
-                                  label="ავტომობილის მოდელი"
-                                />
-                              </div>
-                              <div className="col-md-6">
-                                <InputWithError
-                                  formik={formikMyTrip}
-                                  name="vehicle_plate"
-                                  label="ავტომობილის ნომერი"
-                                />
-                              </div>
-                            </div>
-                            <div className="row">
-                              <div className="col-md-6">
-                                <InputWithError
-                                  formik={formikMyTrip}
-                                  name="fuel_cost"
-                                  label="საწვავის ღირებულება"
-                                  type="number"
-                                />
-                              </div>
-                            </div>
-                          </>
-                        )}
-
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="final_cost"
-                              label="საბოლოო ღირებულება"
-                              type="number"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="start_date"
-                              label="დაწყების თარიღი"
-                              type="date"
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyTrip}
-                              name="end_date"
-                              label="დასრულების თარიღი"
-                              type="date"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="row">
-                          <div className="col-12">
-                            <div className="mb-3">
-                              <Label>ხანგრძლივობა დღეებში</Label>
-                              <Input
-                                type="text"
-                                value={formikMyTrip.values.duration_days}
-                                readOnly
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="d-flex justify-content-end">
-                          <Button
-                            type="submit"
-                            color="primary"
-                            disabled={
-                              !formikMyTrip.isValid || formikMyTrip.isSubmitting
-                            }
-                          >
-                            {formikMyTrip.isSubmitting
-                              ? "იგზავნება..."
-                              : "გაგზავნა"}
-                          </Button>
-                        </div>
-                      </Form>
+                      {renderForm(
+                        formikMyTrip,
+                        handleVehicleExpenseChangeMyTrip,
+                        "1"
+                      )}
                     </TabPane>
 
                     {isAdmin && (
                       <TabPane tabId="2">
-                        <Form onSubmit={formikEmployeeTrip.handleSubmit}>
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="employee_name"
-                                label="თანამშრომლის სახელი და გვარი"
-                                disabled={false}
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="department"
-                                label="თანამშრომლის დეპარტამენტი"
-                                type="select"
-                                disabled={false}
-                              >
-                                <option value="">აირჩიეთ დეპარტამენტი</option>
-                                {departments.map(dept => (
-                                  <option key={dept.id} value={dept.name}>
-                                    {dept.name}
-                                  </option>
-                                ))}
-                              </InputWithError>
-                            </div>
-                          </div>
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="position"
-                                label="თანამშრომლის პოზიცია"
-                                disabled={false}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="substitute_name"
-                                label="შემცვლელის სახელი"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="substitute_department"
-                                label="შემცვლელის დეპარტამენტი"
-                                type="select"
-                              >
-                                <option value="">აირჩიეთ დეპარტამენტი</option>
-                                {departments.map(dept => (
-                                  <option key={dept.id} value={dept.name}>
-                                    {dept.name}
-                                  </option>
-                                ))}
-                              </InputWithError>
-                            </div>
-                          </div>
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="substitute_position"
-                                label="შემცვლელის პოზიცია"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="trip_type"
-                                label="მივლინების ტიპი"
-                                type="select"
-                              >
-                                <option value="">აირჩიეთ ტიპი</option>
-                                <option value="regional">რეგიონალური</option>
-                                <option value="international">
-                                  საერთაშორისო
-                                </option>
-                              </InputWithError>
-                            </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="purpose"
-                                label="მივლინების მიზანი"
-                                type="textarea"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="departure_location"
-                                label="გასვლის ადგილი"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="arrival_location"
-                                label="ჩასვლის ადგილი"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="accommodation_cost"
-                                label="სასტუმროს ღირებულება"
-                                type="number"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="transportation_cost"
-                                label="მოგზაურობის ღირებულება"
-                                type="number"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="food_cost"
-                                label="საკვების ღირებულება"
-                                type="number"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <Label for="vehicle_expense">
-                                ტრანსპორტის ხარჯი
-                              </Label>
-                              <Input
-                                type="select"
-                                id="vehicle_expense"
-                                name="vehicle_expense"
-                                onChange={
-                                  handleVehicleExpenseChangeEmployeeTrip
-                                }
-                                onBlur={formikEmployeeTrip.handleBlur}
-                                value={
-                                  formikEmployeeTrip.values.vehicle_expense
-                                }
-                                invalid={
-                                  formikEmployeeTrip.touched.vehicle_expense &&
-                                  Boolean(
-                                    formikEmployeeTrip.errors.vehicle_expense
-                                  )
-                                }
-                              >
-                                <option value="">აირჩიეთ</option>
-                                <option value={true}>დიახ</option>
-                                <option value={false}>არა</option>
-                              </Input>
-                              {formikEmployeeTrip.touched.vehicle_expense &&
-                                formikEmployeeTrip.errors.vehicle_expense && (
-                                  <div className="text-danger mt-1">
-                                    {formikEmployeeTrip.errors.vehicle_expense}
-                                  </div>
-                                )}
-                            </div>
-                          </div>
-
-                          {formikEmployeeTrip.values.vehicle_expense && (
-                            <>
-                              <div className="row">
-                                <div className="col-md-6">
-                                  <InputWithError
-                                    formik={formikEmployeeTrip}
-                                    name="vehicle_model"
-                                    label="ავტომობილის მოდელი"
-                                  />
-                                </div>
-                                <div className="col-md-6">
-                                  <InputWithError
-                                    formik={formikEmployeeTrip}
-                                    name="vehicle_plate"
-                                    label="ავტომობილის ნომერი"
-                                  />
-                                </div>
-                              </div>
-                              <div className="row">
-                                <div className="col-md-6">
-                                  <InputWithError
-                                    formik={formikEmployeeTrip}
-                                    name="fuel_cost"
-                                    label="საწვავის ღირებულება"
-                                    type="number"
-                                  />
-                                </div>
-                              </div>
-                            </>
-                          )}
-
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="final_cost"
-                                label="საბოლოო ღირებულება"
-                                type="number"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="start_date"
-                                label="დაწყების თარიღი"
-                                type="date"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeTrip}
-                                name="end_date"
-                                label="დასრულების თარიღი"
-                                type="date"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="row">
-                            <div className="col-12">
-                              <div className="mb-3">
-                                <Label>ხანგრძლივობა დღეებში</Label>
-                                <Input
-                                  type="text"
-                                  value={
-                                    formikEmployeeTrip.values.duration_days
-                                  }
-                                  readOnly
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="d-flex justify-content-end">
-                            <Button
-                              type="submit"
-                              color="primary"
-                              disabled={
-                                !formikEmployeeTrip.isValid ||
-                                formikEmployeeTrip.isSubmitting
-                              }
-                            >
-                              {formikEmployeeTrip.isSubmitting
-                                ? "იგზავნება..."
-                                : "გაგზავნა"}
-                            </Button>
-                          </div>
-                        </Form>
+                        {renderForm(
+                          formikEmployeeTrip,
+                          handleVehicleExpenseChangeEmployeeTrip,
+                          "2"
+                        )}
                       </TabPane>
                     )}
                   </TabContent>
@@ -988,7 +751,17 @@ const BusinessPage = () => {
           </div>
         </Container>
       </div>
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </>
   )
 }
