@@ -11,6 +11,8 @@ import {
 } from "@mui/material"
 import { Row, Col, TabContent, Label, Spinner } from "reactstrap"
 import { ErrorMessage, Field, Form, Formik } from "formik"
+import DatePicker from "components/DatePicker"
+import moment from "moment"
 
 const statusMap = {
   in_progress: {
@@ -109,6 +111,7 @@ const HrPageApprove = () => {
       salary_text: "",
       template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) + 1,
       document_number: "",
+      started_date: documentData?.is_other_user !== 1 ? documentData?.user?.working_start_date : documentData?.started_working_day,
     }))
   }
 
@@ -321,7 +324,17 @@ const HrPageApprove = () => {
     handleModalClose()
   }
 
-  const isDocumentTypeDisabled = () => {
+  const hasWorkedSixMonths = startDate => {
+    if (!startDate) return false
+    const sixMonthsAgo = moment().subtract(6, "months")
+    return moment(startDate).isBefore(sixMonthsAgo)
+  }
+
+  const isDocumentTypeDisabled = (type, started) => {
+    if (isEmploymentDocument(type)) {
+      const hasRequiredExperience = hasWorkedSixMonths(started)
+      return !hasRequiredExperience
+    }
     return false
   }
 
@@ -456,8 +469,24 @@ const HrPageApprove = () => {
                                 className="text-danger mt-1"
                               />
                             </div>
-
                             <div className="col-md-6">
+                              <div className="flex flex-row">
+
+                              <Label className="form-label">დაწყების თარიღი</Label>
+                                {/* date! */}
+                                <DatePicker startDate={formData?.started_date} handleStartedDate={setFormData} initialValue={formData?.started_date} />
+
+                              </div>
+                              <ErrorMessage
+                                name="started_date"
+                                component="div"
+                                className="text-danger mt-1"
+                              />
+                            </div>
+                            
+                          </div>
+
+                          <div className="mb-2">
                             <Label className="form-label">
                               დოკუმენტის ტიპი
                             </Label>
@@ -476,7 +505,11 @@ const HrPageApprove = () => {
                               <option value="">აირჩიეთ დოკუმენტის ტიპი</option>
                               {Object.entries(DOCUMENT_TYPES).map(
                                 ([key, type]) => (
-                                  <option key={key} value={type}>
+                                  <option 
+                                  key={key} 
+                                  value={type}
+                                  disabled={isDocumentTypeDisabled(type,  formData.started_date)}
+                                  >
                                     {type}
                                   </option>
                                 )
@@ -494,9 +527,6 @@ const HrPageApprove = () => {
                               </div>
                             )}
                           </div>
-                          </div>
-
-                          
 
                           {/* User Info */}
                           <div className="row g-3 mb-4">
