@@ -13,7 +13,7 @@ export const approveBusinessTrip = async (id, data) => {
 }
 
 export const createBusinessTrip = async (data) => {
-    return defaultInstance.post("/api/business-trip/create");
+    return defaultInstance.post("/api/business-trip/create", data);
 }
 
 export const deleteBusinessTrip = async (id) => {

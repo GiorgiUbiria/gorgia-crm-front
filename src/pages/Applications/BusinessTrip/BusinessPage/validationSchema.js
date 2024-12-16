@@ -3,12 +3,12 @@ import * as Yup from "yup"
 const today = new Date()
 today.setHours(0, 0, 0, 0)
 
-export const vacationSchema = Yup.object().shape({
-  vacation_type: Yup.string()
-    .required("შვებულების ტიპი სავალდებულოა.")
+export const businessSchema = Yup.object().shape({
+  trip_type: Yup.string()
+    .required("მივლინების ტიპი სავალდებულოა.")
     .oneOf(
-      ["paid_leave", "unpaid_leave", "administrative_leave", "maternity_leave"],
-      "გთხოვთ, აირჩიოთ სწორი შვებულების ტიპი."
+      ["regional", "international"],
+      "გთხოვთ, აირჩიოთ სწორი ავტომობილის ტიპი."
     ),
   employee_name: Yup.string()
     .required("თანამშრომლის სახელი სავალდებულოა.")
@@ -32,11 +32,11 @@ export const vacationSchema = Yup.object().shape({
       /^[ა-ჰ\s]+$/,
       "შემცვლელის სახელი უნდა შეიცავდეს მხოლოდ ქართული ასოებს."
     )
-    .min(2, "შემცვლელის სახელი უნდა იყოს მინიმუმ 2 სიმბოლო.")
+    .min(2, "შემცვლელის სახელი უნდა იქოს მინიმუმ 2 სიმბოლო.")
     .max(50, "შემცვლელის სახელი არ უნდა აღემატებოდეს 50 სიმბოლოს.")
     .notOneOf(
       [Yup.ref("employee_name")],
-      "შემცვლელი ვერ იქნება იგივე, რაც თანამშრომელი."
+      "შემცვლელი ვერ იქნება იგივე, რასაც თანამშრომელი."
     ),
   substitute_department: Yup.string()
     .required("შემცვლელის დეპარტამენტი სავალდებულოა.")
@@ -48,7 +48,7 @@ export const vacationSchema = Yup.object().shape({
   substitute_position: Yup.string()
     .required("შემცვლელის პოზიცია სავალდებულოა.")
     .min(2, "შემცვლელის პოზიციის სახელი უნდა იყოს მინიმუმ 2 სიმბოლო.")
-    .max(100, "შემცვლელის პოზიციის სახელი არ უნდა აღემატებოდეს 100 სიმბოლოს."),
+    .max(100, "შემცვლელის პოზიციის სახელი არ უნდა აღემატებოდე�� 100 სიმბოლოს."),
   start_date: Yup.date()
     .required("დაწყების თარიღი სავალდებულოა.")
     .min(today, "დაწყების თარიღი ვერ იქნება წარსულში.")
@@ -61,40 +61,39 @@ export const vacationSchema = Yup.object().shape({
     .min(
       Yup.ref("start_date"),
       "დასრულების თარიღი უნდა იყოს დაწყების თარიღის შემდეგ ან ტოლი."
-    )
-    .test("duration", "შვებულება ვერ იქნება 90 დღეზე მეტი.", function (value) {
-      const start = this.parent.start_date
-      if (start && value) {
-        const diffTime = Math.abs(value - start)
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-        return diffDays <= 90
-      }
-      return true
-    }),
-  is_monday: Yup.string()
-    .nullable()
-    .oneOf(["yes", null], "ორშაბათისთვის არასწორი მნიშვნელობა."),
-  is_tuesday: Yup.string()
-    .nullable()
-    .oneOf(["yes", null], "სამშაბათისთვის არასწორი მნიშვნელობა."),
-  is_wednesday: Yup.string()
-    .nullable()
-    .oneOf(["yes", null], "ოთხშაბათისთვის არასწორი მნიშვნელობა."),
-  is_thursday: Yup.string()
-    .nullable()
-    .oneOf(["yes", null], "ხუთშაბათისთვის არასწორი მნიშვნელობა."),
-  is_friday: Yup.string()
-    .nullable()
-    .oneOf(["yes", null], "პარასკევისთვის არასწორი მნიშვნელობა."),
-  is_saturday: Yup.string()
-    .nullable()
-    .oneOf(["yes", null], "შაბათისთვის არასწორი მნიშვნელობა."),
-  is_sunday: Yup.string()
-    .nullable()
-    .oneOf(["yes", null], "კვირისთვის არასწორი მნიშვნელობა."),
+    ),
+  purpose: Yup.string()
+    .required("მიზანი სავალდებულოა.")
+    .min(2, "მიზანი უნდა იყოს მინიმუმ 2 სიმბოლო.")
+    .max(253, "მიზანი არ უნდა აღემატებოდეს 253 სიმბოლოს."),
+  departure_location: Yup.string()
+    .required("გასვლის ადგილი სავალდებულოა.")
+    .min(2, "გა��ვლის ადგილი უნდა იყოს მინიმუმ 2 სიმბოლო.")
+    .max(100, "გასვლის ადგილი არ უნდა აღემატებოდეს 100 სიმბოლოს."),
+  arrival_location: Yup.string()
+    .required("ჩასვლის ადგილი სავალდებულოა.")
+    .min(2, "ჩასვლის ადგილი უნდა იყოს მინიმუმ 2 სიმბოლო.")
+    .max(100, "ჩასვლის ადგილი არ უნდა აღემატებოდეს 100 სიმბოლოს."),
   duration_days: Yup.number()
-    .required("ხანგრძლივობა დღეებში სავალდებულოა.")
-    .positive("ხანგრძლივობა უნდა იყოს მინიმუმ 1 დღე.")
-    .integer("ხანგრძლივობა უნდა იყოს მთელი რიცხვი.")
-    .max(90, "ხანგრძლივობა ვერ იქნება 90 დღეზე მეტი."),
+    .required("სამუშაო დღეების რაოდენობა სავალდებულოა.")
+    .min(1, "სამუშაო დღეების რაოდენობა უნდა იყოს მინიმუმ 1 დღე.")
+    .max(365, "სამუშაო დღეების რაოდენობა არ უნდა აღემატებოდეს 365 დღეს."),
+  accommodation_cost: Yup.number()
+    .required("სასტუმროს ღირებულება სავალდებულოა.")
+    .min(0, "სასტუმროს ღირებულება უნდა იყოს მინიმუმ 0 ლარი."),
+  transportation_cost: Yup.number()
+    .required("მოგზაურობის ღირებულება სავალდებულოა.")
+    .min(0, "მოგზაურობის ღირებულება უნდა იყოს მინიმუმ 0 ლარი."),
+  food_cost: Yup.number()
+    .required("საკვების ღირებულება სავალდებულოა.")
+    .min(0, "საკვების ღირებულება უნდა იყოს მინიმუმ 0 ლარი."),
+  vehicle_expense: Yup.boolean().required(
+    "ტრანსპორტის მითითება სავალდებულოა."
+  ),
+  vehicle_model: Yup.string(),
+  vehicle_plate: Yup.string(),
+  fuel_cost: Yup.number(),
+  final_cost: Yup.number()
+    .required("საბოლოო ღირებულება სავალდებულოა.")
+    .min(0, "საბოლოო ღირებულება უნდა იყოს მინიმუმ 0 ლარი."),
 })

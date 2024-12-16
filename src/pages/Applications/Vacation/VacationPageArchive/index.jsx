@@ -23,24 +23,20 @@ const statusMap = {
 }
 
 const typeMap = {
-  paid: {
+  paid_leave: {
     label: "ანაზღაურებადი",
     color: "#28a745",
   },
-  unpaid: {
+  unpaid_leave: {
     label: "არანაზღაურებადი",
     color: "#dc3545",
   },
-  administrative: {
+  administrative_leave: {
     label: "ადმინისტრაციული",
     color: "#FFA500",
   },
-  maternity: {
+  maternity_leave: {
     label: "დეკრეტული",
-    color: "#757575",
-  },
-  unknown: {
-    label: "უცნობი",
     color: "#757575",
   },
 }
@@ -52,137 +48,82 @@ const STATUS_MAPPING = {
 }
 
 const TYPE_MAPPING = {
-  paid: "paid",
-  unpaid: "unpaid",
-  administrative: "administrative",
-  unknown: "unknown",
-  maternity: "maternity",
+  paid_leave: "paid_leave",
+  unpaid_leave: "unpaid_leave",
+  administrative_leave: "administrative_leave",
+  maternity_leave: "maternity_leave",
 }
 
 const ExpandedRowContent = ({ rowData }) => {
   if (!rowData) return null
 
+  const { holiday_days, substitute, review } = rowData.expanded
+
+  const dayMapGe = {
+    is_monday: "ორშაბათი",
+    is_tuesday: "სამშაბათი",
+    is_wednesday: "ოთხშაბათი",
+    is_thursday: "ხუთშაბათი",
+    is_friday: "პარასკევი",
+    is_saturday: "შაბათი",
+    is_sunday: "კვირა",
+  }
+
+  const selectedDays = Object.entries(holiday_days)
+    .filter(([, value]) => value === "yes")
+    .map(([dayKey]) => dayMapGe[dayKey] || dayKey)
+
   return (
     <div className="p-4 bg-light rounded">
-      {rowData.expandedRow.comment && (
-        <div className="alert alert-danger d-flex align-items-center mb-4">
-          <i className="bx bx-error-circle me-2 fs-5"></i>
-          <div>
-            <strong>კომენტარი:</strong> {rowData.expandedRow.comment}
-          </div>
-        </div>
-      )}
-
-      <div className="border rounded p-4 bg-white mb-4">
-        <Row className="g-4">
-          <Col md={12}>
-            <h6 className="mb-3">დასვენების დღეები:</h6>
-            <div className="d-flex flex-wrap gap-3">
-              {[
-                { day: "ორშაბათი", value: rowData.expandedRow.monday },
-                { day: "სამშაბათი", value: rowData.expandedRow.tuesday },
-                { day: "ოთხშაბათი", value: rowData.expandedRow.wednesday },
-                { day: "ხუთშაბათი", value: rowData.expandedRow.thursday },
-                { day: "პარასკევი", value: rowData.expandedRow.friday },
-                { day: "შაბათი", value: rowData.expandedRow.saturday },
-                { day: "კვირა", value: rowData.expandedRow.sunday },
-              ].map((item, index) => (
-                <div key={index} className="d-flex align-items-center gap-2">
-                  <i
-                    className={`bx ${
-                      item.value === "yes"
-                        ? "bx-check text-success"
-                        : "bx-x text-danger"
-                    }`}
-                  ></i>
-                  <span>{item.day}</span>
-                </div>
+      <div className="row">
+        <div className="col-md-4">
+          <h5>შვებულების დღეები</h5>
+          {selectedDays.length > 0 ? (
+            <ul className="list-unstyled">
+              {selectedDays.map((day, index) => (
+                <li key={index}>
+                  <span className="badge bg-primary">{day}</span>
+                </li>
               ))}
-            </div>
-          </Col>
-          <Col md={6}>
-            <div className="d-flex flex-column gap-2">
-              <div>
-                <strong>დეპარტამენტის დასტური:</strong>{" "}
-                <span
-                  className={`badge bg-${
-                    rowData.expandedRow.department_approval === "pending"
-                      ? "warning"
-                      : rowData.expandedRow.department_approval === "approved"
-                      ? "success"
-                      : "danger"
-                  }`}
-                >
-                  {rowData.expandedRow.department_approval}
-                </span>
-              </div>
-              <div>
-                <strong>HR-ის დასტური:</strong>{" "}
-                <span
-                  className={`badge bg-${
-                    rowData.expandedRow.hr_approval === "pending"
-                      ? "warning"
-                      : rowData.expandedRow.hr_approval === "approved"
-                      ? "success"
-                      : "danger"
-                  }`}
-                >
-                  {rowData.expandedRow.hr_approval}
-                </span>
-              </div>
-            </div>
-          </Col>
-          <Col md={6}>
-            <div className="d-flex flex-column gap-2">
-              <div>
-                <strong>შექმნის თარიღი:</strong>{" "}
-                {new Date(rowData.expandedRow.created_at).toLocaleDateString()}
-              </div>
-              {rowData.expandedRow.reviewed_at && (
-                <div>
-                  <strong>განხილვის თარიღი:</strong>{" "}
-                  {new Date(
-                    rowData.expandedRow.reviewed_at
-                  ).toLocaleDateString()}
-                </div>
-              )}
-            </div>
-          </Col>
-        </Row>
+            </ul>
+          ) : (
+            <p>შვებულების დღეები დანიშნული არ არის.</p>
+          )}
+        </div>
+
+        <div className="col-md-4">
+          <h5>შემცვლელი პირი</h5>
+          <p>
+            <strong>სახელი:</strong> {substitute?.substitute_name || "უცნობია"}
+          </p>
+          <p>
+            <strong>პოზიცია:</strong>{" "}
+            {substitute?.substitute_position || "უცნობია"}
+          </p>
+          <p>
+            <strong>დეპარტამენტი:</strong>{" "}
+            {substitute?.substitute_department || "უცნობია"}
+          </p>
+        </div>
+
+        <div className="col-md-4">
+          <h5>განხილვა</h5>
+          <p>
+            <strong>განიხილა:</strong> {review?.reviewed_by || "უცნობია"}
+          </p>
+          <p>
+            <strong>განიხილვის თარიღი:</strong>{" "}
+            {review?.reviewed_at || "უცნობია"}
+          </p>
+          {review?.rejection_reason && (
+            <p>
+              <strong>უარყოფის მიზეზი:</strong> {review.rejection_reason}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )
-}
-
-const calculateDuration = (startDate, endDate, restDays) => {
-  if (!startDate || !endDate) return 0
-
-  const start = new Date(startDate)
-  const end = new Date(endDate)
-  let totalDays = 0
-
-  start.setHours(0, 0, 0, 0)
-  end.setHours(0, 0, 0, 0)
-
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    const dayOfWeek = d.getDay()
-    const dayMap = {
-      0: "sunday",
-      1: "monday",
-      2: "tuesday",
-      3: "wednesday",
-      4: "thursday",
-      5: "friday",
-      6: "saturday",
-    }
-
-    const currentDay = dayMap[dayOfWeek]
-    if (restDays[currentDay] !== "yes") {
-      totalDays++
-    }
-  }
-
-  return Math.max(1, totalDays)
 }
 
 const VacationPageArchive = () => {
@@ -193,7 +134,7 @@ const VacationPageArchive = () => {
   const fetchVacations = async () => {
     try {
       const response = await getVacations()
-      setVacations(response.data.vocations)
+      setVacations(response.data.data)
     } catch (err) {
       console.error("Error fetching vocations:", err)
     }
@@ -202,8 +143,6 @@ const VacationPageArchive = () => {
   useEffect(() => {
     fetchVacations()
   }, [])
-
-  console.log(vacations)
 
   const columns = useMemo(
     () => [
@@ -214,47 +153,34 @@ const VacationPageArchive = () => {
       {
         Header: "მოითხოვა",
         accessor: "requested_by",
-        disableSortBy: true,
       },
       {
-        Header: "შვებულების ტიპი",
-        accessor: "type_of_vacations",
-        disableSortBy: true,
-        Cell: ({ value }) => {
-          const typeInfo = typeMap[value] || { label: value, color: "#757575" }
-          return <span style={{ color: typeInfo.color }}>{typeInfo.label}</span>
-        },
+        Header: "მომთხოვნი პირი",
+        accessor: "requested_for",
+      },
+      {
+        Header: "მოთხოვნის თარიღი",
+        accessor: "requested_at",
       },
       {
         Header: "დაწყების თარიღი",
         accessor: "start_date",
-        sortType: "basic",
-        Cell: ({ value }) => (
-          <div className="date-wrapper">
-            <i className="bx bx-calendar me-2"></i>
-            {new Date(value).toLocaleDateString()}
-          </div>
-        ),
       },
       {
         Header: "დასრულების თარიღი",
         accessor: "end_date",
-        sortType: "basic",
-        Cell: ({ value }) => (
-          <div className="date-wrapper">
-            <i className="bx bx-calendar me-2"></i>
-            {new Date(value).toLocaleDateString()}
-          </div>
-        ),
       },
       {
-        Header: "დღეების რაოდენობა",
+        Header: "ხანგრძლივობა",
         accessor: "duration",
-        Cell: ({ value }) => (
-          <div className="text-center">
-            {value} {value === 1 ? "დღე" : "დღე"}
-          </div>
-        ),
+      },
+      {
+        Header: "შვებულების ტიპი",
+        accessor: "type",
+        Cell: ({ value }) => {
+          const typeInfo = typeMap[value] || { label: value, color: "#757575" }
+          return <span style={{ color: typeInfo.color }}>{typeInfo.label}</span>
+        },
       },
       {
         Header: "სტატუსი",
@@ -292,53 +218,52 @@ const VacationPageArchive = () => {
           </span>
         ),
       },
-      {
-        Header: "შეამოწმა",
-        accessor: "reviewed_by",
-        disableSortBy: true,
-      },
     ],
     []
   )
-
   const transformedVacations = vacations.map(vacation => ({
     id: vacation.id,
     status: STATUS_MAPPING[vacation.status] || vacation.status,
-    start_date: vacation.start_date,
-    end_date: vacation.end_date,
-    requested_by:
-      vacation.user?.name + " " + vacation.user?.sur_name ||
-      "არ არის მითითებული",
-    reviewed_by:
-      vacation.reviewed_by?.name + " " + vacation.reviewed_by?.sur_name ||
-      "არ არის მითითებული",
-    comment: vacation.comment,
-    type_of_vacations: vacation.type_of_vocations
-      ? TYPE_MAPPING[vacation.type_of_vocations] || vacation.type_of_vocations
+    start_date: new Date(vacation.start_date).toLocaleDateString("ka-GE"),
+    end_date: new Date(vacation.end_date).toLocaleDateString("ka-GE"),
+    duration: vacation.duration.toString() + " დღე",
+    type: vacation.type
+      ? TYPE_MAPPING[vacation.type] || vacation.type
       : "უცნობი",
-    expandedRow: {
-      comment: vacation.comment,
-      monday: vacation.monday,
-      tuesday: vacation.tuesday,
-      wednesday: vacation.wednesday,
-      thursday: vacation.thursday,
-      friday: vacation.friday,
-      saturday: vacation.saturday,
-      sunday: vacation.sunday,
-      department_approval: vacation.department_approval,
-      hr_approval: vacation.hr_approval,
-      created_at: vacation.created_at,
-      reviewed_at: vacation.reviewed_at,
+    requested_by: vacation.user
+      ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`
+      : "უცნობი",
+    requested_at: new Date(vacation.created_at).toLocaleDateString("ka-GE"),
+    requested_for: `${vacation.employee_name || ""} | ${
+      vacation.position || ""
+    } | ${vacation.department || ""}`,
+    expanded: {
+      holiday_days: {
+        is_monday: vacation.is_monday,
+        is_tuesday: vacation.is_tuesday,
+        is_wednesday: vacation.is_wednesday,
+        is_thursday: vacation.is_thursday,
+        is_friday: vacation.is_friday,
+        is_saturday: vacation.is_saturday,
+        is_sunday: vacation.is_sunday,
+      },
+      substitute: {
+        substitute_name: vacation.substitute_name || "უცნობია",
+        substitute_position: vacation.substitute_position || "უცნობია",
+        substitute_department: vacation.substitute_department || "უცნობია",
+      },
+      review: {
+        reviewed_by: vacation.reviewed_by
+          ? `${vacation.reviewed_by?.name || ""} ${
+              vacation.reviewed_by?.sur_name || ""
+            }`
+          : "ჯერ არ არის განხილული",
+        reviewed_at: vacation?.reviewed_at
+          ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+          : "-",
+        rejection_reason: vacation.rejection_reason || "",
+      },
     },
-    duration: calculateDuration(vacation.start_date, vacation.end_date, {
-      monday: vacation.monday,
-      tuesday: vacation.tuesday,
-      wednesday: vacation.wednesday,
-      thursday: vacation.thursday,
-      friday: vacation.friday,
-      saturday: vacation.saturday,
-      sunday: vacation.sunday,
-    }),
   }))
 
   const filterOptions = [
@@ -352,14 +277,13 @@ const VacationPageArchive = () => {
       },
     },
     {
-      field: "type_of_vacations",
+      field: "type",
       label: "შვებულების ტიპი",
       valueLabels: {
-        paid: "ანაზღაურებადი",
-        unpaid: "არანაზღაურებადი",
-        administrative: "ადმინისტრაციული",
-        unknown: "უცნობი",
-        maternity: "დეკრეტული",
+        paid_leave: "ანაზღაურებადი",
+        unpaid_leave: "არანაზღაურებადი",
+        administrative_leave: "ადმინისტრაციული",
+        maternity_leave: "დეკრეტული",
       },
     },
   ]
@@ -384,7 +308,7 @@ const VacationPageArchive = () => {
               columns={columns}
               filterOptions={filterOptions}
               enableSearch={true}
-              searchableFields={["requested_by", "reviewed_by"]}
+              searchableFields={["requested_by", "requested_for"]}
               initialPageSize={10}
               renderRowDetails={expandedRow}
             />
