@@ -20,9 +20,11 @@ import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
 import { Button } from "reactstrap"
 import { useNavigate } from "react-router-dom"
+import DatePicker from "components/DatePicker"
+
 
 const DOCUMENT_TYPES = {
-  PAID_EMPLOYMENT: "შელფასიანი ცნობა",
+  PAID_EMPLOYMENT: "ხელფასიანი ცნობა",
   UNPAID_EMPLOYMENT: "უხელფასო ცნობა",
   PAID_PROBATION: "გამოსაცდელი ვადით ხელფასიანი",
   UNPAID_PROBATION: "გამოსაცდელი ვადით უხელფასო",
@@ -57,6 +59,7 @@ const getInitialValues = (activeTab, currentUser) => {
       working_start_date: currentUser?.working_start_date || "",
       purpose: "",
       template_num: "",
+      started_date: "",
     }
   } else if (activeTab === "2") {
     return {
@@ -68,6 +71,7 @@ const getInitialValues = (activeTab, currentUser) => {
       working_start_date: "",
       purpose: "",
       template_num: "",
+      started_date: "",
     }
   } else {
     return {
@@ -77,6 +81,7 @@ const getInitialValues = (activeTab, currentUser) => {
       working_start_date: "",
       purpose: "",
       template_num: "",
+      started_date: "",
     }
   }
 }
@@ -111,6 +116,11 @@ const HrPage = () => {
   const [selectedUser, setSelectedUser] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
   const { isAdmin } = usePermissions()
+  const [startedDate, setStartedDate] = useState({
+    started_date: ''
+  })
+
+  console.log(startedDate)
 
   const isHrMember = currentUser?.department_id === 8
   const isHrDepartmentHead =
@@ -144,6 +154,7 @@ const HrPage = () => {
         position: activeTab === "2" ? values.position : null,
         id_number: activeTab === "2" ? values.id_number : null,
         template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === values.documentType) + 1,
+        started_date: activeTab == "2" ? startedDate?.started_date : "",
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
 
@@ -189,7 +200,25 @@ const HrPage = () => {
           {renderUserInfo(selectedUser, 'გვარი', 'last_name', true)}
         </div>
       )}
-      <div className="mb-4">
+      <div className="row g-3 mb-4">
+      {tab == 2 && (
+      <div className="col-md-6">
+        <div className="flex flex-row">
+
+        <Label className="form-label">დაწყების თარიღი</Label>
+          {/* date! */}
+          <DatePicker startDate={startedDate} handleStartedDate={setStartedDate} />
+
+        </div>
+        <ErrorMessage
+          name="started_date"
+          component="div"
+          className="text-danger mt-1"
+        />
+      </div>
+      )}
+
+<div className={`${tab === 2 && 'col-md-6'}`}>
         <Label className="form-label">
           დოკუმენტის ტიპი
         </Label>
@@ -206,7 +235,7 @@ const HrPage = () => {
               <option
                 key={key}
                 value={type}
-                disabled={tab === 1 && isDocumentTypeDisabled(type)}
+                disabled={isDocumentTypeDisabled(type, tab == 1 ? currentUser?.working_start_date : startedDate)}
               >
                 {type}
               </option>
@@ -229,6 +258,8 @@ const HrPage = () => {
           </div>
         )}
       </div>
+      </div>
+
 
       {/* User Info */}
       <div className="row g-3 mb-4">
@@ -255,11 +286,9 @@ const HrPage = () => {
       </>
   )
 
-  const isDocumentTypeDisabled = type => {
+  const isDocumentTypeDisabled = (type, started) => {
     if (isEmploymentDocument(type)) {
-      const hasRequiredExperience = hasWorkedSixMonths(
-        currentUser?.working_start_date
-      )
+      const hasRequiredExperience = hasWorkedSixMonths(started)
       return !hasRequiredExperience
     }
     return false
