@@ -1,7 +1,7 @@
 import defaultInstance from "../../plugins/axios"
 
 export const getVacations = async () => {
-  return defaultInstance.get("/api/vocation/list")
+  return defaultInstance.get("/api/vacation/list")
 }
 
 export const getApprovalVacations = async (data) => {
