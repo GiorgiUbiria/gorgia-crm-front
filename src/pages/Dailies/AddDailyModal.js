@@ -5,14 +5,14 @@ import DialogContent from "@mui/material/DialogContent"
 import DialogTitle from "@mui/material/DialogTitle"
 import Button from "@mui/material/Button"
 import TextField from "@mui/material/TextField"
-import MenuItem from "@mui/material/MenuItem"
 import { createDaily } from "services/daily"
 
-const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departments }) => {
+const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     name: "",
     description: "",
+    department_id: departmentId,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -25,13 +25,14 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departments }) => {
     e.preventDefault()
     try {
       setIsSubmitting(true)
-      await createDaily(formData)
+      await createDaily('department_head', formData)
       onDailyAdded()
       toggle()
       setFormData({
         date: new Date().toISOString().split("T")[0],
         name: "",
         description: "",
+        department_id: departmentId,
       })
     } catch (error) {
       console.error("Error creating daily:", error)
@@ -42,7 +43,7 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departments }) => {
 
   return (
     <Dialog open={isOpen} onClose={toggle} maxWidth="sm" fullWidth>
-      <DialogTitle>შეფასების დამატება</DialogTitle>
+      <DialogTitle>დღის საკითხის დამატება</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <TextField

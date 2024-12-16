@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react"
 import Breadcrumbs from "../../../components/Common/Breadcrumb"
-import { getHrDocuments, updateHrDocumentStatus } from "services/hrDocument"
+import { getHrDocuments } from "services/hrDocument"
 import MuiTable from "../../../components/Mui/MuiTable"
 import { downloadHrDocument as downloadHrDocumentService } from "services/hrDocument"
 import { Row, Col } from "reactstrap"
@@ -47,26 +47,18 @@ const HrPageArchive = () => {
     fetchDocuments()
   }, [])
 
-  const printPdf = filePath => {
-    const newWindow = window.open(filePath)
-    if (newWindow) {
-      newWindow.focus()
-      newWindow.print()
-    }
-  }
-
   const transformedHrDocuments = documents.map(document => ({
     id: document.id,
     status: STATUS_MAPPING[document.status] || document.status,
     created_at: document.created_at,
     user: {
       name:
-      document.type === 1 ?
+      document.is_other_user !== 1 ?
         document.user?.name && document.user?.sur_name
           ? `${document.user.name} ${document.user.sur_name}`
           : "N/A" : `${document.first_name} ${document.last_name}`,
-      id: document.type === 1 ? document.user.id_number : document.id_number,
-      position: document.type === 1 ? document.user.position : document.position,
+      id: document.is_other_user !== 1 ? document.user.id_number : document.id_number,
+      position: document.is_other_user !== 1 ? document.user.position : document.position,
     },
     name: document.name,
     salary: document.salary,

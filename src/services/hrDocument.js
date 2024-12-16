@@ -19,6 +19,10 @@ export const getHrDocuments = async () => {
   return defaultInstance.get("/api/hr-documents")
 }
 
+export const getHrDocument = async (hrDocumentId) => {
+  return defaultInstance.get("/api/hr-documents/" + hrDocumentId)
+}
+
 export const getCurrentUserHrDocuments = async () => {
   return defaultInstance.get("/api/hr-documents/current")
 }

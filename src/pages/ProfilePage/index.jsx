@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react"
 import { changePassword, updateUser } from "../../services/user"
-import { getPublicDepartments } from "../../services/admin/department"
 import { useTranslation } from "react-i18next"
 import { useSelector } from "react-redux"
 import { FiCamera, FiUser, FiMail, FiLock } from "react-icons/fi"
@@ -242,22 +241,6 @@ const Input = styled.input`
   }
 `
 
-const Select = styled.select`
-  padding: 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 14px;
-  background-color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(16, 93, 141, 0.2);
-    outline: none;
-  }
-`
-
 const ErrorText = styled.p`
   color: var(--error-color);
   font-size: 13px;
@@ -466,12 +449,29 @@ const ProfilePage = () => {
   return (
     <Container className="mb-4">
       <PageHeader>
-        <HeaderContent>
-          <ImageSection>
+        <HeaderContent
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <ImageSection
+            sx={{
+              flex: { xs: "0 0 auto", sm: "0 0 150px" },
+              textAlign: "center",
+            }}
+          >
             <ProfileImageWrapper>
               <ProfileImage
                 src={profileImageSrc}
                 alt={`${userData?.name} ${userData?.sur_name}`}
+                sx={{
+                  width: { xs: "100px", sm: "150px" },
+                  height: { xs: "100px", sm: "150px" },
+                  borderRadius: "50%",
+                }}
               />
               <UploadOverlay htmlFor="profile-image-upload">
                 <FiCamera size={16} />
@@ -490,11 +490,27 @@ const ProfilePage = () => {
               />
             </ProfileImageWrapper>
           </ImageSection>
-          <UserInfo>
-            <UserName>
+          <UserInfo
+            sx={{ textAlign: { xs: "center", sm: "left" }, width: "100%" }}
+          >
+            <UserName
+              sx={{
+                fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                wordBreak: "break-word",
+              }}
+            >
               {userData?.name} {userData?.sur_name}
             </UserName>
-            <UserRole>
+            <UserRole
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 1,
+                justifyContent: { xs: "center", sm: "flex-start" },
+                flexWrap: "wrap",
+                textAlign: { xs: "center", sm: "left" },
+              }}
+            >
               <DepartmentBadge>{userData?.department?.name}</DepartmentBadge>
               {userData?.roles?.map(role => (
                 <RoleBadge key={role.id}>{role.name}</RoleBadge>

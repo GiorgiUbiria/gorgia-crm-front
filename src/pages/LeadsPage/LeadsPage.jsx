@@ -10,7 +10,6 @@ import {
   ModalHeader,
   ModalBody,
 } from "reactstrap"
-import useIsAdmin from "hooks/useIsAdmin"
 import {
   getLeads,
   createLead,
@@ -58,10 +57,8 @@ const LeadsPage = () => {
     type: null,
     leadId: null,
   })
-  const isAdmin = useIsAdmin()
   const [modal, setModal] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
-  const [permissions, setPermissions] = useState([])
 
   const fetchLeads = async () => {
     try {
@@ -70,16 +67,6 @@ const LeadsPage = () => {
     } catch (error) {
       console.error("Error fetching leads:", error)
       setLeads([])
-    }
-  }
-
-  const checkAuth = async () => {
-    try {
-      const response = await checkAuth()
-      console.log("Permissions:", response)
-      setPermissions(response || [])
-    } catch (error) {
-      console.error("Error checking auth:", error)
     }
   }
 

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
 import {
   Breadcrumbs,
   Dialog,
@@ -24,14 +23,12 @@ import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
 import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
 import TripPageApprove from "pages/Applications/BusinessTrip/TripPageApprove/TripPageApprove"
-import LawyerPageApprove from "pages/LawyerPageApprove"
+import LawyerPageApprove from "pages/Agreements/Standard/StandardAgreementApprove"
 
 const HeadPage = () => {
-  const navigate = useNavigate()
   const [modalIsOpen, setModalIsOpen] = useState(false)
-  const [approvalList, setApprovalList] = useState([])
-  const [chosenApproval, setChosenApproval] = useState(null)
-  const [activeTab, setActiveTab] = useState("1") // State for Tabs
+  const [chosenApproval] = useState(null)
+  const [activeTab, setActiveTab] = useState("1")
 
   useEffect(() => {
     const fetchApprovals = async () => {
@@ -47,11 +44,6 @@ const HeadPage = () => {
     fetchApprovals()
   }, [])
 
-  const openModal = data => {
-    setModalIsOpen(true)
-    setChosenApproval(data)
-  }
-
   const closeModal = () => {
     setModalIsOpen(false)
   }
@@ -66,7 +58,7 @@ const HeadPage = () => {
     e.preventDefault()
 
     try {
-      const res = await approveVacation(chosenApproval.id, {
+      await approveVacation(chosenApproval.id, {
         status: e.target.status.value,
       })
 

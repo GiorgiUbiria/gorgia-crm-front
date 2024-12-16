@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { getDailyList } from "services/daily"
+import { getDailies } from "services/daily"
 import { getDepartments } from "services/auth"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
@@ -10,38 +10,50 @@ import AddDailyModal from "./AddDailyModal"
 import Breadcrumbs from "components/Common/Breadcrumb"
 import * as XLSX from "xlsx"
 
+const INITIAL_STATE = {
+  currentPage: 1,
+  pageSize: 10,
+  dailiesData: { data: [], total: 0 },
+  isLoading: false,
+  addDailyModal: false,
+}
+
+const PAGE_SIZE_OPTIONS = [5, 10, 15, 20]
+
 const Dailies = () => {
   const navigate = useNavigate()
   const isAdmin = useIsAdmin()
-  const [addDailyModal, setAddDailyModal] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-  const [dailiesData, setDailiesData] = useState({ data: [], total: 0 })
-  const [departments, setDepartments] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
+  const user = JSON.parse(sessionStorage.getItem("authUser"))
+
+  const [state, setState] = useState(INITIAL_STATE)
+  const { currentPage, pageSize, dailiesData, isLoading, addDailyModal } = state
+
+  const updateState = newState => {
+    setState(prev => ({ ...prev, ...newState }))
+  }
 
   const fetchDailies = async () => {
     try {
-      setIsLoading(true)
-      const response = await getDailyList(currentPage, pageSize)
-      const sortedData = response.data.data.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      )
-      setDailiesData({
-        data: sortedData,
-        total: response.data.total,
+      updateState({ isLoading: true })
+      const params = { page: currentPage, limit: pageSize }
+      const { dailies } = await getDailies("regular", params)
+      updateState({
+        dailiesData: {
+          data: dailies,
+          total: dailies.length,
+        },
       })
     } catch (error) {
-      console.error("Error fetching dailies:", error)
+      console.error("Error fetching regular dailies:", error)
     } finally {
-      setIsLoading(false)
+      updateState({ isLoading: false })
     }
   }
 
   const fetchDepartments = async () => {
     try {
       const response = await getDepartments()
-      setDepartments(response.data.departments)
+      updateState({ departments: response.data.departments })
     } catch (error) {
       console.error("Error fetching departments:", error)
     }
@@ -49,15 +61,25 @@ const Dailies = () => {
 
   useEffect(() => {
     fetchDailies()
+    console.log(dailiesData)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize])
 
   useEffect(() => {
     fetchDepartments()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleRowClick = row => {
     navigate(`/tools/daily-results/${row.id}`)
   }
+
+  const transformedDailies = useMemo(() => {
+    return dailiesData.data.map(daily => ({
+      ...daily,
+      user_full_name: `${daily.user.name} ${daily.user.sur_name}`,
+    }))
+  }, [dailiesData])
 
   const columns = useMemo(
     () => [
@@ -82,68 +104,90 @@ const Dailies = () => {
       },
       {
         Header: "დეპარტამენტი",
-        accessor: "user.department.name",
+        accessor: "department.name",
         disableSortBy: true,
       },
       {
         Header: "სახელი/გვარი",
-        accessor: "user",
+        accessor: "user_full_name",
         disableSortBy: true,
-        Cell: ({ value }) => value.name + " " + value.sur_name || "-",
       },
     ],
     []
   )
 
-  const filterOptions = [
-    {
-      field: "user.department.name",
-      label: "დეპარტამენტი",
-    },
-  ]
+  const filterOptions = useMemo(() => {
+    const uniqueDepartments = [
+      ...new Set(dailiesData.data.map(daily => daily.department?.id)),
+    ]
+      .filter(Boolean)
+      .map(deptId => {
+        const daily = dailiesData.data.find(d => d.department?.id === deptId)
+        return {
+          value: deptId,
+          label: daily?.department?.name || "",
+        }
+      })
+      .sort((a, b) => a.label.localeCompare(b.label))
+
+    console.log("Unique Departments:", uniqueDepartments)
+
+    return [
+      {
+        field: "department.id",
+        label: "დეპარტამენტი",
+        options: [{ value: "", label: "ყველა" }, ...uniqueDepartments],
+      },
+    ]
+  }, [dailiesData.data])
 
   const exportToExcel = () => {
+    const headers = [
+      "დეპარტამენტი",
+      "საკითხის ნომერი",
+      "თარიღი",
+      "საკითხი",
+      "სახელი/გვარი",
+    ]
     const data = [
-      ["დეპარტამენტი", "საკითხის ნომერი", "თარიღი", "საკ��თხი", "სახელი/გვარი"],
-      ...dailiesData.data.map(daily => [
-        daily.user.department.name,
+      headers,
+      ...transformedDailies.map(daily => [
+        daily.department.name,
         daily.id,
         daily.date,
         daily.description,
-        daily.user.name + " " + daily.user.sur_name || "-",
+        (daily.user && `${daily.user.name} ${daily.user.sur_name}`) || "-",
       ]),
     ]
 
     const ws = XLSX.utils.aoa_to_sheet(data)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Users")
-    XLSX.writeFile(wb, "დღის საკითხები.xlsx")
+    XLSX.utils.book_append_sheet(wb, ws, "Regular Dailies")
+    XLSX.writeFile(wb, "Regular_Dailies.xlsx")
   }
 
-  const expandedRow = row => {
-    return (
-      <div className="p-4 bg-white rounded shadow-sm">
-        <div className="d-flex flex-column">
-          <h5 className="mb-2 text-primary">საკითხის დეტალები</h5>
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <span className="fw-bold text-secondary">საკითხი:</span>
-            <span className="text-dark">{row.description}</span>
-          </div>
-          <div className="d-flex justify-content-between align-items-center">
-            <span className="fw-bold text-secondary">თარიღი:</span>
-            <span className="text-dark">
-              {new Date(row.date).toLocaleDateString()}
-            </span>
-          </div>
+  const renderExpandedRow = row => (
+    <div className="p-4 bg-white rounded shadow-sm">
+      <div className="d-flex flex-column">
+        <h5 className="mb-2 text-primary">საკითხის დეტალები</h5>
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <span className="fw-bold text-secondary">საკითხი:</span>
+          <span className="text-dark">{row.description}</span>
+        </div>
+        <div className="d-flex justify-content-between align-items-center">
+          <span className="fw-bold text-secondary">თარიღი:</span>
+          <span className="text-dark">
+            {new Date(row.date).toLocaleDateString()}
+          </span>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
     <div className="page-content bg-gray-100">
       <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
-        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="შეფასებები" />
+        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="დღის შედეგები" />
 
         <div className="bg-white rounded-xl shadow p-6">
           <Row className="mb-3">
@@ -162,7 +206,7 @@ const Dailies = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => setAddDailyModal(true)}
+                  onClick={() => updateState({ addDailyModal: true })}
                 >
                   <i className="bx bx-plus me-1"></i>
                   შეფასების დამატება
@@ -173,28 +217,29 @@ const Dailies = () => {
 
           <MuiTable
             columns={columns}
-            data={dailiesData.data}
+            data={transformedDailies}
             filterOptions={filterOptions}
-            searchableFields={["name", "user.department.name", "user.name"]}
+            searchableFields={["name", "department.name"]}
             enableSearch={true}
             initialPageSize={pageSize}
-            pageSizeOptions={[5, 10, 15, 20]}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
             currentPage={currentPage}
             totalItems={dailiesData.total}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={setPageSize}
+            onPageChange={page => updateState({ currentPage: page })}
+            onPageSizeChange={size => updateState({ pageSize: size })}
             isLoading={isLoading}
             onRowClick={handleRowClick}
-            renderRowDetails={expandedRow}
+            renderRowDetails={renderExpandedRow}
             rowClassName="cursor-pointer hover:bg-gray-50"
           />
         </div>
 
         <AddDailyModal
           isOpen={addDailyModal}
-          toggle={() => setAddDailyModal(false)}
+          toggle={() => updateState({ addDailyModal: false })}
           onDailyAdded={fetchDailies}
-          departments={departments}
+          departmentId={user.department_id}
+          type="regular"
         />
       </div>
     </div>

@@ -1,31 +1,17 @@
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState } from "react"
 import {
   createHrDocument,
-  getCurrentUserHrDocuments,
-  getHrDocuments,
 } from "services/hrDocument"
-import {
-  updateUserIdNumberById,
-  updateUserIdNumber,
-  fetchUser,
-} from "services/user"
 import { useSelector } from "react-redux"
 import * as Yup from "yup"
 import moment from "moment"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import useFetchUsers from "hooks/useFetchUsers"
-import useIsAdmin from "hooks/useIsAdmin"
-import MuiTable from "components/Mui/MuiTable"
+import { usePermissions } from "hooks/usePermissions"
 import {
   Row,
   Col,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Input,
-  FormFeedback,
   Label,
 } from "reactstrap"
 import { Formik, Form, Field, ErrorMessage } from "formik"
@@ -33,7 +19,6 @@ import classnames from "classnames"
 import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
 import { Button } from "reactstrap"
-import { usePermissions } from "hooks/usePermissions"
 import { useNavigate } from "react-router-dom"
 
 const DOCUMENT_TYPES = {
@@ -63,7 +48,7 @@ const hasWorkedSixMonths = startDate => {
   return moment(startDate).isBefore(sixMonthsAgo)
 }
 
-const getInitialValues = (activeTab, currentUser, selectedUser) => {
+const getInitialValues = (activeTab, currentUser) => {
   if (activeTab === "1") {
     return {
       documentType: "",
@@ -71,10 +56,10 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       position: currentUser?.department?.name || "",
       working_start_date: currentUser?.working_start_date || "",
       purpose: "",
+      template_num: "",
     }
   } else if (activeTab === "2") {
     return {
-      // selectedUser: selectedUser?.id || "",
       first_name: "",
       last_name: "",
       documentType: "",
@@ -82,6 +67,7 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       position: "",
       working_start_date: "",
       purpose: "",
+      template_num: "",
     }
   } else {
     return {
@@ -90,10 +76,10 @@ const getInitialValues = (activeTab, currentUser, selectedUser) => {
       position: "",
       working_start_date: "",
       purpose: "",
+      template_num: "",
     }
   }
 }
-
 
 const validationSchema = Yup.object().shape({
   documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
@@ -110,7 +96,6 @@ const validationSchema = Yup.object().shape({
 const forUserValidationSchema = activeTab => {
   if (activeTab === "2") {
     return validationSchema.shape({
-      // selectedUser: Yup.string().required("მომხმარებლის არჩევა აუცილებელია"),
       first_name: Yup.string().required("მომხმარებლის სახელი აუცილებელია"),
       last_name: Yup.string().required("მომხმარებლის გვარი აუცილებელია"),
     })
@@ -122,13 +107,10 @@ const HrPage = () => {
   const navigate = useNavigate()
   const reduxUser = useSelector(state => state.user.user)
   const [currentUser, setCurrentUser] = useState(reduxUser)
-  const { users, loading: usersLoading } = useFetchUsers()
-  const [selectedUserId, setSelectedUserId] = useState("")
+  const { users } = useFetchUsers()
   const [selectedUser, setSelectedUser] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
-  const { hasPermission, isAdmin } = usePermissions()
-
-
+  const { isAdmin } = usePermissions()
 
   const isHrMember = currentUser?.department_id === 8
   const isHrDepartmentHead =
@@ -141,52 +123,29 @@ const HrPage = () => {
   }, [reduxUser])
 
   useEffect(() => {
-    if (activeTab === "2" && selectedUserId) {
-      const user = users.find(u => u.id === parseInt(selectedUserId))
+    if (activeTab === "2" && selectedUser) {
+      const user = users.find(u => u.id === parseInt(selectedUser))
       setSelectedUser(user || null)
     } else {
       setSelectedUser(null)
     }
-  }, [activeTab, selectedUserId, users])
+  }, [activeTab, selectedUser, users])
 
-  const handleDocumentSubmit = async (values, { setSubmitting, resetForm }) => {
+  const handleDocumentSubmit = async (values, { setSubmitting }) => {
     try {
       const contextUser = currentUser
-
-      // if (!contextUser) {
-      //   toast.error("მომხმარებლის მონაცემები არ მოიძებნა")
-      //   return
-      // }
-
-      if (
-        (activeTab === "2" || isAdmin) &&
-        (values.id_number !== contextUser.id_number ||
-          values.position !== contextUser.position)
-      ) {
-        const updateData = {
-          id_number: values.id_number,
-          position: values.position,
-        }
-        if(activeTab === "1"){
-          await updateUserIdNumber(updateData)
-        }
-      }
-
-      console.log(values)
-      // CHECK
 
       const documentData = {
         name: values.documentType,
         user_id: contextUser.id,
         first_name: values.first_name,
         last_name: values.last_name,
-        type: activeTab,
+        is_other_user: activeTab === "2" ? 1 : 0,
         position: activeTab === "2" ? values.position : null,
         id_number: activeTab === "2" ? values.id_number : null,
+        template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === values.documentType) + 1,
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
-
-      // console.log(documentData)
 
       await createHrDocument(documentData)
       toast.success("დოკუმენტი წარმატებით შეიქმნა")
@@ -197,7 +156,6 @@ const HrPage = () => {
         navigate("/hr/documents/my-requests")
       }
     } catch (err) {
-      console.log(err)
       console.error("Error creating HR document:", err)
       toast.error("დოკუმენტის შექმნა ვერ მოხერხდა")
     } finally {
@@ -205,31 +163,7 @@ const HrPage = () => {
     }
   }
 
-  
-
-
   const renderUserInfo = (user, labelText, name, isEditable = false) => (
-    // <div className="row g-3 mb-4">
-
-    //   <div className="col-md-6">
-    //     <Label className="form-label">პირადი ნომერი</Label>
-    //     {isEditable ? (
-    //       <Field type="text" name="id_number" className="form-control" />
-    //     ) : (
-    //       <p className="form-control-plaintext border rounded p-2">
-    //         {user?.id_number}
-    //       </p>
-    //     )}
-    //     <ErrorMessage
-    //       name="id_number"
-    //       component="div"
-    //       className="text-danger mt-1"
-    //     />
-    //   </div>
-
-   
-
-
       <div className="col-md-6">
         <Label className="form-label">{labelText}</Label>
         {isEditable ? (
@@ -245,8 +179,6 @@ const HrPage = () => {
           className="text-danger mt-1"
         />
       </div>
-      
-    // </div>
   )
 
   const renderUserForm = (values, tab) => (
@@ -383,8 +315,7 @@ const HrPage = () => {
                       enableReinitialize
                       initialValues={getInitialValues(
                         activeTab,
-                        currentUser,
-                        selectedUser
+                        currentUser
                       )}
                       validationSchema={forUserValidationSchema(activeTab)}
                       onSubmit={handleDocumentSubmit}

@@ -24,5 +24,6 @@ export const profileError = error => {
 export const resetProfileFlag = error => {
   return {
     type: RESET_PROFILE_FLAG,
+    payload: error,
   }
 }

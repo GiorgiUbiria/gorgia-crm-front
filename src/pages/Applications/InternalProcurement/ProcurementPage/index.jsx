@@ -68,7 +68,6 @@ const InputWithError = ({
 
 const ProcurementPage = () => {
   const navigate = useNavigate()
-  const [purchases, setPurchases] = useState([])
   const [departments, setDepartments] = useState([])
   const { user } = useFetchUser()
 
@@ -100,7 +99,7 @@ const ProcurementPage = () => {
       }
 
       try {
-        const res = await createPurchase(submitData)
+        await createPurchase(submitData)
 
         toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
           position: "top-right",
@@ -172,31 +171,6 @@ const ProcurementPage = () => {
     fetchDepartments()
     fetchPurchaseDepartments()
   }, [])
-
-  const onFinish = async (values) => {
-    try {
-      const formData = new FormData();
-      
-      // Append all form fields to FormData
-      Object.keys(values).forEach(key => {
-        if (key === 'file') {
-          const fileInput = document.querySelector('input[type="file"]');
-          if (fileInput && fileInput.files[0]) {
-            formData.append('file', fileInput.files[0]);
-          }
-        } else {
-          formData.append(key, values[key]);
-        }
-      });
-
-      await createPurchase(formData);
-      alert('შესყიდვის მოთხოვნა წარმატებით შეიქმნა');
-      navigate('/applications/internal-procurement/user-procurements');
-    } catch (error) {
-      console.error('Error creating purchase:', error);
-      alert('შეცდომა შესყიდვის მოთხოვნის შექმნისას');
-    }
-  };
 
   return (
     <React.Fragment>

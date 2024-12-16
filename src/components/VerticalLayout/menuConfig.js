@@ -12,11 +12,18 @@ import {
   BsTools,
   BsArchive,
   BsPeople,
-  BsCashStack,
   BsCalendar2DateFill,
   BsJournalBookmarkFill,
   BsFileCode,
 } from "react-icons/bs"
+
+const createSubmenu = (basePath, labelKey, isAdmin) =>
+  [
+    { to: `${basePath}/new`, label: labelKey("დამატება") },
+    isAdmin && { to: `${basePath}/approve`, label: labelKey("ვიზირება") },
+    isAdmin && { to: `${basePath}/archive`, label: labelKey("არქივი") },
+    { to: `${basePath}/my-requests`, label: labelKey("გაგზავნილი") },
+  ].filter(Boolean)
 
 export const getMenuConfig = (
   t,
@@ -31,15 +38,16 @@ export const getMenuConfig = (
       icon: BsHouseDoor,
       label: t("მთავარი გვერდი"),
     },
-    (isAdmin || isDepartmentHead) && {
+    {
       key: "admin",
       icon: BsGear,
       label: t("სამართავი პანელი"),
+      permission: "users.view",
       submenu: [
         { to: "/admin/dashboard", label: t("მთავარი") },
         { to: "/admin/approvals", label: t("ვიზირება") },
         { to: "/admin/archive", icon: BsArchive, label: t("არქივი") },
-      ],
+      ].filter(item => !item.visible || item.visible !== false),
     },
     {
       to: "/profile",
@@ -50,6 +58,12 @@ export const getMenuConfig = (
       to: "/tools/daily-results",
       icon: BsJournal,
       label: t("დღის შედეგები"),
+      permission: "daily-results.view-own",
+    },
+    {
+      to: "/tools/inner-daily-results",
+      icon: BsJournal,
+      label: t("დეპარტამენტის დღის შედეგები"),
     },
     {
       key: "applications",
@@ -59,59 +73,17 @@ export const getMenuConfig = (
         {
           key: "internalPurchases",
           label: t("შიდა შესყიდვები"),
-          submenu: [
-            { to: "/applications/purchases/new", label: t("დამატება") },
-            isAdmin && {
-              to: "/applications/purchases/approve",
-              label: t("ვიზირება"),
-            },
-            isAdmin && {
-              to: "/applications/purchases/archive",
-              label: t("არქივი"),
-            },
-            {
-              to: "/applications/purchases/my-requests",
-              label: t("გაგზავნილი"),
-            },
-          ],
+          submenu: createSubmenu("/applications/purchases", t, isAdmin),
         },
         {
           key: "vacation",
           label: t("შვებულება"),
-          submenu: [
-            { to: "/applications/vacation/new", label: t("დამატება") },
-            isAdmin && {
-              to: "/applications/vacation/approve",
-              label: t("ვიზირება"),
-            },
-            isAdmin && {
-              to: "/applications/vacation/archive",
-              label: t("არქივი"),
-            },
-            {
-              to: "/applications/vacation/my-requests",
-              label: t("გაგზავნილი"),
-            },
-          ],
+          submenu: createSubmenu("/applications/vacation", t, isAdmin),
         },
         {
           key: "business",
           label: t("მივლინება"),
-          submenu: [
-            { to: "/applications/business-trip/new", label: t("დამატება") },
-            isAdmin && {
-              to: "/applications/business-trip/approve",
-              label: t("ვიზირება"),
-            },
-            isAdmin && {
-              to: "/applications/business-trip/archive",
-              label: t("არქივი"),
-            },
-            {
-              to: "/applications/business-trip/my-requests",
-              label: t("გაგზავნილი"),
-            },
-          ],
+          submenu: createSubmenu("/applications/business-trip", t, isAdmin),
         },
       ],
     },
@@ -120,10 +92,7 @@ export const getMenuConfig = (
       icon: BsFolder,
       label: t("HR დოკუმენტები"),
       submenu: [
-        {
-          to: "/hr/documents/new",
-          label: t("ახალი მოთხოვნა"),
-        },
+        { to: "/hr/documents/new", label: t("ახალი მოთხოვნა") },
         {
           to: "/hr/documents/approve",
           departmentId: 8,
@@ -138,10 +107,7 @@ export const getMenuConfig = (
           label: t("არქივი"),
           visible: userDepartmentId === 8 || isAdmin,
         },
-        {
-          to: "/hr/documents/my-requests",
-          label: t("ჩემი მოთხოვნები"),
-        },
+        { to: "/hr/documents/my-requests", label: t("ჩემი მოთხოვნები") },
       ],
     },
     {
@@ -154,81 +120,51 @@ export const getMenuConfig = (
           key: "purchase",
           to: "/legal/contracts/purchase",
           label: t("ნასყიდობის ხელშეკრულება"),
-          submenu: [
-            isAdmin && {
-              to: "/legal/contracts/purchase/approve",
-              label: t("ვიზირება"),
-            },
-            isAdmin && {
-              to: "/legal/contracts/purchase/archive",
-              label: t("არქივი"),
-            },
-            { to: "/legal/contracts/purchase/my-requests", label: t("გაგზავნილი") },
-          ],
+          submenu: createSubmenu(
+            "/legal/contracts/purchase",
+            t,
+            isAdmin || isDepartmentHead
+          ),
         },
         {
           key: "delivery",
           to: "/legal/contracts/delivery",
-          label: t("მიღება-ჩაბარების ხელშეკრულება"),
-          submenu: [
-            isAdmin && {
-              to: "/legal/contracts/delivery/approve",
-              label: t("ვიზირება"),
-            },
-            isAdmin && {
-              to: "/legal/contracts/delivery/archive",
-              label: t("არქივი"),
-            },
-            {
-              to: "/legal/contracts/delivery/my-requests",
-              label: t("გაგზავნილი"),
-            },
-          ],
+          label: t("მიღება-ჩაბარების აქტი"),
+          submenu: createSubmenu(
+            "/legal/contracts/delivery",
+            t,
+            isAdmin || isDepartmentHead
+          ),
         },
         {
           key: "marketing",
           to: "/legal/contracts/marketing",
-          label: t("მარკეტინგის ხელშეკრულება"),
-          submenu: [
-            isAdmin && {
-              to: "/legal/contracts/marketing/approve",
-              label: t("ვიზირება"),
-            },
-            isAdmin && {
-              to: "/legal/contracts/marketing/archive",
-              label: t("არქივი"),
-            },
-            { to: "/legal/contracts/marketing/my-requests", label: t("გაგზავნილი") },
-          ],
+          label: t("მარკეტინგული მომსახურების ხელშეკრულება"),
+          submenu: createSubmenu(
+            "/legal/contracts/marketing",
+            t,
+            isAdmin || isDepartmentHead
+          ),
         },
         {
           key: "service",
           to: "/legal/contracts/service",
           label: t("მომსახურების ხელშეკრულება"),
-          submenu: [
-            isAdmin && {
-              to: "/legal/contracts/service/approve",
-              label: t("ვიზირება"),
-            },
-            isAdmin && {
-              to: "/legal/contracts/service/archive",
-              label: t("არქივი"),
-            },
-            {
-              to: "/legal/contracts/service/my-requests",
-              label: t("გაგზავნილი"),
-            },
-          ],
+          submenu: createSubmenu(
+            "/legal/contracts/service",
+            t,
+            isAdmin || isDepartmentHead
+          ),
         },
         {
           to: "/legal/contracts/local",
           key: "local",
-          label: t("ადგილობრივი ხელშეკრულება"),
-          submenu: [
-            isAdmin && { to: "/legal/contracts/local/approve", label: t("ვიზირება") },
-            isAdmin && { to: "/legal/contracts/local/archive", label: t("არქივი") },
-            { to: "/legal/contracts/local/my-requests", label: t("გაგზავნილი") },
-          ],
+          label: t("ადგილობრივი შესყიდვის ხელშეკრულება"),
+          submenu: createSubmenu(
+            "/legal/contracts/local",
+            t,
+            isAdmin || isDepartmentHead
+          ),
         },
       ],
     },
@@ -278,6 +214,7 @@ export const getMenuConfig = (
       label: t("ჩათი"),
     },
   ]
+
   const filterMenuItems = items => {
     return items
       .filter(item => {

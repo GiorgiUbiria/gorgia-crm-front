@@ -9,7 +9,7 @@ import NonAuthLayout from "./components/NonAuthLayout"
 
 import "./assets/scss/theme.scss"
 import DataProvider from "components/hoc/DataProvider"
-import 'boxicons/css/boxicons.min.css';
+import "boxicons/css/boxicons.min.css"
 
 const getLayout = () => {
   let Layout = VerticalLayout
@@ -22,6 +22,7 @@ const App = () => {
   return (
     <DataProvider>
       <Routes>
+        {/* Public Routes */}
         {publicRoutes.map((route, idx) => (
           <Route
             path={route.path}
@@ -31,6 +32,7 @@ const App = () => {
           />
         ))}
 
+        {/* Protected Routes */}
         {authProtectedRoutes.map((route, idx) => (
           <Route
             path={route.path}

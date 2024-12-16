@@ -10,13 +10,16 @@ export const updateAgreementStatus = async (
   status,
   additionalData
 ) => {
-  return defaultInstance.post(
+  console.log(additionalData, agreementId, status)
+  const response = await defaultInstance.post(
     `/api/purchase-agreements/${agreementId}/status`,
     {
       status,
       ...additionalData,
     }
   )
+  console.log(response)
+  return response.data
 }
 
 export const getDepartmentAgreements = async () => {

@@ -5,15 +5,13 @@ import {
   Col,
   CardBody,
   Card,
-  Alert,
   Container,
   Form,
   Input,
   FormFeedback,
   Label,
 } from "reactstrap"
-import { useSelector, useDispatch } from "react-redux"
-import { createSelector } from "reselect"
+import {useDispatch } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import withRouter from "components/Common/withRouter"
 import * as Yup from "yup"
@@ -21,14 +19,13 @@ import { useFormik } from "formik"
 import { loginUser } from "../../services/auth"
 import { fetchUserSuccess } from "../../store/user/actions"
 import { toast } from "react-toastify"
-import { FaHeart } from "react-icons/fa"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
 import profile from "assets/images/profile-img.png"
 import logo from "assets/images/logo.svg"
 
-const Login = props => {
+const Login = () => {
   document.title = "Login | Gorgia LLC"
 
   const dispatch = useDispatch()
@@ -72,15 +69,6 @@ const Login = props => {
       }
     },
   })
-
-  const LoginProperties = createSelector(
-    state => state.Login,
-    login => ({
-      error: login.error,
-    })
-  )
-
-  const { error } = useSelector(LoginProperties)
 
   const handleSubmit = e => {
     e.preventDefault()

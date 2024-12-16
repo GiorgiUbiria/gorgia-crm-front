@@ -18,6 +18,12 @@ const ProfileMenu = props => {
   const [menu, setMenu] = useState(false)
   const [username, setUsername] = useState("Admin")
   const [user, setUser] = useState()
+  useEffect(() => {
+    if (sessionStorage.getItem("authUser")) {
+      const obj = JSON.parse(sessionStorage.getItem("authUser"))
+      setUser(obj)
+    }
+  }, [])
 
   useEffect(() => {
     if (sessionStorage.getItem("authUser")) {
@@ -77,7 +83,5 @@ const mapStatetoProps = state => {
 }
 
 export default withRouter(
-  connect(mapStatetoProps, {})(
-    withTranslation()(ProfileMenu)
-  )
+  connect(mapStatetoProps, {})(withTranslation()(ProfileMenu))
 )
