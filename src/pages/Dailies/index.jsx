@@ -36,7 +36,7 @@ const Dailies = () => {
     try {
       updateState({ isLoading: true })
       const params = { page: currentPage, limit: pageSize }
-      const { dailies } = await getDailies("regular", params)
+      const { dailies } = await getDailies("department_head", params)
       updateState({
         dailiesData: {
           data: dailies,
