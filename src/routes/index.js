@@ -53,7 +53,6 @@ import LocalAgreementArchive from "pages/Agreements/Local/LocalAgreementArchive"
 import LocalAgreementUser from "pages/Agreements/Local/LocalAgreementUser"
 
 import LeadsPage from "pages/LeadsPage/LeadsPage"
-import NotesEditor from "pages/NotesEditor"
 import NotesPage from "pages/NotesPage"
 import ProfilePage from "pages/ProfilePage"
 import VipLeadDetailPage from "pages/VipLeadsPage/VipLeadDetailPage"
@@ -72,6 +71,8 @@ import FarmTaskDetails from "../pages/FarmDetails"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
+import CreateNote from "pages/NotesEditor/CreateNote"
+import EditNote from "pages/NotesEditor/EditNote"
 
 const dashboardRoutes = {
   path: "/dashboard",
@@ -372,9 +373,13 @@ const toolsRoutes = {
       path: "/tools/notes",
       component: <NotesPage />,
     },
-    noteDetails: {
-      path: "/tools/notes/:id",
-      component: <NotesEditor />,
+    createNote: {
+      path: "/tools/notes/create",
+      component: <CreateNote />,
+    },
+    editNote: {
+      path: "/tools/notes/edit/:id",
+      component: <EditNote />,
     },
     dailyResults: {
       path: "/tools/daily-results",
