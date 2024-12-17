@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { getDailies } from "services/daily"
+import { getRegularDailies, getMyRegularDailies } from "services/daily"
 import { getDepartments } from "services/auth"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
@@ -49,15 +49,10 @@ const DailiesInner = () => {
 
       let dailiesResponse
 
-      if (
-        userRoles.includes("admin") ||
-        userRoles.includes("department_head")
-      ) {
-        dailiesResponse = await getDailies("department_head", params)
-      } else if (userRoles.includes("user")) {
-        dailiesResponse = await getDailies("user", params)
+      if (userRoles.includes("admin") || userRoles.includes("department_head")) {
+        dailiesResponse = await getRegularDailies(params)
       } else {
-        dailiesResponse = { dailies: { data: [], total: 0 } }
+        dailiesResponse = await getMyRegularDailies(params)
       }
       updateState({
         dailiesData: {

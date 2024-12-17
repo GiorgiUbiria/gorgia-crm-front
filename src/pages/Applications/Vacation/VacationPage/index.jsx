@@ -665,7 +665,7 @@ const VacationPage = () => {
                                 type="select"
                                 disabled={false}
                               >
-                                <option value="">აირჩიეთ ���ეპარტამენტი</option>
+                                <option value="">აირჩიეთ დეპარტამენტი</option>
                                 {departments.map(dept => (
                                   <option key={dept.id} value={dept.name}>
                                     {dept.name}
