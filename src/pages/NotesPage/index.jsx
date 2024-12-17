@@ -1,81 +1,12 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  CardBody,
-  Button,
-  Input,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "reactstrap"
+import { Container, Row, Col, Button, Input } from "reactstrap"
+import { debounce } from "lodash"
 import { getNoteList, deleteNote } from "../../services/note"
 import Breadcrumbs from "components/Common/Breadcrumb"
-
-const NoteCard = ({ note, onDelete, onEdit }) => (
-  console.log(note),
-  (
-    <Card
-      className="mb-4 note-card"
-      style={{
-        boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",
-        cursor: "pointer",
-      }}
-      onClick={() => onEdit(note.id)}
-    >
-      <CardBody>
-        <div className="d-flex justify-content-between">
-          <p className="text-muted small">
-            {new Date(note.created_at).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}
-          </p>
-          <Button
-            color="danger"
-            size="sm"
-            onClick={e => {
-              e.stopPropagation()
-              onDelete(note)
-            }}
-          >
-            წაშლა
-          </Button>
-        </div>
-        <h6 className="font-weight-bold text-primary">{note.title}</h6>
-        <p
-          className="text-muted note-content"
-          dangerouslySetInnerHTML={{ __html: note.note }}
-        />
-      </CardBody>
-    </Card>
-  )
-)
-
-const MemoizedNoteCard = React.memo(NoteCard)
-MemoizedNoteCard.displayName = "NoteCard"
-
-const DeleteModal = ({ isOpen, toggle, onDelete }) => (
-  <Modal isOpen={isOpen} toggle={toggle}>
-    <ModalHeader toggle={toggle}>ჩანაწერის წაშლა</ModalHeader>
-    <ModalBody>
-      დარწმუნებული ხართ, რომ გსურთ ამ ჩანაწერის წაშლა? ეს მოქმედება ვერ
-      დაბრუნდება.
-    </ModalBody>
-    <ModalFooter>
-      <Button color="secondary" onClick={toggle}>
-        გაუქმება
-      </Button>
-      <Button color="danger" onClick={onDelete}>
-        წაშლა
-      </Button>
-    </ModalFooter>
-  </Modal>
-)
+import NoteCard from "../../components/NoteCard"
+import DeleteModal from "../../components/DeleteModal"
+import { Box, CircularProgress, Typography } from "@mui/material"
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([])
@@ -92,13 +23,12 @@ const NotesPage = () => {
         setIsLoading(true)
         setError(null)
         const response = await getNoteList()
-        console.log(response.data)
         const sortedNotes = response.data.notes.sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
         )
         setNotes(sortedNotes)
       } catch (error) {
-        setError("Failed to load notes. Please try again later.")
+        setError("ჩანაწერების ჩატვირთვა ვერ მოხერხდა")
         console.error(error)
       } finally {
         setIsLoading(false)
@@ -107,8 +37,16 @@ const NotesPage = () => {
     fetchData()
   }, [])
 
+  const debouncedSetSearchQuery = useMemo(
+    () =>
+      debounce(value => {
+        setSearchQuery(value)
+      }, 300),
+    []
+  )
+
   const handleGetStarted = () => {
-    navigate("/notes-editor")
+    navigate("/tools/notes/create")
   }
 
   const handleDeleteNote = useCallback(async () => {
@@ -127,10 +65,11 @@ const NotesPage = () => {
   }, [noteToDelete])
 
   const handleEditNote = noteId => {
-    navigate(`/notes-editor/${noteId}`)
+    navigate(`/tools/notes/edit/${noteId}`)
   }
 
   const filteredNotes = useMemo(() => {
+    if (!searchQuery) return notes
     const lowerCaseSearchQuery = searchQuery.toLowerCase()
     return notes.filter(note => {
       const lowerCaseTitle = (note.title || "").toLowerCase()
@@ -144,12 +83,21 @@ const NotesPage = () => {
     })
   }, [notes, searchQuery])
 
+  const handleSearchChange = e => {
+    debouncedSetSearchQuery(e.target.value)
+  }
+
   if (isLoading) {
     return (
       <Container fluid className="page-content">
-        <div className="text-center pt-5">
-          <p>Loading notes...</p>
-        </div>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="50vh"
+        >
+          <CircularProgress />
+        </Box>
       </Container>
     )
   }
@@ -157,12 +105,14 @@ const NotesPage = () => {
   if (error) {
     return (
       <Container fluid className="page-content">
-        <div className="text-center pt-5">
-          <p className="text-danger">{error}</p>
+        <Box display="flex" flexDirection="column" alignItems="center" pt={5}>
+          <Typography color="error" variant="h6" gutterBottom>
+            {error}
+          </Typography>
           <Button color="primary" onClick={() => window.location.reload()}>
             Retry
           </Button>
-        </div>
+        </Box>
       </Container>
     )
   }
@@ -173,36 +123,43 @@ const NotesPage = () => {
 
       <Row className="mb-4">
         <Col md={{ size: 6, offset: 6 }} className="text-right">
-          <div className="d-flex justify-content-end">
+          <Box display="flex" justifyContent="flex-end" width="100%">
             <Input
               type="text"
               placeholder="ძებნა..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               style={{ maxWidth: "250px", marginRight: "10px" }}
             />
-            <Link to="/notes-editor">
+            <Link to="/tools/notes/create">
               <Button color="primary" className="d-flex align-items-center">
                 დამატება
               </Button>
             </Link>
-          </div>
+          </Box>
         </Col>
       </Row>
 
       <Row>
         {filteredNotes.length === 0 ? (
           <Col className="text-center pt-5">
-            <h6 className="font-weight-bold mb-3">No Notes Found</h6>
-            <p>You don't have any notes yet. Click below to get started.</p>
-            <Button color="primary" onClick={handleGetStarted}>
-              Get Started
+            <Typography variant="h6" className="font-weight-bold mb-3">
+              ჩანაწერები ვერ მოიძებნა
+            </Typography>
+            <Typography>
+              თქვენ ჯერ არ გაქვთ ჩანაწერები, დაამატეთ პირველი ჩანაწერი
+            </Typography>
+            <Button
+              color="primary"
+              onClick={handleGetStarted}
+              style={{ marginTop: "20px" }}
+            >
+              დაწყება
             </Button>
           </Col>
         ) : (
           filteredNotes.map(note => (
             <Col md="4" key={note.id}>
-              <MemoizedNoteCard
+              <NoteCard
                 note={note}
                 onDelete={note => {
                   setNoteToDelete(note)
