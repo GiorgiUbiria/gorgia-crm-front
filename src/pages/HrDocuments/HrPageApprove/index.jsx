@@ -380,18 +380,17 @@ const HrPageApprove = () => {
             renderRowDetails={row => <div>{row.comment}</div>}
           />
           )}
-          <Dialog open={modalOpen} onClose={handleModalClose}>
-            <DialogTitle>
+          <Dialog open={modalOpen} onClose={handleModalClose}  >
+            <DialogTitle >
               {selectedStatus === "approved"
                 ? "დოკუმენტის დამტკიცება"
                 : "დოკუმენტის უარყოფა"}
             </DialogTitle>
 
-            <div className="mt-4">
-              <form></form>
+            <div className="mt-4" >
               <Formik enableReinitialize initialValues={formData} >
                 {({ values }) => (
-                  <Form>
+                  <Form style={{padding: '30px'}}>
                     <TabContent>
                       {selectedStatus === "approved" && (
                         <>

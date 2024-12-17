@@ -235,7 +235,7 @@ const HrPage = () => {
               <option
                 key={key}
                 value={type}
-                disabled={isDocumentTypeDisabled(type, tab == 1 ? currentUser?.working_start_date : startedDate)}
+                disabled={isDocumentTypeDisabled(type, tab == 1 ? currentUser?.working_start_date : startedDate?.started_date)}
               >
                 {type}
               </option>
