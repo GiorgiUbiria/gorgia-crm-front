@@ -542,7 +542,7 @@ const VacationPage = () => {
                             <InputWithError
                               formik={formikMyVacation}
                               name="substitute_name"
-                              label="შემცვლელის სახელი"
+                              label="შემცვლელის სახელი/გვარი"
                             />
                           </div>
                           <div className="col-md-6">
@@ -694,7 +694,7 @@ const VacationPage = () => {
                               <InputWithError
                                 formik={formikEmployeeVacation}
                                 name="substitute_name"
-                                label="შემცვლელის სახელი"
+                                label="შემცვლელის სახელი/გვარი"
                               />
                             </div>
                             <div className="col-md-6">
