@@ -17,9 +17,9 @@ import {
   BsFileCode,
 } from "react-icons/bs"
 
-const createSubmenu = (basePath, labelKey, isAdmin) =>
+const createSubmenu = (basePath, labelKey, isAdmin, requiresNew = false) =>
   [
-    { to: `${basePath}/new`, label: labelKey("დამატება") },
+    requiresNew && { to: `${basePath}/new`, label: labelKey("დამატება") },
     isAdmin && { to: `${basePath}/approve`, label: labelKey("ვიზირება") },
     isAdmin && { to: `${basePath}/archive`, label: labelKey("არქივი") },
     { to: `${basePath}/my-requests`, label: labelKey("გაგზავნილი") },
@@ -73,17 +73,17 @@ export const getMenuConfig = (
         {
           key: "internalPurchases",
           label: t("შიდა შესყიდვები"),
-          submenu: createSubmenu("/applications/purchases", t, isAdmin),
+          submenu: createSubmenu("/applications/purchases", t, isAdmin, true),
         },
         {
           key: "vacation",
           label: t("შვებულება"),
-          submenu: createSubmenu("/applications/vacation", t, isAdmin),
+          submenu: createSubmenu("/applications/vacation", t, isAdmin, true),
         },
         {
           key: "business",
           label: t("მივლინება"),
-          submenu: createSubmenu("/applications/business-trip", t, isAdmin),
+          submenu: createSubmenu("/applications/business-trip", t, isAdmin, true),
         },
       ],
     },

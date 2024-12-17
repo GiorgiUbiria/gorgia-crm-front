@@ -92,11 +92,11 @@ const BusinessPage = () => {
         if (response.status === 200) {
           setDepartments(response.data.departments)
         } else {
-          setDepartmentsError("Failed to fetch departments.")
+          setDepartmentsError("დეპარტამენტების ჩატვირთვა ვერ მოხერხდა")
         }
       } catch (error) {
         console.error("Error fetching departments:", error)
-        setDepartmentsError("An error occurred while fetching departments.")
+        setDepartmentsError("დეპარტამენტების ჩატვირთვა ვერ მოხერხდა")
       } finally {
         setDepartmentsLoading(false)
       }
@@ -222,11 +222,9 @@ const BusinessPage = () => {
           final_cost,
         }
 
-        console.log("Submitting My Trip data:", submitData)
-
         const res = await createBusinessTrip(submitData)
         if (res.status === 200) {
-          toast.success("მივლინება წარმატებით გაიგ��ავნა", {
+          toast.success("მივლინება წარმატებით გაიგზავნა", {
             position: "top-right",
             autoClose: 3000,
           })
@@ -278,6 +276,12 @@ const BusinessPage = () => {
           food_cost: Number(values.food_cost),
           fuel_cost: values.vehicle_expense ? Number(values.fuel_cost) : 0,
           final_cost,
+          vehicle_model: values.vehicle_expense
+            ? values.vehicle_model
+            : "არ არის მითითებული",
+          vehicle_plate: values.vehicle_expense
+            ? values.vehicle_plate
+            : "არ არის მითითებული",
         }
 
         console.log("Submitting Employee Trip data:", submitData)
@@ -435,7 +439,6 @@ const BusinessPage = () => {
 
   const renderForm = (formik, handleVehicleExpenseChange, currentTab) => (
     <Form onSubmit={formik.handleSubmit}>
-      {/* Business Trip Type */}
       <h5 className="mt-4">მივლინების ტიპი</h5>
       <InputWithError
         formik={formik}
@@ -448,7 +451,6 @@ const BusinessPage = () => {
         <option value="international">საერთაშორისო</option>
       </InputWithError>
 
-      {/* Business Trip Place */}
       <h5 className="mt-4">მივლინების ადგილი</h5>
       <div className="row">
         <div className="col-md-6">
@@ -462,12 +464,11 @@ const BusinessPage = () => {
           <InputWithError
             formik={formik}
             name="arrival_location"
-            label="ჩასვლის ადგილი"
+            label="დანიშნულების ადგილი"
           />
         </div>
       </div>
 
-      {/* Reason */}
       <h5 className="mt-4">მივლინების მიზანი</h5>
       <InputWithError
         formik={formik}
@@ -476,7 +477,6 @@ const BusinessPage = () => {
         type="textarea"
       />
 
-      {/* Period */}
       <h5 className="mt-4">ხანგრძლივობა</h5>
       <div className="row">
         <div className="col-md-4">
@@ -507,7 +507,6 @@ const BusinessPage = () => {
         </div>
       </div>
 
-      {/* Employee Info */}
       <h5 className="mt-4">თანამშრომლის ინფორმაცია</h5>
       <div className="row">
         <div className="col-md-6">
@@ -523,19 +522,15 @@ const BusinessPage = () => {
             formik={formik}
             name="department"
             label="დეპარტამენტი"
-            type={formik.values.employee_name ? "text" : "select"}
+            type="select"
             disabled={currentTab === "1"}
           >
-            {!formik.values.employee_name && (
-              <>
-                <option value="">აირჩიეთ დეპარტამენტი</option>
-                {departments.map(dept => (
-                  <option key={dept.id} value={dept.name}>
-                    {dept.name}
-                  </option>
-                ))}
-              </>
-            )}
+            <option value="">აირჩიეთ დეპარტამენტი</option>
+            {departments.map(dept => (
+              <option key={dept.id} value={dept.name}>
+                {dept.name}
+              </option>
+            ))}
           </InputWithError>
         </div>
       </div>
@@ -550,14 +545,13 @@ const BusinessPage = () => {
         </div>
       </div>
 
-      {/* Substitute Info */}
       <h5 className="mt-4">შემცვლელის ინფორმაცია</h5>
       <div className="row">
         <div className="col-md-6">
           <InputWithError
             formik={formik}
             name="substitute_name"
-            label="შემცვლელის სახელი"
+            label="შემცვლელის სახელი/გვარი"
           />
         </div>
         <div className="col-md-6">
@@ -569,7 +563,6 @@ const BusinessPage = () => {
         </div>
       </div>
 
-      {/* Finances */}
       <h5 className="mt-4">ფინანსები</h5>
       <div className="row">
         <div className="col-md-6">
@@ -624,7 +617,6 @@ const BusinessPage = () => {
         </div>
       </div>
 
-      {/* Finances Extra if Vehicle Expense is Chosen */}
       {formik.values.vehicle_expense && (
         <>
           <h5 className="mt-4">ტრანსპორტის დეტალები</h5>
@@ -657,7 +649,6 @@ const BusinessPage = () => {
         </>
       )}
 
-      {/* Final Cost */}
       <h5 className="mt-4">საბოლოო თანხა</h5>
       <div className="row">
         <div className="col-md-6">
@@ -672,7 +663,6 @@ const BusinessPage = () => {
         </div>
       </div>
 
-      {/* Submit Button */}
       <div className="d-flex justify-content-end mt-4">
         <Button
           type="submit"

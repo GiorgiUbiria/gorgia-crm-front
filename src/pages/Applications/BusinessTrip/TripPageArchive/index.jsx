@@ -241,12 +241,12 @@ const TripPageArchive = () => {
         accessor: "id",
       },
       {
-        Header: "მოითხოვა",
+        Header: "მომთხოვნი პირი",
         accessor: "requested_by",
         disableSortBy: true,
       },
       {
-        Header: "მომთხოვნი პირი",
+        Header: "თანამშრომლის სახელი/გვარი",
         accessor: "requested_for",
         disableSortBy: true,
       },
