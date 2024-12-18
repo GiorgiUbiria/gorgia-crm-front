@@ -4,6 +4,7 @@ import App from "./App"
 import * as serviceWorker from "./serviceWorker"
 import { BrowserRouter } from "react-router-dom"
 import { Provider } from "react-redux"
+import "./index.css"
 // import "./plugins/echo"
 
 import store from "./store"
