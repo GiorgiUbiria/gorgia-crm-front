@@ -64,7 +64,6 @@ import Login from "../pages/Authentication/Login"
 import Logout from "../pages/Authentication/Logout"
 import Register from "../pages/Authentication/Register"
 import Calendar from "../pages/Calendar/index"
-import Chat from "../pages/Chat/Chat"
 import Dashboard from "../pages/Dashboard/index"
 import TaskList from "../pages/JobPages/JobList"
 import FarmTaskDetails from "../pages/FarmDetails"
@@ -73,6 +72,7 @@ import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 import CreateNote from "pages/NotesEditor/CreateNote"
 import EditNote from "pages/NotesEditor/EditNote"
+import ChatBox from "pages/Chat/ChatBox"
 
 const dashboardRoutes = {
   path: "/dashboard",
@@ -335,7 +335,7 @@ const communicationRoutes = {
   children: {
     chat: {
       path: "/communication/chat",
-      component: <Chat />,
+      component: <ChatBox />,
     },
     comments: {
       path: "/communication/comments/:id",
