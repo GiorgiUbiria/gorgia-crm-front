@@ -17,11 +17,21 @@ import {
   BsFileCode,
 } from "react-icons/bs"
 
-const createSubmenu = (basePath, labelKey, isAdmin, requiresNew = false) =>
+const createSubmenu = (
+  basePath,
+  labelKey,
+  isAdmin,
+  isDepartmentHead,
+  requiresNew = false
+) =>
   [
     requiresNew && { to: `${basePath}/new`, label: labelKey("დამატება") },
     isAdmin && { to: `${basePath}/approve`, label: labelKey("ვიზირება") },
-    isAdmin && { to: `${basePath}/archive`, label: labelKey("არქივი") },
+    isAdmin
+      ? { to: `${basePath}/archive`, label: labelKey("არქივი") }
+      : isDepartmentHead
+      ? { to: `${basePath}/archive`, label: labelKey("ვიზირება") }
+      : null,
     { to: `${basePath}/my-requests`, label: labelKey("გაგზავნილი") },
   ].filter(Boolean)
 
@@ -73,17 +83,35 @@ export const getMenuConfig = (
         {
           key: "internalPurchases",
           label: t("შიდა შესყიდვები"),
-          submenu: createSubmenu("/applications/purchases", t, isAdmin, true),
+          submenu: createSubmenu(
+            "/applications/purchases",
+            t,
+            isAdmin,
+            isDepartmentHead,
+            true
+          ),
         },
         {
           key: "vacation",
           label: t("შვებულება"),
-          submenu: createSubmenu("/applications/vacation", t, isAdmin, true),
+          submenu: createSubmenu(
+            "/applications/vacation",
+            t,
+            isAdmin,
+            isDepartmentHead,
+            true
+          ),
         },
         {
           key: "business",
           label: t("მივლინება"),
-          submenu: createSubmenu("/applications/business-trip", t, isAdmin, true),
+          submenu: createSubmenu(
+            "/applications/business-trip",
+            t,
+            isAdmin,
+            isDepartmentHead,
+            true
+          ),
         },
       ],
     },
@@ -98,7 +126,7 @@ export const getMenuConfig = (
           departmentId: 8,
           permission: "hr-documents.manage",
           label: t("ვიზირება"),
-          visible: (isDepartmentHead && userDepartmentId === 8) || isAdmin,
+          visible: userDepartmentId === 8 || isAdmin,
         },
         {
           to: "/hr/documents/archive",
