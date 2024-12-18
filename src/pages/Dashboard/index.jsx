@@ -11,28 +11,24 @@ import {
   ListTodo,
   Plus,
 } from "lucide-react"
-
-// Mock user data (replace with your actual user state management)
-const user = {
-  name: "John Doe",
-}
+import { useSelector } from "react-redux"
 
 const widgets = [
   {
     id: 1,
     title: "ჩანაწერები",
-    description: "შეინახე და გააზიარე თქვენი ჩანაწერები აქ.",
+    description: "შექმენი, შეინახე, გააზიარე შენი ჩანაწერები.",
     icon: StickyNote,
-    buttonText: "იხილე ჩანაწერები",
+    buttonText: "იხილე",
     link: "/tools/notes",
     color: "blue",
   },
   {
     id: 2,
     title: "კალენდარი",
-    description: "გამოიყენე კალენდარი მნიშვნელოვან თარიღების შესანახად.",
+    description: "გამოიყენე კალენდარი თარიღების ჩასანიშნად.",
     icon: Calendar,
-    buttonText: "იხილე კალენდარი",
+    buttonText: "იხილე",
     link: "/tools/calendar",
     color: "purple",
   },
@@ -41,7 +37,7 @@ const widgets = [
     title: "IT თასქები",
     description: "მოითხოვე დახმარება IT დეპარტამენტისგან.",
     icon: Laptop2,
-    buttonText: "იხილე IT თასქები",
+    buttonText: "იხილე",
     link: "/support/it-tasks",
     color: "green",
   },
@@ -50,7 +46,7 @@ const widgets = [
     title: "სამეურნეო თასქები",
     description: "მოითხოვე დახმარება სამეურნეო თასქების შესასრულებლად.",
     icon: Sprout,
-    buttonText: "იხილე ფერმის თასქები",
+    buttonText: "იხილე",
     link: "/support/farm-tasks",
     color: "orange",
   },
@@ -59,7 +55,7 @@ const widgets = [
     title: "HR ცნობები",
     description: "მოითხოვე ახალი HR ცნობა.",
     icon: FileText,
-    buttonText: "მოითხოვე ცნობა",
+    buttonText: "მოითხოვე",
     link: "/hr/documents/new",
     color: "sky",
   },
@@ -68,7 +64,7 @@ const widgets = [
     title: "შიდა შესყიდვები",
     description: "მოითხოვე ახალი შიდა შესყიდვა.",
     icon: ShoppingCart,
-    buttonText: "მოითხოვე ახალიში შესყიდვა",
+    buttonText: "მოითხოვე",
     link: "/applications/purchases/new",
     color: "red",
   },
@@ -77,16 +73,16 @@ const widgets = [
     title: "შვებულება",
     description: "მოითხოვე შვებულება.",
     icon: Umbrella,
-    buttonText: "მოითხოვე შვებულება",
+    buttonText: "მოითხოვე",
     link: "/applications/vacation/new",
     color: "violet",
   },
   {
     id: 8,
-    title: "მივადღენა",
-    description: "მოითხოვე მასწავლებლობა.",
+    title: "მივლინება",
+    description: "მოითხოვე მივლინება.",
     icon: PlaneTakeoff,
-    buttonText: "მოითხოვე მიხლინება",
+    buttonText: "მოითხოვე",
     link: "/applications/business-trip/new",
     color: "slate",
   },
@@ -104,47 +100,47 @@ const colorVariants = {
 }
 
 function Dashboard() {
+  const user = useSelector(state => state.user.user)
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 mt-16 mb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumbs */}
         <div className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
           <span>მთავარი</span>
           <span className="text-gray-400">/</span>
           <span className="font-medium text-gray-900">მთავარი</span>
         </div>
 
-        {/* Welcome Card */}
         <div className="mb-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-xl overflow-hidden">
           <div className="px-8 py-10 sm:px-10">
             <h1 className="text-3xl font-bold text-white mb-4">
               მოგესალმებით, {user.name}!
             </h1>
             <p className="text-blue-100 mb-8">
-              ამ გვერდზე შეგიძლია ნახო შენი დავალებები, კალენდარი და მოთხოვნები.
+              ამ გვერდიდან შეგიძლია შეუდგე მუშაობას! წარმატებები!
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => (window.location.href = "/tasks/new")}
-                className="inline-flex items-center justify-center px-6 py-3 bg-white text-blue-600 rounded-full font-medium hover:bg-blue-50 transition-colors duration-200"
+                disabled
+                className="inline-flex items-center justify-center px-6 py-3 bg-white/50 text-black rounded-full font-medium cursor-not-allowed opacity-75"
               >
                 <Plus className="w-5 h-5 mr-2" />
-                გაუშვება ახალი დავალება
+                ახალი დავალება
               </button>
               <button
                 onClick={() => (window.location.href = "/tasks/today")}
-                className="inline-flex items-center justify-center px-6 py-3 border-2 border-white text-white rounded-full font-medium hover:bg-white/10 transition-colors duration-200"
+                disabled
+                className="inline-flex items-center justify-center px-6 py-3 border-2 border-white/50 text-white/50 rounded-full font-medium cursor-not-allowed opacity-75"
               >
                 <ListTodo className="w-5 h-5 mr-2" />
-                ნახე ჩემი ამდღევანდელი დავალებები
+                დღევანდელი დავალებები
               </button>
             </div>
           </div>
         </div>
 
-        {/* Widgets Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {widgets.map(widget => {
             const Icon = widget.icon
