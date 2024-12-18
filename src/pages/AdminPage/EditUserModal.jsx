@@ -8,16 +8,20 @@ import {
   FormGroup,
   Label,
   Input,
+  FormFeedback,
 } from "reactstrap"
 import Button from "@mui/material/Button"
 import IconButton from "@mui/material/IconButton"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
+import Autocomplete from "@mui/material/Autocomplete"
+import TextField from "@mui/material/TextField"
 import {
   updateUserById,
   getPublicDepartments,
   updateDepartmentMember,
 } from "services/admin/department"
+import { getRoles, getUserRoles, updateUserRoles } from "services/role"
 
 const initialFormData = {
   name: "",
@@ -46,11 +50,12 @@ const EditUserModal = ({
   const [formData, setFormData] = useState(initialFormData)
   const [showPassword, setShowPassword] = useState(false)
   const [departments, setDepartments] = useState([])
+  const [availableRoles, setAvailableRoles] = useState([])
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
     if (user) {
-      console.log(user)
+      console.log("User information:", user)
       setFormData({
         name: user.name.firstName || "",
         sur_name: user.name.lastName || "",
@@ -71,11 +76,36 @@ const EditUserModal = ({
 
   useEffect(() => {
     const fetchDepartments = async () => {
-      const departments = await getPublicDepartments()
-      setDepartments(departments.data.departments || [])
+      try {
+        const departments = await getPublicDepartments()
+        setDepartments(departments.data.departments || [])
+      } catch (error) {
+        console.error("Error fetching departments:", error)
+      }
     }
     fetchDepartments()
   }, [])
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const rolesResponse = await getRoles()
+        console.log("Roles response: ", rolesResponse)
+        setAvailableRoles(rolesResponse.data.roles || [])
+
+        if (user && user.id) {
+          const userRolesResponse = await getUserRoles(user.id)
+          setFormData(prevData => ({
+            ...prevData,
+            roles: userRolesResponse.data.roles.map(role => role.id) || [],
+          }))
+        }
+      } catch (error) {
+        console.error("Error fetching roles:", error)
+      }
+    }
+    fetchRoles()
+  }, [user])
 
   const handleChange = useCallback(e => {
     const { name, value } = e.target
@@ -96,7 +126,6 @@ const EditUserModal = ({
     const phoneRegex = /^[0-9]{9,}$/
     const idNumberRegex = /^[0-9]+$/
 
-    // Name Validation
     if (!formData.name.trim()) {
       newErrors.name = "სახელი სავალდებულოა."
     } else if (!georgianRegex.test(formData.name)) {
@@ -104,7 +133,6 @@ const EditUserModal = ({
         "სახელი უნდა შეიცავდეს მხოლოდ ქართულ ასოებს (2-30 სიმბოლო)."
     }
 
-    // Surname Validation
     if (!formData.sur_name.trim()) {
       newErrors.sur_name = "გვარი სავალდებულოა."
     } else if (!georgianRegex.test(formData.sur_name)) {
@@ -112,7 +140,6 @@ const EditUserModal = ({
         "გვარი უნდა შეიცავდეს მხოლოდ ქართულ ასოებს (2-30 სიმბოლო)."
     }
 
-    // Email Validation
     if (!formData.email.trim()) {
       newErrors.email = "ელ-ფოსტა სავალდებულოა."
     } else if (!emailRegex.test(formData.email)) {
@@ -121,7 +148,6 @@ const EditUserModal = ({
       newErrors.email = "ელ-ფოსტა უნდა მთავრდებოდეს @gorgia.ge-ით."
     }
 
-    // Password Validation
     if (formData.password) {
       if (formData.password.length < 6) {
         newErrors.password = "პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო."
@@ -131,7 +157,6 @@ const EditUserModal = ({
       }
     }
 
-    // Mobile Number Validation
     if (!formData.mobile_number.trim()) {
       newErrors.mobile_number = "მობილურის ნომერი სავალდებულოა."
     } else if (!phoneRegex.test(formData.mobile_number)) {
@@ -139,26 +164,30 @@ const EditUserModal = ({
         "მობილურის ნომერი უნდა შეიცავდეს მხოლოდ ციფრებს და მინიმუმ 9 ციფრს."
     }
 
-    // ID Number Validation
     if (!formData.id_number.trim()) {
       newErrors.id_number = "პირადი ნომერი სავალდებულოა."
     } else if (!idNumberRegex.test(formData.id_number)) {
       newErrors.id_number = "პირადი ნომერი უნდა შეიცავდეს მხოლოდ ციფრებს."
     }
 
-    // Department Validation
     if (!formData.department_id) {
       newErrors.department_id = "დეპარტამენტი სავალდებულოა."
     }
 
-    // Position Validation
     if (!formData.position.trim()) {
       newErrors.position = "პოზიცია სავალდებულოა."
+    }
+
+    // Role validation
+    if (!formData.roles || formData.roles.length === 0) {
+      newErrors.roles = "მინიმუმ ერთი როლი სავალდებულოა."
     }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
+  console.log("All roles: ", availableRoles)
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -193,6 +222,9 @@ const EditUserModal = ({
         await updateUserById(user.id, updateData)
       }
 
+      // Update user roles
+      await updateUserRoles(user.id, formData.roles)
+
       onUserUpdated()
       toggle()
       setFormData(initialFormData)
@@ -221,9 +253,7 @@ const EditUserModal = ({
                   invalid={!!errors.name}
                   required
                 />
-                {errors.name && (
-                  <div className="text-danger">{errors.name}</div>
-                )}
+                {errors.name && <FormFeedback>{errors.name}</FormFeedback>}
               </FormGroup>
             </div>
             <div className="col-md-6">
@@ -239,7 +269,7 @@ const EditUserModal = ({
                   required
                 />
                 {errors.sur_name && (
-                  <div className="text-danger">{errors.sur_name}</div>
+                  <FormFeedback>{errors.sur_name}</FormFeedback>
                 )}
               </FormGroup>
             </div>
@@ -258,9 +288,7 @@ const EditUserModal = ({
                   invalid={!!errors.email}
                   required
                 />
-                {errors.email && (
-                  <div className="text-danger">{errors.email}</div>
-                )}
+                {errors.email && <FormFeedback>{errors.email}</FormFeedback>}
               </FormGroup>
             </div>
             <div className="col-md-6">
@@ -287,10 +315,10 @@ const EditUserModal = ({
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
+                  {errors.password && (
+                    <FormFeedback>{errors.password}</FormFeedback>
+                  )}
                 </div>
-                {errors.password && (
-                  <div className="text-danger">{errors.password}</div>
-                )}
               </FormGroup>
             </div>
           </div>
@@ -321,10 +349,10 @@ const EditUserModal = ({
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
+                    {errors.confirm_password && (
+                      <FormFeedback>{errors.confirm_password}</FormFeedback>
+                    )}
                   </div>
-                  {errors.confirm_password && (
-                    <div className="text-danger">{errors.confirm_password}</div>
-                  )}
                 </FormGroup>
               </div>
             </div>
@@ -344,7 +372,7 @@ const EditUserModal = ({
                   required
                 />
                 {errors.mobile_number && (
-                  <div className="text-danger">{errors.mobile_number}</div>
+                  <FormFeedback>{errors.mobile_number}</FormFeedback>
                 )}
               </FormGroup>
             </div>
@@ -361,7 +389,7 @@ const EditUserModal = ({
                   required
                 />
                 {errors.position && (
-                  <div className="text-danger">{errors.position}</div>
+                  <FormFeedback>{errors.position}</FormFeedback>
                 )}
               </FormGroup>
             </div>
@@ -406,7 +434,7 @@ const EditUserModal = ({
               required
             />
             {errors.id_number && (
-              <div className="text-danger">{errors.id_number}</div>
+              <FormFeedback>{errors.id_number}</FormFeedback>
             )}
           </FormGroup>
 
@@ -429,8 +457,37 @@ const EditUserModal = ({
               ))}
             </Input>
             {errors.department_id && (
-              <div className="text-danger">{errors.department_id}</div>
+              <FormFeedback>{errors.department_id}</FormFeedback>
             )}
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="roles">როლები</Label>
+            <Autocomplete
+              multiple
+              options={availableRoles}
+              getOptionLabel={(option) => option.name}
+              value={availableRoles.filter(role => formData.roles.includes(role.id))}
+              onChange={(event, value) => {
+                setFormData(prevData => ({
+                  ...prevData,
+                  roles: value.map(role => role.id),
+                }))
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  placeholder="აირჩიე როლები"
+                  error={!!errors.roles}
+                  helperText={
+                    errors.roles
+                      ? errors.roles
+                      : "მინიმუმ ერთი როლის მითითება აუცილებელია"
+                  }
+                />
+              )}
+            />
           </FormGroup>
         </ModalBody>
         <ModalFooter className="d-flex gap-2">

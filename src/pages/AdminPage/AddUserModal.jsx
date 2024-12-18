@@ -8,9 +8,13 @@ import {
   FormGroup,
   Label,
   Input,
+  FormFeedback,
 } from "reactstrap"
 import Button from "@mui/material/Button"
 import { createUser, getPublicDepartments } from "services/admin/department"
+import { getRoles, updateUserRoles } from "services/role"
+import Autocomplete from "@mui/material/Autocomplete"
+import TextField from "@mui/material/TextField"
 
 const initialFormData = {
   name: "",
@@ -24,11 +28,13 @@ const initialFormData = {
   working_start_date: "",
   date_of_birth: "",
   id_number: "",
+  roles: [4],
 }
 
 const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
   const [formData, setFormData] = useState(initialFormData)
   const [departments, setDepartments] = useState([])
+  const [availableRoles, setAvailableRoles] = useState([])
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
@@ -43,11 +49,31 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
     fetchDepartments()
   }, [])
 
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const rolesResponse = await getRoles()
+        console.log("All roles: ", rolesResponse)
+        setAvailableRoles(rolesResponse.data.roles || [])
+      } catch (error) {
+        console.error("Error fetching roles:", error)
+      }
+    }
+    fetchRoles()
+  }, [])
+
   const handleChange = useCallback(e => {
     const { name, value } = e.target
     setFormData(prevData => ({
       ...prevData,
       [name]: value,
+    }))
+  }, [])
+
+  const handleRoleChange = useCallback((event, value) => {
+    setFormData(prevData => ({
+      ...prevData,
+      roles: value.map(role => role.id),
     }))
   }, [])
 
@@ -80,7 +106,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
       newErrors.email = "ელ-ფოსტა უნდა მთავრდებოდეს @gorgia.ge-ით."
     }
 
-    if (!formData.password) {
+    if (!formData.password.trim()) {
       newErrors.password = "პაროლი არის სავალდებულო."
     }
 
@@ -105,6 +131,10 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
       newErrors.position = "პოზიცია არის სავალდებულო."
     }
 
+    if (!formData.roles || formData.roles.length === 0) {
+      newErrors.roles = "მინიმუმ ერთი როლის მითითება აუცილებელია."
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -113,10 +143,24 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
     e.preventDefault()
     if (!validateForm()) return
     try {
-      await createUser({
-        ...formData,
+      const userData = {
+        name: formData.name,
+        sur_name: formData.sur_name,
+        email: formData.email,
+        password: formData.password,
+        mobile_number: formData.mobile_number,
+        position: formData.position,
         department_id: Number(formData.department_id),
-      })
+        location: formData.location,
+        working_start_date: formData.working_start_date,
+        date_of_birth: formData.date_of_birth,
+        id_number: formData.id_number,
+        roles: formData.roles,
+      }
+
+      await createUser(userData)
+      await updateUserRoles(userData.id, formData.roles)
+
       onUserAdded()
       toggle()
       setFormData(initialFormData)
@@ -144,9 +188,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
                   invalid={!!errors.name}
                   required
                 />
-                {errors.name && (
-                  <div className="text-danger">{errors.name}</div>
-                )}
+                {errors.name && <FormFeedback>{errors.name}</FormFeedback>}
               </FormGroup>
             </div>
             <div className="col-md-6">
@@ -162,7 +204,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
                   required
                 />
                 {errors.sur_name && (
-                  <div className="text-danger">{errors.sur_name}</div>
+                  <FormFeedback>{errors.sur_name}</FormFeedback>
                 )}
               </FormGroup>
             </div>
@@ -181,9 +223,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
                   invalid={!!errors.email}
                   required
                 />
-                {errors.email && (
-                  <div className="text-danger">{errors.email}</div>
-                )}
+                {errors.email && <FormFeedback>{errors.email}</FormFeedback>}
               </FormGroup>
             </div>
             <div className="col-md-6">
@@ -199,7 +239,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
                   required
                 />
                 {errors.password && (
-                  <div className="text-danger">{errors.password}</div>
+                  <FormFeedback>{errors.password}</FormFeedback>
                 )}
               </FormGroup>
             </div>
@@ -219,7 +259,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
                   required
                 />
                 {errors.mobile_number && (
-                  <div className="text-danger">{errors.mobile_number}</div>
+                  <FormFeedback>{errors.mobile_number}</FormFeedback>
                 )}
               </FormGroup>
             </div>
@@ -236,7 +276,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
                   required
                 />
                 {errors.position && (
-                  <div className="text-danger">{errors.position}</div>
+                  <FormFeedback>{errors.position}</FormFeedback>
                 )}
               </FormGroup>
             </div>
@@ -281,9 +321,10 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
               required
             />
             {errors.id_number && (
-              <div className="text-danger">{errors.id_number}</div>
+              <FormFeedback>{errors.id_number}</FormFeedback>
             )}
           </FormGroup>
+
           <FormGroup>
             <Label for="department_id">დეპარტამენტი</Label>
             <Input
@@ -303,12 +344,43 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
               ))}
             </Input>
             {errors.department_id && (
-              <div className="text-danger">{errors.department_id}</div>
+              <FormFeedback>{errors.department_id}</FormFeedback>
+            )}
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="roles">როლები</Label>
+            <Autocomplete
+              multiple
+              options={availableRoles}
+              getOptionLabel={option => option.name}
+              value={availableRoles.filter(role =>
+                formData.roles.includes(role.id)
+              )}
+              onChange={handleRoleChange}
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  placeholder="აირჩიე როლები"
+                  error={!!errors.roles}
+                  helperText={
+                    errors.roles
+                      ? errors.roles
+                      : "მინიმუმ ერთი როლის მითითება აუცილებელია"
+                  }
+                />
+              )}
+            />
+            {errors.roles && (
+              <FormFeedback style={{ display: "block" }}>
+                {errors.roles}
+              </FormFeedback>
             )}
           </FormGroup>
         </ModalBody>
-        <ModalFooter>
-          <Button onClick={toggle} color="secondary">
+        <ModalFooter className="d-flex gap-2">
+          <Button onClick={toggle} color="error">
             გაუქმება
           </Button>
           <Button type="submit" variant="contained" color="primary">
