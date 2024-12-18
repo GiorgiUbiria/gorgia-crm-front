@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react"
+import React, { useState, useMemo } from "react"
 import {
   deleteUser,
   approveDepartmentMember,
@@ -34,14 +34,6 @@ const UsersTab = ({
     isOpen: false,
     user: null,
   })
-
-  useEffect(() => {
-    console.log("UsersTab mounted with:", {
-      isDepartmentHead,
-      currentUserDepartmentId,
-      usersCount: users.length,
-    })
-  }, [isDepartmentHead, currentUserDepartmentId, users])
 
   const handleModalOpen = (type, userId) => {
     setConfirmModal({
@@ -101,8 +93,8 @@ const UsersTab = ({
         accessor: "id",
       },
       {
-        Header: "სახელი",
-        accessor: "name",
+        Header: "სახელი/გვარი",
+        accessor: "name.fullName",
       },
       {
         Header: "პირადი ნომერი",
@@ -255,7 +247,11 @@ const UsersTab = ({
           ? user.roles?.map(role => role.name).join(", ")
           : "არ აქვს როლი მინიჭებული",
       position: user.position || "-",
-      name: `${user.name || ""} ${user.sur_name || ""}`.trim() || "-",
+      name: {
+        fullName: `${user.name || ""} ${user.sur_name || ""}`.trim() || "-",
+        firstName: user.name || "-",
+        lastName: user.sur_name || "-",
+      },
       email: user.email || "-",
       department: user.department?.name || "არ არის მითითებული",
       mobile_number: user.mobile_number || "-",
@@ -268,7 +264,7 @@ const UsersTab = ({
   const exportToExcel = () => {
     const data = [
       [
-        "სახელი",
+        "სახელი/გვარი",
         "პირადი ნომერი",
         "ელ-ფოსტა",
         "დეპარტამენტი",
@@ -277,7 +273,7 @@ const UsersTab = ({
         "როლი",
       ],
       ...transformedUsers.map(user => [
-        user.name,
+        user.name.fullName,
         user.user_id,
         user.email,
         user.department,
@@ -328,7 +324,13 @@ const UsersTab = ({
             },
           },
         ]}
-        searchableFields={["name", "email", "department", "mobile_number", "user_id"]}
+        searchableFields={[
+          "name.fullName",
+          "email",
+          "department",
+          "mobile_number",
+          "user_id",
+        ]}
         enableSearch={true}
         initialPageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
