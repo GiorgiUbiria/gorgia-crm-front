@@ -19,7 +19,6 @@ import { getPublicDepartments } from "services/admin/department"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
-// Reusable Input Field Componens
 const InputField = ({ label, name, type = "text", placeholder, formik }) => (
   <div className="mb-3">
     <Label className="form-label">{label}</Label>

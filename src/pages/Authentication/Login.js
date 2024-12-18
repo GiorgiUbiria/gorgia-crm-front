@@ -11,7 +11,7 @@ import {
   FormFeedback,
   Label,
 } from "reactstrap"
-import {useDispatch } from "react-redux"
+import { useDispatch } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import withRouter from "components/Common/withRouter"
 import * as Yup from "yup"
@@ -41,8 +41,7 @@ const Login = () => {
       email: Yup.string()
         .email("არასწორი ელ-ფოსტის ფორმატი")
         .required("გთხოვთ შეიყვანოთ ელ-ფოსტა"),
-      password: Yup.string()
-        .required("გთხოვთ შეიყვანოთ პაროლი"),
+      password: Yup.string().required("გთხოვთ შეიყვანოთ პაროლი"),
     }),
     onSubmit: async values => {
       try {
