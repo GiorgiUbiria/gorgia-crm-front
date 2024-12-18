@@ -36,6 +36,7 @@ import Spinners from "components/Common/Spinner"
 import { ToastContainer } from "react-toastify"
 import { Link } from "react-router-dom"
 import useFetchUsers from "../../../hooks/useFetchUsers"
+import useUserRoles from "../../../hooks/useUserRoles"
 
 const TaskList = () => {
   document.title = "Tasks List | Gorgia LLC"
@@ -53,7 +54,14 @@ const TaskList = () => {
     key: "created_at",
     direction: "desc",
   })
-  const { users: usersList, loading: usersLoading } = useFetchUsers()
+  const { users: allUsers, loading: usersLoading } = useFetchUsers()
+  const usersList = allUsers?.filter(user => user.department_id === 5)
+  const userRoles = useUserRoles()
+  const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
+
+  const hasEditPermission = useMemo(() => {
+    return userRoles.includes("admin") || currentUser?.department_id === 5
+  }, [userRoles, currentUser])
 
   const fetchTasks = async () => {
     setLoading(true)
@@ -284,7 +292,7 @@ const TaskList = () => {
           return user ? `${user.name} ${user.sur_name}` : "Unassigned"
         },
       },
-      {
+      hasEditPermission && {
         header: "მოქმედება",
         cell: cellProps => (
           <ul className="list-unstyled hstack gap-1 mb-0">
@@ -310,7 +318,7 @@ const TaskList = () => {
         ),
       },
     ],
-    [sortConfig]
+    [sortConfig, hasEditPermission]
   )
 
   const totalPages = Math.ceil(tasks.length / itemsPerPage)
