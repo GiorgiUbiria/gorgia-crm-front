@@ -37,7 +37,6 @@ const STATUS_MAPPING = {
 const handleDownload = async id => {
   try {
     const response = await downloadPurchaseFile(id)
-    // Get the filename from the Content-Disposition header if available
     const contentDisposition = response.headers["content-disposition"]
     let filename = `purchase-${id}-document.pdf`
 
@@ -118,13 +117,17 @@ const ExpandedRowContent = ({ rowData }) => {
 const UserProcurement = () => {
   document.title = "ჩემი შესყიდვები | Gorgia LLC"
   const [procurements, setProcurements] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const fetchProcurements = async () => {
     try {
+      setLoading(true)
       const response = await getPurchaseList(false)
       setProcurements(response.data.internal_purchases)
     } catch (err) {
       console.error("Error fetching purchases:", err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -258,7 +261,7 @@ const UserProcurement = () => {
     },
     {
       field: "department",
-      label: "დეპარტამენტი",
+      label: "დე���არტამენტი",
     },
   ]
 

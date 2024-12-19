@@ -11,6 +11,7 @@ import "./assets/scss/theme.scss"
 import DataProvider from "components/hoc/DataProvider"
 import "boxicons/css/boxicons.min.css"
 import "./index.css"
+import TaskNotification from "components/TaskNotification"
 
 const getLayout = () => {
   let Layout = VerticalLayout
@@ -22,6 +23,7 @@ const App = () => {
 
   return (
     <DataProvider>
+      <TaskNotification />
       <Routes>
         {/* Public Routes */}
         {publicRoutes.map((route, idx) => (
