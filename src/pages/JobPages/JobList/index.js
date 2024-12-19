@@ -36,6 +36,7 @@ import Spinners from "components/Common/Spinner"
 import { ToastContainer } from "react-toastify"
 import { Link } from "react-router-dom"
 import useFetchUsers from "../../../hooks/useFetchUsers"
+import useUserRoles from "../../../hooks/useUserRoles"
 
 const TaskList = () => {
   document.title = "Tasks List | Gorgia LLC"
@@ -53,7 +54,14 @@ const TaskList = () => {
     key: "created_at",
     direction: "desc",
   })
-  const { users: usersList, loading: usersLoading } = useFetchUsers()
+  const { users: allUsers, loading: usersLoading } = useFetchUsers()
+  const usersList = allUsers?.filter(user => user.department_id === 5)
+  const userRoles = useUserRoles()
+  const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
+
+  const hasEditPermission = useMemo(() => {
+    return userRoles.includes("admin") || currentUser?.department_id === 5
+  }, [userRoles, currentUser])
 
   const fetchTasks = async () => {
     setLoading(true)
@@ -83,17 +91,17 @@ const TaskList = () => {
       assigned_to: task?.assigned_to || "",
     },
     validationSchema: Yup.object({
-      task_title: Yup.string().required("Please Enter Your Task Title"),
-      description: Yup.string().required("Please Enter Your Description"),
-      priority: Yup.string().required("Please Enter Priority"),
-      status: Yup.string().required("Please Enter Status"),
+      task_title: Yup.string().required("მიუთითეთ პრობლემის ტიპი"),
+      description: Yup.string().required("აღწერეთ პრობლემა"),
+      priority: Yup.string().required("მიუთითეთ პრიორიტეტი"),
+      status: Yup.string().required("მიუთითეთ სტატუსი"),
       ip_address: Yup.string()
-        .required("Please Enter IP Address")
+        .required("მიუთითეთ IP მისამართი")
         .matches(
           /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
           "Invalid IP address format"
         ),
-      assigned_to: Yup.string().required("Please Select Assigned To"),
+      assigned_to: Yup.string(),
     }),
     onSubmit: async values => {
       try {
@@ -284,7 +292,7 @@ const TaskList = () => {
           return user ? `${user.name} ${user.sur_name}` : "Unassigned"
         },
       },
-      {
+      hasEditPermission && {
         header: "მოქმედება",
         cell: cellProps => (
           <ul className="list-unstyled hstack gap-1 mb-0">
@@ -310,7 +318,7 @@ const TaskList = () => {
         ),
       },
     ],
-    [sortConfig]
+    [sortConfig, hasEditPermission]
   )
 
   const totalPages = Math.ceil(tasks.length / itemsPerPage)
@@ -519,7 +527,7 @@ const TaskList = () => {
                         )}
                       </Fragment>
                     ) : (
-                      <div>No tasks available.</div>
+                      <div>თასქები არ არის</div>
                     )}
                   </CardBody>
                 </Card>
@@ -528,7 +536,7 @@ const TaskList = () => {
           )}
           <Modal isOpen={modal} toggle={toggleModal}>
             <ModalHeader toggle={toggleModal} tag="h4">
-              {isEdit ? "Edit Task" : "Add Task"}
+              {isEdit ? "რედაქტირება" : "ახალი თასქის დამატება"}
             </ModalHeader>
             <ModalBody>
               <Form
@@ -633,7 +641,6 @@ const TaskList = () => {
                         </FormFeedback>
                       ) : null}
                     </div>
-
                     <div className="mb-3">
                       <Label>სტატუსი</Label>
                       <Input
@@ -682,37 +689,47 @@ const TaskList = () => {
                         </FormFeedback>
                       ) : null}
                     </div>
+
                     <div className="mb-3">
                       <Label>პასუხისმგებელი პირი</Label>
-                      <Input
-                        name="assigned_to"
-                        type="select"
-                        onChange={validation.handleChange}
-                        onBlur={validation.handleBlur}
-                        value={validation.values.assigned_to || ""}
-                        invalid={
-                          validation.touched.assigned_to &&
-                          validation.errors.assigned_to
-                            ? true
-                            : false
-                        }
-                      >
-                        <option value="" disabled>
-                          აირჩიეთ პასუხისმგებელი პირი
-                        </option>
-                        {!usersLoading &&
-                          usersList.map(user => (
-                            <option key={user.id} value={user.id}>
-                              {`${user.name} ${user.sur_name}`}
+                      {userRoles.includes("admin") ? (
+                        <>
+                          <Input
+                            name="assigned_to"
+                            type="select"
+                            onChange={validation.handleChange}
+                            onBlur={validation.handleBlur}
+                            value={validation.values.assigned_to || ""}
+                            invalid={
+                              validation.touched.assigned_to &&
+                              validation.errors.assigned_to
+                                ? true
+                                : false
+                            }
+                          >
+                            <option value="" disabled>
+                              აირჩიეთ პასუხისმგებელი პირი
                             </option>
-                          ))}
-                      </Input>
-                      {validation.touched.assigned_to &&
-                      validation.errors.assigned_to ? (
-                        <FormFeedback type="invalid">
-                          {validation.errors.assigned_to}
-                        </FormFeedback>
-                      ) : null}
+                            {!usersLoading &&
+                              usersList.map(user => (
+                                <option key={user.id} value={user.id}>
+                                  {`${user.name} ${user.sur_name}`}
+                                </option>
+                              ))}
+                          </Input>
+                          {validation.touched.assigned_to &&
+                          validation.errors.assigned_to ? (
+                            <FormFeedback type="invalid">
+                              {validation.errors.assigned_to}
+                            </FormFeedback>
+                          ) : null}
+                        </>
+                      ) : (
+                        <div className="text-muted">
+                          მხოლოდ ადმინისტრატორს შეუძლია პასუხისმგებელი პირის
+                          მითითება
+                        </div>
+                      )}
                     </div>
                   </Col>
                 </Row>

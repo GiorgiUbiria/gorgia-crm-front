@@ -19,6 +19,26 @@ import { getPublicDepartments } from "services/admin/department"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
+const InputField = ({ label, name, type = "text", placeholder, formik }) => (
+  <div className="mb-3">
+    <Label className="form-label">{label}</Label>
+    <Input
+      name={name}
+      id={name}
+      type={type}
+      className="form-control"
+      placeholder={placeholder}
+      onChange={formik.handleChange}
+      onBlur={formik.handleBlur}
+      value={formik.values[name] || ""}
+      invalid={formik.touched[name] && !!formik.errors[name]}
+    />
+    {formik.touched[name] && formik.errors[name] && (
+      <FormFeedback type="invalid">{formik.errors[name]}</FormFeedback>
+    )}
+  </div>
+)
+
 const Register = () => {
   document.title = "Register | Gorgia LLC"
 
@@ -48,17 +68,29 @@ const Register = () => {
       password: "",
       mobile_number: "",
       department_id: "",
-      id_number: ""
+      position: "",
+      id_number: "",
     },
     validationSchema: Yup.object({
       email: Yup.string()
         .required("გთხოვთ შეიყვანოთ Email")
         .email("არასწორი Email ფორმატი")
         .matches(/@gorgia\.ge$/, "Email უნდა მთავრდებოდეს @gorgia.ge-ით"),
-      name: Yup.string().required("გთხოვთ შეიყვანოთ სახელი"),
-      sur_name: Yup.string().required("გთხოვთ შეიყვანოთ გვარი"),
+      name: Yup.string()
+        .required("გთხოვთ შეიყვანოთ სახელი")
+        .matches(
+          /^[\u10A0-\u10FF]{2,30}$/,
+          "სახელი უნდა შეიცავდეს მხოლოდ ქართულ ასოებს (2-30 სიმბოლო)"
+        ),
+      sur_name: Yup.string()
+        .required("გთხოვთ შეიყვანოთ გვარი")
+        .matches(
+          /^[\u10A0-\u10FF]{2,30}$/,
+          "გვარი უნდა შეიცავდეს მხოლოდ ქართულ ასოებს (2-30 სიმბოლო)"
+        ),
       password: Yup.string().required("გთხოვთ შეიყვანოთ პაროლი"),
       department_id: Yup.number().required("გთხოვთ აირჩიოთ დეპარტამენტი"),
+      position: Yup.string().required("გთხოვთ ჩაწეროთ პოზიცია"),
       id_number: Yup.number().required("გთხოვთ ჩაწეროთ პირადი ნომერი"),
       mobile_number: Yup.string()
         .required("გთხოვთ შეიყვანოთ მობილურის ნომერი")
@@ -130,102 +162,36 @@ const Register = () => {
                       onSubmit={e => {
                         e.preventDefault()
                         validation.handleSubmit()
-                        return false
                       }}
                     >
-                      <div className="mb-3">
-                        <Label className="form-label">ელ-ფოსტა</Label>
-                        <Input
-                          id="email"
-                          name="email"
-                          className="form-control"
-                          placeholder="ჩაწერეთ ელ-ფოსტა აუცილებელია @gorgia.ge-ის ელ-ფოსტა"
-                          type="email"
-                          onChange={validation.handleChange}
-                          onBlur={validation.handleBlur}
-                          value={validation.values.email || ""}
-                          invalid={
-                            validation.touched.email && validation.errors.email
-                              ? true
-                              : false
-                          }
-                        />
-                        {validation.touched.email && validation.errors.email ? (
-                          <FormFeedback type="invalid">
-                            {validation.errors.email}
-                          </FormFeedback>
-                        ) : null}
-                      </div>
+                      <InputField
+                        label="ელ-ფოსტა"
+                        name="email"
+                        type="email"
+                        placeholder="ჩაწერეთ ელ-ფოსტა აუცილებელია @gorgia.ge-ის ელ-ფოსტა"
+                        formik={validation}
+                      />
 
-                      <div className="mb-3">
-                        <Label className="form-label">სახელი</Label>
-                        <Input
-                          name="name"
-                          id="name"
-                          className="form-control"
-                          type="text"
-                          placeholder="ჩაწერეთ თქვენი სახელი"
-                          onChange={validation.handleChange}
-                          onBlur={validation.handleBlur}
-                          value={validation.values.name || ""}
-                          invalid={
-                            validation.touched.name && validation.errors.name
-                          }
-                        />
-                        {validation.touched.name && validation.errors.name ? (
-                          <FormFeedback type="invalid">
-                            {validation.errors.name}
-                          </FormFeedback>
-                        ) : null}
-                      </div>
+                      <InputField
+                        label="სახელი"
+                        name="name"
+                        placeholder="ჩაწერეთ თქვენი სახელი"
+                        formik={validation}
+                      />
 
-                      <div className="mb-3">
-                        <Label className="form-label">გვარი</Label>
-                        <Input
-                          name="sur_name"
-                          id="sur_name"
-                          className="form-control"
-                          type="text"
-                          placeholder="ჩაწერეთ მქვენი გვარი"
-                          onChange={validation.handleChange}
-                          onBlur={validation.handleBlur}
-                          value={validation.values.sur_name || ""}
-                          invalid={
-                            validation.touched.sur_name &&
-                            validation.errors.sur_name
-                          }
-                        />
-                        {validation.touched.sur_name &&
-                        validation.errors.sur_name ? (
-                          <FormFeedback type="invalid">
-                            {validation.errors.sur_name}
-                          </FormFeedback>
-                        ) : null}
-                      </div>
+                      <InputField
+                        label="გვარი"
+                        name="sur_name"
+                        placeholder="ჩაწერეთ თქვენი გვარი"
+                        formik={validation}
+                      />
 
-                      <div className="mb-3">
-                        <Label className="form-label">პირადი ნომერი</Label>
-                        <Input
-                          name="id_number"
-                          id="id_number"
-                          className="form-control"
-                          type="text"
-                          placeholder="ჩაწერეთ პირადი ნომერი"
-                          onChange={validation.handleChange}
-                          onBlur={validation.handleBlur}
-                          value={validation.values.id_number || ""}
-                          invalid={
-                            validation.touched.id_number &&
-                            validation.errors.id_number
-                          }
-                        />
-                        {validation.touched.id_number &&
-                        validation.errors.id_number ? (
-                          <FormFeedback type="invalid">
-                            {validation.errors.id_number}
-                          </FormFeedback>
-                        ) : null}
-                      </div>
+                      <InputField
+                        label="პირადი ნომერი"
+                        name="id_number"
+                        placeholder="ჩაწერეთ პირადი ნომერი"
+                        formik={validation}
+                      />
 
                       <div className="mb-3">
                         <Label className="form-label">დეპარტამენტი</Label>
@@ -237,9 +203,7 @@ const Register = () => {
                           onBlur={validation.handleBlur}
                           invalid={
                             validation.touched.department_id &&
-                            validation.errors.department_id
-                              ? true
-                              : false
+                            !!validation.errors.department_id
                           }
                         >
                           <option value="">აირჩიე დეპარტამენტი</option>
@@ -251,68 +215,39 @@ const Register = () => {
                             ))}
                         </Input>
                         {validation.touched.department_id &&
-                        validation.errors.department_id ? (
-                          <FormFeedback type="invalid">
-                            {validation.errors.department_id}
-                          </FormFeedback>
-                        ) : null}
+                          validation.errors.department_id && (
+                            <FormFeedback type="invalid">
+                              {validation.errors.department_id}
+                            </FormFeedback>
+                          )}
                       </div>
 
-                      <div className="mb-3">
-                        <Label className="form-label">ტელეფონის ნომერი</Label>
-                        <Input
-                          name="mobile_number"
-                          id="mobile_number"
-                          className="form-control"
-                          type="tel"
-                          placeholder="ჩაწერეთ ტელეფონის ნომერი"
-                          onChange={validation.handleChange}
-                          onBlur={validation.handleBlur}
-                          value={validation.values.mobile_number || ""}
-                          invalid={
-                            validation.touched.mobile_number &&
-                            validation.errors.mobile_number
-                              ? true
-                              : false
-                          }
-                        />
-                        {validation.touched.mobile_number &&
-                        validation.errors.mobile_number ? (
-                          <FormFeedback type="invalid">
-                            {validation.errors.mobile_number}
-                          </FormFeedback>
-                        ) : null}
-                      </div>
+                      <InputField
+                        label="პოზიცია"
+                        name="position"
+                        placeholder="ჩაწერეთ თქვენი პოზიცია"
+                        formik={validation}
+                      />
 
-                      <div className="mb-3">
-                        <Label className="form-label">პაროლი</Label>
-                        <Input
-                          name="password"
-                          type="password"
-                          id="password"
-                          className="form-control"
-                          placeholder="ჩაწერეთ პაროლი"
-                          onChange={validation.handleChange}
-                          onBlur={validation.handleBlur}
-                          value={validation.values.password || ""}
-                          invalid={
-                            validation.touched.password &&
-                            validation.errors.password
-                              ? true
-                              : false
-                          }
-                        />
-                        {validation.touched.password &&
-                        validation.errors.password ? (
-                          <FormFeedback type="invalid">
-                            {validation.errors.password}
-                          </FormFeedback>
-                        ) : null}
-                      </div>
+                      <InputField
+                        label="ტელეფონის ნომერი"
+                        name="mobile_number"
+                        type="tel"
+                        placeholder="ჩაწერეთ ტელეფონის ნომერი"
+                        formik={validation}
+                      />
+
+                      <InputField
+                        label="პაროლი"
+                        name="password"
+                        type="password"
+                        placeholder="ჩაწერეთ პაროლი"
+                        formik={validation}
+                      />
 
                       <div className="mt-4 d-grid">
                         <button
-                          className="btn btn-primary btn-block "
+                          className="btn btn-primary btn-block"
                           type="submit"
                         >
                           რეგისტრაცია

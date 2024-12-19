@@ -133,29 +133,6 @@ const VacationPage = () => {
     fetchDepartments()
   }, [])
 
-  const initialValues = useMemo(
-    () => ({
-      vacation_type: "",
-      employee_name: user ? `${user.name} ${user.sur_name}` : "",
-      department: user?.department?.name || "",
-      position: user?.position || "",
-      substitute_name: "",
-      substitute_department: "",
-      substitute_position: "",
-      start_date: "",
-      end_date: "",
-      is_monday: null,
-      is_tuesday: null,
-      is_wednesday: null,
-      is_thursday: null,
-      is_friday: null,
-      is_saturday: null,
-      is_sunday: null,
-      duration_days: 0,
-    }),
-    [user]
-  )
-
   const calculateDuration = useCallback((startDate, endDate, restDays) => {
     if (!startDate || !endDate) return 0
 
@@ -186,8 +163,52 @@ const VacationPage = () => {
     return Math.max(1, totalDays)
   }, [])
 
-  const formik = useFormik({
-    initialValues,
+  const initialValuesMyVacation = useMemo(
+    () => ({
+      vacation_type: "",
+      employee_name: user ? `${user.name} ${user.sur_name}` : "",
+      department: user?.department?.name || "",
+      position: user?.position || "",
+      substitute_name: "",
+      substitute_position: "",
+      start_date: "",
+      end_date: "",
+      is_monday: null,
+      is_tuesday: null,
+      is_wednesday: null,
+      is_thursday: null,
+      is_friday: null,
+      is_saturday: null,
+      is_sunday: null,
+      duration_days: 0,
+    }),
+    [user]
+  )
+
+  const initialValuesEmployeeVacation = useMemo(
+    () => ({
+      vacation_type: "",
+      employee_name: "",
+      department: "",
+      position: "",
+      substitute_name: "",
+      substitute_position: "",
+      start_date: "",
+      end_date: "",
+      is_monday: null,
+      is_tuesday: null,
+      is_wednesday: null,
+      is_thursday: null,
+      is_friday: null,
+      is_saturday: null,
+      is_sunday: null,
+      duration_days: 0,
+    }),
+    []
+  )
+
+  const formikMyVacation = useFormik({
+    initialValues: initialValuesMyVacation,
     validationSchema: vacationSchema,
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
@@ -198,7 +219,6 @@ const VacationPage = () => {
           department: values.department,
           position: values.position,
           substitute_name: values.substitute_name,
-          substitute_department: values.substitute_department,
           substitute_position: values.substitute_position,
           start_date: values.start_date
             ? new Date(values.start_date).toISOString().split("T")[0]
@@ -218,27 +238,122 @@ const VacationPage = () => {
 
         console.log("Submitting data:", submitData)
 
-        const res = await createVacation(submitData)
-        if (res.status === 200) {
-          toast.success("Request submitted successfully!", {
+        const response = await createVacation(submitData)
+
+        console.log("Server response:", response)
+
+        if (response && (response.status === 200 || response.status === 201)) {
+          toast.success("შვებულება წარმატებით გაიგზავნა", {
             position: "top-right",
             autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
           })
 
-          resetForm()
-          navigate("/applications/vacation/my-requests")
+          setTimeout(() => {
+            resetForm({
+              values: {
+                ...initialValuesMyVacation,
+                employee_name: `${user.name} ${user.sur_name}`,
+                department: user.department?.name || "",
+                position: user.position || "",
+              },
+            })
+            navigate("/applications/vacation/my-requests")
+          }, 1000)
+        } else {
+          throw new Error("Unexpected response status")
         }
       } catch (err) {
         console.error("Submission error:", err)
-        const errorMessage =
+        toast.error(
           err?.response?.data?.message ||
-          err?.response?.data?.data?.message ||
-          "An error occurred. Please try again later."
+            err?.response?.data?.data?.message ||
+            "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.",
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        )
+      } finally {
+        setSubmitting(false)
+      }
+    },
+  })
 
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000,
-        })
+  const formikEmployeeVacation = useFormik({
+    initialValues: initialValuesEmployeeVacation,
+    validationSchema: vacationSchema,
+    enableReinitialize: true,
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      try {
+        const submitData = {
+          vacation_type: values.vacation_type,
+          employee_name: values.employee_name,
+          department: values.department,
+          position: values.position,
+          substitute_name: values.substitute_name,
+          substitute_position: values.substitute_position,
+          start_date: values.start_date
+            ? new Date(values.start_date).toISOString().split("T")[0]
+            : "",
+          end_date: values.end_date
+            ? new Date(values.end_date).toISOString().split("T")[0]
+            : "",
+          is_monday: values.is_monday,
+          is_tuesday: values.is_tuesday,
+          is_wednesday: values.is_wednesday,
+          is_thursday: values.is_thursday,
+          is_friday: values.is_friday,
+          is_saturday: values.is_saturday,
+          is_sunday: values.is_sunday,
+          duration_days: values.duration_days,
+        }
+
+        console.log("Submitting data:", submitData)
+
+        const response = await createVacation(submitData)
+
+        console.log("Server response:", response)
+
+        if (response && (response.status === 200 || response.status === 201)) {
+          toast.success("შვებულება წარმატებით გაიგზავნა", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          })
+
+          setTimeout(() => {
+            resetForm()
+            navigate("/applications/vacation/my-requests")
+          }, 1000)
+        } else {
+          throw new Error("Unexpected response status")
+        }
+      } catch (err) {
+        console.error("Submission error:", err)
+        toast.error(
+          err?.response?.data?.message ||
+            err?.response?.data?.data?.message ||
+            "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.",
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        )
       } finally {
         setSubmitting(false)
       }
@@ -247,8 +362,8 @@ const VacationPage = () => {
 
   useEffect(() => {
     if (user && !userLoading) {
-      formik.setValues({
-        ...initialValues,
+      formikMyVacation.setValues({
+        ...initialValuesMyVacation,
         employee_name: `${user.name} ${user.sur_name}`,
         department: user.department?.name || "",
         position: user.position || "",
@@ -256,64 +371,78 @@ const VacationPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, userLoading])
+  useEffect(() => {
+    const newDuration = calculateDuration(
+      formikMyVacation.values.start_date,
+      formikMyVacation.values.end_date,
+      formikMyVacation.values
+    )
+    if (newDuration !== formikMyVacation.values.duration_days) {
+      formikMyVacation.setFieldValue("duration_days", newDuration)
+    }
+  }, [
+    formikMyVacation.values.start_date,
+    formikMyVacation.values.end_date,
+    formikMyVacation.values,
+    calculateDuration,
+    formikMyVacation,
+  ])
 
   useEffect(() => {
     const newDuration = calculateDuration(
-      formik.values.start_date,
-      formik.values.end_date,
-      formik.values
+      formikEmployeeVacation.values.start_date,
+      formikEmployeeVacation.values.end_date,
+      formikEmployeeVacation.values
     )
-    if (newDuration !== formik.values.duration_days) {
-      formik.setFieldValue("duration_days", newDuration)
+    if (newDuration !== formikEmployeeVacation.values.duration_days) {
+      formikEmployeeVacation.setFieldValue("duration_days", newDuration)
     }
   }, [
-    formik.values.start_date,
-    formik.values.end_date,
-    formik.values,
+    formikEmployeeVacation.values.start_date,
+    formikEmployeeVacation.values.end_date,
+    formikEmployeeVacation.values,
     calculateDuration,
-    formik,
+    formikEmployeeVacation,
   ])
 
   const toggleTab = useCallback(
     tab => {
-      if (formik.isSubmitting) return
+      if (formikMyVacation.isSubmitting || formikEmployeeVacation.isSubmitting)
+        return
       if (tab !== activeTab) {
         setActiveTab(tab)
-        formik.resetForm({
-          values: {
-            vacation_type: "",
-            employee_name: isAdmin
-              ? ""
-              : user
-              ? `${user.name} ${user.sur_name}`
-              : "",
-            department: isAdmin ? "" : user?.department?.name || "",
-            position: isAdmin ? "" : user?.position || "",
-            substitute_name: "",
-            substitute_department: "",
-            substitute_position: "",
-            start_date: "",
-            end_date: "",
-            is_monday: null,
-            is_tuesday: null,
-            is_wednesday: null,
-            is_thursday: null,
-            is_friday: null,
-            is_saturday: null,
-            is_sunday: null,
-            duration_days: 0,
-          },
-        })
+        if (tab === "1") {
+          formikMyVacation.resetForm({
+            values: {
+              ...initialValuesMyVacation,
+              employee_name: `${user.name} ${user.sur_name}`,
+              department: user.department?.name || "",
+              position: user.position || "",
+            },
+          })
+        } else if (tab === "2") {
+          formikEmployeeVacation.resetForm()
+        }
       }
     },
-    [activeTab, formik, isAdmin, user]
+    [
+      activeTab,
+      formikMyVacation,
+      formikEmployeeVacation,
+      initialValuesMyVacation,
+      user,
+    ]
   )
 
   const handleCheckboxChange = useCallback(
     fieldName => e => {
-      formik.setFieldValue(fieldName, e.target.checked ? "yes" : null)
+      formikMyVacation.setFieldValue(fieldName, e.target.checked ? "yes" : null)
+      formikEmployeeVacation.setFieldValue(
+        fieldName,
+        e.target.checked ? "yes" : null
+      )
     },
-    [formik]
+    [formikMyVacation, formikEmployeeVacation]
   )
 
   if (userLoading || departmentsLoading) {
@@ -367,15 +496,19 @@ const VacationPage = () => {
                     </Nav>
                   )}
 
-                  {!isAdmin && activeTab !== "1" && setActiveTab("1")}
+                  {!isAdmin && activeTab !== "1" && toggleTab("1")}
 
                   <TabContent activeTab={activeTab}>
                     <TabPane tabId="1">
-                      <Form onSubmit={formik.handleSubmit}>
+                      <Form onSubmit={formikMyVacation.handleSubmit}>
+                        {/* Employee Information Section */}
+                        <h5 className="section-title">
+                          თანამშრომლის ინფორმაცია
+                        </h5>
                         <div className="row">
                           <div className="col-md-6">
                             <InputWithError
-                              formik={formik}
+                              formik={formikMyVacation}
                               name="employee_name"
                               label="სახელი და გვარი"
                               disabled
@@ -383,7 +516,7 @@ const VacationPage = () => {
                           </div>
                           <div className="col-md-6">
                             <InputWithError
-                              formik={formik}
+                              formik={formikMyVacation}
                               name="department"
                               label="დეპარტამენტი"
                               type="text"
@@ -394,7 +527,7 @@ const VacationPage = () => {
                         <div className="row">
                           <div className="col-md-6">
                             <InputWithError
-                              formik={formik}
+                              formik={formikMyVacation}
                               name="position"
                               label="პოზიცია"
                               disabled
@@ -402,44 +535,49 @@ const VacationPage = () => {
                           </div>
                         </div>
 
+                        {/* Substitute Information Section */}
+                        <h5 className="section-title">შემცვლელის ინფორმაცია</h5>
                         <div className="row">
                           <div className="col-md-6">
                             <InputWithError
-                              formik={formik}
+                              formik={formikMyVacation}
                               name="substitute_name"
-                              label="შემცვლელის სახელი"
+                              label="შემცვლელის სახელი/გვარი"
                             />
                           </div>
                           <div className="col-md-6">
                             <InputWithError
-                              formik={formik}
-                              name="substitute_department"
-                              label="შემცვლელის დეპარტამენტი"
-                              type="select"
-                            >
-                              <option value="">აირჩიეთ დეპარტამენტი</option>
-                              {departments.map(dept => (
-                                <option key={dept.id} value={dept.name}>
-                                  {dept.name}
-                                </option>
-                              ))}
-                            </InputWithError>
-                          </div>
-                        </div>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formik}
+                              formik={formikMyVacation}
                               name="substitute_position"
                               label="შემცვლელის პოზიცია"
                             />
                           </div>
                         </div>
 
+                        {/* Vacation Details Section */}
+                        <h5 className="section-title">შვებულების დეტალები</h5>
                         <div className="row">
                           <div className="col-md-6">
                             <InputWithError
-                              formik={formik}
+                              formik={formikMyVacation}
+                              name="start_date"
+                              label="დაწყების თარიღი"
+                              type="date"
+                            />
+                          </div>
+                          <div className="col-md-6">
+                            <InputWithError
+                              formik={formikMyVacation}
+                              name="end_date"
+                              label="დასრულების თარიღი"
+                              type="date"
+                            />
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col-md-6">
+                            <InputWithError
+                              formik={formikMyVacation}
                               name="vacation_type"
                               label="შვებულების ტიპი"
                               type="select"
@@ -458,57 +596,46 @@ const VacationPage = () => {
                               </option>
                             </InputWithError>
                           </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formik}
-                              name="start_date"
-                              label="დაწყების თარიღი"
-                              type="date"
-                            />
-                          </div>
                         </div>
 
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formik}
-                              name="end_date"
-                              label="დასრულების თარიღი"
-                              type="date"
-                            />
-                          </div>
-                        </div>
-
+                        {/* Rest Days Section */}
                         <div className="row">
                           <div className="col-12">
                             <RestDaysCheckbox
                               holidays={holidays}
-                              formik={formik}
+                              formik={formikMyVacation}
                               handleCheckboxChange={handleCheckboxChange}
                             />
                           </div>
                         </div>
 
+                        {/* Duration Section */}
                         <div className="row">
                           <div className="col-12">
                             <div className="mb-3">
                               <Label>ხანგრძლივობა დღეებში</Label>
                               <Input
                                 type="text"
-                                value={formik.values.duration_days}
+                                value={formikMyVacation.values.duration_days}
                                 readOnly
                               />
                             </div>
                           </div>
                         </div>
 
+                        {/* Submit Button */}
                         <div className="d-flex justify-content-end">
                           <Button
                             type="submit"
                             color="primary"
-                            disabled={!formik.isValid || formik.isSubmitting}
+                            disabled={
+                              !formikMyVacation.isValid ||
+                              formikMyVacation.isSubmitting
+                            }
                           >
-                            {formik.isSubmitting ? "იგზავნება..." : "გაგზავნა"}
+                            {formikMyVacation.isSubmitting
+                              ? "იგზავნება..."
+                              : "გაგზავნა"}
                           </Button>
                         </div>
                       </Form>
@@ -516,11 +643,15 @@ const VacationPage = () => {
 
                     {isAdmin && (
                       <TabPane tabId="2">
-                        <Form onSubmit={formik.handleSubmit}>
+                        <Form onSubmit={formikEmployeeVacation.handleSubmit}>
+                          {/* Employee Information Section */}
+                          <h5 className="section-title">
+                            თანამშრომლის ინფორმაცია
+                          </h5>
                           <div className="row">
                             <div className="col-md-6">
                               <InputWithError
-                                formik={formik}
+                                formik={formikEmployeeVacation}
                                 name="employee_name"
                                 label="თანამშრომლის სახელი და გვარი"
                                 disabled={false}
@@ -528,7 +659,7 @@ const VacationPage = () => {
                             </div>
                             <div className="col-md-6">
                               <InputWithError
-                                formik={formik}
+                                formik={formikEmployeeVacation}
                                 name="department"
                                 label="თანამშრომლის დეპარტამენტი"
                                 type="select"
@@ -546,52 +677,59 @@ const VacationPage = () => {
                           <div className="row">
                             <div className="col-md-6">
                               <InputWithError
-                                formik={formik}
+                                formik={formikEmployeeVacation}
                                 name="position"
-                                label="თანამშრომლის პოზიცია"
+                                label="თანამშამლის პოზიცია"
                                 disabled={false}
                               />
                             </div>
                           </div>
 
+                          {/* Substitute Information Section */}
+                          <h5 className="section-title">
+                            შემცვლელის ინფორმაცია
+                          </h5>
                           <div className="row">
                             <div className="col-md-6">
                               <InputWithError
-                                formik={formik}
+                                formik={formikEmployeeVacation}
                                 name="substitute_name"
-                                label="შემცვლელის სახელი"
+                                label="შემცვლელის სახელი/გვარი"
                               />
                             </div>
                             <div className="col-md-6">
                               <InputWithError
-                                formik={formik}
-                                name="substitute_department"
-                                label="შემცვლელის დეპარტამენტი"
-                                type="select"
-                              >
-                                <option value="">აირჩიეთ დეპარტამენტი</option>
-                                {departments.map(dept => (
-                                  <option key={dept.id} value={dept.name}>
-                                    {dept.name}
-                                  </option>
-                                ))}
-                              </InputWithError>
-                            </div>
-                          </div>
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formik}
+                                formik={formikEmployeeVacation}
                                 name="substitute_position"
                                 label="შემცვლელის პოზიცია"
                               />
                             </div>
                           </div>
 
+                          {/* Vacation Details Section */}
+                          <h5 className="section-title">შვებულების დეტალები</h5>
                           <div className="row">
                             <div className="col-md-6">
                               <InputWithError
-                                formik={formik}
+                                formik={formikEmployeeVacation}
+                                name="start_date"
+                                label="დაწყების თარიღი"
+                                type="date"
+                              />
+                            </div>
+                            <div className="col-md-6">
+                              <InputWithError
+                                formik={formikEmployeeVacation}
+                                name="end_date"
+                                label="დასრულების თარიღი"
+                                type="date"
+                              />
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="col-md-6">
+                              <InputWithError
+                                formik={formikEmployeeVacation}
                                 name="vacation_type"
                                 label="შვებულების ტიპი"
                                 type="select"
@@ -612,57 +750,46 @@ const VacationPage = () => {
                                 </option>
                               </InputWithError>
                             </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formik}
-                                name="start_date"
-                                label="დაწყების თარიღი"
-                                type="date"
-                              />
-                            </div>
                           </div>
 
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formik}
-                                name="end_date"
-                                label="დასრულების თარიღი"
-                                type="date"
-                              />
-                            </div>
-                          </div>
-
+                          {/* Rest Days Section */}
                           <div className="row">
                             <div className="col-12">
                               <RestDaysCheckbox
                                 holidays={holidays}
-                                formik={formik}
+                                formik={formikEmployeeVacation}
                                 handleCheckboxChange={handleCheckboxChange}
                               />
                             </div>
                           </div>
 
+                          {/* Duration Section */}
                           <div className="row">
                             <div className="col-12">
                               <div className="mb-3">
                                 <Label>ხანგრძლივობა დღეებში</Label>
                                 <Input
                                   type="text"
-                                  value={formik.values.duration_days}
+                                  value={
+                                    formikEmployeeVacation.values.duration_days
+                                  }
                                   readOnly
                                 />
                               </div>
                             </div>
                           </div>
 
+                          {/* Submit Button */}
                           <div className="d-flex justify-content-end">
                             <Button
                               type="submit"
                               color="primary"
-                              disabled={!formik.isValid || formik.isSubmitting}
+                              disabled={
+                                !formikEmployeeVacation.isValid ||
+                                formikEmployeeVacation.isSubmitting
+                              }
                             >
-                              {formik.isSubmitting
+                              {formikEmployeeVacation.isSubmitting
                                 ? "იგზავნება..."
                                 : "გაგზავნა"}
                             </Button>
@@ -676,8 +803,19 @@ const VacationPage = () => {
             </div>
           </div>
         </Container>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={true}
+          closeOnClick={true}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
       </div>
-      <ToastContainer />
     </>
   )
 }

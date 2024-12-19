@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import {
   Breadcrumbs,
   Dialog,
@@ -13,36 +13,30 @@ import {
   TabContent,
   TabPane,
   Container,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
 } from "reactstrap"
 import classnames from "classnames"
-import {
-  approveVacation,
-  getApprovalVacations,
-} from "../../services/admin/vacation"
 import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
 import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
 import TripPageApprove from "pages/Applications/BusinessTrip/TripPageApprove/TripPageApprove"
-import LawyerPageApprove from "pages/Agreements/Standard/StandardAgreementApprove"
+import StandardAgreementApprove from "pages/Agreements/Standard/StandardAgreementApprove"
+import MarketingAgreementApprove from "pages/Agreements/Marketing/MarketingAgreementApprove"
+import ServiceAgreementApprove from "pages/Agreements/Service/ServiceAgreementApprove"
+import LocalAgreementApprove from "pages/Agreements/Local/LocalAgreementApprove"
+import DeliveryAgreementApprove from "pages/Agreements/Delivery/DeliveryAgreementApprove"
 
 const HeadPage = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false)
   const [chosenApproval] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
+  const [agreementType, setAgreementType] = useState("standard")
+  const [dropdownOpen, setDropdownOpen] = useState(false)
 
-  useEffect(() => {
-    const fetchApprovals = async () => {
-      try {
-        const res = await getApprovalVacations({ type: "vocation", page: 1 })
-
-        setApprovalList(res.data.approvalSteps)
-      } catch (err) {
-        console.error(err)
-      }
-    }
-
-    fetchApprovals()
-  }, [])
+  const toggleDropdown = () => setDropdownOpen(prevState => !prevState)
 
   const closeModal = () => {
     setModalIsOpen(false)
@@ -65,6 +59,23 @@ const HeadPage = () => {
       window.location.reload()
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  const renderAgreementApprove = () => {
+    switch (agreementType) {
+      case "standard":
+        return <StandardAgreementApprove />
+      case "marketing":
+        return <MarketingAgreementApprove />
+      case "service":
+        return <ServiceAgreementApprove />
+      case "local":
+        return <LocalAgreementApprove />
+      case "delivery":
+        return <DeliveryAgreementApprove />
+      default:
+        return <StandardAgreementApprove />
     }
   }
 
@@ -135,7 +146,48 @@ const HeadPage = () => {
 
               <TabContent activeTab={activeTab} className="p-3 text-muted">
                 <TabPane tabId="1">
-                  <LawyerPageApprove />
+                  <div className="mb-3">
+                    <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+                      <DropdownToggle caret>
+                        {agreementType === "standard" &&
+                          "ნასყიდობის ხელშეკრულება"}
+                        {agreementType === "marketing" &&
+                          "მარკეტინგული მომსახურების ხელშეკრულება"}
+                        {agreementType === "service" &&
+                          "მომსახურების ხელშეკრულება"}
+                        {agreementType === "local" &&
+                          "ადგილობრივი შესყიდვის ხელშეკრულება"}
+                        {agreementType === "delivery" &&
+                          "მიღება-ჩაბარების აქტი"}
+                      </DropdownToggle>
+                      <DropdownMenu>
+                        <DropdownItem
+                          onClick={() => setAgreementType("standard")}
+                        >
+                          ნასყიდობის ხელშეკრულება
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() => setAgreementType("marketing")}
+                        >
+                          მარკეტინგული მომსახურების ხელშეკრულება
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() => setAgreementType("service")}
+                        >
+                          მომსახურების ხელშეკრულება
+                        </DropdownItem>
+                        <DropdownItem onClick={() => setAgreementType("local")}>
+                          ადგილობრივი შესყიდვის ხელშეკრულება
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() => setAgreementType("delivery")}
+                        >
+                          მიღება-ჩაბარების აქტი
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                  </div>
+                  {renderAgreementApprove()}
                 </TabPane>
                 <TabPane tabId="2">
                   <TripPageApprove />
