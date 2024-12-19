@@ -67,6 +67,8 @@ const JobDetails = () => {
                 status={task.status}
                 canEdit={hasEditPermission}
                 onUpdateStatus={handleUpdateStatus}
+                userId={currentUser?.id}
+                taskAssignedTo={task.assigned_to}
               />
             </div>
             <div className="p-6">

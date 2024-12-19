@@ -1,11 +1,5 @@
 import React, { useState } from "react"
-import {
-  Breadcrumbs,
-  Dialog,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material"
+import { Breadcrumbs } from "@mui/material"
 import {
   Nav,
   NavItem,
@@ -13,26 +7,50 @@ import {
   TabContent,
   TabPane,
   Container,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
 } from "reactstrap"
 import classnames from "classnames"
 
-import LawyerPageArchive from "pages/Agreements/Standard/StandardAgreementArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import ProcurementPageArchive from "pages/Applications/InternalProcurement/ProcurementPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
+import StandardAgreementArchive from "pages/Agreements/Standard/StandardAgreementArchive"
+import MarketingAgreementArchive from "pages/Agreements/Marketing/MarketingAgreementArchive"
+import ServiceAgreementArchive from "pages/Agreements/Service/ServiceAgreementArchive"
+import LocalAgreementArchive from "pages/Agreements/Local/LocalAgreementArchive"
+import DeliveryAgreementArchive from "pages/Agreements/Delivery/DeliveryAgreementArchive"
 
 const ArchivePage = () => {
-  const [modalIsOpen, setModalIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("1")
+  const [agreementType, setAgreementType] = useState("standard")
+  const [dropdownOpen, setDropdownOpen] = useState(false)
 
-  const closeModal = () => {
-    setModalIsOpen(false)
-  }
+  const toggleDropdown = () => setDropdownOpen(prevState => !prevState)
 
   const toggleTab = tab => {
     if (activeTab !== tab) {
       setActiveTab(tab)
+    }
+  }
+
+  const renderAgreementArchive = () => {
+    switch (agreementType) {
+      case "standard":
+        return <StandardAgreementArchive />
+      case "marketing":
+        return <MarketingAgreementArchive />
+      case "service":
+        return <ServiceAgreementArchive />
+      case "local":
+        return <LocalAgreementArchive />
+      case "delivery":
+        return <DeliveryAgreementArchive />
+      default:
+        return <StandardAgreementArchive />
     }
   }
 
@@ -93,7 +111,48 @@ const ArchivePage = () => {
 
               <TabContent activeTab={activeTab} className="p-3 text-muted">
                 <TabPane tabId="1">
-                  <LawyerPageArchive />
+                  <div className="mb-3">
+                    <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+                      <DropdownToggle caret>
+                        {agreementType === "standard" &&
+                          "ნასყიდობის ხელშეკრულება"}
+                        {agreementType === "marketing" &&
+                          "მარკეტინგული მომსახურების ხელშეკრულება"}
+                        {agreementType === "service" &&
+                          "მომსახურების ხელშეკრულება"}
+                        {agreementType === "local" &&
+                          "ადგილობრივი შესყიდვის ხელშეკრულება"}
+                        {agreementType === "delivery" &&
+                          "მიღება-ჩაბარების აქტი"}
+                      </DropdownToggle>
+                      <DropdownMenu>
+                        <DropdownItem
+                          onClick={() => setAgreementType("standard")}
+                        >
+                          ნასყიდობის ხელშეკრულება
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() => setAgreementType("marketing")}
+                        >
+                          მარკეტინგული მომსახურების ხელშეკრულება
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() => setAgreementType("service")}
+                        >
+                          მომსახურების ხელშეკრულება
+                        </DropdownItem>
+                        <DropdownItem onClick={() => setAgreementType("local")}>
+                          ადგილობრივი შესყიდვის ხელშეკრულება
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() => setAgreementType("delivery")}
+                        >
+                          მიღება-ჩაბარების აქტი
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                  </div>
+                  {renderAgreementArchive()}
                 </TabPane>
                 <TabPane tabId="2">
                   <TripPageArchive />
@@ -108,22 +167,6 @@ const ArchivePage = () => {
                   <HrPageArchive />
                 </TabPane>
               </TabContent>
-
-              <Dialog
-                open={modalIsOpen}
-                onClose={closeModal}
-                aria-labelledby="modal-title"
-                aria-describedby="modal-description"
-              >
-                <DialogTitle id="modal-title">
-                  {chosenArchiveItem?.type} - არქივი
-                </DialogTitle>
-                <DialogContent>
-                  <DialogContentText id="modal-description">
-                    {/* Archive item details will be displayed here */}
-                  </DialogContentText>
-                </DialogContent>
-              </Dialog>
             </div>
           </div>
         </Container>
@@ -132,4 +175,4 @@ const ArchivePage = () => {
   )
 }
 
-export default ArchivePage 
+export default ArchivePage

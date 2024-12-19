@@ -1,8 +1,16 @@
 import React from "react"
 import { Play, CheckCircle, XCircle, RefreshCcw } from "lucide-react"
 
-const TaskActions = ({ status, canEdit, onUpdateStatus }) => {
+const TaskActions = ({
+  status,
+  canEdit,
+  onUpdateStatus,
+  userId,
+  taskAssignedTo,
+}) => {
   if (!canEdit) return null
+
+  const canUpdateStatus = userId === taskAssignedTo
 
   const statusColors = {
     in_progress: "bg-[#105D8D] hover:bg-[#0D4D75]",
@@ -26,7 +34,7 @@ const TaskActions = ({ status, canEdit, onUpdateStatus }) => {
         </button>
       )}
 
-      {status === "In Progress" && (
+      {status === "In Progress" && canUpdateStatus && (
         <button
           onClick={() => onUpdateStatus("Completed")}
           className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.completed}`}
@@ -36,7 +44,7 @@ const TaskActions = ({ status, canEdit, onUpdateStatus }) => {
         </button>
       )}
 
-      {status !== "Cancelled" && status !== "Completed" && (
+      {status !== "Cancelled" && status !== "Completed" && canUpdateStatus && (
         <button
           onClick={() => onUpdateStatus("Cancelled")}
           className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.cancelled}`}
