@@ -1,6 +1,7 @@
 import axios from "axios"
 
 axios.defaults.withCredentials = true
+axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest"
 
 const baseURL = process.env.REACT_APP_API_URL
 

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react"
 import { deleteDepartment } from "services/admin/department"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
+import { usePermissions } from "hooks/usePermissions"
 import Dialog from "@mui/material/Dialog"
 import DialogActions from "@mui/material/DialogActions"
 import DialogContent from "@mui/material/DialogContent"
@@ -14,7 +14,7 @@ import AddDepartmentModal from "./AddDepartmentModal"
 import EditDepartmentModal from "./EditDepartmentModal"
 
 const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
-  const isAdmin = useIsAdmin()
+  const { isAdmin } = usePermissions()
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: null,

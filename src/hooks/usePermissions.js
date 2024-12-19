@@ -1,50 +1,61 @@
-// src/hooks/usePermissions.js
+import { useMemo } from "react"
+import useUserRoles from "hooks/useUserRoles"
+
 export const usePermissions = () => {
-  const user = JSON.parse(sessionStorage.getItem("authUser"))
+  const user = useMemo(() => {
+    const storedUser = sessionStorage.getItem("authUser")
+    return storedUser ? JSON.parse(storedUser) : null
+  }, [])
 
-  const hasRole = role => {
-    return user?.roles?.some(r => r.slug === role) || false
-  }
+  const hasRole = useMemo(
+    () => role => user?.roles?.some(r => r.slug === role) || false,
+    [user]
+  )
 
-  const hasPermission = (permission, departmentId) => {
-    if (!user) return false
+  const hasPermission = useMemo(
+    () => (permission, departmentId) => {
+      if (!user) return false
+      if (hasRole("admin")) return true
 
-    // Admin has all permissions
-    if (hasRole("admin")) return true
+      const hasPermissionInRoles = user.roles?.some(role =>
+        role.permissions.some(p => p.slug === permission)
+      )
+      if (!hasPermissionInRoles) return false
 
-    // Check if user has the permission in any of their roles
-    const hasPermissionInRoles = user.roles?.some(role =>
-      role.permissions.some(p => p.slug === permission)
-    )
+      if (departmentId !== undefined) {
+        if (hasRole("department_head")) {
+          return user.department_id === departmentId
+        }
 
-    if (!hasPermissionInRoles) return false
+        if (
+          permission.startsWith("hr-documents.") &&
+          user.department_id === 8
+        ) {
+          return true
+        }
 
-    // If departmentId is specified, check department access
-    if (departmentId !== undefined) {
-      // Department heads can access their own department
-      if (hasRole("department_head")) {
         return user.department_id === departmentId
       }
 
-      // For HR documents, allow HR department members to access
-      if (permission.startsWith("hr-documents.") && user.department_id === 8) {
-        return true
-      }
+      return true
+    },
+    [user, hasRole]
+  )
 
-      // For other department-specific permissions
-      return user.department_id === departmentId
+  const roles = useUserRoles()
+
+  const { isAdmin, isDepartmentHead, isHrMember } = useMemo(() => {
+    return {
+      isAdmin: roles.includes("admin"),
+      isDepartmentHead: roles.includes("department_head"),
+      isHrMember: user?.department_id === 8,
     }
-
-    return true
-  }
-
-  const isAdmin = hasRole("admin")
-  const isDepartmentHead = hasRole("department_head")
-  const isHrMember = user?.department_id === 8
+  }, [roles, user])
 
   return {
     hasRole,
     hasPermission,
+    roles,
     isAdmin,
     isDepartmentHead,
     isHrMember,

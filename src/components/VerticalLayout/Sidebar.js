@@ -1,14 +1,14 @@
-import PropTypes from "prop-types";
-import React from "react";
-import { connect } from "react-redux";
-import withRouter from "components/Common/withRouter";
+import PropTypes from "prop-types"
+import React from "react"
+import { connect } from "react-redux"
+import withRouter from "components/Common/withRouter"
 
-import { withTranslation } from "react-i18next";
-import SidebarContent from "./SidebarContent";
+import { withTranslation } from "react-i18next"
+import SidebarContent from "./SidebarContent"
 
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"
 
-import logo from "../../assets/images/gorgia-logo-04.png";
+import logo from "../../assets/images/gorgia-logo-04.png"
 
 const Sidebar = () => {
   return (
@@ -38,19 +38,19 @@ const Sidebar = () => {
         <div className="sidebar-background"></div>
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
 Sidebar.propTypes = {
   type: PropTypes.string,
-};
+}
 
 const mapStatetoProps = state => {
   return {
     layout: state.Layout,
-  };
-};
+  }
+}
 export default connect(
   mapStatetoProps,
   {}
-)(withRouter(withTranslation()(Sidebar)));
+)(withRouter(withTranslation()(Sidebar)))

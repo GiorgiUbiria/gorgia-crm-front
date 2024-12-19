@@ -3,19 +3,16 @@ import { useLocation } from "react-router-dom"
 import SimpleBar from "simplebar-react"
 import MetisMenu from "metismenujs"
 import { withTranslation } from "react-i18next"
-import useIsAdmin from "hooks/useIsAdmin"
 import { usePermissions } from "hooks/usePermissions"
-import useIsDepartmentHead from "hooks/useIsDepartmentHead"
 import MenuItem from "./MenuItem"
 import { getMenuConfig } from "./menuConfig"
 import useMenuState from "./useMenuState"
 
 const SidebarContent = ({ t }) => {
   const ref = useRef()
-  const isAdmin = useIsAdmin()
-  const isDepartmentHead = useIsDepartmentHead()
+  const { isAdmin, isDepartmentHead, userDepartmentId, hasPermission } =
+    usePermissions()
   const location = useLocation()
-  const { hasPermission, userDepartmentId } = usePermissions()
 
   const { expandedMenus, toggleMenu } = useMenuState()
 

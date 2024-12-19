@@ -6,7 +6,7 @@ import {
 } from "services/admin/department"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
+import { usePermissions } from "hooks/usePermissions"
 import Dialog from "@mui/material/Dialog"
 import DialogActions from "@mui/material/DialogActions"
 import DialogContent from "@mui/material/DialogContent"
@@ -23,7 +23,7 @@ const UsersTab = ({
   isDepartmentHead = false,
   currentUserDepartmentId,
 }) => {
-  const isAdmin = useIsAdmin()
+  const { isAdmin } = usePermissions()
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: null,
