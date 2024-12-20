@@ -3,22 +3,42 @@ import Pusher from "pusher-js"
 
 window.Pusher = Pusher
 
+const token = sessionStorage.getItem("token")
+
+// const echo = new Echo({
+//   broadcaster: "reverb",
+//   key: "ivsix8qulowu2ol2a2a2",
+//   wsHost: "localhost",
+//   wsPort: 8080,
+//   forceTLS: false,
+//   encrypted: true,
+//   disableStats: true,
+//   enabledTransports: ["ws", "wss"],
+//   authEndpoint: `${process.env.REACT_APP_API_URL}/api/broadcasting/auth`,
+//   auth: {
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//       Accept: "application/json",
+//     },
+//   },
+// })
+
 const echo = new Echo({
   broadcaster: "reverb",
-  key: "ivsix8qulowu2ol2a2a2", // This should match REVERB_APP_KEY in your .env
-  wsHost: "localhost",
-  wsPort: 8080, // This should match REVERB_PORT in your .env
-  forceTLS: false,
-  encrypted: false,
+  key: "ivsix8qulowu2ol2a2a2",
+  wsHost: "back.gorgia.ge",
+  wsPort: 8080,
+  forceTLS: true,
+  encrypted: true,
   disableStats: true,
   enabledTransports: ["ws", "wss"],
+  authEndpoint: `${process.env.REACT_APP_API_URL}/api/broadcasting/auth`,
   auth: {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      Authorization: `Bearer ${token}`,
       Accept: "application/json",
     },
   },
-  debug: true,
 })
 
 export default echo

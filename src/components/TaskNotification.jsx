@@ -21,7 +21,7 @@ const TaskNotification = () => {
     })
 
     // Subscribe to the channel
-    const channel = echo.channel("it-tasks")
+    const channel = echo.private("department.5")
 
     // Debug channel subscription
     channel.subscribed(() => {

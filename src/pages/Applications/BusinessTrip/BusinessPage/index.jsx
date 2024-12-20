@@ -439,19 +439,14 @@ const BusinessPage = () => {
 
   const renderForm = (formik, handleVehicleExpenseChange, currentTab) => (
     <Form onSubmit={formik.handleSubmit}>
-      <h5 className="mt-4">მივლინების ტიპი</h5>
-      <InputWithError
-        formik={formik}
-        name="trip_type"
-        label="მივლინების ტიპი"
-        type="select"
-      >
+      <h5 className="mt-4 text-lg font-semibold">მივლინების ტიპი</h5>
+      <InputWithError formik={formik} name="trip_type" label="" type="select">
         <option value="">აირჩიეთ ტიპი</option>
         <option value="regional">რეგიონალური</option>
         <option value="international">საერთაშორისო</option>
       </InputWithError>
 
-      <h5 className="mt-4">მივლინების ადგილი</h5>
+      <h5 className="mt-4 text-lg font-semibold">მივლინების ადგილი</h5>
       <div className="row">
         <div className="col-md-6">
           <InputWithError
@@ -469,15 +464,10 @@ const BusinessPage = () => {
         </div>
       </div>
 
-      <h5 className="mt-4">მივლინების მიზანი</h5>
-      <InputWithError
-        formik={formik}
-        name="purpose"
-        label="მივლინების მიზანი"
-        type="textarea"
-      />
+      <h5 className="mt-4 text-lg font-semibold">მივლინების მიზანი</h5>
+      <InputWithError formik={formik} name="purpose" label="" type="textarea" />
 
-      <h5 className="mt-4">ხანგრძლივობა</h5>
+      <h5 className="mt-4 text-lg font-semibold">ხანგრძლივობა</h5>
       <div className="row">
         <div className="col-md-4">
           <InputWithError
@@ -507,7 +497,7 @@ const BusinessPage = () => {
         </div>
       </div>
 
-      <h5 className="mt-4">თანამშრომლის ინფორმაცია</h5>
+      <h5 className="mt-4 text-lg font-semibold">თანამშრომლის ინფორმაცია</h5>
       <div className="row">
         <div className="col-md-6">
           <InputWithError
@@ -545,7 +535,7 @@ const BusinessPage = () => {
         </div>
       </div>
 
-      <h5 className="mt-4">შემცვლელის ინფორმაცია</h5>
+      <h5 className="mt-4 text-lg font-semibold">შემცვლელის ინფორმაცია</h5>
       <div className="row">
         <div className="col-md-6">
           <InputWithError
@@ -563,7 +553,7 @@ const BusinessPage = () => {
         </div>
       </div>
 
-      <h5 className="mt-4">ფინანსები</h5>
+      <h5 className="mt-4 text-lg font-semibold">ფინანსები</h5>
       <div className="row">
         <div className="col-md-6">
           <InputWithError
@@ -619,7 +609,7 @@ const BusinessPage = () => {
 
       {formik.values.vehicle_expense && (
         <>
-          <h5 className="mt-4">ტრანსპორტის დეტალები</h5>
+          <h5 className="mt-4 text-lg font-semibold">ტრანსპორტის დეტალები</h5>
           <div className="row">
             <div className="col-md-6">
               <InputWithError
@@ -649,12 +639,11 @@ const BusinessPage = () => {
         </>
       )}
 
-      <h5 className="mt-4">საბოლოო თანხა</h5>
+      <h5 className="mt-4 text-lg mb-2 font-semibold">საბოლოო ღირებულება</h5>
       <div className="row">
         <div className="col-md-6">
-          <Label for="final_cost">საბოლოო ღირებულება</Label>
           <Input
-            type="number"
+            type="text"
             id="final_cost"
             name="final_cost"
             value={formik.values.final_cost}
