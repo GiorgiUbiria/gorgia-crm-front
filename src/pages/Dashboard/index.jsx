@@ -8,8 +8,6 @@ import {
   ShoppingCart,
   Umbrella,
   PlaneTakeoff,
-  ListTodo,
-  Plus,
 } from "lucide-react"
 import { useSelector } from "react-redux"
 
@@ -104,70 +102,48 @@ function Dashboard() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gray-50 mt-12 mb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-8">
+    <div className="min-h-screen bg-gray-50 mt-16 mb-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
           <span>მთავარი</span>
           <span className="text-gray-400">/</span>
           <span className="font-medium text-gray-900">მთავარი</span>
         </div>
 
-        <div className="mb-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-8 py-10 sm:px-10">
-            <h1 className="text-3xl font-bold text-white mb-4">
+        <div className="mb-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg overflow-hidden">
+          <div className="px-6 py-8 sm:px-8">
+            <h1 className="text-2xl font-bold text-white mb-2">
               მოგესალმებით, {user.name}!
             </h1>
-            <p className="text-blue-100 mb-8">
+            <p className="text-blue-100 text-sm">
               ამ გვერდიდან შეგიძლია შეუდგე მუშაობას! წარმატებები!
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={() => (window.location.href = "/tasks/new")}
-                disabled
-                className="inline-flex items-center justify-center px-6 py-3 bg-white/50 text-black rounded-full font-medium cursor-not-allowed opacity-75"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                ახალი დავალება
-              </button>
-              <button
-                onClick={() => (window.location.href = "/tasks/today")}
-                disabled
-                className="inline-flex items-center justify-center px-6 py-3 border-2 border-white/50 text-white/50 rounded-full font-medium cursor-not-allowed opacity-75"
-              >
-                <ListTodo className="w-5 h-5 mr-2" />
-                დღევანდელი დავალებები
-              </button>
-            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {widgets.map(widget => {
             const Icon = widget.icon
             return (
               <div
                 key={widget.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden"
+                className="bg-white rounded-lg shadow-sm border border-gray-100 hover:border-gray-200 hover:shadow transition-all duration-200 overflow-hidden"
               >
-                <div className="p-6">
+                <div className="p-4">
                   <div
-                    className={`w-12 h-12 rounded-full ${
-                      colorVariants[widget.color]
-                    } flex items-center justify-center mb-4`}
+                    className={`w-10 h-10 rounded-full ${colorVariants[widget.color]} flex items-center justify-center mb-3`}
                   >
-                    <Icon className="w-6 h-6" />
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">
                     {widget.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4">
+                  <p className="text-gray-600 text-xs mb-3">
                     {widget.description}
                   </p>
                   <button
                     onClick={() => (window.location.href = widget.link)}
-                    className={`text-sm font-medium ${
-                      colorVariants[widget.color]
-                    } px-4 py-2 rounded-lg w-full text-left hover:shadow-sm transition-all duration-200`}
+                    className={`text-xs font-medium ${colorVariants[widget.color]} px-3 py-1.5 rounded-md w-full text-left hover:shadow-sm transition-all duration-200`}
                   >
                     {widget.buttonText}
                   </button>
