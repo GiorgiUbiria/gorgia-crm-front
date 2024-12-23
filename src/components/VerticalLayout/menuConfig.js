@@ -6,12 +6,12 @@ import {
   BsFolder,
   BsJournal,
   BsHeadset,
-  BsCreditCard2Front,
-  BsChatDots,
-  BsTelephone,
+  // BsCreditCard2Front,
+  // BsChatDots,
+  // BsTelephone,
   BsTools,
   BsArchive,
-  BsPeople,
+  // BsPeople,
   BsCalendar2DateFill,
   BsJournalBookmarkFill,
   BsFileCode,
@@ -206,26 +206,26 @@ export const getMenuConfig = (
       icon: BsTools,
       label: t("სამეურნეო Tasks"),
     },
-    {
-      to: "/contacts-list",
-      icon: BsCreditCard2Front,
-      label: t("ლოიალობის ბარათი"),
-    },
-    { to: "/admin/visitors", icon: BsPeople, label: t("ვიზიტორები") },
+    // {
+    //   to: "/contacts-list",
+    //   icon: BsCreditCard2Front,
+    //   label: t("ლოიალობის ბარათი"),
+    // },
+    // { to: "/admin/visitors", icon: BsPeople, label: t("ვიზიტორები") },
     // {
     //   to: "/admin/payment-monitoring",
     //   icon: BsCashStack,
     //   label: t("გადახდების მონიტორინგი"),
     // },
-    {
-      key: "leads",
-      icon: BsTelephone,
-      label: t("ლიდები"),
-      submenu: [
-        { to: "/leads/vip", label: t("VIP") },
-        { to: "/leads/corporate", label: t("კორპორატიული") },
-      ],
-    },
+    // {
+    //   key: "leads",
+    //   icon: BsTelephone,
+    //   label: t("ლიდები"),
+    //   submenu: [
+    //     { to: "/leads/vip", label: t("VIP") },
+    //     { to: "/leads/corporate", label: t("კორპორატიული") },
+    //   ],
+    // },
     {
       to: "/tools/calendar",
       icon: BsCalendar2DateFill,
@@ -236,11 +236,11 @@ export const getMenuConfig = (
       icon: BsJournalBookmarkFill,
       label: t("ჩანაწერები"),
     },
-    {
-      to: "/communication/chat",
-      icon: BsChatDots,
-      label: t("ჩათი"),
-    },
+    // {
+    //   to: "/communication/chat",
+    //   icon: BsChatDots,
+    //   label: t("ჩათი"),
+    // },
   ]
 
   const filterMenuItems = items => {
