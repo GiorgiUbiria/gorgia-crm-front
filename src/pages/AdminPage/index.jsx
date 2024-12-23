@@ -87,7 +87,7 @@ const AdminPage = () => {
     }
 
     initializeData()
-  }, [currentUser, isDepartmentHead, isAdmin])
+  }, [currentUser, isDepartmentHead, isAdmin, isHrMember])
 
   const toggle = tab => {
     if (activeTab !== tab) setActiveTab(tab)
@@ -170,14 +170,7 @@ const AdminPage = () => {
           <Col lg="12">
             <Card className="shadow-sm">
               <CardBody className="px-2 px-sm-3">
-                {isDepartmentHead && users.length > 0 ? (
-                  <UsersTab
-                    users={users}
-                    onUserDeleted={handleUserDeleted}
-                    isDepartmentHead={true}
-                    currentUserDepartmentId={userDepartmentId}
-                  />
-                ) : isAdmin ? (
+                {isAdmin ? (
                   <>
                     <Nav tabs className="nav-tabs-custom nav-justified">
                       <NavItem>
@@ -218,6 +211,13 @@ const AdminPage = () => {
                     </TabContent>
                   </>
                 ) : isHrMember ? (
+                  <UsersTab
+                    users={users}
+                    onUserDeleted={handleUserDeleted}
+                    isDepartmentHead={true}
+                    currentUserDepartmentId={userDepartmentId}
+                  />
+                ) : isDepartmentHead && users.length > 0 ? (
                   <UsersTab
                     users={users}
                     onUserDeleted={handleUserDeleted}
