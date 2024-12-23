@@ -8,7 +8,6 @@ import { usePermissions } from "hooks/usePermissions"
 import { Row, Col } from "reactstrap"
 import AddDailyModal from "./AddDailyModal"
 import Breadcrumbs from "components/Common/Breadcrumb"
-import useUserRoles from "hooks/useUserRoles"
 import * as XLSX from "xlsx"
 
 const INITIAL_STATE = {
@@ -24,9 +23,8 @@ const PAGE_SIZE_OPTIONS = [5, 10, 15, 20]
 
 const DailiesInner = () => {
   const navigate = useNavigate()
-  const { isAdmin } = usePermissions()
+  const { isAdmin, isDepartmentHead } = usePermissions()
   const user = JSON.parse(sessionStorage.getItem("authUser"))
-  const userRoles = useUserRoles()
 
   const [state, setState] = useState(INITIAL_STATE)
   const {
@@ -49,7 +47,7 @@ const DailiesInner = () => {
 
       let dailiesResponse
 
-      if (userRoles.includes("admin") || userRoles.includes("department_head")) {
+      if (isAdmin || isDepartmentHead) {
         dailiesResponse = await getRegularDailies(params)
       } else {
         dailiesResponse = await getMyRegularDailies(params)
@@ -196,7 +194,10 @@ const DailiesInner = () => {
   return (
     <div className="page-content bg-gray-100">
       <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
-        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="დეპარტამენტის დღის შედეგები" />
+        <Breadcrumbs
+          title="დღიური შეფასება"
+          breadcrumbItem="დეპარტამენტის დღის შედეგები"
+        />
 
         <div className="bg-white rounded-xl shadow p-6">
           <Row className="mb-3">

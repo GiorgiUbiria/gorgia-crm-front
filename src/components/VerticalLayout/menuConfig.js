@@ -67,14 +67,14 @@ export const getMenuConfig = (t, user) => {
     {
       to: "/tools/daily-results",
       icon: BsJournal,
-      label: t("დღის შედეგები"),
-      requiredRoles: [AccessRoles.ADMIN],
+      label: t("დეპარტამენტის დღის შედეგები"),
+      requiredRoles: [AccessRoles.ADMIN, AccessRoles.DEPARTMENT_HEAD],
       requiredDepartmentIds: [],
     },
     {
       to: "/tools/inner-daily-results",
       icon: BsJournal,
-      label: t("დეპარტამენტის დღის შედეგები"),
+      label: t("დღის შედეგები"),
       requiredRoles: [],
       requiredDepartmentIds: [],
     },
