@@ -2,116 +2,187 @@ import {
   BsHouseDoor,
   BsGear,
   BsPerson,
-  BsFileText,
   BsFolder,
   BsJournal,
   BsHeadset,
-  // BsCreditCard2Front,
-  // BsChatDots,
-  // BsTelephone,
   BsTools,
   BsArchive,
-  // BsPeople,
   BsCalendar2DateFill,
   BsJournalBookmarkFill,
   BsFileCode,
 } from "react-icons/bs"
+import { AccessRoles, checkAccess } from "utils/accessControl"
 
-const createSubmenu = (
-  basePath,
-  labelKey,
-  isAdmin,
-  isDepartmentHead,
-  requiresNew = false
-) =>
-  [
-    requiresNew && { to: `${basePath}/new`, label: labelKey("დამატება") },
-    isAdmin && { to: `${basePath}/approve`, label: labelKey("ვიზირება") },
-    isAdmin
-      ? { to: `${basePath}/archive`, label: labelKey("არქივი") }
-      : isDepartmentHead
-      ? { to: `${basePath}/archive`, label: labelKey("ვიზირება") }
-      : null,
-    { to: `${basePath}/my-requests`, label: labelKey("გაგზავნილი") },
-  ].filter(Boolean)
-
-export const getMenuConfig = (
-  t,
-  isAdmin,
-  isDepartmentHead,
-  userDepartmentId,
-  hasPermission
-) => {
+export const getMenuConfig = (t, user) => {
   const menuItems = [
     {
       to: "/dashboard",
       icon: BsHouseDoor,
       label: t("მთავარი გვერდი"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
     },
     {
       key: "admin",
       icon: BsGear,
       label: t("სამართავი პანელი"),
-      permission: "users.view",
+      requiredRoles: [
+        AccessRoles.ADMIN,
+        AccessRoles.DEPARTMENT_HEAD,
+        AccessRoles.HR_MEMBER,
+      ],
       submenu: [
-        { to: "/admin/dashboard", label: t("მთავარი") },
-        { to: "/admin/approvals", label: t("ვიზირება") },
-        { to: "/admin/archive", icon: BsArchive, label: t("არქივი") },
-      ].filter(item => !item.visible || item.visible !== false),
+        {
+          to: "/admin/dashboard",
+          label: t("მთავარი"),
+          requiredRoles: [
+            AccessRoles.ADMIN,
+            AccessRoles.DEPARTMENT_HEAD,
+            AccessRoles.HR_MEMBER,
+          ],
+          requiredDepartmentIds: [],
+        },
+        {
+          to: "/admin/approvals",
+          label: t("ვიზირება"),
+          requiredRoles: [AccessRoles.ADMIN],
+          requiredDepartmentIds: [],
+        },
+        {
+          to: "/admin/archive",
+          icon: BsArchive,
+          label: t("არქივი"),
+          requiredRoles: [AccessRoles.ADMIN],
+          requiredDepartmentIds: [],
+        },
+      ],
     },
     {
       to: "/profile",
       icon: BsPerson,
       label: t("პროფილი"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
     },
     {
       to: "/tools/daily-results",
       icon: BsJournal,
       label: t("დღის შედეგები"),
-      permission: "daily-results.view-own",
+      requiredRoles: [AccessRoles.ADMIN],
+      requiredDepartmentIds: [],
     },
     {
       to: "/tools/inner-daily-results",
       icon: BsJournal,
       label: t("დეპარტამენტის დღის შედეგები"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
     },
     {
       key: "applications",
       icon: BsFileCode,
       label: t("განცხადებები"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
       submenu: [
         {
           key: "internalPurchases",
           label: t("შიდა შესყიდვები"),
-          submenu: createSubmenu(
-            "/applications/purchases",
-            t,
-            isAdmin,
-            isDepartmentHead,
-            true
-          ),
+          to: "/applications/purchases",
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+          submenu: [
+            {
+              to: "/applications/purchases/new",
+              label: t("დამატება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/applications/purchases/approve",
+              label: t("ვიზირება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/applications/purchases/archive",
+              label: t("არქივი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/applications/purchases/my-requests",
+              label: t("გაგზავნილი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+          ],
+        },
+        {
+          key: "business-trip",
+          label: t("მივლინება"),
+          to: "/applications/business-trip",
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+          submenu: [
+            {
+              to: "/applications/business-trip/new",
+              label: t("დამატება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/applications/business-trip/approve",
+              label: t("ვიზირება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/applications/business-trip/archive",
+              label: t("არქივი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/applications/business-trip/my-requests",
+              label: t("გაგზავნილი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+          ],
         },
         {
           key: "vacation",
           label: t("შვებულება"),
-          submenu: createSubmenu(
-            "/applications/vacation",
-            t,
-            isAdmin,
-            isDepartmentHead,
-            true
-          ),
-        },
-        {
-          key: "business",
-          label: t("მივლინება"),
-          submenu: createSubmenu(
-            "/applications/business-trip",
-            t,
-            isAdmin,
-            isDepartmentHead,
-            true
-          ),
+          to: "/applications/vacation",
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+          submenu: [
+            {
+              to: "/applications/vacation/new",
+              label: t("დამატება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/applications/vacation/approve",
+              label: t("ვიზირება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/applications/vacation/archive",
+              label: t("არქივი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/applications/vacation/my-requests",
+              label: t("გაგზავნილი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+          ],
         },
       ],
     },
@@ -119,80 +190,178 @@ export const getMenuConfig = (
       key: "hrDocs",
       icon: BsFolder,
       label: t("HR დოკუმენტები"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
       submenu: [
-        { to: "/hr/documents/new", label: t("ახალი მოთხოვნა") },
+        {
+          to: "/hr/documents/new",
+          label: t("ახალი მოთხოვნა"),
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+        },
         {
           to: "/hr/documents/approve",
-          departmentId: 8,
-          permission: "hr-documents.manage",
           label: t("ვიზირება"),
-          visible: userDepartmentId === 8 || isAdmin,
+          requiredRoles: [],
+          requiredDepartmentIds: [8],
         },
         {
           to: "/hr/documents/archive",
-          departmentId: 8,
-          permission: "hr-documents.view",
           label: t("არქივი"),
-          visible: userDepartmentId === 8 || isAdmin,
+          requiredRoles: [],
+          requiredDepartmentIds: [8],
         },
-        { to: "/hr/documents/my-requests", label: t("ჩემი მოთხოვნები") },
+        {
+          to: "/hr/documents/my-requests",
+          label: t("ჩემი მოთხოვნები"),
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+        },
       ],
     },
     {
-      key: "contracts",
-      icon: BsFileText,
+      key: "agreements",
+      icon: BsFileCode,
       label: t("ხელშეკრულებები"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
       submenu: [
-        { to: "/legal/contracts/new", label: t("მოთხოვნა") },
+        {
+          key: "request",
+          label: t("მოთხოვნა"),
+          to: "/legal/contracts/new",
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+        },
         {
           key: "purchase",
-          to: "/legal/contracts/purchase",
           label: t("ნასყიდობის ხელშეკრულება"),
-          submenu: createSubmenu(
-            "/legal/contracts/purchase",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+          submenu: [
+            {
+              to: "/legal/contracts/purchase/approve",
+              label: t("ვიზირება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/purchase/archive",
+              label: t("არქივი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/purchase/my-requests",
+              label: t("გაგზავნილი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+          ],
         },
         {
           key: "delivery",
-          to: "/legal/contracts/delivery",
           label: t("მიღება-ჩაბარების აქტი"),
-          submenu: createSubmenu(
-            "/legal/contracts/delivery",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+          submenu: [
+            {
+              to: "/legal/contracts/delivery/approve",
+              label: t("ვიზირება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/delivery/archive",
+              label: t("არქივი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/delivery/my-requests",
+              label: t("გაგზავნილი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+          ],
         },
         {
           key: "marketing",
-          to: "/legal/contracts/marketing",
           label: t("მარკეტინგული მომსახურების ხელშეკრულება"),
-          submenu: createSubmenu(
-            "/legal/contracts/marketing",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+          submenu: [
+            {
+              to: "/legal/contracts/marketing/approve",
+              label: t("ვიზირება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/marketing/archive",
+              label: t("არქივი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/marketing/my-requests",
+              label: t("გაგზავნილი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+          ],
         },
         {
           key: "service",
-          to: "/legal/contracts/service",
           label: t("მომსახურების ხელშეკრულება"),
-          submenu: createSubmenu(
-            "/legal/contracts/service",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+          submenu: [
+            {
+              to: "/legal/contracts/service/approve",
+              label: t("ვიზირება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/service/archive",
+              label: t("არქივი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/service/my-requests",
+              label: t("გაგზავნილი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+          ],
         },
         {
-          to: "/legal/contracts/local",
           key: "local",
           label: t("ადგილობრივი შესყიდვის ხელშეკრულება"),
-          submenu: createSubmenu(
-            "/legal/contracts/local",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          requiredRoles: [],
+          requiredDepartmentIds: [],
+          submenu: [
+            {
+              to: "/legal/contracts/local/approve",
+              label: t("ვიზირება"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/local/archive",
+              label: t("არქივი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+            {
+              to: "/legal/contracts/local/my-requests",
+              label: t("გაგზავნილი"),
+              requiredRoles: [],
+              requiredDepartmentIds: [],
+            },
+          ],
         },
       ],
     },
@@ -200,71 +369,54 @@ export const getMenuConfig = (
       to: "/support/it-tasks",
       icon: BsHeadset,
       label: t("IT მხარდაჭერა"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
     },
     {
       to: "/support/farm-tasks",
       icon: BsTools,
       label: t("სამეურნეო Tasks"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
     },
-    // {
-    //   to: "/contacts-list",
-    //   icon: BsCreditCard2Front,
-    //   label: t("ლოიალობის ბარათი"),
-    // },
-    // { to: "/admin/visitors", icon: BsPeople, label: t("ვიზიტორები") },
-    // {
-    //   to: "/admin/payment-monitoring",
-    //   icon: BsCashStack,
-    //   label: t("გადახდების მონიტორინგი"),
-    // },
-    // {
-    //   key: "leads",
-    //   icon: BsTelephone,
-    //   label: t("ლიდები"),
-    //   submenu: [
-    //     { to: "/leads/vip", label: t("VIP") },
-    //     { to: "/leads/corporate", label: t("კორპორატიული") },
-    //   ],
-    // },
     {
       to: "/tools/calendar",
       icon: BsCalendar2DateFill,
       label: t("კალენდარი"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
     },
     {
       to: "/tools/notes",
       icon: BsJournalBookmarkFill,
       label: t("ჩანაწერები"),
+      requiredRoles: [],
+      requiredDepartmentIds: [],
     },
-    // {
-    //   to: "/communication/chat",
-    //   icon: BsChatDots,
-    //   label: t("ჩათი"),
-    // },
   ]
 
   const filterMenuItems = items => {
     return items
       .filter(item => {
-        if (item.visible === false) return false
-        if (!item.permission) return true
-        return hasPermission(item.permission, item.departmentId)
+        // If no roles or departments are specified, item is accessible to everyone
+        if (
+          item.requiredRoles.length === 0 &&
+          item.requiredDepartmentIds.length === 0
+        )
+          return true
+        return checkAccess(user, item.requiredRoles, item.requiredDepartmentIds)
       })
       .map(item => {
         if (item.submenu) {
-          return {
-            ...item,
-            submenu: filterMenuItems(item.submenu),
+          const filteredSubmenu = filterMenuItems(item.submenu)
+          if (filteredSubmenu.length > 0) {
+            return { ...item, submenu: filteredSubmenu }
           }
+          return null
         }
         return item
       })
-      .filter(item => {
-        if (item.submenu) {
-          return item.submenu.length > 0
-        }
-        return true
-      })
+      .filter(item => item !== null)
   }
 
   return filterMenuItems(menuItems)

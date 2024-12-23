@@ -21,6 +21,7 @@ import {
 } from "../../services/admin/department"
 import UsersTab from "./UsersTab"
 import DepartmentsTab from "./DepartmentsTab"
+import { usePermissions } from "hooks/usePermissions"
 
 const AdminPage = () => {
   document.title = "ადმინისტრირება | Gorgia LLC"
@@ -33,12 +34,8 @@ const AdminPage = () => {
 
   const currentUser = useSelector(state => state.user.user)
 
-  const isDepartmentHead = currentUser?.roles?.some(
-    role => role.slug === "department_head"
-  )
-  const isAdmin = currentUser?.roles?.some(
-    role => role.slug === "admin" || role.slug === "super_admin"
-  )
+  const { isAdmin, isDepartmentHead, userDepartmentId, isHrMember } =
+    usePermissions()
 
   useEffect(() => {
     const initializeData = async () => {
@@ -51,16 +48,16 @@ const AdminPage = () => {
       setError(null)
 
       try {
-        if (isDepartmentHead && currentUser.department_id) {
-          console.log(
-            "Fetching members for department:",
-            currentUser.department_id
-          )
-          console.log("Current user roles:", currentUser.roles)
-          console.log("Current user department_id:", currentUser.department_id)
+        if (isHrMember) {
+          const response = await getUsers()
+          console.log(response)
+          if (response.data?.users) {
+            setUsers(response.data.users)
+          } else if (response.data?.message) {
+            setError(response.data.message)
+          }
+        } else if (isDepartmentHead && currentUser.department_id) {
           const response = await getDepartmentMembers(currentUser.department_id)
-          console.log("Department members response:", response.data)
-
           if (response.data?.members) {
             setUsers(response.data.members)
           } else if (response.data?.message) {
@@ -72,7 +69,6 @@ const AdminPage = () => {
             getUsers(),
           ])
           setDepartments(deptResponse.data.departments)
-          console.log(usersResponse.data.users)
           setUsers(usersResponse.data.users)
         } else if (currentUser.roles) {
           setError("Unauthorized access. Required role not found.")
@@ -98,9 +94,9 @@ const AdminPage = () => {
   }
 
   const handleUserDeleted = async () => {
-    if (isDepartmentHead && currentUser?.department_id) {
+    if (isDepartmentHead && userDepartmentId) {
       try {
-        const response = await getDepartmentMembers(currentUser.department_id)
+        const response = await getDepartmentMembers(userDepartmentId)
         if (response.data?.members) {
           setUsers(response.data.members)
         }
@@ -179,7 +175,7 @@ const AdminPage = () => {
                     users={users}
                     onUserDeleted={handleUserDeleted}
                     isDepartmentHead={true}
-                    currentUserDepartmentId={currentUser.department_id}
+                    currentUserDepartmentId={userDepartmentId}
                   />
                 ) : isAdmin ? (
                   <>
@@ -215,12 +211,19 @@ const AdminPage = () => {
                         <UsersTab
                           users={users}
                           onUserDeleted={handleUserDeleted}
-                          currentUserDepartmentId={currentUser.department_id}
+                          currentUserDepartmentId={userDepartmentId}
                           isDepartmentHead={isDepartmentHead}
                         />
                       </TabPane>
                     </TabContent>
                   </>
+                ) : isHrMember ? (
+                  <UsersTab
+                    users={users}
+                    onUserDeleted={handleUserDeleted}
+                    isDepartmentHead={true}
+                    currentUserDepartmentId={userDepartmentId}
+                  />
                 ) : (
                   <div className="alert alert-warning">
                     Unauthorized access. Please contact administrator.

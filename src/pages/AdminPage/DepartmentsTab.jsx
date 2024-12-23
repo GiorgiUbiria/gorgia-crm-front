@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react"
 import { deleteDepartment } from "services/admin/department"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
+import { usePermissions } from "hooks/usePermissions"
 import Dialog from "@mui/material/Dialog"
 import DialogActions from "@mui/material/DialogActions"
 import DialogContent from "@mui/material/DialogContent"
@@ -14,7 +14,7 @@ import AddDepartmentModal from "./AddDepartmentModal"
 import EditDepartmentModal from "./EditDepartmentModal"
 
 const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
-  const isAdmin = useIsAdmin()
+  const { isAdmin } = usePermissions()
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: null,
@@ -109,7 +109,7 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
           ),
       },
     ],
-    []
+    [isAdmin]
   )
 
   const transformedDepartments = useMemo(() => {
@@ -156,18 +156,26 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
     <div>
       <Row className="mb-3">
         <Col className="d-flex justify-content-end gap-2">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddDepartmentClick}
-          >
-            <i className="bx bx-plus me-1"></i>
-            დეპარტამენტის დამატება
-          </Button>
-          <Button variant="outlined" color="primary" onClick={exportToExcel}>
-            <i className="bx bx-download me-1"></i>
-            ექსპორტი Excel-ში
-          </Button>
+          {isAdmin && (
+            <>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddDepartmentClick}
+              >
+                <i className="bx bx-plus me-1"></i>
+                დეპარტამენტის დამატება
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={exportToExcel}
+              >
+                <i className="bx bx-download me-1"></i>
+                ექსპორტი Excel-ში
+              </Button>
+            </>
+          )}
         </Col>
       </Row>
 

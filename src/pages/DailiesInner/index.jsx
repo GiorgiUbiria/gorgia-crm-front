@@ -4,7 +4,7 @@ import { getRegularDailies, getMyRegularDailies } from "services/daily"
 import { getDepartments } from "services/auth"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
+import { usePermissions } from "hooks/usePermissions"
 import { Row, Col } from "reactstrap"
 import AddDailyModal from "./AddDailyModal"
 import Breadcrumbs from "components/Common/Breadcrumb"
@@ -24,7 +24,7 @@ const PAGE_SIZE_OPTIONS = [5, 10, 15, 20]
 
 const DailiesInner = () => {
   const navigate = useNavigate()
-  const isAdmin = useIsAdmin()
+  const { isAdmin } = usePermissions()
   const user = JSON.parse(sessionStorage.getItem("authUser"))
   const userRoles = useUserRoles()
 

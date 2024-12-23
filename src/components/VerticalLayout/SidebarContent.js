@@ -3,32 +3,21 @@ import { useLocation } from "react-router-dom"
 import SimpleBar from "simplebar-react"
 import MetisMenu from "metismenujs"
 import { withTranslation } from "react-i18next"
-import useIsAdmin from "hooks/useIsAdmin"
 import { usePermissions } from "hooks/usePermissions"
-import useIsDepartmentHead from "hooks/useIsDepartmentHead"
 import MenuItem from "./MenuItem"
 import { getMenuConfig } from "./menuConfig"
 import useMenuState from "./useMenuState"
 
 const SidebarContent = ({ t }) => {
   const ref = useRef()
-  const isAdmin = useIsAdmin()
-  const isDepartmentHead = useIsDepartmentHead()
   const location = useLocation()
-  const { hasPermission, userDepartmentId } = usePermissions()
+  const { user } = usePermissions()
 
   const { expandedMenus, toggleMenu } = useMenuState()
 
   const menuConfig = useMemo(
-    () =>
-      getMenuConfig(
-        t,
-        isAdmin,
-        isDepartmentHead,
-        userDepartmentId,
-        hasPermission
-      ),
-    [t, isAdmin, isDepartmentHead, userDepartmentId, hasPermission]
+    () => getMenuConfig(t, user),
+    [t, user]
   )
 
   const activateParentDropdown = useCallback(item => {
@@ -156,9 +145,9 @@ const SidebarContent = ({ t }) => {
 
   const renderSubmenu = useCallback(
     submenuItems => {
-      return submenuItems.filter(Boolean).map((item, index) => (
+      return submenuItems.map((item, index) => (
         <MenuItem
-          key={`${item.key || item.to}-${index}`}
+          key={`${item.to}-${index}`}
           to={item.to}
           label={item.label}
           hasSubmenu={!!item.submenu}
@@ -176,7 +165,7 @@ const SidebarContent = ({ t }) => {
     () =>
       menuConfig.map((item, index) => (
         <MenuItem
-          key={`${item.key || item.to}-${index}`}
+          key={`${item.to}-${index}`}
           to={item.to}
           icon={item.icon}
           label={item.label}
@@ -197,7 +186,7 @@ const SidebarContent = ({ t }) => {
   useEffect(() => {
     new MetisMenu("#side-menu")
     activeMenu()
-  }, [])
+  }, [activeMenu])
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" })

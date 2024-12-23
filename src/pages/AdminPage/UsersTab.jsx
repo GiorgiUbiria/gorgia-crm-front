@@ -6,7 +6,7 @@ import {
 } from "services/admin/department"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
+import { usePermissions } from "hooks/usePermissions"
 import Dialog from "@mui/material/Dialog"
 import DialogActions from "@mui/material/DialogActions"
 import DialogContent from "@mui/material/DialogContent"
@@ -23,7 +23,7 @@ const UsersTab = ({
   isDepartmentHead = false,
   currentUserDepartmentId,
 }) => {
-  const isAdmin = useIsAdmin()
+  const { isAdmin, isHrMember } = usePermissions()
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: null,
@@ -55,9 +55,14 @@ const UsersTab = ({
     try {
       const { type, userId } = confirmModal
 
-      if (!currentUserDepartmentId && isDepartmentHead) {
-        console.error("Department ID is missing for department head")
-        return
+      if ((isDepartmentHead || isHrMember) && currentUserDepartmentId) {
+        if (type === "delete") {
+          await deleteUser(userId)
+        } else if (type === "approve") {
+          await approveDepartmentMember(currentUserDepartmentId, userId)
+        } else if (type === "reject") {
+          await rejectDepartmentMember(currentUserDepartmentId, userId)
+        }
       }
 
       if (type === "delete") {
@@ -83,6 +88,7 @@ const UsersTab = ({
     if (isAdmin) return true
     if (isDepartmentHead && user.department_id === currentUserDepartmentId)
       return true
+    if (isHrMember) return true
     return false
   }
 
@@ -129,7 +135,7 @@ const UsersTab = ({
           ),
       },
       {
-        Header: "სტატუსი",
+        Header: "სპერაცია",
         accessor: "status",
         Cell: ({ value }) => (
           <span
@@ -178,30 +184,31 @@ const UsersTab = ({
 
           return (
             <div className="d-flex flex-column gap-2">
-              {(isDepartmentHead || isAdmin) && user.status === "pending" && (
-                <div className="d-flex gap-2 mb-2">
-                  <Button
-                    onClick={() => handleModalOpen("approve", user.id)}
-                    color="success"
-                    variant="contained"
-                    size="small"
-                    startIcon={<i className="bx bx-check" />}
-                    style={{ width: "100%" }}
-                  >
-                    დადასტურება
-                  </Button>
-                  <Button
-                    onClick={() => handleModalOpen("reject", user.id)}
-                    color="error"
-                    variant="contained"
-                    size="small"
-                    startIcon={<i className="bx bx-x" />}
-                    style={{ width: "100%" }}
-                  >
-                    უარყოფა
-                  </Button>
-                </div>
-              )}
+              {(isDepartmentHead || isAdmin || isHrMember) &&
+                user.status === "pending" && (
+                  <div className="d-flex gap-2 mb-2">
+                    <Button
+                      onClick={() => handleModalOpen("approve", user.id)}
+                      color="success"
+                      variant="contained"
+                      size="small"
+                      startIcon={<i className="bx bx-check" />}
+                      style={{ width: "100%" }}
+                    >
+                      დადასტურება
+                    </Button>
+                    <Button
+                      onClick={() => handleModalOpen("reject", user.id)}
+                      color="error"
+                      variant="contained"
+                      size="small"
+                      startIcon={<i className="bx bx-x" />}
+                      style={{ width: "100%" }}
+                    >
+                      უარყოფა
+                    </Button>
+                  </div>
+                )}
               <div className="d-flex gap-2">
                 <Button
                   onClick={() =>
@@ -215,7 +222,7 @@ const UsersTab = ({
                 >
                   რედაქტირება
                 </Button>
-                {isAdmin && (
+                {(isAdmin || isHrMember) && (
                   <Button
                     onClick={() => handleModalOpen("delete", user.id)}
                     color="error"
@@ -233,7 +240,7 @@ const UsersTab = ({
         },
       },
     ],
-    [isAdmin, isDepartmentHead, currentUserDepartmentId]
+    [isAdmin, isDepartmentHead, isHrMember, currentUserDepartmentId]
   )
 
   const transformedUsers = useMemo(() => {
@@ -269,7 +276,7 @@ const UsersTab = ({
         "ელ-ფოსტა",
         "დეპარტამენტი",
         "მობილური",
-        "დაწყების თარიღი",
+        "დაწყები�� თარიღი",
         "როლი",
       ],
       ...transformedUsers.map(user => [
@@ -278,7 +285,9 @@ const UsersTab = ({
         user.email,
         user.department,
         user.mobile_number,
-        user.working_start_date,
+        user.working_start_date
+          ? new Date(user.working_start_date).toLocaleDateString()
+          : "-",
         user.role,
       ]),
     ]
@@ -293,7 +302,7 @@ const UsersTab = ({
     <div>
       <Row className="mb-3">
         <Col className="d-flex justify-content-end gap-2">
-          {isAdmin && (
+          {(isAdmin || isDepartmentHead || isHrMember) && (
             <Button
               variant="contained"
               color="primary"
