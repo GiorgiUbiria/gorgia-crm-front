@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
-import { Row, Col, Card, CardBody, Button } from "reactstrap"
+import { Row, Col, Card, CardBody } from "reactstrap"
 import {
   BiX,
   BiTime,
@@ -24,7 +24,6 @@ import {
   BiWallet,
   BiStore,
   BiFlag,
-  BiCog,
   BiPhone,
   BiNote,
   BiComment,
@@ -450,11 +449,6 @@ const ProcurementPageArchive = () => {
                     <th>
                       <BiComment /> კომენტარი
                     </th>
-                    {canManageProducts(rowData) && (
-                      <th>
-                        <BiCog /> მოქმედებები
-                      </th>
-                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -528,25 +522,6 @@ const ProcurementPageArchive = () => {
                           <span className="text-muted">-</span>
                         )}
                       </td>
-                      {canManageProducts(rowData) && (
-                        <td>
-                          {product?.status !== "completed" && (
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="success"
-                              onClick={() => {
-                                setSelectedProduct(product)
-                                setSelectedPurchase(rowData)
-                                setProductStatusModal(true)
-                              }}
-                              startIcon={<BiCheckCircle />}
-                            >
-                              დასრულება
-                            </Button>
-                          )}
-                        </td>
-                      )}
                     </tr>
                   ))}
                 </tbody>

@@ -11,7 +11,7 @@ import {
   BsJournalBookmarkFill,
   BsFileCode,
 } from "react-icons/bs"
-import { AccessRoles, checkAccess } from "utils/accessControl"
+import { checkAccess } from "utils/accessGate"
 
 export const getMenuConfig = (t, user) => {
   const menuItems = [
@@ -19,41 +19,29 @@ export const getMenuConfig = (t, user) => {
       to: "/dashboard",
       icon: BsHouseDoor,
       label: t("მთავარი გვერდი"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
     },
     {
       key: "admin",
       icon: BsGear,
       label: t("სამართავი პანელი"),
-      requiredRoles: [
-        AccessRoles.ADMIN,
-        AccessRoles.DEPARTMENT_HEAD,
-        AccessRoles.HR_MEMBER,
-      ],
+      conditions: "",
       submenu: [
         {
           to: "/admin/dashboard",
           label: t("მთავარი"),
-          requiredRoles: [
-            AccessRoles.ADMIN,
-            AccessRoles.DEPARTMENT_HEAD,
-            AccessRoles.HR_MEMBER,
-          ],
-          requiredDepartmentIds: [],
+          conditions: "role:admin|role:department_head,department:8",
         },
         {
           to: "/admin/approvals",
           label: t("ვიზირება"),
-          requiredRoles: [AccessRoles.ADMIN],
-          requiredDepartmentIds: [],
+          conditions: "role:admin",
         },
         {
           to: "/admin/archive",
           icon: BsArchive,
           label: t("არქივი"),
-          requiredRoles: [AccessRoles.ADMIN],
-          requiredDepartmentIds: [],
+          conditions: "role:admin",
         },
       ],
     },
@@ -61,60 +49,51 @@ export const getMenuConfig = (t, user) => {
       to: "/profile",
       icon: BsPerson,
       label: t("პროფილი"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
     },
     {
       to: "/tools/daily-results",
       icon: BsJournal,
       label: t("დეპარტამენტის დღის შედეგები"),
-      requiredRoles: [AccessRoles.ADMIN, AccessRoles.DEPARTMENT_HEAD],
-      requiredDepartmentIds: [],
+      conditions: "role:admin|role:department_head",
     },
     {
       to: "/tools/inner-daily-results",
       icon: BsJournal,
       label: t("დღის შედეგები"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
     },
     {
       key: "applications",
       icon: BsFileCode,
       label: t("განცხადებები"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
       submenu: [
         {
           key: "internalPurchases",
           label: t("შიდა შესყიდვები"),
           to: "/applications/purchases",
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
           submenu: [
             {
               to: "/applications/purchases/new",
               label: t("დამატება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
             {
               to: "/applications/purchases/approve",
               label: t("ვიზირება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head|department:17",
             },
             {
               to: "/applications/purchases/archive",
               label: t("არქივი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head|department:17",
             },
             {
               to: "/applications/purchases/my-requests",
               label: t("გაგზავნილი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
           ],
         },
@@ -122,32 +101,27 @@ export const getMenuConfig = (t, user) => {
           key: "business-trip",
           label: t("მივლინება"),
           to: "/applications/business-trip",
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
           submenu: [
             {
               to: "/applications/business-trip/new",
               label: t("დამატება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
             {
               to: "/applications/business-trip/approve",
               label: t("ვიზირება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/applications/business-trip/archive",
               label: t("არქივი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/applications/business-trip/my-requests",
               label: t("გაგზავნილი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
           ],
         },
@@ -155,32 +129,27 @@ export const getMenuConfig = (t, user) => {
           key: "vacation",
           label: t("შვებულება"),
           to: "/applications/vacation",
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
           submenu: [
             {
               to: "/applications/vacation/new",
               label: t("დამატება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
             {
               to: "/applications/vacation/approve",
               label: t("ვიზირება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head|department:8",
             },
             {
               to: "/applications/vacation/archive",
               label: t("არქივი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head|department:8",
             },
             {
               to: "/applications/vacation/my-requests",
               label: t("გაგზავნილი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
           ],
         },
@@ -190,32 +159,27 @@ export const getMenuConfig = (t, user) => {
       key: "hrDocs",
       icon: BsFolder,
       label: t("HR დოკუმენტები"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
       submenu: [
         {
           to: "/hr/documents/new",
           label: t("ახალი მოთხოვნა"),
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
         },
         {
           to: "/hr/documents/approve",
           label: t("ვიზირება"),
-          requiredRoles: [],
-          requiredDepartmentIds: [8],
+          conditions: "role:admin|role:department_head|department:8",
         },
         {
           to: "/hr/documents/archive",
           label: t("არქივი"),
-          requiredRoles: [],
-          requiredDepartmentIds: [8],
+          conditions: "role:admin|role:department_head|department:8",
         },
         {
           to: "/hr/documents/my-requests",
           label: t("ჩემი მოთხოვნები"),
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
         },
       ],
     },
@@ -223,143 +187,121 @@ export const getMenuConfig = (t, user) => {
       key: "agreements",
       icon: BsFileCode,
       label: t("ხელშეკრულებები"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
       submenu: [
         {
           key: "request",
           label: t("მოთხოვნა"),
           to: "/legal/contracts/new",
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
         },
         {
           key: "purchase",
           label: t("ნასყიდობის ხელშეკრულება"),
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
           submenu: [
             {
               to: "/legal/contracts/purchase/approve",
               label: t("ვიზირება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/purchase/archive",
               label: t("არქივი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/purchase/my-requests",
               label: t("გაგზავნილი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
           ],
         },
         {
           key: "delivery",
           label: t("მიღება-ჩაბარების აქტი"),
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
           submenu: [
             {
               to: "/legal/contracts/delivery/approve",
               label: t("ვიზირება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/delivery/archive",
               label: t("არქივი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/delivery/my-requests",
               label: t("გაგზავნილი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
           ],
         },
         {
           key: "marketing",
           label: t("მარკეტინგული მომსახურების ხელშეკრულება"),
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
           submenu: [
             {
               to: "/legal/contracts/marketing/approve",
               label: t("ვიზირება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/marketing/archive",
               label: t("არქივი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/marketing/my-requests",
               label: t("გაგზავნილი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
           ],
         },
         {
           key: "service",
           label: t("მომსახურების ხელშეკრულება"),
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
           submenu: [
             {
               to: "/legal/contracts/service/approve",
               label: t("ვიზირება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/service/archive",
               label: t("არქივი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/service/my-requests",
               label: t("გაგზავნილი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
           ],
         },
         {
           key: "local",
           label: t("ადგილობრივი შესყიდვის ხელშეკრულება"),
-          requiredRoles: [],
-          requiredDepartmentIds: [],
+          conditions: "",
           submenu: [
             {
               to: "/legal/contracts/local/approve",
               label: t("ვიზირება"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/local/archive",
               label: t("არქივი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "role:admin|role:department_head",
             },
             {
               to: "/legal/contracts/local/my-requests",
               label: t("გაგზავნილი"),
-              requiredRoles: [],
-              requiredDepartmentIds: [],
+              conditions: "",
             },
           ],
         },
@@ -369,42 +311,33 @@ export const getMenuConfig = (t, user) => {
       to: "/support/it-tasks",
       icon: BsHeadset,
       label: t("IT მხარდაჭერა"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
     },
     {
       to: "/support/farm-tasks",
       icon: BsTools,
       label: t("სამეურნეო Tasks"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
     },
     {
       to: "/tools/calendar",
       icon: BsCalendar2DateFill,
       label: t("კალენდარი"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
     },
     {
       to: "/tools/notes",
       icon: BsJournalBookmarkFill,
       label: t("ჩანაწერები"),
-      requiredRoles: [],
-      requiredDepartmentIds: [],
+      conditions: "",
     },
   ]
 
   const filterMenuItems = items => {
     return items
       .filter(item => {
-        // If no roles or departments are specified, item is accessible to everyone
-        if (
-          item.requiredRoles.length === 0 &&
-          item.requiredDepartmentIds.length === 0
-        )
-          return true
-        return checkAccess(user, item.requiredRoles, item.requiredDepartmentIds)
+        if (!item.conditions) return true
+        return checkAccess(user, item.conditions)
       })
       .map(item => {
         if (item.submenu) {

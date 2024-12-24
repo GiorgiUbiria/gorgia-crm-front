@@ -1,6 +1,6 @@
 import React from "react"
 import { Navigate } from "react-router-dom"
-import RoleRoute from "./PermissionRoute"
+import AccessRoute from "./AccessRoute"
 
 import AdminPage from "pages/AdminPage"
 import BusinessPage from "pages/Applications/BusinessTrip/BusinessPage"
@@ -75,12 +75,8 @@ import CreateNote from "pages/NotesEditor/CreateNote"
 import EditNote from "pages/NotesEditor/EditNote"
 import ChatBox from "pages/Chat/ChatBox"
 
-import { AccessRoles } from "utils/accessControl"
-
-const withRoleRoute = (component, requiredRoles, requiredDepartmentIds) => (
-  <RoleRoute requiredRoles={requiredRoles} requiredDepartmentIds={requiredDepartmentIds}>
-    {component}
-  </RoleRoute>
+const withAccessRoute = (component, conditions = "") => (
+  <AccessRoute conditions={conditions}>{component}</AccessRoute>
 )
 
 const dashboardRoutes = {
@@ -98,27 +94,25 @@ const adminRoutes = {
   children: {
     dashboard: {
       path: "/admin/dashboard",
-      component: withRoleRoute(<AdminPage />, [
-        AccessRoles.ADMIN,
-        AccessRoles.DEPARTMENT_HEAD,
-        AccessRoles.HR_MEMBER,
-      ], []),
+      component: withAccessRoute(
+        <AdminPage />,
+        "role:admin|role:department_head|role:hr_member"
+      ),
     },
     approvals: {
       path: "/admin/approvals",
-      component: withRoleRoute(<HeadPage />, [AccessRoles.ADMIN], []),
+      component: withAccessRoute(<HeadPage />, "role:admin"),
     },
     archive: {
       path: "/admin/archive",
-      component: withRoleRoute(<ArchivePage />, [AccessRoles.ADMIN], []),
+      component: withAccessRoute(<ArchivePage />, "role:admin"),
     },
     visitors: {
       path: "/admin/visitors",
-      component: withRoleRoute(<VisitorsTraffic />, [
-        AccessRoles.ADMIN,
-        AccessRoles.DEPARTMENT_HEAD,
-        AccessRoles.HR_MEMBER,
-      ], []),
+      component: withAccessRoute(
+        <VisitorsTraffic />,
+        "role:admin|role:department_head|role:hr_member"
+      ),
     },
   },
 }
@@ -204,13 +198,11 @@ const hrRoutes = {
         },
         approve: {
           path: "/hr/documents/approve",
-          component: <HrPageApprove />,
-          departmentId: 8,
+          component: withAccessRoute(<HrPageApprove />, "department:8"),
         },
         archive: {
           path: "/hr/documents/archive",
-          component: <HrPageArchive />,
-          departmentId: 8,
+          component: withAccessRoute(<HrPageArchive />, "department:8"),
         },
         myRequests: {
           path: "/hr/documents/my-requests",
@@ -416,7 +408,7 @@ const toolsRoutes = {
 const flattenRoutes = routeObj => {
   const routes = []
 
-  const addRoute = (route) => {
+  const addRoute = route => {
     const { children, ...routeData } = route
     if (routeData.path && routeData.component) {
       routes.push(routeData)
