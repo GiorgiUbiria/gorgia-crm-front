@@ -14,6 +14,7 @@ import {
   createTask,
   updateTask,
   deleteTask,
+  getMyTasks,
 } from "../../../services/tasks"
 
 import {
@@ -66,7 +67,12 @@ const TaskList = () => {
   const fetchTasks = async () => {
     setLoading(true)
     try {
-      const response = await getTaskList()
+      const response =
+        currentUser?.department_id === 5
+          ? await getTaskList()
+          : await getMyTasks()
+
+      console.log(response)
       const sortedTasks = response.sort((a, b) => b.id - a.id)
       setTasks(sortedTasks || [])
     } catch (error) {
@@ -109,9 +115,11 @@ const TaskList = () => {
 
         const payload = {
           ...values,
+          user_id: currentUser.id,
           due_date: currentDate,
         }
 
+        console.log(payload)
         if (isEdit) {
           await updateTask(task.id, payload)
         } else {

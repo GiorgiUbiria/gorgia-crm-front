@@ -95,7 +95,7 @@ const productSchema = Yup.object().shape({
 
   payer: Yup.string()
     .required("გადამხდელის მითითება სავალდებულოა")
-    .oneOf(["company", "department", "other"], "არასწორი მნიშვნელობა"),
+    .max(255, "მაქსიმუმ 255 სიმბოლო"),
 })
 
 export const procurementSchema = Yup.object().shape({
@@ -106,10 +106,6 @@ export const procurementSchema = Yup.object().shape({
   category: Yup.string()
     .required("კატეგორიის არჩევა სავალდებულოა")
     .oneOf(categoryOptions, "არასწორი კატეგორია"),
-
-  responsible_for_purchase: Yup.string().required(
-    "შესყიდვაზე პასუხისმგებელი პირის მითითება სავალდებულოა"
-  ),
 
   purchase_purpose: Yup.string()
     .required("შესყიდვის მიზანი სავალდებულოა")

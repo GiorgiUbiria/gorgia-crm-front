@@ -25,6 +25,16 @@ export const getTaskList = async (
   }
 }
 
+export const getMyTasks = async () => {
+  try {
+    const response = await defaultInstance.get("/api/tasks/my")
+    return response.data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
 export const getTask = async id => {
   try {
     const response = await defaultInstance.get(`/api/tasks/${id}`)

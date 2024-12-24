@@ -19,7 +19,6 @@ import "./index.css"
 import { useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import { procurementSchema } from "./validationSchema"
-import useFetchUser from "hooks/useFetchUser"
 
 const branchOptions = [
   "დიდუბე",
@@ -319,13 +318,9 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
             <InputWithError
               formik={formik}
               name={`products.${index}.payer`}
-              label="გადამხდელი"
-              type="select"
+              label="ვინ ანაზღაურებს თანხას?"
+              type="text"
             >
-              <option value="">აირჩიეთ გადამხდელი</option>
-              <option value="company">კომპანია</option>
-              <option value="department">დეპარტამენტი</option>
-              <option value="other">სხვა</option>
             </InputWithError>
           </Col>
         </Row>
@@ -348,7 +343,6 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
 
 const ProcurementPage = () => {
   const navigate = useNavigate()
-  const { user } = useFetchUser()
   const [expandedProducts, setExpandedProducts] = useState([0]) // First product is expanded by default
 
   const toggleProduct = index => {
@@ -361,7 +355,6 @@ const ProcurementPage = () => {
     initialValues: {
       branch: "",
       category: "",
-      responsible_for_purchase: user?.id || "",
       purchase_purpose: "",
       requested_arrival_date: "",
       short_date_notice_explanation: "",
@@ -486,10 +479,10 @@ const ProcurementPage = () => {
                     <InputWithError
                       formik={formik}
                       name="category"
-                      label="კატეგორია"
+                      label="მიმართულება"
                       type="select"
                     >
-                      <option value="">აირჩიეთ კატეგორია</option>
+                      <option value="">აირჩიეთ მიმართულება</option>
                       {categoryOptions.map(category => (
                         <option key={category} value={category}>
                           {category}
@@ -538,7 +531,7 @@ const ProcurementPage = () => {
                 <Row className="g-2">
                   <Col md="6">
                     <FormGroup className="mb-2">
-                      <Label>აღემატება საჭიროებას?</Label>
+                      <Label>შესყიდვის საჭიროება</Label>
                       <div>
                         <FormGroup check inline>
                           <Input

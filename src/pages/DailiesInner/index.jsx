@@ -52,6 +52,8 @@ const DailiesInner = () => {
       } else {
         dailiesResponse = await getMyRegularDailies(params)
       }
+
+      console.log(dailiesResponse)
       updateState({
         dailiesData: {
           data: dailiesResponse.dailies,
@@ -68,7 +70,7 @@ const DailiesInner = () => {
   const fetchDepartments = async () => {
     try {
       const response = await getDepartments()
-      updateState({ departments: response.data.departments })
+      updateState({ departments: response.data })
     } catch (error) {
       console.error("Error fetching departments:", error)
     }

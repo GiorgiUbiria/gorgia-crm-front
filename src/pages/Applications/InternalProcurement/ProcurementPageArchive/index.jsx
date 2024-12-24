@@ -1,5 +1,35 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
-import { Row, Col } from "reactstrap"
+import { Row, Col, Card, CardBody, Button } from "reactstrap"
+import {
+  BiX,
+  BiTime,
+  BiCheckCircle,
+  BiLoader,
+  BiPackage,
+  BiDetail,
+  BiBuilding,
+  BiUser,
+  BiUserCheck,
+  BiUserVoice,
+  BiCalendar,
+  BiTrendingUp,
+  BiInfoCircle,
+  BiBox,
+  BiTargetLock,
+  BiMapPin,
+  BiLabel,
+  BiHash,
+  BiRuler,
+  BiText,
+  BiWallet,
+  BiStore,
+  BiFlag,
+  BiCog,
+  BiPhone,
+  BiNote,
+  BiComment,
+  BiMessageAltX,
+} from "react-icons/bi"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getPurchaseList } from "../../../../services/purchase"
 import MuiTable from "../../../../components/Mui/MuiTable"
@@ -91,10 +121,11 @@ const ProcurementPageArchive = () => {
         Cell: ({ value }) => (
           <span
             style={{
-              padding: "6px 12px",
+              padding: "8px 12px",
               borderRadius: "4px",
               display: "inline-flex",
               alignItems: "center",
+              gap: "8px",
               fontSize: "0.875rem",
               fontWeight: 500,
               backgroundColor:
@@ -127,7 +158,7 @@ const ProcurementPageArchive = () => {
         ),
       },
       {
-        Header: "კატეგორია",
+        Header: "მიმართულება",
         accessor: "category",
       },
       {
@@ -152,7 +183,7 @@ const ProcurementPageArchive = () => {
     },
     {
       field: "category",
-      label: "კატეგორია",
+      label: "მიმართულება",
       valueLabels: {
         IT: "IT",
         Marketing: "Marketing",
@@ -187,139 +218,243 @@ const ProcurementPageArchive = () => {
     if (!rowData) return null
 
     const details = [
-      { label: "ფილიალი", value: rowData?.branch || "N/A" },
       {
-        label: "შესყიდვაზე პასუხისმგებელი",
+        label: "ფილიალი",
+        value: rowData?.branch || "N/A",
+        icon: <BiBuilding />,
+      },
+      {
+        label: "მომთხოვნის ხელმძღვანელი",
         value: rowData?.responsible_for_purchase
           ? `${rowData.responsible_for_purchase.name} ${rowData.responsible_for_purchase.sur_name}`
           : "N/A",
+        icon: <BiUser />,
+      },
+      {
+        label: "მიმართულების ხელმძღვანელი",
+        value: rowData?.category_head
+          ? `${rowData.category_head.name} ${rowData.category_head.sur_name}`
+          : "N/A",
+        icon: <BiUserCheck />,
+      },
+      {
+        label: "შესყიდვაზე პასუხისმგებელი",
+        value: rowData?.reviewer
+          ? `${rowData.reviewer.name} ${rowData.reviewer.sur_name}`
+          : "N/A",
+        icon: <BiUserVoice />,
       },
       {
         label: "მოთხოვნილი მიღების თარიღი",
         value: rowData?.requested_arrival_date
           ? new Date(rowData.requested_arrival_date).toLocaleDateString()
           : "N/A",
+        icon: <BiCalendar />,
       },
       {
         label: "მცირე ვადის მიზეზი",
         value: rowData?.short_date_notice_explanation || "N/A",
+        icon: <BiTime />,
       },
       {
         label: "აღემატება საჭიროებას",
         value: rowData?.exceeds_needs ? "დიახ" : "არა",
+        icon: <BiTrendingUp />,
       },
       {
         label: "საჭიროების გადაჭარბების მიზეზი",
         value: rowData?.exceeds_needs_reason || "N/A",
+        icon: <BiInfoCircle />,
       },
       {
         label: "იქმნება მარაგი",
         value: rowData?.creates_stock ? "დიახ" : "არა",
+        icon: <BiBox />,
       },
-      { label: "მარაგის მიზანი", value: rowData?.stock_purpose || "N/A" },
+      {
+        label: "მარაგის მიზანი",
+        value: rowData?.stock_purpose || "N/A",
+        icon: <BiTargetLock />,
+      },
       {
         label: "მიწოდების მისამართი",
         value: rowData?.delivery_address || "N/A",
+        icon: <BiMapPin />,
       },
     ]
 
     const completedProductsCount =
       rowData?.products?.filter(p => p.status === "completed").length || 0
     const totalProductsCount = rowData?.products?.length || 0
+    const progressPercentage =
+      totalProductsCount === 0
+        ? 0
+        : (completedProductsCount / totalProductsCount) * 100
 
-    return (
-      <div className="p-3 bg-light rounded">
-        {/* Status Timeline */}
-        <div className="mb-4">
-          <h6 className="mb-3">შესყიდვის სტატუსი</h6>
-          <div className="d-flex align-items-center gap-2 mb-2">
-            <div
+    const StatusTimeline = () => (
+      <Card className="mb-4 shadow-sm">
+        <CardBody>
+          <div className="d-flex align-items-center gap-2 mb-3">
+            <BiTime className="text-primary" size={24} />
+            <h6 className="mb-0">შესყიდვის სტატუსი</h6>
+          </div>
+
+          <div className="d-flex align-items-center gap-3 mb-3">
+            <span
               className={`badge bg-${
                 rowData.status === "completed" ? "success" : "primary"
-              }`}
+              } px-3 py-2`}
             >
-              {statusMap[rowData.status]?.label || rowData.status}
-            </div>
+              <div className="d-flex align-items-center gap-2">
+                {rowData.status === "completed" ? (
+                  <BiCheckCircle />
+                ) : (
+                  <BiLoader />
+                )}
+                {statusMap[rowData.status]?.label || rowData.status}
+              </div>
+            </span>
+
             {rowData.status === "pending products completion" && (
-              <small className="text-muted">
-                ({completedProductsCount}/{totalProductsCount} პროდუქტი
-                დასრულებული)
-              </small>
+              <span className="text-muted">
+                <BiPackage className="me-1" />
+                {completedProductsCount}/{totalProductsCount} პროდუქტი
+                დასრულებული
+              </span>
             )}
           </div>
-          {rowData.department_head_decision_date && (
-            <small className="text-muted d-block">
-              დეპარტამენტის უფროსის გადაწყვეტილების თარიღი:{" "}
-              {new Date(rowData.department_head_decision_date).toLocaleString()}
-            </small>
-          )}
-          {rowData.requested_department_decision_date && (
-            <small className="text-muted d-block">
-              მოთხოვნილი დეპარტამენტის გადაწყვეტილების თარიღი:{" "}
-              {new Date(
-                rowData.requested_department_decision_date
-              ).toLocaleString()}
-            </small>
-          )}
-        </div>
 
-        {/* Rejection Comment */}
-        {rowData?.comment && (
-          <div className="mb-3">
-            <span className="fw-bold text-danger">უარყოფის მიზეზი: </span>
-            <p className="mb-0">{rowData.comment}</p>
+          <div className="timeline">
+            {rowData.department_head_decision_date && (
+              <div className="timeline-item">
+                <BiCheckCircle className="text-success" />
+                <small className="text-muted">
+                  დეპარტამენტის უფროსის გადაწყვეტილება:{" "}
+                  {new Date(
+                    rowData.department_head_decision_date
+                  ).toLocaleString()}
+                </small>
+              </div>
+            )}
+
+            {rowData.requested_department_decision_date && (
+              <div className="timeline-item">
+                <BiCheckCircle className="text-success" />
+                <small className="text-muted">
+                  მოთხოვნილი დეპარტამენტის გადაწყვეტილება:{" "}
+                  {new Date(
+                    rowData.requested_department_decision_date
+                  ).toLocaleString()}
+                </small>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Main Details */}
-        <div className="row g-2 mb-4">
-          {details.map((detail, index) => (
-            <div key={index} className="col-md-6">
-              <span className="fw-bold">{detail.label}: </span>
-              <span>{detail.value}</span>
+          {totalProductsCount > 0 && (
+            <div className="progress mt-3" style={{ height: "10px" }}>
+              <div
+                className="progress-bar bg-success"
+                role="progressbar"
+                style={{ width: `${progressPercentage}%` }}
+                aria-valuenow={progressPercentage}
+                aria-valuemin="0"
+                aria-valuemax="100"
+              />
             </div>
-          ))}
-        </div>
+          )}
+        </CardBody>
+      </Card>
+    )
 
-        {/* Products Section */}
-        {rowData?.products && rowData.products.length > 0 && (
-          <div className="mt-3">
+    const PurchaseDetails = () => (
+      <Card className="mb-4 shadow-sm">
+        <CardBody>
+          <div className="d-flex align-items-center gap-2 mb-3">
+            <BiDetail className="text-primary" size={24} />
+            <h6 className="mb-0">შესყიდვის დეტალები</h6>
+          </div>
+
+          <div className="row g-3">
+            {details.map((detail, index) => (
+              <div key={index} className="col-md-6">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-primary">{detail.icon}</span>
+                  <div>
+                    <strong>{detail.label}:</strong>
+                    <div>{detail.value}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardBody>
+      </Card>
+    )
+
+    const ProductsTable = () => {
+      if (!rowData?.products?.length) return null
+
+      return (
+        <Card className="shadow-sm">
+          <CardBody>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h6 className="mb-0">პროდუქტები</h6>
+              <div className="d-flex align-items-center gap-2">
+                <BiPackage className="text-primary" size={24} />
+                <h6 className="mb-0">პროდუქტები</h6>
+              </div>
+
               {rowData.status === "pending products completion" && (
-                <div
-                  className="progress"
-                  style={{ width: "200px", height: "10px" }}
-                >
-                  <div
-                    className="progress-bar bg-success"
-                    role="progressbar"
-                    style={{
-                      width: `${
-                        (completedProductsCount / totalProductsCount) * 100
-                      }%`,
-                    }}
-                    aria-valuenow={
-                      (completedProductsCount / totalProductsCount) * 100
-                    }
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  ></div>
+                <div style={{ width: "200px" }}>
+                  <div className="progress" style={{ height: "10px" }}>
+                    <div
+                      className="progress-bar bg-success"
+                      role="progressbar"
+                      style={{ width: `${progressPercentage}%` }}
+                      aria-valuenow={progressPercentage}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    />
+                  </div>
                 </div>
               )}
             </div>
+
             <div className="table-responsive">
-              <table className="table table-sm table-bordered">
-                <thead>
+              <table className="table table-hover">
+                <thead className="table-light">
                   <tr>
-                    <th>სახელი</th>
-                    <th>რაოდენობა</th>
-                    <th>ზომები</th>
-                    <th>აღწერა</th>
-                    <th>დამატებითი ინფორმაცია</th>
-                    <th>გადამხდელი</th>
-                    <th>მომწოდებელი</th>
-                    <th>სტატუსი</th>
+                    <th>
+                      <BiLabel /> სახელი
+                    </th>
+                    <th>
+                      <BiHash /> რაოდენობა
+                    </th>
+                    <th>
+                      <BiRuler /> ზომები
+                    </th>
+                    <th>
+                      <BiText /> აღწერა
+                    </th>
+                    <th>
+                      <BiInfoCircle /> დამატებითი ინფორმაცია
+                    </th>
+                    <th>
+                      <BiWallet /> გადამხდელი
+                    </th>
+                    <th>
+                      <BiStore /> მომწოდებელი
+                    </th>
+                    <th>
+                      <BiFlag /> სტატუსი
+                    </th>
+                    <th>
+                      <BiComment /> კომენტარი
+                    </th>
+                    {canManageProducts(rowData) && (
+                      <th>
+                        <BiCog /> მოქმედებები
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -330,59 +465,119 @@ const ProcurementPageArchive = () => {
                       <td>{product?.dimensions || "N/A"}</td>
                       <td>{product?.description || "N/A"}</td>
                       <td>{product?.additional_information || "N/A"}</td>
-                      <td>
-                        {product?.payer === "department"
-                          ? "დეპარტამენტი"
-                          : "კომპანია"}
-                      </td>
+                      <td>{product?.payer || "N/A"}</td>
                       <td>
                         {product?.supplier_exists ? (
                           <div>
-                            <div>{product.supplier_name}</div>
+                            <div className="d-flex align-items-center gap-1">
+                              <BiBuilding />
+                              {product.supplier_name}
+                            </div>
                             <small className="text-muted d-block">
+                              <BiPhone className="me-1" />
                               {product.supplier_contact_information}
                             </small>
                             {product.supplier_offer_details && (
                               <small className="text-muted d-block">
+                                <BiNote className="me-1" />
                                 შეთავაზება: {product.supplier_offer_details}
                               </small>
                             )}
                           </div>
                         ) : (
-                          <span className="text-muted">არ არსებობს</span>
+                          <span className="text-muted">
+                            <BiX /> არ არსებობს
+                          </span>
                         )}
                       </td>
                       <td>
-                        <div>
-                          <span
-                            className={`badge bg-${
+                        <span
+                          style={{
+                            padding: "6px 12px",
+                            borderRadius: "4px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            fontSize: "0.875rem",
+                            backgroundColor:
                               product?.status === "completed"
-                                ? "success"
-                                : "warning"
-                            }`}
-                          >
+                                ? "#e8f5e9"
+                                : "#fff3e0",
+                            color:
+                              product?.status === "completed"
+                                ? "#2e7d32"
+                                : "#e65100",
+                          }}
+                        >
+                          {product?.status === "completed" ? (
+                            <BiCheckCircle size={16} />
+                          ) : (
+                            <BiTime size={16} />
+                          )}
+                          <span>
                             {product?.status === "completed"
                               ? "დასრულებული"
                               : "პროცესში"}
                           </span>
-                          {product?.comment && (
-                            <small className="d-block text-muted mt-1">
-                              {product.comment}
-                            </small>
-                          )}
-                        </div>
+                        </span>
                       </td>
+                      <td>
+                        {product?.comment ? (
+                          <span className="text-muted">{product.comment}</span>
+                        ) : (
+                          <span className="text-muted">-</span>
+                        )}
+                      </td>
+                      {canManageProducts(rowData) && (
+                        <td>
+                          {product?.status !== "completed" && (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="success"
+                              onClick={() => {
+                                setSelectedProduct(product)
+                                setSelectedPurchase(rowData)
+                                setProductStatusModal(true)
+                              }}
+                              startIcon={<BiCheckCircle />}
+                            >
+                              დასრულება
+                            </Button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+          </CardBody>
+        </Card>
+      )
+    }
+
+    return (
+      <div className="p-4">
+        <StatusTimeline />
+
+        {rowData?.comment && (
+          <Card className="mb-4 shadow-sm">
+            <CardBody>
+              <div className="d-flex align-items-center gap-2 text-danger mb-2">
+                <BiMessageAltX size={24} />
+                <strong>უარყოფის მიზეზი:</strong>
+              </div>
+              <p className="mb-0">{rowData.comment}</p>
+            </CardBody>
+          </Card>
         )}
+
+        <PurchaseDetails />
+        <ProductsTable />
       </div>
     )
   }
-
   return (
     <React.Fragment>
       <div className="page-content mb-4">
