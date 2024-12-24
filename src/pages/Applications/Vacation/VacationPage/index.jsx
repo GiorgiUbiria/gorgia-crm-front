@@ -66,7 +66,7 @@ const RestDaysCheckbox = React.memo(function RestDaysCheckbox({
 }) {
   return (
     <div className="mb-3">
-      <Label>დასვენების დღეები</Label>
+      <Label className="mb-2 text-lg font-semibold">დასვენების დღეები</Label>
       <div className="d-flex flex-wrap">
         {holidays.map(holiday => (
           <div className="form-check form-check-inline" key={holiday.value}>
@@ -117,8 +117,9 @@ const VacationPage = () => {
       setDepartmentsLoading(true)
       try {
         const response = await getDepartments()
-        if (response.status === 200) {
-          setDepartments(response.data.departments)
+        console.log("Departments response:", response)
+        if (response?.data) {
+          setDepartments(response.data)
         } else {
           setDepartmentsError("Failed to fetch departments.")
         }
@@ -502,7 +503,7 @@ const VacationPage = () => {
                     <TabPane tabId="1">
                       <Form onSubmit={formikMyVacation.handleSubmit}>
                         {/* Employee Information Section */}
-                        <h5 className="section-title">
+                        <h5 className="mb-3 text-lg font-semibold">
                           თანამშრომლის ინფორმაცია
                         </h5>
                         <div className="row">
@@ -536,7 +537,9 @@ const VacationPage = () => {
                         </div>
 
                         {/* Substitute Information Section */}
-                        <h5 className="section-title">შემცვლელის ინფორმაცია</h5>
+                        <h5 className="mb-3 text-lg font-semibold">
+                          შემცვლელის ინფორმაცია
+                        </h5>
                         <div className="row">
                           <div className="col-md-6">
                             <InputWithError
@@ -555,7 +558,9 @@ const VacationPage = () => {
                         </div>
 
                         {/* Vacation Details Section */}
-                        <h5 className="section-title">შვებულების დეტალები</h5>
+                        <h5 className="mb-3 text-lg font-semibold">
+                          შვებულების დეტალები
+                        </h5>
                         <div className="row">
                           <div className="col-md-6">
                             <InputWithError
@@ -613,7 +618,9 @@ const VacationPage = () => {
                         <div className="row">
                           <div className="col-12">
                             <div className="mb-3">
-                              <Label>ხანგრძლივობა დღეებში</Label>
+                              <Label className="mb-2 text-lg font-semibold">
+                                ხანგრძლივობა დღეებში
+                              </Label>
                               <Input
                                 type="text"
                                 value={formikMyVacation.values.duration_days}
@@ -645,7 +652,7 @@ const VacationPage = () => {
                       <TabPane tabId="2">
                         <Form onSubmit={formikEmployeeVacation.handleSubmit}>
                           {/* Employee Information Section */}
-                          <h5 className="section-title">
+                          <h5 className="mb-3 text-lg font-semibold">
                             თანამშრომლის ინფორმაცია
                           </h5>
                           <div className="row">
@@ -666,11 +673,18 @@ const VacationPage = () => {
                                 disabled={false}
                               >
                                 <option value="">აირჩიეთ დეპარტამენტი</option>
-                                {departments.map(dept => (
-                                  <option key={dept.id} value={dept.name}>
-                                    {dept.name}
+                                {Array.isArray(departments) &&
+                                departments.length > 0 ? (
+                                  departments.map(dept => (
+                                    <option key={dept.id} value={dept.name}>
+                                      {dept.name}
+                                    </option>
+                                  ))
+                                ) : (
+                                  <option value="" disabled>
+                                    დეპარტამენტები არ არის ხელმისაწვდომი
                                   </option>
-                                ))}
+                                )}
                               </InputWithError>
                             </div>
                           </div>
@@ -686,7 +700,7 @@ const VacationPage = () => {
                           </div>
 
                           {/* Substitute Information Section */}
-                          <h5 className="section-title">
+                          <h5 className="mb-3 text-lg font-semibold">
                             შემცვლელის ინფორმაცია
                           </h5>
                           <div className="row">
@@ -707,7 +721,9 @@ const VacationPage = () => {
                           </div>
 
                           {/* Vacation Details Section */}
-                          <h5 className="section-title">შვებულების დეტალები</h5>
+                          <h5 className="mb-3 text-lg font-semibold">
+                            შვებულების დეტალები
+                          </h5>
                           <div className="row">
                             <div className="col-md-6">
                               <InputWithError
@@ -767,7 +783,9 @@ const VacationPage = () => {
                           <div className="row">
                             <div className="col-12">
                               <div className="mb-3">
-                                <Label>ხანგრძლივობა დღეებში</Label>
+                                <Label className="mb-2 text-lg font-semibold">
+                                  ხანგრძლივობა დღეებში
+                                </Label>
                                 <Input
                                   type="text"
                                   value={

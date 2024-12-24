@@ -68,7 +68,7 @@ const AdminPage = () => {
             getDepartments(),
             getUsers(),
           ])
-          setDepartments(deptResponse.data.departments)
+          setDepartments(deptResponse.data)
           setUsers(usersResponse.data.users)
         } else if (currentUser.roles) {
           setError("Unauthorized access. Required role not found.")

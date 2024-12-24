@@ -78,7 +78,7 @@ const EditUserModal = ({
     const fetchDepartments = async () => {
       try {
         const departments = await getPublicDepartments()
-        setDepartments(departments.data.departments || [])
+        setDepartments(departments.data || [])
       } catch (error) {
         console.error("Error fetching departments:", error)
       }
