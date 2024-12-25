@@ -52,6 +52,7 @@ import {
 import { usePermissions } from "../../../../hooks/usePermissions"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
+import CircularProgress from "@mui/material/CircularProgress"
 
 const statusMap = {
   "pending department head": {
@@ -102,6 +103,8 @@ const PurchasePageApprove = () => {
   const [productStatusModal, setProductStatusModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [productComment, setProductComment] = useState("")
+  const [isStatusUpdateLoading, setIsStatusUpdateLoading] = useState(false)
+  const [isProductUpdateLoading, setIsProductUpdateLoading] = useState(false)
 
   const canViewTable = useMemo(() => {
     return isAdmin || isDepartmentHead || userDepartmentId === 17
@@ -196,42 +199,53 @@ const PurchasePageApprove = () => {
 
   const handleConfirmAction = async () => {
     try {
+      setIsStatusUpdateLoading(true)
       const nextStatus = getNextStatus(selectedPurchase)
       const response = await updatePurchaseStatus(
         selectedPurchase.id,
         nextStatus
       )
 
-      if (response.data.success) {
-        await fetchPurchases()
-        setConfirmModal(false)
+      console.log("Response:", response)
+
+      if (response.status === 200) {
         setSelectedPurchase(null)
+        setConfirmModal(false)
+        await fetchPurchases()
       }
     } catch (err) {
       console.error("Error updating purchase status:", err)
+      alert(err.response?.data?.message || "შეცდომა სტატუსის განახლებისას")
+    } finally {
+      setIsStatusUpdateLoading(false)
     }
   }
 
   const handleRejectionSubmit = async () => {
     try {
+      setIsStatusUpdateLoading(true)
       const response = await updatePurchaseStatus(
         selectedPurchase.id,
         "rejected",
         rejectionComment
       )
       if (response.data.success) {
-        await fetchPurchases()
         setRejectionModal(false)
         setRejectionComment("")
         setSelectedPurchase(null)
+        await fetchPurchases()
       }
     } catch (err) {
       console.error("Error rejecting purchase:", err)
+      alert(err.response?.data?.message || "შეცდომა უარყოფისას")
+    } finally {
+      setIsStatusUpdateLoading(false)
     }
   }
 
   const handleProductStatusChange = async (productId, newStatus) => {
     try {
+      setIsProductUpdateLoading(true)
       const response = await updateProductStatus(
         selectedPurchase.id,
         productId,
@@ -239,17 +253,19 @@ const PurchasePageApprove = () => {
         productComment
       )
       if (response.data?.data) {
-        await fetchPurchases()
         setProductStatusModal(false)
         setProductComment("")
         setSelectedProduct(null)
         setSelectedPurchase(null)
+        await fetchPurchases()
       }
     } catch (err) {
       console.error("Error updating product status:", err)
       alert(
         err.response?.data?.message || "შეცდომა პროდუქტის სტატუსის განახლებისას"
       )
+    } finally {
+      setIsProductUpdateLoading(false)
     }
   }
 
@@ -798,48 +814,67 @@ const PurchasePageApprove = () => {
         </div>
       </div>
 
-      <Modal isOpen={confirmModal} toggle={() => setConfirmModal(false)}>
-        <ModalHeader toggle={() => setConfirmModal(false)}>
+      <Modal
+        isOpen={confirmModal}
+        toggle={() => !isStatusUpdateLoading && setConfirmModal(false)}
+      >
+        <ModalHeader
+          toggle={() => !isStatusUpdateLoading && setConfirmModal(false)}
+        >
           დაადასტურეთ მოქმედება
         </ModalHeader>
-
         <ModalBody className="text-center">
-          <BiQuestionMark className="text-warning" size={48} />
+          <div className="d-flex flex-column align-items-center">
+            <BiQuestionMark className="text-warning mb-3" size={48} />
 
-          <p className="mb-4">
-            დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
-            {selectedPurchase && (
-              <small className="d-block text-muted mt-2">
-                შემდეგი სტატუსი იქნება:{" "}
-                {statusMap[getNextStatus(selectedPurchase)]?.label}
-              </small>
-            )}
-          </p>
+            <p className="mb-4">
+              დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
+              {selectedPurchase && (
+                <small className="d-block text-muted mt-2">
+                  შემდეგი სტატუსი იქნება:{" "}
+                  {statusMap[getNextStatus(selectedPurchase)]?.label}
+                </small>
+              )}
+            </p>
 
-          <div className="d-flex justify-content-center gap-2">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleConfirmAction}
-              startIcon={<BiCheck />}
-            >
-              დადასტურება
-            </Button>
+            <div className="d-flex justify-content-center gap-3">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleConfirmAction}
+                disabled={isStatusUpdateLoading}
+                startIcon={
+                  isStatusUpdateLoading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <BiCheck />
+                  )
+                }
+              >
+                {isStatusUpdateLoading ? "მიმდინარეობს..." : "დადასტურება"}
+              </Button>
 
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setConfirmModal(false)}
-              startIcon={<BiX />}
-            >
-              გაუქმება
-            </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setConfirmModal(false)}
+                disabled={isStatusUpdateLoading}
+                startIcon={<BiX />}
+              >
+                გაუქმება
+              </Button>
+            </div>
           </div>
         </ModalBody>
       </Modal>
 
-      <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
-        <ModalHeader toggle={() => setRejectionModal(false)}>
+      <Modal
+        isOpen={rejectionModal}
+        toggle={() => !isStatusUpdateLoading && setRejectionModal(false)}
+      >
+        <ModalHeader
+          toggle={() => !isStatusUpdateLoading && setRejectionModal(false)}
+        >
           <BiXCircle className="text-danger me-2" size={24} />
           უარყოფის მიზეზი
         </ModalHeader>
@@ -861,6 +896,7 @@ const PurchasePageApprove = () => {
                 required
                 className="mb-3"
                 placeholder="შეიყვანეთ უარყოფის დეტალური მიზეზი..."
+                disabled={isStatusUpdateLoading}
               />
             </FormGroup>
           </Form>
@@ -870,16 +906,23 @@ const PurchasePageApprove = () => {
               variant="contained"
               color="error"
               onClick={handleRejectionSubmit}
-              disabled={!rejectionComment.trim()}
-              startIcon={<BiXCircle />}
+              disabled={!rejectionComment.trim() || isStatusUpdateLoading}
+              startIcon={
+                isStatusUpdateLoading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <BiXCircle />
+                )
+              }
             >
-              უარყოფა
+              {isStatusUpdateLoading ? "მიმდინარეობს..." : "უარყოფა"}
             </Button>
 
             <Button
               variant="outlined"
               color="secondary"
               onClick={() => setRejectionModal(false)}
+              disabled={isStatusUpdateLoading}
               startIcon={<BiArrowBack />}
             >
               გაუქმება
@@ -890,9 +933,11 @@ const PurchasePageApprove = () => {
 
       <Modal
         isOpen={productStatusModal}
-        toggle={() => setProductStatusModal(false)}
+        toggle={() => !isProductUpdateLoading && setProductStatusModal(false)}
       >
-        <ModalHeader toggle={() => setProductStatusModal(false)}>
+        <ModalHeader
+          toggle={() => !isProductUpdateLoading && setProductStatusModal(false)}
+        >
           პროდუქტის სტატუსის შეცვლა
         </ModalHeader>
 
@@ -909,6 +954,7 @@ const PurchasePageApprove = () => {
                 placeholder="შეიყვანეთ კომენტარი..."
                 rows={4}
                 required
+                disabled={isProductUpdateLoading}
               />
             </FormGroup>
 
@@ -919,9 +965,16 @@ const PurchasePageApprove = () => {
                 onClick={() =>
                   handleProductStatusChange(selectedProduct?.id, "completed")
                 }
-                disabled={!productComment.trim()}
+                disabled={!productComment.trim() || isProductUpdateLoading}
+                startIcon={
+                  isProductUpdateLoading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <BiCheck />
+                  )
+                }
               >
-                დასრულება
+                {isProductUpdateLoading ? "მიმდინარეობს..." : "დასრულება"}
               </Button>
 
               <Button
@@ -929,11 +982,11 @@ const PurchasePageApprove = () => {
                 color="secondary"
                 onClick={() => {
                   setProductStatusModal(false)
-
                   setProductComment("")
-
                   setSelectedProduct(null)
                 }}
+                disabled={isProductUpdateLoading}
+                startIcon={<BiArrowBack />}
               >
                 გაუქმება
               </Button>
