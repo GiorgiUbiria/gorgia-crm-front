@@ -94,7 +94,7 @@ const productSchema = Yup.object().shape({
   ),
 
   payer: Yup.string()
-    .required("გადამხდელის მითითება სავალდებულოა")
+    .required("ადამხდელის მითითება სავალდებულოა")
     .max(255, "მაქსიმუმ 255 სიმბოლო"),
 })
 

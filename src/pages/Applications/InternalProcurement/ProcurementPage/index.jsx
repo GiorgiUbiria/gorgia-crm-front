@@ -48,6 +48,15 @@ const categoryOptions = [
   "Farm",
 ]
 
+const CategoryOptions = {
+  IT: "IT",
+  Marketing: "მარკეტინგი",
+  Security: "უსაფრთხოება",
+  Network: "საცალო ქსელი",
+  "Office Manager": "ოფის-მენეჯერი",
+  Farm: "სამეურნეო",
+}
+
 const InputWithError = ({
   formik,
   name,
@@ -106,15 +115,15 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
 
     {isExpanded && (
       <div className="mt-2">
-        <Row className="g-2">
-          <Col md="4">
+        <Row className="g-3">
+          <Col md="3">
             <InputWithError
               formik={formik}
               name={`products.${index}.name`}
               label="პროდუქტის სახელი"
             />
           </Col>
-          <Col md="4">
+          <Col md="3">
             <InputWithError
               formik={formik}
               name={`products.${index}.quantity`}
@@ -122,16 +131,24 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
               type="number"
             />
           </Col>
-          <Col md="4">
+          <Col md="3">
             <InputWithError
               formik={formik}
               name={`products.${index}.dimensions`}
               label="ზომები"
             />
           </Col>
+          <Col md="3">
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.payer`}
+              label="ვინ ანაზღაურებს თანხას?"
+              type="text"
+            ></InputWithError>
+          </Col>
         </Row>
         <Row className="g-2">
-          <Col md="6">
+          <Col md="12">
             <InputWithError
               formik={formik}
               name={`products.${index}.description`}
@@ -140,189 +157,47 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
               rows="2"
             />
           </Col>
-          <Col md="6">
+        </Row>
+        <Row className="g-2">
+          <Col md="12">
             <InputWithError
               formik={formik}
               name={`products.${index}.additional_information`}
-              label="დამატებითი ინფორმაცია"
+              label="თქვენი მოძიებული ვარიანტი (მომწოდებელი, საკონტაქტო ინფორმაცია, ფასი)"
               type="textarea"
               rows="2"
             />
           </Col>
         </Row>
         <Row className="g-2">
-          <Col md="6">
+          <Col md="12">
             <FormGroup className="mb-2">
-              <Label>ალტერნატივის შესაძლებლობა</Label>
-              <div>
-                <FormGroup check inline>
-                  <Input
-                    type="radio"
-                    name={`products.${index}.alternate_possibility`}
-                    onChange={() =>
-                      formik.setFieldValue(
-                        `products.${index}.alternate_possibility`,
-                        true
-                      )
-                    }
-                    checked={
-                      formik.values.products[index].alternate_possibility ===
-                      true
-                    }
-                  />
-                  <Label check>დიახ</Label>
-                </FormGroup>
-                <FormGroup check inline>
-                  <Input
-                    type="radio"
-                    name={`products.${index}.alternate_possibility`}
-                    onChange={() =>
-                      formik.setFieldValue(
-                        `products.${index}.alternate_possibility`,
-                        false
-                      )
-                    }
-                    checked={
-                      formik.values.products[index].alternate_possibility ===
-                      false
-                    }
-                  />
-                  <Label check>არა</Label>
-                </FormGroup>
-              </div>
-            </FormGroup>
-          </Col>
-          {formik.values.products[index].alternate_possibility && (
-            <Col md="6">
+              <Label>
+                იგეგმება, თუ არა უახლოეს 1 თვეში ანალოგიური პროდუქციის შესყიდვა?
+              </Label>
               <InputWithError
                 formik={formik}
-                name={`products.${index}.alternate_possibility_reason`}
-                label="ალტერნატივის მიზეზი"
+                name={`products.${index}.similar_purchase_planned`}
                 type="textarea"
                 rows="2"
               />
-            </Col>
-          )}
-        </Row>
-        <Row className="g-2">
-          <Col md="6">
-            <FormGroup className="mb-2">
-              <Label>მომწოდებელი არსებობს?</Label>
-              <div>
-                <FormGroup check inline>
-                  <Input
-                    type="radio"
-                    name={`products.${index}.supplier_exists`}
-                    onChange={() =>
-                      formik.setFieldValue(
-                        `products.${index}.supplier_exists`,
-                        true
-                      )
-                    }
-                    checked={
-                      formik.values.products[index].supplier_exists === true
-                    }
-                  />
-                  <Label check>დიახ</Label>
-                </FormGroup>
-                <FormGroup check inline>
-                  <Input
-                    type="radio"
-                    name={`products.${index}.supplier_exists`}
-                    onChange={() =>
-                      formik.setFieldValue(
-                        `products.${index}.supplier_exists`,
-                        false
-                      )
-                    }
-                    checked={
-                      formik.values.products[index].supplier_exists === false
-                    }
-                  />
-                  <Label check>არა</Label>
-                </FormGroup>
-              </div>
             </FormGroup>
           </Col>
         </Row>
-        {formik.values.products[index].supplier_exists && (
-          <Row className="g-2">
-            <Col md="4">
-              <InputWithError
-                formik={formik}
-                name={`products.${index}.supplier_name`}
-                label="მომწოდებლის სახელი"
-              />
-            </Col>
-            <Col md="4">
-              <InputWithError
-                formik={formik}
-                name={`products.${index}.supplier_contact_information`}
-                label="მომწოდებლის საკონტაქტო ინფორმაცია"
-              />
-            </Col>
-            <Col md="4">
-              <InputWithError
-                formik={formik}
-                name={`products.${index}.supplier_offer_details`}
-                label="მომწოდებლის შეთავაზების დეტალები"
-                type="textarea"
-                rows="2"
-              />
-            </Col>
-          </Row>
-        )}
         <Row className="g-2">
-          <Col md="6">
-            <FormGroup className="mb-2">
-              <Label>მსგავსი შესყიდვა იგეგმება?</Label>
-              <div>
-                <FormGroup check inline>
-                  <Input
-                    type="radio"
-                    name={`products.${index}.similar_purchase_planned`}
-                    onChange={() =>
-                      formik.setFieldValue(
-                        `products.${index}.similar_purchase_planned`,
-                        true
-                      )
-                    }
-                    checked={
-                      formik.values.products[index].similar_purchase_planned ===
-                      true
-                    }
-                  />
-                  <Label check>დიახ</Label>
-                </FormGroup>
-                <FormGroup check inline>
-                  <Input
-                    type="radio"
-                    name={`products.${index}.similar_purchase_planned`}
-                    onChange={() =>
-                      formik.setFieldValue(
-                        `products.${index}.similar_purchase_planned`,
-                        false
-                      )
-                    }
-                    checked={
-                      formik.values.products[index].similar_purchase_planned ===
-                      false
-                    }
-                  />
-                  <Label check>არა</Label>
-                </FormGroup>
-              </div>
-            </FormGroup>
-          </Col>
-          <Col md="6">
-            <InputWithError
-              formik={formik}
-              name={`products.${index}.payer`}
-              label="ვინ ანაზღაურებს თანხას?"
-              type="text"
-            >
-            </InputWithError>
-          </Col>
+          {formik.values.category &&
+            formik.values.category !== "IT" &&
+            formik.values.category !== "Marketing" && (
+              <Col md="12">
+                <InputWithError
+                  formik={formik}
+                  name="in_stock_explanation"
+                  label="გვაქვს თუ არა ეს პროდუქცია ასორტიმენტში ჩვენ?"
+                  type="textarea"
+                  rows="2"
+                />
+              </Col>
+            )}
         </Row>
         {formik.values.products.length > 1 && (
           <div className="mt-2">
@@ -485,7 +360,7 @@ const ProcurementPage = () => {
                       <option value="">აირჩიეთ მიმართულება</option>
                       {categoryOptions.map(category => (
                         <option key={category} value={category}>
-                          {category}
+                          {CategoryOptions[category]}
                         </option>
                       ))}
                     </InputWithError>
@@ -512,61 +387,15 @@ const ProcurementPage = () => {
                   <Col md="6">
                     <InputWithError
                       formik={formik}
-                      name="requested_arrival_date"
-                      label="მოთხოვნილი მიღების თარიღი"
-                      type="date"
+                      name="exceeds_needs_reason"
+                      label="შესყიდვის საჭიროება"
+                      type="textarea"
+                      rows="2"
                     />
-                    {formik.values.requested_arrival_date && (
-                      <InputWithError
-                        formik={formik}
-                        name="short_date_notice_explanation"
-                        label="მცირე ვადის მიზეზი (თუ 7 დღეზე ნაკლებია)"
-                        type="textarea"
-                        rows="2"
-                      />
-                    )}
                   </Col>
                 </Row>
 
                 <Row className="g-2">
-                  <Col md="6">
-                    <FormGroup className="mb-2">
-                      <Label>შესყიდვის საჭიროება</Label>
-                      <div>
-                        <FormGroup check inline>
-                          <Input
-                            type="radio"
-                            name="exceeds_needs"
-                            onChange={() =>
-                              formik.setFieldValue("exceeds_needs", true)
-                            }
-                            checked={formik.values.exceeds_needs === true}
-                          />
-                          <Label check>დიახ</Label>
-                        </FormGroup>
-                        <FormGroup check inline>
-                          <Input
-                            type="radio"
-                            name="exceeds_needs"
-                            onChange={() =>
-                              formik.setFieldValue("exceeds_needs", false)
-                            }
-                            checked={formik.values.exceeds_needs === false}
-                          />
-                          <Label check>არა</Label>
-                        </FormGroup>
-                      </div>
-                    </FormGroup>
-                    {formik.values.exceeds_needs && (
-                      <InputWithError
-                        formik={formik}
-                        name="exceeds_needs_reason"
-                        label="საჭიროების გადაჭარბების მიზეზი"
-                        type="textarea"
-                        rows="2"
-                      />
-                    )}
-                  </Col>
                   <Col md="6">
                     <FormGroup className="mb-2">
                       <Label>იქმნება მარაგი?</Label>
@@ -595,11 +424,35 @@ const ProcurementPage = () => {
                         </FormGroup>
                       </div>
                     </FormGroup>
+                  </Col>
+                  <Col md="6">
+                    <InputWithError
+                      formik={formik}
+                      name="requested_arrival_date"
+                      label="მოთხოვნის მიღების თარიღი"
+                      type="date"
+                    />
+                  </Col>
+                </Row>
+
+                <Row className="g-2">
+                  <Col md="6">
                     {formik.values.creates_stock && (
                       <InputWithError
                         formik={formik}
                         name="stock_purpose"
                         label="მარაგის მიზანი"
+                        type="textarea"
+                        rows="2"
+                      />
+                    )}
+                  </Col>
+                  <Col md="6">
+                    {formik.values.requested_arrival_date && (
+                      <InputWithError
+                        formik={formik}
+                        name="short_date_notice_explanation"
+                        label="მცირე ვადის მიზეზი (თუ 7 დღეზე ნაკლებია)"
                         type="textarea"
                         rows="2"
                       />

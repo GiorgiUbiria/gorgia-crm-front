@@ -132,7 +132,7 @@ const Layout = props => {
       />
       <main
         className={`pt-16 transition-all duration-300 ${
-          isSidebarOpen ? "md:ml-64" : ""
+          isSidebarOpen ? "md:ml-72" : ""
         }`}
       >
         {props.children}
