@@ -84,7 +84,12 @@ export const deletePurchaseProduct = async (purchaseId, productId) => {
 }
 
 // Change product status
-export const updateProductStatus = async (purchaseId, productId, status, comment) => {
+export const updateProductStatus = async (
+  purchaseId,
+  productId,
+  status,
+  comment
+) => {
   return await defaultInstance.post(
     `/api/internal-purchases/${purchaseId}/products/${productId}/status`,
     {

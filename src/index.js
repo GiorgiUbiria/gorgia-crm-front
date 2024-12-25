@@ -5,6 +5,9 @@ import * as serviceWorker from "./serviceWorker"
 import { BrowserRouter } from "react-router-dom"
 import { Provider } from "react-redux"
 import "./index.css"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+
+const queryClient = new QueryClient()
 
 import store from "./store"
 
@@ -13,7 +16,9 @@ root.render(
   <Provider store={store}>
     <React.Fragment>
       <BrowserRouter>
-        <App />
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
       </BrowserRouter>
     </React.Fragment>
   </Provider>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react"
+import React, { useState, useMemo, useCallback } from "react"
 import {
   Row,
   Col,
@@ -44,15 +44,15 @@ import {
   BiMessageAltX,
 } from "react-icons/bi"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import {
-  getPurchaseList,
-  updatePurchaseStatus,
-  updateProductStatus,
-} from "../../../../services/purchase"
 import { usePermissions } from "../../../../hooks/usePermissions"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
 import CircularProgress from "@mui/material/CircularProgress"
+import {
+  useGetPurchaseList,
+  useUpdatePurchaseStatus,
+  useUpdateProductStatus,
+} from "../../../../queries/purchase"
 
 const statusMap = {
   "pending department head": {
@@ -95,7 +95,6 @@ const PurchasePageApprove = () => {
   document.title = "შიდა შესყიდვების ვიზირება | Gorgia LLC"
   const { isDepartmentHead, userDepartmentId, isAdmin } = usePermissions()
 
-  const [purchases, setPurchases] = useState([])
   const [rejectionModal, setRejectionModal] = useState(false)
   const [selectedPurchase, setSelectedPurchase] = useState(null)
   const [rejectionComment, setRejectionComment] = useState("")
@@ -103,30 +102,19 @@ const PurchasePageApprove = () => {
   const [productStatusModal, setProductStatusModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [productComment, setProductComment] = useState("")
-  const [isStatusUpdateLoading, setIsStatusUpdateLoading] = useState(false)
-  const [isProductUpdateLoading, setIsProductUpdateLoading] = useState(false)
 
   const canViewTable = useMemo(() => {
     return isAdmin || isDepartmentHead || userDepartmentId === 17
   }, [isAdmin, isDepartmentHead, userDepartmentId])
 
-  const fetchPurchases = async () => {
-    try {
-      const response = await getPurchaseList(true)
-      console.log("Purchase data:", response.data)
-      if (response.data?.data) {
-        setPurchases(response.data.data)
-      }
-    } catch (err) {
-      console.error("Error fetching purchase requests:", err)
-    }
-  }
+  const { data: purchaseData, isLoading: isPurchasesLoading } =
+    useGetPurchaseList(true)
 
-  useEffect(() => {
-    if (canViewTable) {
-      fetchPurchases()
-    }
-  }, [canViewTable])
+  const { mutate: updatePurchaseStatus, isLoading: isStatusUpdateLoading } =
+    useUpdatePurchaseStatus()
+
+  const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
+    useUpdateProductStatus()
 
   const canManageProducts = useCallback(
     purchase => {
@@ -197,76 +185,68 @@ const PurchasePageApprove = () => {
     }
   }
 
-  const handleConfirmAction = async () => {
-    try {
-      setIsStatusUpdateLoading(true)
-      const nextStatus = getNextStatus(selectedPurchase)
-      const response = await updatePurchaseStatus(
-        selectedPurchase.id,
-        nextStatus
-      )
-
-      console.log("Response:", response)
-
-      if (response.status === 200) {
-        setSelectedPurchase(null)
-        setConfirmModal(false)
-        await fetchPurchases()
+  const handleConfirmAction = () => {
+    const nextStatus = getNextStatus(selectedPurchase)
+    updatePurchaseStatus(
+      { id: selectedPurchase.id, status: nextStatus },
+      {
+        onSuccess: () => {
+          setSelectedPurchase(null)
+          setConfirmModal(false)
+        },
+        onError: err => {
+          console.error("Error updating purchase status:", err)
+          alert(err.response?.data?.message || "შეცდომა სტატუსის განახლებისას")
+        },
       }
-    } catch (err) {
-      console.error("Error updating purchase status:", err)
-      alert(err.response?.data?.message || "შეცდომა სტატუსის განახლებისას")
-    } finally {
-      setIsStatusUpdateLoading(false)
-    }
+    )
   }
 
-  const handleRejectionSubmit = async () => {
-    try {
-      setIsStatusUpdateLoading(true)
-      const response = await updatePurchaseStatus(
-        selectedPurchase.id,
-        "rejected",
-        rejectionComment
-      )
-      if (response.data.success) {
-        setRejectionModal(false)
-        setRejectionComment("")
-        setSelectedPurchase(null)
-        await fetchPurchases()
+  const handleRejectionSubmit = () => {
+    updatePurchaseStatus(
+      {
+        id: selectedPurchase.id,
+        status: "rejected",
+        comment: rejectionComment,
+      },
+      {
+        onSuccess: () => {
+          setRejectionModal(false)
+          setRejectionComment("")
+          setSelectedPurchase(null)
+        },
+        onError: err => {
+          console.error("Error rejecting purchase:", err)
+          alert(err.response?.data?.message || "შეცდომა უარყოფისას")
+        },
       }
-    } catch (err) {
-      console.error("Error rejecting purchase:", err)
-      alert(err.response?.data?.message || "შეცდომა უარყოფისას")
-    } finally {
-      setIsStatusUpdateLoading(false)
-    }
+    )
   }
 
-  const handleProductStatusChange = async (productId, newStatus) => {
-    try {
-      setIsProductUpdateLoading(true)
-      const response = await updateProductStatus(
-        selectedPurchase.id,
+  const handleProductStatusChange = (productId, newStatus) => {
+    updateProductStatus(
+      {
+        purchaseId: selectedPurchase.id,
         productId,
-        newStatus,
-        productComment
-      )
-      if (response.data?.data) {
-        setProductStatusModal(false)
-        setProductComment("")
-        setSelectedProduct(null)
-        setSelectedPurchase(null)
-        await fetchPurchases()
+        status: newStatus,
+        comment: productComment,
+      },
+      {
+        onSuccess: () => {
+          setProductStatusModal(false)
+          setProductComment("")
+          setSelectedProduct(null)
+          setSelectedPurchase(null)
+        },
+        onError: err => {
+          console.error("Error updating product status:", err)
+          alert(
+            err.response?.data?.message ||
+              "შეცდომა პროდუქტის სტატუსის განახლებისას"
+          )
+        },
       }
-    } catch (err) {
-      console.error("Error updating product status:", err)
-      alert(
-        err.response?.data?.message || "შეცდომა პროდუქტის სტატუსის განახლებისას"
-      )
-    } finally {
-      setIsProductUpdateLoading(false)
-    }
+    )
   }
 
   const columns = useMemo(
@@ -793,13 +773,14 @@ const PurchasePageApprove = () => {
           {canViewTable ? (
             <Row>
               <MuiTable
-                data={purchases}
+                data={purchaseData?.data || []}
                 columns={columns}
                 filterOptions={filterOptions}
                 enableSearch={true}
                 searchableFields={["branch"]}
                 initialPageSize={10}
                 renderRowDetails={ExpandedRowContent}
+                isLoading={isPurchasesLoading}
               />
             </Row>
           ) : (

@@ -12,13 +12,12 @@ import {
   FormGroup,
 } from "reactstrap"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { createPurchase } from "../../../../services/purchase"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import "./index.css"
 import { useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import { procurementSchema } from "./validationSchema"
+import { useCreatePurchase } from "../../../../queries/purchase"
 
 const branchOptions = [
   "დიდუბე",
@@ -215,8 +214,11 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
 )
 
 const ProcurementPage = () => {
+  document.title = "შიდა შესყიდვების დამატება | Gorgia LLC"
   const navigate = useNavigate()
-  const [expandedProducts, setExpandedProducts] = useState([0]) // First product is expanded by default
+  const [expandedProducts, setExpandedProducts] = useState([0])
+
+  const { mutate: createPurchase, isLoading } = useCreatePurchase()
 
   const toggleProduct = index => {
     setExpandedProducts(prev =>
@@ -251,6 +253,9 @@ const ProcurementPage = () => {
     validationSchema: procurementSchema,
     onSubmit: async values => {
       try {
+        // Validate all fields first
+        await procurementSchema.validate(values, { abortEarly: false })
+
         // Add category to each product before submission
         const productsWithCategory = values.products.map(product => ({
           ...product,
@@ -262,57 +267,63 @@ const ProcurementPage = () => {
           products: productsWithCategory,
         }
 
-        console.group("Form Submission")
-        console.log("Submitting values:", dataToSubmit)
-
-        await createPurchase(dataToSubmit)
-        console.log("Submission successful")
-        console.groupEnd()
-
-        toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        })
-
-        formik.resetForm()
-        setTimeout(() => {
-          navigate("/applications/purchases/my-requests")
-        }, 1000)
-      } catch (err) {
-        console.group("Submission Error")
-        console.error("Full error object:", err)
-        console.error("Response data:", err?.response?.data)
-        console.groupEnd()
-
-        // Handle validation errors from the backend
-        if (err?.response?.data?.errors) {
-          const errors = err.response.data.errors
-          console.group("Backend Validation Errors")
-          console.table(errors)
-          console.groupEnd()
-
-          Object.entries(errors).forEach(([field, messages]) => {
-            toast.error(`${field}: ${messages[0]}`, {
+        createPurchase(dataToSubmit, {
+          onSuccess: () => {
+            toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
               position: "top-right",
-              autoClose: 5000,
+              autoClose: 3000,
               hideProgressBar: false,
               closeOnClick: true,
               pauseOnHover: true,
               draggable: true,
             })
-          })
-        } else {
-          // Handle general error
-          const errorMessage =
-            err?.response?.data?.message ||
-            err?.response?.data?.data?.message ||
-            "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
 
-          toast.error(errorMessage, {
+            formik.resetForm()
+            setTimeout(() => {
+              navigate("/applications/purchases/my-requests")
+            }, 1000)
+          },
+          onError: err => {
+            // Combine backend validation errors into a single message
+            if (err?.response?.data?.errors) {
+              const errorMessages = Object.entries(err.response.data.errors)
+                .map(([field, messages]) => `${field}: ${messages[0]}`)
+                .join("\n")
+
+              toast.error(errorMessages, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+              })
+            } else {
+              // Handle general error
+              const errorMessage =
+                err?.response?.data?.message ||
+                err?.response?.data?.data?.message ||
+                "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
+
+              toast.error(errorMessage, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+              })
+            }
+          },
+        })
+      } catch (err) {
+        // Combine Yup validation errors into a single message
+        if (err.inner) {
+          const errorMessages = err.inner
+            .map(error => `${error.path}: ${error.message}`)
+            .join("\n")
+
+          toast.error(errorMessages, {
             position: "top-right",
             autoClose: 5000,
             hideProgressBar: false,
@@ -321,37 +332,6 @@ const ProcurementPage = () => {
             draggable: true,
           })
         }
-      }
-    },
-    validate: values => {
-      try {
-        console.group("Frontend Validation")
-        console.log("Validating values:", values)
-
-        procurementSchema.validateSync(values, { abortEarly: false })
-        console.log("Frontend validation passed")
-        console.groupEnd()
-      } catch (err) {
-        console.group("Frontend Validation Errors")
-        if (err.inner) {
-          const errors = err.inner.reduce((acc, error) => {
-            acc[error.path] = error.message
-            return acc
-          }, {})
-          console.table(errors)
-
-          err.inner.forEach(error => {
-            toast.error(`${error.path}: ${error.message}`, {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-            })
-          })
-        }
-        console.groupEnd()
       }
     },
   })
@@ -543,8 +523,8 @@ const ProcurementPage = () => {
                 </div>
 
                 <div className="d-flex justify-content-end mt-3">
-                  <Button type="submit" color="primary">
-                    გაგზავნა
+                  <Button type="submit" color="primary" disabled={isLoading}>
+                    {isLoading ? "იგზავნება..." : "გაგზავნა"}
                   </Button>
                 </div>
               </Form>

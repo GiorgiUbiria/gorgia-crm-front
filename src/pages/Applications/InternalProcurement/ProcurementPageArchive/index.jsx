@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react"
+import React, { useMemo, useCallback } from "react"
 import { Row, Col, Card, CardBody } from "reactstrap"
 import {
   BiTime,
@@ -26,8 +26,8 @@ import {
   BiMessageAltX,
 } from "react-icons/bi"
 import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { getPurchaseList } from "../../../../services/purchase"
 import MuiTable from "../../../../components/Mui/MuiTable"
+import { useGetPurchaseList } from "../../../../queries/purchase"
 
 const statusMap = {
   "pending department head": {
@@ -59,22 +59,8 @@ const statusMap = {
 
 const ProcurementPageArchive = () => {
   document.title = "შესყიდვების არქივი | Gorgia LLC"
-  const [purchases, setPurchases] = useState([])
 
-  const fetchPurchases = async () => {
-    try {
-      const response = await getPurchaseList()
-      if (response.data?.data) {
-        setPurchases(response.data.data)
-      }
-    } catch (err) {
-      console.error("Error fetching purchases:", err)
-    }
-  }
-
-  useEffect(() => {
-    fetchPurchases()
-  }, [])
+  const { data: purchaseData, isLoading } = useGetPurchaseList()
 
   const columns = useMemo(
     () => [
@@ -539,7 +525,7 @@ const ProcurementPageArchive = () => {
           </Row>
           <Row>
             <MuiTable
-              data={purchases}
+              data={purchaseData?.data || []}
               columns={columns}
               filterOptions={filterOptions}
               enableSearch={true}
@@ -547,6 +533,7 @@ const ProcurementPageArchive = () => {
               customSearchFunction={customSearchFunction}
               initialPageSize={10}
               renderRowDetails={ExpandedRowContent}
+              isLoading={isLoading}
             />
           </Row>
         </div>
