@@ -5,9 +5,7 @@ import { getDepartments } from "services/auth"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
 import { usePermissions } from "hooks/usePermissions"
-import { Row, Col } from "reactstrap"
 import AddDailyModal from "./AddDailyModal"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import * as XLSX from "xlsx"
 
 const INITIAL_STATE = {
@@ -194,17 +192,25 @@ const DailiesInner = () => {
   )
 
   return (
-    <div className="page-content bg-gray-100">
-      <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
-        <Breadcrumbs
-          title="დღიური შეფასება"
-          breadcrumbItem="დეპარტამენტის დღის შედეგები"
-        />
+    <div className="bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Breadcrumb */}
+        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 sm:mb-6">
+          <span>მთავარი</span>
+          <span className="text-gray-400">/</span>
+          <span>დღიური შეფასება</span>
+          <span className="text-gray-400">/</span>
+          <span className="font-medium text-gray-900">
+            დეპარტამენტის დღის შედეგები
+          </span>
+        </div>
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <Row className="mb-3">
-            <Col className="d-flex justify-content-between align-items-center">
-              <div style={{ display: "flex", gap: "1rem" }}>
+        {/* Main Content */}
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="p-4 sm:p-6">
+            {/* Action Buttons */}
+            <div className="mb-4">
+              <div className="flex gap-3">
                 {isAdmin && (
                   <Button
                     variant="outlined"
@@ -224,28 +230,30 @@ const DailiesInner = () => {
                   შეფასების დამატება
                 </Button>
               </div>
-            </Col>
-          </Row>
+            </div>
 
-          <MuiTable
-            columns={columns}
-            data={transformedDailies}
-            filterOptions={filterOptions}
-            searchableFields={["name", "department.name"]}
-            enableSearch={true}
-            initialPageSize={pageSize}
-            pageSizeOptions={PAGE_SIZE_OPTIONS}
-            currentPage={currentPage}
-            totalItems={dailiesData.total}
-            onPageChange={page => updateState({ currentPage: page })}
-            onPageSizeChange={size => updateState({ pageSize: size })}
-            isLoading={isLoading}
-            onRowClick={handleRowClick}
-            renderRowDetails={renderExpandedRow}
-            rowClassName="cursor-pointer hover:bg-gray-50"
-          />
+            {/* Table */}
+            <MuiTable
+              columns={columns}
+              data={transformedDailies}
+              filterOptions={filterOptions}
+              searchableFields={["name", "department.name"]}
+              enableSearch={true}
+              initialPageSize={pageSize}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+              currentPage={currentPage}
+              totalItems={dailiesData.total}
+              onPageChange={page => updateState({ currentPage: page })}
+              onPageSizeChange={size => updateState({ pageSize: size })}
+              isLoading={isLoading}
+              onRowClick={handleRowClick}
+              renderRowDetails={renderExpandedRow}
+              rowClassName="cursor-pointer hover:bg-gray-50"
+            />
+          </div>
         </div>
 
+        {/* Modal */}
         <AddDailyModal
           isOpen={addDailyModal}
           toggle={() => updateState({ addDailyModal: false })}

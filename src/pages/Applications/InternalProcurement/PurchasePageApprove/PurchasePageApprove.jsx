@@ -1,11 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react"
 import {
-  Row,
-  Col,
   Input,
   Modal,
-  ModalHeader,
-  ModalBody,
   Form,
   FormGroup,
   Label,
@@ -13,11 +9,7 @@ import {
   CardBody,
 } from "reactstrap"
 import {
-  BiQuestionMark,
-  BiCheck,
-  BiX,
   BiXCircle,
-  BiArrowBack,
   BiTime,
   BiCheckCircle,
   BiLoader,
@@ -43,11 +35,9 @@ import {
   BiComment,
   BiMessageAltX,
 } from "react-icons/bi"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { usePermissions } from "../../../../hooks/usePermissions"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
-import CircularProgress from "@mui/material/CircularProgress"
 import {
   useGetPurchaseList,
   useUpdatePurchaseStatus,
@@ -758,224 +748,191 @@ const PurchasePageApprove = () => {
     )
   }
 
-  return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="განცხადებები"
-                breadcrumbItem="შიდა შესყიდვების ვიზირება"
-              />
-            </Col>
-          </Row>
-          {canViewTable ? (
-            <Row>
-              <MuiTable
-                data={purchaseData?.data || []}
-                columns={columns}
-                filterOptions={filterOptions}
-                enableSearch={true}
-                searchableFields={["branch"]}
-                initialPageSize={10}
-                renderRowDetails={ExpandedRowContent}
-                isLoading={isPurchasesLoading}
-              />
-            </Row>
-          ) : (
-            <Row>
-              <Col>
-                <div className="text-center p-5">
-                  <h4>თქვენ არ გაქვთ წვდომა ამ გვერდზე</h4>
-                </div>
-              </Col>
-            </Row>
-          )}
+  if (!canViewTable) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center max-w-lg w-full">
+          <BiXCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
+          <h2 className="text-xl font-medium text-gray-900 mb-2">
+            წვდომა შეზღუდულია
+          </h2>
+          <p className="text-gray-600">
+            თქვენ არ გაქვთ ამ გვერდის ნახვის უფლება
+          </p>
         </div>
       </div>
+    )
+  }
 
-      <Modal
-        isOpen={confirmModal}
-        toggle={() => !isStatusUpdateLoading && setConfirmModal(false)}
-      >
-        <ModalHeader
-          toggle={() => !isStatusUpdateLoading && setConfirmModal(false)}
+  return (
+    <div className="min-h-[calc(100vh-4rem)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Breadcrumb */}
+        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+          <span>განცხადებები</span>
+          <span className="text-gray-400">/</span>
+          <span className="font-medium text-gray-900">
+            შიდა შესყიდვების ვიზირება
+          </span>
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 sm:p-6">
+            <MuiTable
+              columns={columns}
+              data={purchaseData?.data || []}
+              filterOptions={filterOptions}
+              enableSearch={true}
+              isLoading={isPurchasesLoading}
+              renderRowDetails={ExpandedRowContent}
+              rowClassName="cursor-pointer hover:bg-gray-50"
+            />
+          </div>
+        </div>
+
+        {/* Modals */}
+        <Modal
+          isOpen={rejectionModal}
+          toggle={() => setRejectionModal(false)}
+          centered
+          className="modal-dialog-centered"
         >
-          დაადასტურეთ მოქმედება
-        </ModalHeader>
-        <ModalBody className="text-center">
-          <div className="d-flex flex-column align-items-center">
-            <BiQuestionMark className="text-warning mb-3" size={48} />
-
-            <p className="mb-4">
-              დარწმუნებული ხართ, რომ გსურთ შესყიდვის მოთხოვნის დამტკიცება?
-              {selectedPurchase && (
-                <small className="d-block text-muted mt-2">
-                  შემდეგი სტატუსი იქნება:{" "}
-                  {statusMap[getNextStatus(selectedPurchase)]?.label}
-                </small>
-              )}
-            </p>
-
-            <div className="d-flex justify-content-center gap-3">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleConfirmAction}
-                disabled={isStatusUpdateLoading}
-                startIcon={
-                  isStatusUpdateLoading ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <BiCheck />
-                  )
-                }
-              >
-                {isStatusUpdateLoading ? "მიმდინარეობს..." : "დადასტურება"}
-              </Button>
-
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => setConfirmModal(false)}
-                disabled={isStatusUpdateLoading}
-                startIcon={<BiX />}
-              >
-                გაუქმება
-              </Button>
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-4 border-b border-gray-200">
+              <h5 className="text-lg font-medium">უარყოფის მიზეზი</h5>
+            </div>
+            <div className="p-4">
+              <Form onSubmit={handleRejectionSubmit}>
+                <FormGroup>
+                  <Label className="mb-2">კომენტარი</Label>
+                  <Input
+                    type="textarea"
+                    value={rejectionComment}
+                    onChange={e => setRejectionComment(e.target.value)}
+                    rows="4"
+                    className="w-full rounded-lg"
+                  />
+                </FormGroup>
+                <div className="flex justify-end gap-3 mt-4">
+                  <Button
+                    type="button"
+                    color="secondary"
+                    onClick={() => setRejectionModal(false)}
+                    className="px-4 py-2"
+                  >
+                    გაუქმება
+                  </Button>
+                  <Button
+                    type="submit"
+                    color="primary"
+                    disabled={isStatusUpdateLoading}
+                    className="px-4 py-2"
+                  >
+                    {isStatusUpdateLoading ? "მიმდინარეობს..." : "დადასტურება"}
+                  </Button>
+                </div>
+              </Form>
             </div>
           </div>
-        </ModalBody>
-      </Modal>
+        </Modal>
 
-      <Modal
-        isOpen={rejectionModal}
-        toggle={() => !isStatusUpdateLoading && setRejectionModal(false)}
-      >
-        <ModalHeader
-          toggle={() => !isStatusUpdateLoading && setRejectionModal(false)}
+        <Modal
+          isOpen={confirmModal}
+          toggle={() => setConfirmModal(false)}
+          centered
+          className="modal-dialog-centered"
         >
-          <BiXCircle className="text-danger me-2" size={24} />
-          უარყოფის მიზეზი
-        </ModalHeader>
-
-        <ModalBody>
-          <Form>
-            <FormGroup>
-              <Label for="rejectionComment" className="fw-bold mb-2">
-                გთხოვთ მიუთითოთ უარყოფის მიზეზი
-              </Label>
-
-              <Input
-                type="textarea"
-                name="rejectionComment"
-                id="rejectionComment"
-                value={rejectionComment}
-                onChange={e => setRejectionComment(e.target.value)}
-                rows="4"
-                required
-                className="mb-3"
-                placeholder="შეიყვანეთ უარყოფის დეტალური მიზეზი..."
-                disabled={isStatusUpdateLoading}
-              />
-            </FormGroup>
-          </Form>
-
-          <div className="d-flex justify-content-end gap-2">
-            <Button
-              variant="contained"
-              color="error"
-              onClick={handleRejectionSubmit}
-              disabled={!rejectionComment.trim() || isStatusUpdateLoading}
-              startIcon={
-                isStatusUpdateLoading ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <BiXCircle />
-                )
-              }
-            >
-              {isStatusUpdateLoading ? "მიმდინარეობს..." : "უარყოფა"}
-            </Button>
-
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setRejectionModal(false)}
-              disabled={isStatusUpdateLoading}
-              startIcon={<BiArrowBack />}
-            >
-              გაუქმება
-            </Button>
-          </div>
-        </ModalBody>
-      </Modal>
-
-      <Modal
-        isOpen={productStatusModal}
-        toggle={() => !isProductUpdateLoading && setProductStatusModal(false)}
-      >
-        <ModalHeader
-          toggle={() => !isProductUpdateLoading && setProductStatusModal(false)}
-        >
-          პროდუქტის სტატუსის შეცვლა
-        </ModalHeader>
-
-        <ModalBody>
-          <Form>
-            <FormGroup>
-              <Label for="productComment">კომენტარი</Label>
-
-              <Input
-                type="textarea"
-                id="productComment"
-                value={productComment}
-                onChange={e => setProductComment(e.target.value)}
-                placeholder="შეიყვანეთ კომენტარი..."
-                rows={4}
-                required
-                disabled={isProductUpdateLoading}
-              />
-            </FormGroup>
-
-            <div className="d-flex justify-content-end gap-2 mt-3">
-              <Button
-                variant="contained"
-                color="success"
-                onClick={() =>
-                  handleProductStatusChange(selectedProduct?.id, "completed")
-                }
-                disabled={!productComment.trim() || isProductUpdateLoading}
-                startIcon={
-                  isProductUpdateLoading ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <BiCheck />
-                  )
-                }
-              >
-                {isProductUpdateLoading ? "მიმდინარეობს..." : "დასრულება"}
-              </Button>
-
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => {
-                  setProductStatusModal(false)
-                  setProductComment("")
-                  setSelectedProduct(null)
-                }}
-                disabled={isProductUpdateLoading}
-                startIcon={<BiArrowBack />}
-              >
-                გაუქმება
-              </Button>
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-4">
+              <h5 className="text-lg font-medium mb-4">
+                დაადასტურეთ მოქმედება
+              </h5>
+              <p className="text-gray-600">
+                ნამდვილად გსურთ მოთხოვნის დადასტურება?
+              </p>
+              <div className="flex justify-end gap-3 mt-6">
+                <Button
+                  color="secondary"
+                  onClick={() => setConfirmModal(false)}
+                  className="px-4 py-2"
+                >
+                  გაუქმება
+                </Button>
+                <Button
+                  color="primary"
+                  onClick={handleConfirmAction}
+                  disabled={isStatusUpdateLoading}
+                  className="px-4 py-2"
+                >
+                  {isStatusUpdateLoading ? "მიმდინარეობს..." : "დადასტურება"}
+                </Button>
+              </div>
             </div>
-          </Form>
-        </ModalBody>
-      </Modal>
-    </React.Fragment>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={productStatusModal}
+          toggle={() => setProductStatusModal(false)}
+          centered
+          className="modal-dialog-centered"
+        >
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-4 border-b border-gray-200">
+              <h5 className="text-lg font-medium">პროდუქტის სტატუსის შეცვლა</h5>
+            </div>
+            <div className="p-4">
+              <Form>
+                <FormGroup>
+                  <Label for="productComment">კომენტარი</Label>
+                  <Input
+                    type="textarea"
+                    id="productComment"
+                    value={productComment}
+                    onChange={e => setProductComment(e.target.value)}
+                    placeholder="შეიყვანეთ კომენტარი..."
+                    rows={4}
+                    required
+                    disabled={isProductUpdateLoading}
+                  />
+                </FormGroup>
+
+                <div className="flex justify-end gap-3 mt-4">
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() =>
+                      handleProductStatusChange(
+                        selectedProduct?.id,
+                        "completed"
+                      )
+                    }
+                    disabled={!productComment.trim() || isProductUpdateLoading}
+                    className="px-4 py-2"
+                  >
+                    {isProductUpdateLoading ? "მიმდინარეობს..." : "დასრულება"}
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => {
+                      setProductStatusModal(false)
+                      setProductComment("")
+                      setSelectedProduct(null)
+                    }}
+                    className="px-4 py-2"
+                  >
+                    გაუქმება
+                  </Button>
+                </div>
+              </Form>
+            </div>
+          </div>
+        </Modal>
+      </div>
+    </div>
   )
 }
 

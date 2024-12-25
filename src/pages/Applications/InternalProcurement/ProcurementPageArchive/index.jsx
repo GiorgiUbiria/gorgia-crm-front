@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from "react"
-import { Row, Col, Card, CardBody } from "reactstrap"
+import { Card, CardBody } from "reactstrap"
 import {
   BiTime,
   BiCheckCircle,
@@ -25,7 +25,6 @@ import {
   BiComment,
   BiMessageAltX,
 } from "react-icons/bi"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import { useGetPurchaseList } from "../../../../queries/purchase"
 
@@ -59,7 +58,6 @@ const statusMap = {
 
 const ProcurementPageArchive = () => {
   document.title = "შესყიდვების არქივი | Gorgia LLC"
-
   const { data: purchaseData, isLoading } = useGetPurchaseList()
 
   const columns = useMemo(
@@ -76,7 +74,7 @@ const ProcurementPageArchive = () => {
             <div>
               {row.original.requester?.name} {row.original.requester?.sur_name}
             </div>
-            <small className="text-muted">
+            <small className="text-gray-500">
               {row.original.requester?.department?.name || "N/A"}
             </small>
           </div>
@@ -202,14 +200,14 @@ const ProcurementPageArchive = () => {
       {
         label: "ფილიალი",
         value: rowData?.branch || "N/A",
-        icon: <BiBuilding />,
+        icon: <BiBuilding className="w-5 h-5 text-gray-500" />,
       },
       {
         label: "მომთხოვნის ხელმძღვანელი",
         value: rowData?.responsible_for_purchase
           ? `${rowData.responsible_for_purchase.name} ${rowData.responsible_for_purchase.sur_name}`
           : "N/A",
-        icon: <BiUser />,
+        icon: <BiUser className="w-5 h-5 text-gray-500" />,
       },
       {
         label: "მიმართულების ხელმძღვანელი",
@@ -511,34 +509,34 @@ const ProcurementPageArchive = () => {
       </div>
     )
   }
+
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="განცხადებები"
-                breadcrumbItem="შესყიდვების არქივი"
-              />
-            </Col>
-          </Row>
-          <Row>
+    <div className="bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Breadcrumb */}
+        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 sm:mb-6">
+          <span>განცხადებები</span>
+          <span className="text-gray-400">/</span>
+          <span className="font-medium text-gray-900">შესყიდვების არქივი</span>
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="p-4 sm:p-6">
             <MuiTable
-              data={purchaseData?.data || []}
               columns={columns}
+              data={purchaseData?.data || []}
               filterOptions={filterOptions}
-              enableSearch={true}
-              searchableFields={["requester"]}
               customSearchFunction={customSearchFunction}
-              initialPageSize={10}
-              renderRowDetails={ExpandedRowContent}
+              enableSearch={true}
               isLoading={isLoading}
+              renderRowDetails={ExpandedRowContent}
+              rowClassName="cursor-pointer hover:bg-gray-50"
             />
-          </Row>
+          </div>
         </div>
       </div>
-    </React.Fragment>
+    </div>
   )
 }
 

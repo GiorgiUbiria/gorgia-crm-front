@@ -1,9 +1,8 @@
 import React, { useMemo } from "react"
-import { Row, Col, Card, CardBody } from "reactstrap"
+import { Card, CardBody } from "reactstrap"
 import {
   BiTime,
   BiCheckCircle,
-  BiLoader,
   BiPackage,
   BiDetail,
   BiBuilding,
@@ -25,7 +24,6 @@ import {
   BiComment,
   BiMessageAltX,
 } from "react-icons/bi"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import { useGetCurrentUserPurchases } from "../../../../queries/purchase"
 
@@ -169,11 +167,18 @@ const UserProcurements = () => {
   const ExpandedRowContent = rowData => {
     if (!rowData) return null
 
+    const totalProductsCount = rowData.products?.length || 0
+    const completedProductsCount =
+      rowData.products?.filter(p => p.status === "completed")?.length || 0
+    const progressPercentage = Math.round(
+      (completedProductsCount / totalProductsCount) * 100
+    )
+
     const details = [
       {
         label: "ფილიალი",
         value: rowData?.branch || "N/A",
-        icon: <BiBuilding />,
+        icon: <BiBuilding className="text-primary" />,
       },
       {
         label: "მომთხოვნის ხელმძღვანელი",
@@ -230,37 +235,16 @@ const UserProcurements = () => {
       },
     ]
 
-    const completedProductsCount =
-      rowData?.products?.filter(p => p.status === "completed").length || 0
-    const totalProductsCount = rowData?.products?.length || 0
-    const progressPercentage =
-      totalProductsCount === 0
-        ? 0
-        : (completedProductsCount / totalProductsCount) * 100
-
     const StatusTimeline = () => (
       <Card className="mb-4 shadow-sm">
         <CardBody>
-          <div className="d-flex align-items-center gap-2 mb-3">
-            <BiTime className="text-primary" size={24} />
-            <h6 className="mb-0">შესყიდვის სტატუსი</h6>
-          </div>
-
-          <div className="d-flex align-items-center gap-3 mb-3">
-            <span
-              className={`badge bg-${
-                rowData.status === "completed" ? "success" : "primary"
-              } px-3 py-2`}
-            >
-              <div className="d-flex align-items-center gap-2">
-                {rowData.status === "completed" ? (
-                  <BiCheckCircle />
-                ) : (
-                  <BiLoader />
-                )}
-                {statusMap[rowData.status]?.label || rowData.status}
-              </div>
-            </span>
+          <div className="flex justify-between items-center mb-3">
+            <div className="d-flex align-items-center gap-2">
+              <BiTime className="text-primary" size={24} />
+              <h6 className="mb-0">
+                სტატუსი: {getStatusLabel(rowData.status)}
+              </h6>
+            </div>
 
             {rowData.status === "pending products completion" && (
               <span className="text-muted">
@@ -271,9 +255,9 @@ const UserProcurements = () => {
             )}
           </div>
 
-          <div className="timeline">
+          <div className="timeline space-y-2">
             {rowData.department_head_decision_date && (
-              <div className="timeline-item">
+              <div className="flex items-center gap-2">
                 <BiCheckCircle className="text-success" />
                 <small className="text-muted">
                   დეპარტამენტის უფროსის გადაწყვეტილება:{" "}
@@ -285,7 +269,7 @@ const UserProcurements = () => {
             )}
 
             {rowData.requested_department_decision_date && (
-              <div className="timeline-item">
+              <div className="flex items-center gap-2">
                 <BiCheckCircle className="text-success" />
                 <small className="text-muted">
                   მოთხოვნილი დეპარტამენტის გადაწყვეტილება:{" "}
@@ -298,15 +282,13 @@ const UserProcurements = () => {
           </div>
 
           {totalProductsCount > 0 && (
-            <div className="progress mt-3" style={{ height: "10px" }}>
-              <div
-                className="progress-bar bg-success"
-                role="progressbar"
-                style={{ width: `${progressPercentage}%` }}
-                aria-valuenow={progressPercentage}
-                aria-valuemin="0"
-                aria-valuemax="100"
-              />
+            <div className="mt-3">
+              <div className="h-2.5 bg-gray-200 rounded-full">
+                <div
+                  className="h-2.5 bg-success rounded-full transition-all duration-300"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
             </div>
           )}
         </CardBody>
@@ -462,19 +444,17 @@ const UserProcurements = () => {
     }
 
     return (
-      <div className="p-4">
+      <div className="p-4 space-y-4">
         <StatusTimeline />
 
         {rowData?.comment && (
-          <Card className="mb-4 shadow-sm">
-            <CardBody>
-              <div className="d-flex align-items-center gap-2 text-danger mb-2">
-                <BiMessageAltX size={24} />
-                <strong>უარყოფის მიზეზი:</strong>
-              </div>
-              <p className="mb-0">{rowData.comment}</p>
-            </CardBody>
-          </Card>
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="flex items-center gap-2 text-red-500 mb-2">
+              <BiMessageAltX size={24} />
+              <strong>უარყოფის მიზეზი:</strong>
+            </div>
+            <p className="text-gray-600 mb-0">{rowData.comment}</p>
+          </div>
         )}
 
         <PurchaseDetails />
@@ -484,18 +464,18 @@ const UserProcurements = () => {
   }
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="განცხადებები"
-                breadcrumbItem="ჩემი შესყიდვები"
-              />
-            </Col>
-          </Row>
-          <Row>
+    <div className="min-h-[calc(100vh-4rem)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Breadcrumb */}
+        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+          <span>განცხადებები</span>
+          <span className="text-gray-400">/</span>
+          <span className="font-medium text-gray-900">ჩემი შესყიდვები</span>
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 sm:p-6">
             <MuiTable
               data={purchaseData?.data || []}
               columns={columns}
@@ -505,10 +485,10 @@ const UserProcurements = () => {
               renderRowDetails={ExpandedRowContent}
               isLoading={isLoading}
             />
-          </Row>
+          </div>
         </div>
       </div>
-    </React.Fragment>
+    </div>
   )
 }
 
