@@ -1,0 +1,15 @@
+/* Hide scrollbar for Chrome, Safari and Opera */
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.custom-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Optional: You can still have a subtle scrollbar appearance on hover */
+.custom-scrollbar:hover::-webkit-scrollbar {
+  display: none;
+} 

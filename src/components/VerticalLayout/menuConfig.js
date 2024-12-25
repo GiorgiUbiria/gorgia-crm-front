@@ -1,4 +1,4 @@
-import { BsHouseDoor, BsGear, BsPerson } from "react-icons/bs"
+import { BsGear, BsPerson } from "react-icons/bs"
 import { checkAccess } from "utils/accessGate"
 import {
   LuLayoutDashboard,
@@ -22,14 +22,8 @@ import {
 export const getMenuConfig = (t, user) => {
   const menuItems = [
     {
-      key: "dashboard",
-      label: t("Dashboard"),
+      to: "/dashboard",
       icon: LuHouse,
-      to: "/dashboard",
-    },
-    {
-      to: "/dashboard",
-      icon: BsHouseDoor,
       label: t("მთავარი გვერდი"),
       conditions: "",
     },

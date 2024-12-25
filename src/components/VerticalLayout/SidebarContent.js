@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useRef, useCallback, useMemo, useState } from "react"
 import { useLocation } from "react-router-dom"
-import SimpleBar from "simplebar-react"
 import { withTranslation } from "react-i18next"
 import { usePermissions } from "hooks/usePermissions"
 import MenuItem from "./MenuItem"
 import { getMenuConfig } from "./menuConfig"
+import "../customScrollbars.css"
 
 const SidebarContent = ({ t }) => {
   const ref = useRef()
@@ -16,17 +16,13 @@ const SidebarContent = ({ t }) => {
 
   const menuConfig = useMemo(() => getMenuConfig(t, user), [t, user])
 
-  // Enhanced isMenuActive to handle nested paths
   const isMenuActive = useCallback((item, currentPath) => {
     if (!item.to) return false
 
-    // Exact match
     if (item.to === currentPath) return true
 
-    // Check if current path starts with item's path (for nested routes)
     if (currentPath.startsWith(item.to) && item.to !== "/") return true
 
-    // Check submenu
     if (item.submenu) {
       return item.submenu.some(subItem => isMenuActive(subItem, currentPath))
     }
@@ -34,7 +30,6 @@ const SidebarContent = ({ t }) => {
     return false
   }, [])
 
-  // Enhanced getActiveMenuParents to handle nested paths
   const getActiveMenuParents = useCallback(
     (items, currentPath, parents = []) => {
       for (const item of items) {
@@ -65,7 +60,6 @@ const SidebarContent = ({ t }) => {
         return newState
       })
 
-      // Find all active paths (current path and its parent paths)
       const allActivePaths = menuConfig.reduce((acc, item) => {
         if (isMenuActive(item, path)) {
           acc.push(item.to)
@@ -144,36 +138,23 @@ const SidebarContent = ({ t }) => {
     [menuConfig, expandedMenus, activeMenus, handleMenuClick, renderSubmenu]
   )
 
-  // Activate menu based on current path
   useEffect(() => {
     activateParentDropdown(location.pathname)
   }, [location.pathname, activateParentDropdown])
 
-  // Recalculate SimpleBar on mount
-  useEffect(() => {
-    ref.current?.recalculate()
-  }, [])
-
   return (
-    <SimpleBar
+    <div
       ref={ref}
-      className="h-full custom-scrollbar"
+      className="h-full overflow-y-auto"
       style={{
         maxHeight: "100%",
-        "--sb-track-color": "rgba(255, 255, 255, 0.1)",
-        "--sb-thumb-color": "rgba(255, 255, 255, 0.4)",
-        "--sb-size": "4px",
+        scrollbarWidth: "none",
       }}
-      autoHide={true}
-      timeout={400}
-      clickOnTrack={false}
     >
-      <div id="sidebar-menu" className="px-4 py-2">
-        <ul className="list-none" id="side-menu">
-          {menuItems}
-        </ul>
+      <div className="px-6 py-1 w-full">
+        <ul className="list-none space-y-3 w-full">{menuItems}</ul>
       </div>
-    </SimpleBar>
+    </div>
   )
 }
 

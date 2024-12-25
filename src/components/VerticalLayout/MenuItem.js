@@ -36,8 +36,8 @@ const MenuItem = memo(
             : onClick
         }
       >
-        <div className="w-6 flex-shrink-0 flex items-center justify-center">
-          {Icon ? <Icon className="text-xl" /> : <LuDot className="text-xl" />}
+        <div className="w-4 flex-shrink-0 flex items-center justify-center">
+          {Icon ? <Icon className="text-lg" /> : <LuDot className="text-lg" />}
         </div>
 
         <span className="text-sm font-medium leading-tight break-words flex-1 min-w-0">
