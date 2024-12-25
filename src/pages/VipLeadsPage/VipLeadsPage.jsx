@@ -88,7 +88,7 @@ const VipLeadsPage = () => {
             >
               წაშლა
             </Button>
-            <Link to={`/vip-leads/${row.original.id}`}>
+            <Link to={`/leads/vip/${row.original.id}`}>
               <Button onClick={() => {}} color="warning" variant="contained">
                 მოთხოვნები
               </Button>
@@ -153,7 +153,7 @@ const VipLeadsPage = () => {
 
   return (
     <React.Fragment>
-      <div className="page-content mb-4">
+      <div className="w-3/4 mx-auto m-4">
         <Container fluid>
           <Breadcrumbs title="ლიდები" breadcrumbItem="VIP" />
           <Row className="mb-3">

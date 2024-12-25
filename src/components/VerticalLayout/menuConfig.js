@@ -17,6 +17,7 @@ import {
   LuCalendar,
   LuPlus,
   LuNotebook,
+  LuUsers,
 } from "react-icons/lu"
 
 export const getMenuConfig = (t, user) => {
@@ -366,6 +367,26 @@ export const getMenuConfig = (t, user) => {
       icon: LuPencilRuler,
       label: t("სამეურნეო Tasks"),
       conditions: "",
+    },
+    {
+      to: "/leads",
+      icon: LuUsers,
+      label: t("ლიდები"),
+      conditions: "",
+      submenu: [
+        {
+          to: "/leads/vip",
+          label: t("VIP ლიდები"),
+          icon: LuUsers,
+          conditions: "",
+        },
+        {
+          to: "/leads/corporate",
+          label: t("კორპორატიული ლიდები"),
+          icon: LuUsers,
+          conditions: "",
+        },
+      ],
     },
     {
       to: "/tools/calendar",
