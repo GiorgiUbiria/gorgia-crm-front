@@ -1,6 +1,6 @@
-import PropTypes from "prop-types";
-import React, { useEffect } from "react";
-import withRouter from "components/Common/withRouter";
+import PropTypes from "prop-types"
+import React, { useEffect } from "react"
+import withRouter from "components/Common/withRouter"
 import {
   changeLayout,
   changeLayoutMode,
@@ -9,24 +9,23 @@ import {
   changeSidebarType,
   changeTopbarTheme,
   changeLayoutWidth,
-  showRightSidebarAction
-} from "../../store/actions";
+  showRightSidebarAction,
+} from "../../store/actions"
 
 // Layout Related Components
-import Header from "./Header";
-import Sidebar from "./Sidebar";
-import Footer from "./Footer";
+import Header from "./Header"
+import Sidebar from "./Sidebar"
 
 //redux
-import { useSelector, useDispatch } from "react-redux";
-import { createSelector } from 'reselect';
+import { useSelector, useDispatch } from "react-redux"
+import { createSelector } from "reselect"
 
 const Layout = props => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
   const selectLayoutProperties = createSelector(
-    (state) => state.Layout,
-    (layout) => ({
+    state => state.Layout,
+    layout => ({
       isPreloader: layout.isPreloader,
       layoutModeType: layout.layoutModeType,
       leftSideBarThemeImage: layout.leftSideBarThemeImage,
@@ -35,7 +34,8 @@ const Layout = props => {
       topbarTheme: layout.topbarTheme,
       showRightSidebar: layout.showRightSidebar,
       leftSideBarTheme: layout.leftSideBarTheme,
-    }));
+    })
+  )
 
   const {
     leftSideBarThemeImage,
@@ -43,31 +43,22 @@ const Layout = props => {
     leftSideBarType,
     topbarTheme,
     leftSideBarTheme,
-    layoutModeType
-  } = useSelector(selectLayoutProperties);
+    layoutModeType,
+  } = useSelector(selectLayoutProperties)
 
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-
-  const toggleMenuCallback = () => {
-    if (leftSideBarType === "default") {
-      dispatch(changeSidebarType("condensed", isMobile));
-    } else if (leftSideBarType === "condensed") {
-      dispatch(changeSidebarType("default", isMobile));
-    }
-  };
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
   //hides right sidebar on body click
-  const hideRightbar = (event) => {
-    var rightbar = document.getElementById("right-bar");
+  const hideRightbar = event => {
+    var rightbar = document.getElementById("right-bar")
     //if clicked in inside right bar, then do nothing
     if (rightbar && rightbar.contains(event.target)) {
-      return;
+      return
     } else {
       //if clicked in outside of rightbar then fire action for hide rightbar
-      dispatch(showRightSidebarAction(false));
+      dispatch(showRightSidebarAction(false))
     }
-  };
+  }
 
   /*
   layout  settings
@@ -75,71 +66,80 @@ const Layout = props => {
 
   useEffect(() => {
     //init body click event fot toggle rightbar
-    document.body.addEventListener("click", hideRightbar, true);
-
-
-  }, []);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    document.body.addEventListener("click", hideRightbar, true)
+    return () => {
+      document.body.removeEventListener("click", hideRightbar, true)
+    }
+  }, [])
 
   useEffect(() => {
-    dispatch(changeLayout("vertical"));
-  }, [dispatch]);
+    window.scrollTo(0, 0)
+  }, [])
+
+  useEffect(() => {
+    dispatch(changeLayout("vertical"))
+  }, [dispatch])
 
   useEffect(() => {
     if (leftSideBarTheme) {
-      dispatch(changeSidebarTheme(leftSideBarTheme));
+      dispatch(changeSidebarTheme(leftSideBarTheme))
     }
-  }, [leftSideBarTheme, dispatch]);
+  }, [leftSideBarTheme, dispatch])
 
   useEffect(() => {
     if (layoutModeType) {
-      dispatch(changeLayoutMode(layoutModeType));
+      dispatch(changeLayoutMode(layoutModeType))
     }
-  }, [layoutModeType, dispatch]);
+  }, [layoutModeType, dispatch])
 
   useEffect(() => {
     if (leftSideBarThemeImage) {
-      dispatch(changeSidebarThemeImage(leftSideBarThemeImage));
+      dispatch(changeSidebarThemeImage(leftSideBarThemeImage))
     }
-  }, [leftSideBarThemeImage, dispatch]);
+  }, [leftSideBarThemeImage, dispatch])
 
   useEffect(() => {
     if (layoutWidth) {
-      dispatch(changeLayoutWidth(layoutWidth));
+      dispatch(changeLayoutWidth(layoutWidth))
     }
-  }, [layoutWidth, dispatch]);
+  }, [layoutWidth, dispatch])
 
   useEffect(() => {
     if (leftSideBarType) {
-      dispatch(changeSidebarType(leftSideBarType));
+      dispatch(changeSidebarType(leftSideBarType))
     }
-  }, [leftSideBarType, dispatch]);
+  }, [leftSideBarType, dispatch])
 
   useEffect(() => {
     if (topbarTheme) {
-      dispatch(changeTopbarTheme(topbarTheme));
+      dispatch(changeTopbarTheme(topbarTheme))
     }
-  }, [topbarTheme, dispatch]);
+  }, [topbarTheme, dispatch])
+
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true)
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen)
+  }
 
   return (
-    <React.Fragment>
-
-      <div id="layout-wrapper">
-        <Header toggleMenuCallback={toggleMenuCallback} />
-        <Sidebar
-          theme={leftSideBarTheme}
-          type={leftSideBarType}
-          isMobile={isMobile}
-        />
-        <div className="main-content">{props.children}</div>
-        <Footer />
-      </div>
-    </React.Fragment>
-  );
-};
+    <div className="min-h-screen bg-gray-50">
+      <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+      <Sidebar
+        theme={leftSideBarTheme}
+        type={leftSideBarType}
+        isMobile={isMobile}
+        isOpen={isSidebarOpen}
+      />
+      <main
+        className={`pt-16 transition-all duration-300 ${
+          isSidebarOpen ? "md:ml-64" : ""
+        }`}
+      >
+        {props.children}
+      </main>
+    </div>
+  )
+}
 
 Layout.propTypes = {
   changeLayoutWidth: PropTypes.func,
@@ -156,6 +156,6 @@ Layout.propTypes = {
   location: PropTypes.object,
   showRightSidebar: PropTypes.any,
   topbarTheme: PropTypes.any,
-};
+}
 
-export default withRouter(Layout);
+export default withRouter(Layout)

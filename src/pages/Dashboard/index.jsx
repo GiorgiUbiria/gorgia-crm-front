@@ -104,24 +104,24 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 mt-16 mb-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 sm:mb-6">
           <span>მთავარი</span>
           <span className="text-gray-400">/</span>
           <span className="font-medium text-gray-900">მთავარი</span>
         </div>
 
         <div className="mb-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg overflow-hidden">
-          <div className="px-6 py-8 sm:px-8">
-            <h1 className="text-2xl font-bold text-white mb-2">
+          <div className="px-4 sm:px-6 lg:px-8 py-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">
               მოგესალმებით, {user.name}!
             </h1>
-            <p className="text-blue-100 text-sm">
+            <p className="text-blue-100 text-sm sm:text-base">
               ამ გვერდიდან შეგიძლია შეუდგე მუშაობას! წარმატებები!
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {widgets.map(widget => {
             const Icon = widget.icon
             return (
@@ -131,19 +131,23 @@ function Dashboard() {
               >
                 <div className="p-4">
                   <div
-                    className={`w-10 h-10 rounded-full ${colorVariants[widget.color]} flex items-center justify-center mb-3`}
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${
+                      colorVariants[widget.color]
+                    } flex items-center justify-center mb-3`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
                     {widget.title}
                   </h3>
-                  <p className="text-gray-600 text-xs mb-3">
+                  <p className="text-gray-600 text-xs sm:text-sm mb-3">
                     {widget.description}
                   </p>
                   <button
                     onClick={() => (window.location.href = widget.link)}
-                    className={`text-xs font-medium ${colorVariants[widget.color]} px-3 py-1.5 rounded-md w-full text-left hover:shadow-sm transition-all duration-200`}
+                    className={`text-xs sm:text-sm font-medium ${
+                      colorVariants[widget.color]
+                    } px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200`}
                   >
                     {widget.buttonText}
                   </button>

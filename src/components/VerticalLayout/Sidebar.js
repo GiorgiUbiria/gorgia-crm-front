@@ -1,56 +1,36 @@
-import PropTypes from "prop-types";
-import React from "react";
-import { connect } from "react-redux";
-import withRouter from "components/Common/withRouter";
+import PropTypes from "prop-types"
+import React from "react"
+import { connect } from "react-redux"
+import withRouter from "components/Common/withRouter"
 
-import { withTranslation } from "react-i18next";
-import SidebarContent from "./SidebarContent";
+import { withTranslation } from "react-i18next"
+import SidebarContent from "./SidebarContent"
 
-import { Link } from "react-router-dom";
-
-import logo from "../../assets/images/gorgia-logo-04.png";
-
-const Sidebar = () => {
+const Sidebar = ({ isOpen }) => {
   return (
-    <React.Fragment>
-      <div className="vertical-menu">
-        <div className="navbar-brand-box">
-          <Link to="/" className="logo logo-dark">
-            <span className="logo-sm">
-              <img src={logo} alt="" height="22" />
-            </span>
-            <span className="logo-lg">
-              <img src={logo} alt="" height="50" />
-            </span>
-          </Link>
-          <Link to="/" className="logo logo-light">
-            <span className="logo-sm">
-              <img src={logo} alt="" height="22" />
-            </span>
-            <span className="logo-lg">
-              <img src={logo} alt="" height="50" />
-            </span>
-          </Link>
-        </div>
-        <div data-simplebar>
-          <SidebarContent />
-        </div>
-        <div className="sidebar-background"></div>
+    <aside
+      className={`
+        fixed top-16 bottom-0 left-0 w-64 bg-[#edf3fd] border-r 
+        transition-all duration-300 z-40 overflow-hidden
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
+    >
+      <div className="p-2">
+        <SidebarContent isCollapsed={!isOpen} />
       </div>
-    </React.Fragment>
-  );
-};
-
+    </aside>
+  )
+}
 Sidebar.propTypes = {
   type: PropTypes.string,
-};
+}
 
 const mapStatetoProps = state => {
   return {
     layout: state.Layout,
-  };
-};
+  }
+}
 export default connect(
   mapStatetoProps,
   {}
-)(withRouter(withTranslation()(Sidebar)));
+)(withRouter(withTranslation()(Sidebar)))

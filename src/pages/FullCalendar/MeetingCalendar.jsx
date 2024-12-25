@@ -384,7 +384,7 @@ Reason: ${eventInfo.event.extendedProps.reason || 'N/A'}`}
           eventContent={getEventContent}
         />
 
-        <Tooltip id="meeting-tooltip" place="top" />
+        <Tooltip id="meeting-tooltip" place="top" transition={{ timeout: 200 }} />
 
         <Modal
           isOpen={modal}

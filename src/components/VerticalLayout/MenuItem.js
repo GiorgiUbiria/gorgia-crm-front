@@ -1,72 +1,66 @@
 import React, { memo } from "react"
 import { Link } from "react-router-dom"
 import { BsChevronDown, BsChevronUp } from "react-icons/bs"
-
-const styles = {
-  link: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.15rem",
-  },
-  icon: {
-    fontSize: "1.25rem",
-    marginRight: "0.5rem",
-    verticalAlign: "middle",
-  },
-  arrow: {
-    fontSize: "0.8rem",
-    marginLeft: "auto",
-  },
-  submenu: {
-    overflow: "hidden",
-    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-    maxHeight: 0,
-    opacity: 0,
-    transform: "translateY(-10px)",
-    "& > li:not(:last-child)": {
-      borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-      paddingBottom: "0.5rem",
-      marginBottom: "0.5rem",
-    },
-  },
-  submenuExpanded: {
-    maxHeight: "1000px",
-    opacity: 1,
-    transform: "translateY(0)",
-  },
-}
+import { LuDot } from "react-icons/lu"
+import PropTypes from "prop-types"
 
 const MenuItem = memo(
-  ({ to, icon: Icon, label, hasSubmenu, isExpanded, onClick, children }) => (
-    <li>
+  ({
+    to,
+    icon: Icon,
+    label,
+    hasSubmenu,
+    isExpanded,
+    onClick,
+    children,
+    isActive,
+  }) => (
+    <li className="mb-1 w-full">
       <Link
-        to={hasSubmenu ? "/#" : to}
-        style={styles.link}
+        to={hasSubmenu ? "#!" : to}
+        className={`
+          flex items-center gap-2 px-4 py-2.5 rounded-lg transition-colors
+          ${
+            isActive
+              ? "bg-blue-100 text-blue-700"
+              : "hover:bg-blue-50 text-gray-700"
+          }
+          ${hasSubmenu ? "cursor-pointer" : ""}
+        `}
         onClick={
           hasSubmenu
             ? e => {
                 e.preventDefault()
                 onClick()
               }
-            : undefined
+            : onClick
         }
       >
-        {Icon && <Icon style={styles.icon} />}
-        <span>{label}</span>
-        {hasSubmenu &&
-          (isExpanded ? (
-            <BsChevronUp style={styles.arrow} />
-          ) : (
-            <BsChevronDown style={styles.arrow} />
-          ))}
+        <div className="w-6 flex-shrink-0 flex items-center justify-center">
+          {Icon ? <Icon className="text-xl" /> : <LuDot className="text-xl" />}
+        </div>
+
+        <span className="text-sm font-medium leading-tight break-words flex-1 min-w-0">
+          {label}
+        </span>
+
+        {hasSubmenu && (
+          <span className="flex-shrink-0 text-sm">
+            {isExpanded ? <BsChevronUp /> : <BsChevronDown />}
+          </span>
+        )}
       </Link>
+
       {hasSubmenu && (
         <ul
-          className="sub-menu"
-          style={{
-            ...styles.submenu,
-            ...(isExpanded ? styles.submenuExpanded : {}),
-          }}
+          className={`
+            pl-6 mt-1 overflow-hidden transition-all duration-300
+            ${
+              isExpanded
+                ? "max-h-[1000px] opacity-100 translate-y-0"
+                : "max-h-0 opacity-0 -translate-y-2"
+            }
+          `}
         >
           {children}
         </ul>
@@ -74,6 +68,17 @@ const MenuItem = memo(
     </li>
   )
 )
+
+MenuItem.propTypes = {
+  to: PropTypes.string.isRequired,
+  icon: PropTypes.elementType,
+  label: PropTypes.string.isRequired,
+  hasSubmenu: PropTypes.bool,
+  isExpanded: PropTypes.bool,
+  isActive: PropTypes.bool,
+  onClick: PropTypes.func,
+  children: PropTypes.node,
+}
 
 MenuItem.displayName = "MenuItem"
 

@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react"
 import PropTypes from "prop-types"
 import { Link } from "react-router-dom"
-import { Dropdown, DropdownToggle, DropdownMenu, Row, Col, Tooltip } from "reactstrap"
+import {
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  Row,
+  Col,
+  Tooltip,
+} from "reactstrap"
 import SimpleBar from "simplebar-react"
 import { withTranslation } from "react-i18next"
 import echo from "../../../plugins/echo"
@@ -16,68 +23,70 @@ const NotificationDropdown = props => {
   const user = useSelector(state => state.user.user)
 
   useEffect(() => {
-    if (!user || !user.id) return;
+    if (!user || !user.id) return
 
     const channel = echo.private(`notifications.${user.id}`)
 
-    channel.listen('.notification.created', data => {
+    channel.listen(".notification.created", data => {
       setNotifications(prev => {
-        const prevNotifications = Array.isArray(prev) ? prev : [];
-        return [data.notification, ...prevNotifications];
-      });
-      setUnreadCount(data.unread_count || 0);
+        const prevNotifications = Array.isArray(prev) ? prev : []
+        return [data.notification, ...prevNotifications]
+      })
+      setUnreadCount(data.unread_count || 0)
     })
 
-    channel.listen('.notification.deleted', data => {
+    channel.listen(".notification.deleted", data => {
       setNotifications(prev => {
-        const prevNotifications = Array.isArray(prev) ? prev : [];
-        return prevNotifications.filter(n => n.id !== data.notification.id);
-      });
-      setUnreadCount(data.unread_count || 0);
+        const prevNotifications = Array.isArray(prev) ? prev : []
+        return prevNotifications.filter(n => n.id !== data.notification.id)
+      })
+      setUnreadCount(data.unread_count || 0)
     })
 
-    channel.listen('.notification.read', data => {
+    channel.listen(".notification.read", data => {
       setNotifications(prev => {
-        const prevNotifications = Array.isArray(prev) ? prev : [];
+        const prevNotifications = Array.isArray(prev) ? prev : []
         return prevNotifications.map(n =>
           n.id === data.notification.id ? { ...n, read: true } : n
-        );
-      });
-      setUnreadCount(data.unread_count || 0);
+        )
+      })
+      setUnreadCount(data.unread_count || 0)
     })
 
     const fetchNotifications = async () => {
       try {
-        const response = await defaultInstance.get('/api/notifications')
-        const fetchedNotifications = Array.isArray(response.data.notifications.data)
+        const response = await defaultInstance.get("/api/notifications")
+        const fetchedNotifications = Array.isArray(
+          response.data.notifications.data
+        )
           ? response.data.notifications.data
-          : [];
-        console.log("Fetched Notifications:", fetchedNotifications);
-        setNotifications(fetchedNotifications);
-        setUnreadCount(response.data.unread_count || 0);
+          : []
+        console.log("Fetched Notifications:", fetchedNotifications)
+        setNotifications(fetchedNotifications)
+        setUnreadCount(response.data.unread_count || 0)
       } catch (error) {
         console.error("Error fetching notifications:", error)
-        setNotifications([]);
-        setUnreadCount(0);
+        setNotifications([])
+        setUnreadCount(0)
       }
     }
 
     fetchNotifications()
 
     return () => {
-      channel.stopListening('.notification.created')
-      channel.stopListening('.notification.deleted')
-      channel.stopListening('.notification.read')
+      channel.stopListening(".notification.created")
+      channel.stopListening(".notification.deleted")
+      channel.stopListening(".notification.read")
       channel.unsubscribe()
     }
   }, [user])
 
-  const toggleTooltip = (id) => {
-    setTooltipOpen((prev) => ({
+  const toggleTooltip = id => {
+    setTooltipOpen(prev => ({
       ...prev,
       [id]: !prev[id],
-    }));
-  };
+    }))
+  }
 
   return (
     <React.Fragment>
@@ -92,19 +101,23 @@ const NotificationDropdown = props => {
           tag="button"
           id="page-header-notifications-dropdown"
         >
-          <i
-            className={`bx bx-bell ${unreadCount > 0 ? "bx-tada" : ""
-              }`}
-          />
+          <i className={`bx bx-bell ${unreadCount > 0 ? "bx-tada" : ""}`} />
           <span
-            className={`badge rounded-pill ${unreadCount > 0 ? "bg-danger" : "bg-secondary"
-              }`}
+            className={`badge rounded-pill ${
+              unreadCount > 0 ? "bg-danger" : "bg-secondary"
+            }`}
           >
             {unreadCount}
           </span>
         </DropdownToggle>
 
-        <DropdownMenu className="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0">
+        <DropdownMenu
+          className="dropdown-menu-lg dropdown-menu-end p-0"
+          aria-labelledby="page-header-notifications-dropdown"
+          transition={{
+            timeout: 200,
+          }}
+        >
           <div className="p-3">
             <Row className="align-items-center">
               <Col>
@@ -115,7 +128,7 @@ const NotificationDropdown = props => {
 
           <SimpleBar style={{ height: "230px" }}>
             {notifications.length > 0 ? (
-              notifications.map((notification) => (
+              notifications.map(notification => (
                 <Link
                   to=""
                   className="text-reset notification-item"
@@ -130,7 +143,8 @@ const NotificationDropdown = props => {
                     </div>
                     <div className="flex-grow-1">
                       <h6 className="mt-0 mb-1">
-                        {notification.data.task_title} - {notification.data.status}
+                        {notification.data.task_title} -{" "}
+                        {notification.data.status}
                       </h6>
                       <div className="font-size-12 text-muted">
                         <p className="mb-1">
@@ -144,6 +158,7 @@ const NotificationDropdown = props => {
                     isOpen={tooltipOpen[notification.id] || false}
                     target={`notification-${notification.id}`}
                     toggle={() => toggleTooltip(notification.id)}
+                    transition={{ timeout: 200 }}
                   >
                     <div>
                       <strong>Task ID:</strong> {notification.data.task_id}

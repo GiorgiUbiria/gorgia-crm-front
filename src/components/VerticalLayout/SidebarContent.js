@@ -1,134 +1,96 @@
-import React, { useEffect, useRef, useCallback, useMemo } from "react"
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useRef, useCallback, useMemo, useState } from "react"
 import { useLocation } from "react-router-dom"
 import SimpleBar from "simplebar-react"
-import MetisMenu from "metismenujs"
 import { withTranslation } from "react-i18next"
 import { usePermissions } from "hooks/usePermissions"
 import MenuItem from "./MenuItem"
 import { getMenuConfig } from "./menuConfig"
-import useMenuState from "./useMenuState"
 
 const SidebarContent = ({ t }) => {
   const ref = useRef()
   const location = useLocation()
   const { user } = usePermissions()
+  const [expandedMenus, setExpandedMenus] = useState({})
+  const [activeMenus, setActiveMenus] = useState([])
 
-  const { expandedMenus, toggleMenu } = useMenuState()
+  const menuConfig = useMemo(() => getMenuConfig(t, user), [t, user])
 
-  const menuConfig = useMemo(
-    () => getMenuConfig(t, user),
-    [t, user]
-  )
+  // Enhanced isMenuActive to handle nested paths
+  const isMenuActive = useCallback((item, currentPath) => {
+    if (!item.to) return false
 
-  const activateParentDropdown = useCallback(item => {
-    item.classList.add("active")
-    const parent = item.parentElement
-    const parent2El = parent.childNodes[1]
+    // Exact match
+    if (item.to === currentPath) return true
 
-    if (parent2El && parent2El.id !== "side-menu") {
-      parent2El.classList.add("mm-show")
+    // Check if current path starts with item's path (for nested routes)
+    if (currentPath.startsWith(item.to) && item.to !== "/") return true
+
+    // Check submenu
+    if (item.submenu) {
+      return item.submenu.some(subItem => isMenuActive(subItem, currentPath))
     }
 
-    if (parent) {
-      parent.classList.add("mm-active")
-      const parent2 = parent.parentElement
-
-      if (parent2) {
-        parent2.classList.add("mm-show")
-
-        const parent3 = parent2.parentElement
-
-        if (parent3) {
-          parent3.classList.add("mm-active")
-          parent3.childNodes[0].classList.add("mm-active")
-          const parent4 = parent3.parentElement
-          if (parent4) {
-            parent4.classList.add("mm-show")
-            const parent5 = parent4.parentElement
-            if (parent5) {
-              parent5.classList.add("mm-show")
-              parent5.childNodes[0].classList.add("mm-active")
-            }
-          }
-        }
-      }
-      scrollElement(item)
-      return false
-    }
-    scrollElement(item)
     return false
   }, [])
 
-  const removeActivation = useCallback(items => {
-    for (var i = 0; i < items.length; ++i) {
-      var item = items[i]
-      const parent = items[i].parentElement
-
-      if (item && item.classList.contains("active")) {
-        item.classList.remove("active")
-      }
-      if (parent) {
-        const parent2El =
-          parent.childNodes && parent.childNodes.length && parent.childNodes[1]
-            ? parent.childNodes[1]
-            : null
-        if (parent2El && parent2El.id !== "side-menu") {
-          parent2El.classList.remove("mm-show")
+  // Enhanced getActiveMenuParents to handle nested paths
+  const getActiveMenuParents = useCallback(
+    (items, currentPath, parents = []) => {
+      for (const item of items) {
+        if (isMenuActive(item, currentPath)) {
+          return parents
         }
+        if (item.submenu) {
+          const found = getActiveMenuParents(item.submenu, currentPath, [
+            ...parents,
+            item.key,
+          ])
+          if (found.length) return found
+        }
+      }
+      return []
+    },
+    [isMenuActive]
+  )
 
-        parent.classList.remove("mm-active")
-        const parent2 = parent.parentElement
+  const activateParentDropdown = useCallback(
+    path => {
+      const activeParents = getActiveMenuParents(menuConfig, path)
+      setExpandedMenus(prev => {
+        const newState = { ...prev }
+        activeParents.forEach(key => {
+          newState[key] = true
+        })
+        return newState
+      })
 
-        if (parent2) {
-          parent2.classList.remove("mm-show")
-
-          const parent3 = parent2.parentElement
-          if (parent3) {
-            parent3.classList.remove("mm-active")
-            parent3.childNodes[0].classList.remove("mm-active")
-
-            const parent4 = parent3.parentElement
-            if (parent4) {
-              parent4.classList.remove("mm-show")
-              const parent5 = parent4.parentElement
-              if (parent5) {
-                parent5.classList.remove("mm-show")
-                parent5.childNodes[0].classList.remove("mm-active")
-              }
+      // Find all active paths (current path and its parent paths)
+      const allActivePaths = menuConfig.reduce((acc, item) => {
+        if (isMenuActive(item, path)) {
+          acc.push(item.to)
+        }
+        if (item.submenu) {
+          item.submenu.forEach(subItem => {
+            if (isMenuActive(subItem, path)) {
+              acc.push(subItem.to)
             }
-          }
+          })
         }
-      }
-    }
+        return acc
+      }, [])
+
+      setActiveMenus([...activeParents, ...allActivePaths])
+    },
+    [menuConfig, getActiveMenuParents, isMenuActive]
+  )
+
+  const toggleMenu = useCallback(key => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [key]: !prev[key],
+    }))
   }, [])
-
-  const scrollElement = useCallback(item => {
-    if (!item) return
-
-    const currentPosition = item.offsetTop
-    if (currentPosition > window.innerHeight) {
-      const scrollElement = ref.current?.getScrollElement()
-      if (scrollElement) {
-        scrollElement.scrollTop = currentPosition - 300
-      }
-    }
-  }, [])
-
-  const activeMenu = useCallback(() => {
-    const pathName = location.pathname
-    const ul = document.getElementById("side-menu")
-    if (!ul) return
-
-    const items = ul.getElementsByTagName("a")
-    removeActivation(items)
-
-    const matchingMenuItem = Array.from(items).find(
-      item => pathName === item.pathname
-    )
-    if (matchingMenuItem) {
-      activateParentDropdown(matchingMenuItem)
-    }
-  }, [location.pathname, activateParentDropdown, removeActivation])
 
   const handleMenuClick = useCallback(
     item => {
@@ -149,16 +111,18 @@ const SidebarContent = ({ t }) => {
         <MenuItem
           key={`${item.to}-${index}`}
           to={item.to}
+          icon={item.icon}
           label={item.label}
           hasSubmenu={!!item.submenu}
           isExpanded={item.submenu && expandedMenus[item.key]}
+          isActive={activeMenus.includes(item.to)}
           onClick={() => handleMenuClick(item)}
         >
           {item.submenu && renderSubmenu(item.submenu)}
         </MenuItem>
       ))
     },
-    [expandedMenus, handleMenuClick]
+    [expandedMenus, activeMenus, handleMenuClick]
   )
 
   const menuItems = useMemo(
@@ -171,32 +135,29 @@ const SidebarContent = ({ t }) => {
           label={item.label}
           hasSubmenu={!!item.submenu}
           isExpanded={item.submenu && expandedMenus[item.key]}
+          isActive={activeMenus.includes(item.to)}
           onClick={() => handleMenuClick(item)}
         >
           {item.submenu && renderSubmenu(item.submenu)}
         </MenuItem>
       )),
-    [menuConfig, expandedMenus, handleMenuClick, renderSubmenu]
+    [menuConfig, expandedMenus, activeMenus, handleMenuClick, renderSubmenu]
   )
 
+  // Activate menu based on current path
+  useEffect(() => {
+    activateParentDropdown(location.pathname)
+  }, [location.pathname, activateParentDropdown])
+
+  // Recalculate SimpleBar on mount
   useEffect(() => {
     ref.current?.recalculate()
   }, [])
 
-  useEffect(() => {
-    new MetisMenu("#side-menu")
-    activeMenu()
-  }, [activeMenu])
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-    activeMenu()
-  }, [activeMenu])
-
   return (
     <SimpleBar
       ref={ref}
-      className="custom-scrollbar"
+      className="h-full custom-scrollbar"
       style={{
         maxHeight: "100%",
         "--sb-track-color": "rgba(255, 255, 255, 0.1)",
@@ -207,8 +168,8 @@ const SidebarContent = ({ t }) => {
       timeout={400}
       clickOnTrack={false}
     >
-      <div id="sidebar-menu">
-        <ul className="metismenu list-unstyled" id="side-menu">
+      <div id="sidebar-menu" className="px-4 py-2">
+        <ul className="list-none" id="side-menu">
           {menuItems}
         </ul>
       </div>
