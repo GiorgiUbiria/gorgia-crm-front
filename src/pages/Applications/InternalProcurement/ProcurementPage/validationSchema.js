@@ -45,53 +45,19 @@ const productSchema = Yup.object().shape({
     .required("აღწერა სავალდებულოა")
     .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
-  additional_information: Yup.string()
+  search_variant: Yup.string()
+    .required("მოძიებული ვარიანტი სავალდებულოა")
+    .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
+
+  similar_purchase_planned: Yup.string()
     .nullable()
     .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
-  alternate_possibility: Yup.boolean().required(
-    "ალტერნატივის შესაძლებლობა სავალდებულოა"
-  ),
-
-  alternate_possibility_reason: Yup.string()
-    .when("alternate_possibility", {
-      is: true,
-      then: () => Yup.string().required("მიზეზის მითითება სავალდებულოა"),
-      otherwise: () => Yup.string().nullable(),
-    })
-    .max(500, "მაქსიმუმ 500 სიმბოლო"),
-
-  supplier_exists: Yup.boolean().required("მომწოდებლის არსებობა სავალდებულოა"),
-
-  supplier_name: Yup.string()
-    .when("supplier_exists", {
-      is: true,
-      then: () => Yup.string().required("მომწოდებლის სახელი სავალდებულოა"),
-      otherwise: () => Yup.string().nullable(),
-    })
-    .max(255, "მაქსიმუმ 255 სიმბოლო"),
-
-  supplier_contact_information: Yup.string()
-    .when("supplier_exists", {
-      is: true,
-      then: () =>
-        Yup.string().required("მომწოდებლის საკონტაქტო ინფორმაცია სავალდებულოა"),
-      otherwise: () => Yup.string().nullable(),
-    })
-    .max(500, "მაქსიმუმ 500 სიმბოლო"),
-
-  supplier_offer_details: Yup.string()
-    .when("supplier_exists", {
-      is: true,
-      then: () =>
-        Yup.string().required("მომწოდებლის შეთავაზების დეტალები სავალდებულოა"),
-      otherwise: () => Yup.string().nullable(),
-    })
-    .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-
-  similar_purchase_planned: Yup.boolean().required(
-    "მსგავსი შესყიდვის დაგეგმვა სავალდებულოა"
-  ),
+  in_stock_explanation: Yup.string().when("category", {
+    is: category => category !== "IT" && category !== "Marketing",
+    then: () => Yup.string().required().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
+    otherwise: () => Yup.string().nullable(),
+  }),
 
   payer: Yup.string()
     .required("ადამხდელის მითითება სავალდებულოა")
@@ -119,7 +85,7 @@ export const procurementSchema = Yup.object().shape({
     .when("requested_arrival_date", {
       is: date => {
         const daysDiff = (new Date(date) - new Date()) / (1000 * 60 * 60 * 24)
-        return daysDiff < 7
+        return daysDiff < 14
       },
       then: () =>
         Yup.string().required("მცირე ვადის მიზეზის მითითება სავალდებულოა"),
@@ -127,16 +93,8 @@ export const procurementSchema = Yup.object().shape({
     })
     .max(500, "მაქსიმუმ 500 სიმბოლო"),
 
-  exceeds_needs: Yup.boolean().required(
-    "საჭიროების გადაჭარბების მითითება სავალდებულოა"
-  ),
-
   exceeds_needs_reason: Yup.string()
-    .when("exceeds_needs", {
-      is: true,
-      then: () => Yup.string().required("მიზეზის მითითება სავალდებულოა"),
-      otherwise: () => Yup.string().nullable(),
-    })
+    .required("საჭიროების გადაჭარბების მითითება სავალდებულოა")
     .max(500, "მაქსიმუმ 500 სიმბოლო"),
 
   creates_stock: Yup.boolean().required(

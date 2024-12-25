@@ -78,9 +78,7 @@ const HrPageApprove = () => {
     }
   }
 
-
   const findDocument = async documentId => {
-    
     const response = await getHrDocuments()
     const documentData = response.data.find(d => d.id === documentId)
     setFormData(data => ({
@@ -109,9 +107,14 @@ const HrPageApprove = () => {
       comment: "",
       salary: "",
       salary_text: "",
-      template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) + 1,
+      template_num:
+        Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) +
+        1,
       document_number: "",
-      started_date: documentData?.is_other_user !== 1 ? documentData?.user?.working_start_date : documentData?.started_working_day,
+      started_date:
+        documentData?.is_other_user !== 1
+          ? documentData?.user?.working_start_date
+          : documentData?.started_working_day,
     }))
   }
 
@@ -143,8 +146,7 @@ const HrPageApprove = () => {
       }
     } catch (err) {
       console.error("Error updating document status:", err)
-    }
-    finally{
+    } finally {
       fetchDocuments()
       setIsProcessing(false)
     }
@@ -365,32 +367,32 @@ const HrPageApprove = () => {
               </p>
             </div>
           ) : (
-          <MuiTable
-            data={transformedHrDocuments}
-            columns={columns}
-            filterOptions={filterOptions}
-            enableSearch={true}
-            searchableFields={[
-              "user.name",
-              "user.id",
-              "salary",
-              "name",
-              "purpose",
-            ]}
-            renderRowDetails={row => <div>{row.comment}</div>}
-          />
+            <MuiTable
+              data={transformedHrDocuments}
+              columns={columns}
+              filterOptions={filterOptions}
+              enableSearch={true}
+              searchableFields={[
+                "user.name",
+                "user.id",
+                "salary",
+                "name",
+                "purpose",
+              ]}
+              renderRowDetails={row => <div>{row.comment}</div>}
+            />
           )}
-          <Dialog open={modalOpen} onClose={handleModalClose}  >
-            <DialogTitle >
+          <Dialog open={modalOpen} onClose={handleModalClose}>
+            <DialogTitle>
               {selectedStatus === "approved"
                 ? "დოკუმენტის დამტკიცება"
                 : "დოკუმენტის უარყოფა"}
             </DialogTitle>
 
-            <div className="mt-4" >
-              <Formik enableReinitialize initialValues={formData} >
+            <div className="mt-4">
+              <Formik enableReinitialize initialValues={formData}>
                 {({ values }) => (
-                  <Form style={{padding: '30px'}}>
+                  <Form style={{ padding: "30px" }}>
                     <TabContent>
                       {selectedStatus === "approved" && (
                         <>
@@ -442,8 +444,8 @@ const HrPageApprove = () => {
                             </div>
                           </div>
 
-                            {/* User Info */}
-                            <div className="row g-3 mb-4">
+                          {/* User Info */}
+                          <div className="row g-3 mb-4">
                             <div className="col-md-6">
                               <Label className="form-label">
                                 დოკუმენტის ნომერი
@@ -470,11 +472,15 @@ const HrPageApprove = () => {
                             </div>
                             <div className="col-md-6">
                               <div className="flex flex-row">
-
-                              <Label className="form-label">დაწყების თარიღი</Label>
+                                <Label className="form-label">
+                                  დაწყების თარიღი
+                                </Label>
                                 {/* date! */}
-                                <DatePicker startDate={formData?.started_date} handleStartedDate={setFormData} initialValue={formData?.started_date} />
-
+                                <DatePicker
+                                  startDate={formData?.started_date}
+                                  handleStartedDate={setFormData}
+                                  initialValue={formData?.started_date}
+                                />
                               </div>
                               <ErrorMessage
                                 name="started_date"
@@ -482,7 +488,6 @@ const HrPageApprove = () => {
                                 className="text-danger mt-1"
                               />
                             </div>
-                            
                           </div>
 
                           <div className="mb-2">
@@ -504,10 +509,13 @@ const HrPageApprove = () => {
                               <option value="">აირჩიეთ დოკუმენტის ტიპი</option>
                               {Object.entries(DOCUMENT_TYPES).map(
                                 ([key, type]) => (
-                                  <option 
-                                  key={key} 
-                                  value={type}
-                                  disabled={isDocumentTypeDisabled(type,  formData.started_date)}
+                                  <option
+                                    key={key}
+                                    value={type}
+                                    disabled={isDocumentTypeDisabled(
+                                      type,
+                                      formData.started_date
+                                    )}
                                   >
                                     {type}
                                   </option>
@@ -580,78 +588,79 @@ const HrPageApprove = () => {
                           {/* Purpose field for paid documents */}
                           {isPaidDocument(values.documentType) && (
                             <>
-                          <div className="row g-3 mb-4">
-                            <div className="col-md-6">
-                              <Label className="form-label">
-                                ანაზღაურება
-                              </Label>
+                              <div className="row g-3 mb-4">
+                                <div className="col-md-6">
+                                  <Label className="form-label">
+                                    ანაზღაურება
+                                  </Label>
 
-                              <Field
-                                type="text"
-                                name="salary"
-                                value={formData.salary}
-                                onChange={e =>
-                                  setFormData(data => ({
-                                    ...data,
-                                    salary: e.target.value,
-                                  }))
-                                }
-                                className="form-control"
-                                />
+                                  <Field
+                                    type="text"
+                                    name="salary"
+                                    value={formData.salary}
+                                    onChange={e =>
+                                      setFormData(data => ({
+                                        ...data,
+                                        salary: e.target.value,
+                                      }))
+                                    }
+                                    className="form-control"
+                                  />
 
-                              <ErrorMessage
-                                name="salary"
-                                component="div"
-                                className="text-danger mt-1"
-                                />
-                            </div>
+                                  <ErrorMessage
+                                    name="salary"
+                                    component="div"
+                                    className="text-danger mt-1"
+                                  />
+                                </div>
 
-                            <div className="col-md-6">
-                              <Label className="form-label">ანაზღაურება (ტექსტური)</Label>
+                                <div className="col-md-6">
+                                  <Label className="form-label">
+                                    ანაზღაურება (ტექსტური)
+                                  </Label>
 
-                              <Field
-                                type="text"
-                                name="salary_text"
-                                value={formData.salary_text}
-                                onChange={e =>
-                                  setFormData(data => ({
-                                    ...data,
-                                    salary_text: e.target.value,
-                                  }))
-                                }
-                                className="form-control"
-                                />
+                                  <Field
+                                    type="text"
+                                    name="salary_text"
+                                    value={formData.salary_text}
+                                    onChange={e =>
+                                      setFormData(data => ({
+                                        ...data,
+                                        salary_text: e.target.value,
+                                      }))
+                                    }
+                                    className="form-control"
+                                  />
 
-                              <ErrorMessage
-                                name="salary_text"
-                                component="div"
-                                className="text-danger mt-1"
-                                />
-                            </div>
-                          </div>
+                                  <ErrorMessage
+                                    name="salary_text"
+                                    component="div"
+                                    className="text-danger mt-1"
+                                  />
+                                </div>
+                              </div>
 
-                          
-                            <div className="mb-4">
-                              <Label className="form-label">მიზანი</Label>
-                              <Field
-                                type="text"
-                                name="purpose"
-                                className="form-control"
-                                value={formData.purpose}
-                                onChange={e =>
-                                  setFormData(data => ({
-                                    ...data,
-                                    purpose: e.target.value,
-                                  }))
-                                }
+                              <div className="mb-4">
+                                <Label className="form-label">მიზანი</Label>
+                                <Field
+                                  type="text"
+                                  name="purpose"
+                                  className="form-control"
+                                  value={formData.purpose}
+                                  onChange={e =>
+                                    setFormData(data => ({
+                                      ...data,
+                                      purpose: e.target.value,
+                                    }))
+                                  }
                                 />
-                              <ErrorMessage
-                                name="purpose"
-                                component="div"
-                                className="text-danger mt-1"
+                                <ErrorMessage
+                                  name="purpose"
+                                  component="div"
+                                  className="text-danger mt-1"
                                 />
-                            </div>
-                                </>
+                              </div>
+                            </>
                           )}
                         </>
                       )}

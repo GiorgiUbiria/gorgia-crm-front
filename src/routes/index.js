@@ -198,11 +198,11 @@ const hrRoutes = {
         },
         approve: {
           path: "/hr/documents/approve",
-          component: withAccessRoute(<HrPageApprove />, "department:8"),
+          component: withAccessRoute(<HrPageApprove />, "role:admin|role:department_head|department:8"),
         },
         archive: {
           path: "/hr/documents/archive",
-          component: withAccessRoute(<HrPageArchive />, "department:8"),
+          component: withAccessRoute(<HrPageArchive />, "role:admin|role:department_head|department:8"),
         },
         myRequests: {
           path: "/hr/documents/my-requests",
