@@ -50,17 +50,25 @@ const productSchema = Yup.object().shape({
     .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
   similar_purchase_planned: Yup.string()
-    .nullable()
+    .required("მოძავალი შესყიდვების ინფორმაცია სავალდებულოა")
     .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
-  in_stock_explanation: Yup.string().when("category", {
-    is: category => category !== "IT" && category !== "Marketing",
-    then: () => Yup.string().required().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-    otherwise: () => Yup.string().nullable(),
-  }),
+  in_stock_explanation: Yup.string()
+    .test('category-dependent', 'ასორტიმენტში არსებობის ინფორმაცია სავალდებულოა', function(value) {
+      const { category } = this.parent;
+      
+      // If category is IT or Marketing, field is optional
+      if (category === 'IT' || category === 'Marketing') {
+        return true;
+      }
+      
+      // For other categories, field is required
+      return Boolean(value);
+    })
+    .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
   payer: Yup.string()
-    .required("ადამხდელის მითითება სავალდებულოა")
+    .required("გადამხდელის მითითება სავალდებულოა")
     .max(255, "მაქსიმუმ 255 სიმბოლო"),
 })
 
@@ -94,7 +102,7 @@ export const procurementSchema = Yup.object().shape({
     .max(500, "მაქსიმუმ 500 სიმბოლო"),
 
   exceeds_needs_reason: Yup.string()
-    .required("საჭიროების გადაჭარბების მითითება სავალდებულოა")
+    .required("საჭიროების გითითება სავალდებულოა")
     .max(500, "მაქსიმუმ 500 სიმბოლო"),
 
   creates_stock: Yup.boolean().required(
@@ -114,7 +122,11 @@ export const procurementSchema = Yup.object().shape({
     .max(255, "მაქსიმუმ 255 სიმბოლო"),
 
   products: Yup.array()
-    .of(productSchema)
+    .of(
+      productSchema.shape({
+        category: Yup.string(),
+      })
+    )
     .min(1, "მინიმუმ ერთი პროდუქტი სავალდებულოა")
     .required("პროდუქტების მითითება სავალდებულოა"),
 })

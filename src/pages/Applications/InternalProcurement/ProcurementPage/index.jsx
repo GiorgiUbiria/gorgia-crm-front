@@ -162,7 +162,7 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
           <Col md="12">
             <InputWithError
               formik={formik}
-              name={`products.${index}.additional_information`}
+              name={`products.${index}.search_variant`}
               label="თქვენი მოძიებული ვარიანტი (მომწოდებელი, საკონტაქტო ინფორმაცია, ფასი)"
               type="textarea"
               rows="2"
@@ -172,12 +172,10 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
         <Row className="g-2">
           <Col md="12">
             <FormGroup className="mb-2">
-              <Label>
-                იგეგმება, თუ არა უახლოეს 1 თვეში ანალოგიური პროდუქციის შესყიდვა?
-              </Label>
               <InputWithError
                 formik={formik}
                 name={`products.${index}.similar_purchase_planned`}
+                label="იგეგმება, თუ არა უახლოეს 1 თვეში ანალოგიური პროდუქციის შესყიდვა?"
                 type="textarea"
                 rows="2"
               />
@@ -191,7 +189,7 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
               <Col md="12">
                 <InputWithError
                   formik={formik}
-                  name="in_stock_explanation"
+                  name={`products.${index}.in_stock_explanation`}
                   label="გვაქვს თუ არა ეს პროდუქცია ასორტიმენტში ჩვენ?"
                   type="textarea"
                   rows="2"
@@ -233,7 +231,6 @@ const ProcurementPage = () => {
       purchase_purpose: "",
       requested_arrival_date: "",
       short_date_notice_explanation: "",
-      exceeds_needs: false,
       exceeds_needs_reason: "",
       creates_stock: false,
       stock_purpose: "",
@@ -244,25 +241,33 @@ const ProcurementPage = () => {
           quantity: "",
           dimensions: "",
           description: "",
-          additional_information: "",
-          alternate_possibility: false,
-          alternate_possibility_reason: "",
-          supplier_exists: false,
-          supplier_name: "",
-          supplier_contact_information: "",
-          supplier_offer_details: "",
-          similar_purchase_planned: false,
+          search_variant: "",
+          similar_purchase_planned: "",
+          in_stock_explanation: "",
           payer: "",
         },
       ],
     },
     validationSchema: procurementSchema,
     onSubmit: async values => {
-      console.log("Submitting form with values:", values)
       try {
-        console.log("Calling createPurchase API...")
-        const response = await createPurchase(values)
-        console.log("API Response:", response)
+        // Add category to each product before submission
+        const productsWithCategory = values.products.map(product => ({
+          ...product,
+          category: values.category,
+        }))
+
+        const dataToSubmit = {
+          ...values,
+          products: productsWithCategory,
+        }
+
+        console.group("Form Submission")
+        console.log("Submitting values:", dataToSubmit)
+
+        await createPurchase(dataToSubmit)
+        console.log("Submission successful")
+        console.groupEnd()
 
         toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
           position: "top-right",
@@ -278,17 +283,75 @@ const ProcurementPage = () => {
           navigate("/applications/purchases/my-requests")
         }, 1000)
       } catch (err) {
-        console.error("Submission error:", err)
-        console.error("Error response:", err.response)
-        const errorMessage =
-          err?.response?.data?.message ||
-          err?.response?.data?.data?.message ||
-          "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
+        console.group("Submission Error")
+        console.error("Full error object:", err)
+        console.error("Response data:", err?.response?.data)
+        console.groupEnd()
 
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000,
-        })
+        // Handle validation errors from the backend
+        if (err?.response?.data?.errors) {
+          const errors = err.response.data.errors
+          console.group("Backend Validation Errors")
+          console.table(errors)
+          console.groupEnd()
+
+          Object.entries(errors).forEach(([field, messages]) => {
+            toast.error(`${field}: ${messages[0]}`, {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            })
+          })
+        } else {
+          // Handle general error
+          const errorMessage =
+            err?.response?.data?.message ||
+            err?.response?.data?.data?.message ||
+            "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
+
+          toast.error(errorMessage, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          })
+        }
+      }
+    },
+    validate: values => {
+      try {
+        console.group("Frontend Validation")
+        console.log("Validating values:", values)
+
+        procurementSchema.validateSync(values, { abortEarly: false })
+        console.log("Frontend validation passed")
+        console.groupEnd()
+      } catch (err) {
+        console.group("Frontend Validation Errors")
+        if (err.inner) {
+          const errors = err.inner.reduce((acc, error) => {
+            acc[error.path] = error.message
+            return acc
+          }, {})
+          console.table(errors)
+
+          err.inner.forEach(error => {
+            toast.error(`${error.path}: ${error.message}`, {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            })
+          })
+        }
+        console.groupEnd()
       }
     },
   })
@@ -302,14 +365,9 @@ const ProcurementPage = () => {
         quantity: "",
         dimensions: "",
         description: "",
-        additional_information: "",
-        alternate_possibility: false,
-        alternate_possibility_reason: "",
-        supplier_exists: false,
-        supplier_name: "",
-        supplier_contact_information: "",
-        supplier_offer_details: "",
-        similar_purchase_planned: false,
+        search_variant: "",
+        similar_purchase_planned: "",
+        in_stock_explanation: "",
         payer: "",
       },
     ])

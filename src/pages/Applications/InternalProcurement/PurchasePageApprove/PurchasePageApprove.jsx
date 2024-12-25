@@ -28,7 +28,6 @@ import {
   BiUserCheck,
   BiUserVoice,
   BiCalendar,
-  BiTrendingUp,
   BiInfoCircle,
   BiBox,
   BiTargetLock,
@@ -41,8 +40,6 @@ import {
   BiStore,
   BiFlag,
   BiCog,
-  BiPhone,
-  BiNote,
   BiComment,
   BiMessageAltX,
 } from "react-icons/bi"
@@ -444,11 +441,6 @@ const PurchasePageApprove = () => {
         icon: <BiTime />,
       },
       {
-        label: "აღემატება საჭიროებას",
-        value: rowData?.exceeds_needs ? "დიახ" : "არა",
-        icon: <BiTrendingUp />,
-      },
-      {
         label: "საჭიროების გადაჭარბების მიზეზი",
         value: rowData?.exceeds_needs_reason || "N/A",
         icon: <BiInfoCircle />,
@@ -580,6 +572,7 @@ const PurchasePageApprove = () => {
 
     const ProductsTable = () => {
       if (!rowData?.products?.length) return null
+      console.log(rowData.products)
 
       return (
         <Card className="shadow-sm">
@@ -611,35 +604,60 @@ const PurchasePageApprove = () => {
                 <thead className="table-light">
                   <tr>
                     <th>
-                      <BiLabel /> სახელი
+                      <div className="d-flex align-items-center gap-2">
+                        <BiLabel /> <span>სახელი</span>
+                      </div>
                     </th>
                     <th>
-                      <BiHash /> რაოდენობა
+                      <div className="d-flex align-items-center gap-2">
+                        <BiHash /> <span>რაოდენობა</span>
+                      </div>
                     </th>
                     <th>
-                      <BiRuler /> ზომები
+                      <div className="d-flex align-items-center gap-2">
+                        <BiRuler /> <span>ზომები</span>
+                      </div>
                     </th>
                     <th>
-                      <BiText /> აღწერა
+                      <div className="d-flex align-items-center gap-2">
+                        <BiText /> <span>აღწერა</span>
+                      </div>
                     </th>
                     <th>
-                      <BiInfoCircle /> დამატებითი ინფორმაცია
+                      <div className="d-flex align-items-center gap-2">
+                        <BiWallet /> <span>გადამხდელი</span>
+                      </div>
                     </th>
                     <th>
-                      <BiWallet /> გადამხდელი
+                      <div className="d-flex align-items-center gap-2">
+                        <BiStore /> <span>მოძიებული ვარიანტი</span>
+                      </div>
                     </th>
                     <th>
-                      <BiStore /> მომწოდებელი
+                      <div className="d-flex align-items-center gap-2">
+                        <BiTime /> <span>ანალოგიური შესყიდვა</span>
+                      </div>
                     </th>
                     <th>
-                      <BiFlag /> სტატუსი
+                      <div className="d-flex align-items-center gap-2">
+                        <BiBox /> <span>ასორტიმენტში</span>
+                      </div>
                     </th>
                     <th>
-                      <BiComment /> კომენტარი
+                      <div className="d-flex align-items-center gap-2">
+                        <BiFlag /> <span>სტატუსი</span>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="d-flex align-items-center gap-2">
+                        <BiComment /> <span>კომენტარი</span>
+                      </div>
                     </th>
                     {canManageProducts(rowData) && (
                       <th>
-                        <BiCog /> მოქმედებები
+                        <div className="d-flex align-items-center gap-2">
+                          <BiCog /> <span>მოქმედებები</span>
+                        </div>
                       </th>
                     )}
                   </tr>
@@ -651,32 +669,10 @@ const PurchasePageApprove = () => {
                       <td>{product?.quantity || "N/A"}</td>
                       <td>{product?.dimensions || "N/A"}</td>
                       <td>{product?.description || "N/A"}</td>
-                      <td>{product?.additional_information || "N/A"}</td>
                       <td>{product?.payer || "N/A"}</td>
-                      <td>
-                        {product?.supplier_exists ? (
-                          <div>
-                            <div className="d-flex align-items-center gap-1">
-                              <BiBuilding />
-                              {product.supplier_name}
-                            </div>
-                            <small className="text-muted d-block">
-                              <BiPhone className="me-1" />
-                              {product.supplier_contact_information}
-                            </small>
-                            {product.supplier_offer_details && (
-                              <small className="text-muted d-block">
-                                <BiNote className="me-1" />
-                                შეთავაზება: {product.supplier_offer_details}
-                              </small>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted">
-                            <BiX /> არ არსებობს
-                          </span>
-                        )}
-                      </td>
+                      <td>{product?.search_variant || "N/A"}</td>
+                      <td>{product?.similar_purchase_planned || "N/A"}</td>
+                      <td>{product?.in_stock_explanation || "N/A"}</td>
                       <td>
                         <span
                           style={{

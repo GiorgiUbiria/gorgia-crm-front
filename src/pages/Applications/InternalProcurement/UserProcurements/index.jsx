@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col, Card, CardBody } from "reactstrap"
 import {
-  BiX,
   BiTime,
   BiCheckCircle,
   BiLoader,
@@ -12,7 +11,6 @@ import {
   BiUserCheck,
   BiUserVoice,
   BiCalendar,
-  BiTrendingUp,
   BiInfoCircle,
   BiBox,
   BiTargetLock,
@@ -24,8 +22,6 @@ import {
   BiWallet,
   BiStore,
   BiFlag,
-  BiPhone,
-  BiNote,
   BiComment,
   BiMessageAltX,
 } from "react-icons/bi"
@@ -227,11 +223,6 @@ const UserProcurements = () => {
         icon: <BiTime />,
       },
       {
-        label: "აღემატება საჭიროებას",
-        value: rowData?.exceeds_needs ? "დიახ" : "არა",
-        icon: <BiTrendingUp />,
-      },
-      {
         label: "საჭიროების გადაჭარბების მიზეზი",
         value: rowData?.exceeds_needs_reason || "N/A",
         icon: <BiInfoCircle />,
@@ -406,13 +397,16 @@ const UserProcurements = () => {
                       <BiText /> აღწერა
                     </th>
                     <th>
-                      <BiInfoCircle /> დამატებითი ინფორმაცია
-                    </th>
-                    <th>
                       <BiWallet /> გადამხდელი
                     </th>
                     <th>
-                      <BiStore /> მომწოდებელი
+                      <BiStore /> მოძიებული ვარიანტი
+                    </th>
+                    <th>
+                      <BiTime /> ანალოგიური შესყიდვა
+                    </th>
+                    <th>
+                      <BiBox /> ასორტიმენტში
                     </th>
                     <th>
                       <BiFlag /> სტატუსი
@@ -429,32 +423,10 @@ const UserProcurements = () => {
                       <td>{product?.quantity || "N/A"}</td>
                       <td>{product?.dimensions || "N/A"}</td>
                       <td>{product?.description || "N/A"}</td>
-                      <td>{product?.additional_information || "N/A"}</td>
                       <td>{product?.payer || "N/A"}</td>
-                      <td>
-                        {product?.supplier_exists ? (
-                          <div>
-                            <div className="d-flex align-items-center gap-1">
-                              <BiBuilding />
-                              {product.supplier_name}
-                            </div>
-                            <small className="text-muted d-block">
-                              <BiPhone className="me-1" />
-                              {product.supplier_contact_information}
-                            </small>
-                            {product.supplier_offer_details && (
-                              <small className="text-muted d-block">
-                                <BiNote className="me-1" />
-                                შეთავაზება: {product.supplier_offer_details}
-                              </small>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted">
-                            <BiX /> არ არსებობს
-                          </span>
-                        )}
-                      </td>
+                      <td>{product?.search_variant || "N/A"}</td>
+                      <td>{product?.similar_purchase_planned || "N/A"}</td>
+                      <td>{product?.in_stock_explanation || "N/A"}</td>
                       <td>
                         <span
                           style={{

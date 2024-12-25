@@ -52,12 +52,15 @@ const SidebarContent = ({ t }) => {
   const activateParentDropdown = useCallback(
     path => {
       const activeParents = getActiveMenuParents(menuConfig, path)
-      setExpandedMenus(prev => {
-        const newState = { ...prev }
-        activeParents.forEach(key => {
-          newState[key] = true
-        })
-        return newState
+
+      const newExpandedMenus = { ...expandedMenus }
+      let shouldUpdateExpanded = false
+
+      activeParents.forEach(key => {
+        if (!newExpandedMenus[key]) {
+          newExpandedMenus[key] = true
+          shouldUpdateExpanded = true
+        }
       })
 
       const allActivePaths = menuConfig.reduce((acc, item) => {
@@ -74,9 +77,21 @@ const SidebarContent = ({ t }) => {
         return acc
       }, [])
 
-      setActiveMenus([...activeParents, ...allActivePaths])
+      const newActiveMenus = [...activeParents, ...allActivePaths]
+
+      const isActiveMenusDifferent =
+        newActiveMenus.length !== activeMenus.length ||
+        !newActiveMenus.every((menu, index) => menu === activeMenus[index])
+
+      if (shouldUpdateExpanded) {
+        setExpandedMenus(newExpandedMenus)
+      }
+
+      if (isActiveMenusDifferent) {
+        setActiveMenus(newActiveMenus)
+      }
     },
-    [menuConfig, getActiveMenuParents, isMenuActive]
+    [getActiveMenuParents, isMenuActive, menuConfig, expandedMenus, activeMenus]
   )
 
   const toggleMenu = useCallback(key => {
@@ -140,7 +155,8 @@ const SidebarContent = ({ t }) => {
 
   useEffect(() => {
     activateParentDropdown(location.pathname)
-  }, [location.pathname, activateParentDropdown])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   return (
     <div

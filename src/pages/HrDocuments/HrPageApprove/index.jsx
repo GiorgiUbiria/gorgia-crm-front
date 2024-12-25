@@ -81,6 +81,7 @@ const HrPageApprove = () => {
   const findDocument = async documentId => {
     const response = await getHrDocuments()
     const documentData = response.data.find(d => d.id === documentId)
+    console.log(documentData)
     setFormData(data => ({
       ...data,
       user_id: documentData?.user?.id,
@@ -110,7 +111,9 @@ const HrPageApprove = () => {
       template_num:
         Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) +
         1,
-      document_number: "",
+      document_number: documentData?.document_number
+        ? documentData?.document_number
+        : "No number",
       started_date:
         documentData?.is_other_user !== 1
           ? documentData?.user?.working_start_date
