@@ -53,125 +53,107 @@ const ArchivePage = () => {
   }
 
   return (
-    <div className="bg-gray-50">
+    <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 sm:mb-6">
-          <span>მთავარი</span>
-          <span className="text-gray-400">/</span>
-          <span className="font-medium text-gray-900">არქივი</span>
-        </div>
+        <div className="p-4 sm:p-6">
+          <Nav tabs className="nav-tabs-custom nav-justified w-100">
+            <NavItem>
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames({ active: activeTab === "1" })}
+                onClick={() => toggleTab("1")}
+              >
+                ხელშეკრულებები
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames({ active: activeTab === "2" })}
+                onClick={() => toggleTab("2")}
+              >
+                მივლინებები
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames({ active: activeTab === "3" })}
+                onClick={() => toggleTab("3")}
+              >
+                შიდა შესყიდვები
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames({ active: activeTab === "4" })}
+                onClick={() => toggleTab("4")}
+              >
+                შვებულებები
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames({ active: activeTab === "5" })}
+                onClick={() => toggleTab("5")}
+              >
+                HR დოკუმენტები
+              </NavLink>
+            </NavItem>
+          </Nav>
 
-        {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            <Nav tabs className="nav-tabs-custom nav-justified w-100">
-              <NavItem>
-                <NavLink
-                  style={{ cursor: "pointer" }}
-                  className={classnames({ active: activeTab === "1" })}
-                  onClick={() => toggleTab("1")}
-                >
-                  ხელშეკრულებები
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink
-                  style={{ cursor: "pointer" }}
-                  className={classnames({ active: activeTab === "2" })}
-                  onClick={() => toggleTab("2")}
-                >
-                  მივლინებები
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink
-                  style={{ cursor: "pointer" }}
-                  className={classnames({ active: activeTab === "3" })}
-                  onClick={() => toggleTab("3")}
-                >
-                  შიდა შესყიდვები
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink
-                  style={{ cursor: "pointer" }}
-                  className={classnames({ active: activeTab === "4" })}
-                  onClick={() => toggleTab("4")}
-                >
-                  შვებულებები
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink
-                  style={{ cursor: "pointer" }}
-                  className={classnames({ active: activeTab === "5" })}
-                  onClick={() => toggleTab("5")}
-                >
-                  HR დოკუმენტები
-                </NavLink>
-              </NavItem>
-            </Nav>
-
-            <TabContent activeTab={activeTab} className="p-3">
-              <TabPane tabId="1">
-                <div className="mb-3">
-                  <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-                    <DropdownToggle caret>
-                      {agreementType === "standard" &&
-                        "ნასყიდობის ხელშეკრულება"}
-                      {agreementType === "marketing" &&
-                        "მარკეტინგული მომსახურების ხელშეკრულება"}
-                      {agreementType === "service" &&
-                        "მომსახურების ხელშეკრულება"}
-                      {agreementType === "local" &&
-                        "ადგილობრივი შესყიდვის ხელშეკრულება"}
-                      {agreementType === "delivery" && "მიღება-ჩაბარების აქტი"}
-                    </DropdownToggle>
-                    <DropdownMenu>
-                      <DropdownItem
-                        onClick={() => setAgreementType("standard")}
-                      >
-                        ნასყიდობის ხელშეკრულება
-                      </DropdownItem>
-                      <DropdownItem
-                        onClick={() => setAgreementType("marketing")}
-                      >
-                        მარკეტინგული მომსახურების ხელშეკრულება
-                      </DropdownItem>
-                      <DropdownItem onClick={() => setAgreementType("service")}>
-                        მომსახურების ხელშეკრულება
-                      </DropdownItem>
-                      <DropdownItem onClick={() => setAgreementType("local")}>
-                        ადგილობრივი შესყიდვის ხელშეკრულება
-                      </DropdownItem>
-                      <DropdownItem
-                        onClick={() => setAgreementType("delivery")}
-                      >
-                        მიღება-ჩაბარების აქტი
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
-                </div>
-                {renderAgreementArchive()}
-              </TabPane>
-              <TabPane tabId="2">
-                <TripPageArchive />
-              </TabPane>
-              <TabPane tabId="3">
-                <ProcurementPageArchive />
-              </TabPane>
-              <TabPane tabId="4">
-                <VacationPageArchive />
-              </TabPane>
-              <TabPane tabId="5">
-                <HrPageArchive />
-              </TabPane>
-            </TabContent>
-          </div>
+          <TabContent activeTab={activeTab} className="p-3">
+            <TabPane tabId="1">
+              <div className="mb-3">
+                <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+                  <DropdownToggle caret>
+                    {agreementType === "standard" && "ნასყიდობის ხელშეკრულება"}
+                    {agreementType === "marketing" &&
+                      "მარკეტინგული მომსახურების ხელშეკრულება"}
+                    {agreementType === "service" && "მომსახურების ხელშეკრულება"}
+                    {agreementType === "local" &&
+                      "ადგილობრივი შესყიდვის ხელშეკრულება"}
+                    {agreementType === "delivery" && "მიღება-ჩაბარების აქტი"}
+                  </DropdownToggle>
+                  <DropdownMenu>
+                    <DropdownItem onClick={() => setAgreementType("standard")}>
+                      ნასყიდობის ხელშეკრულება
+                    </DropdownItem>
+                    <DropdownItem onClick={() => setAgreementType("marketing")}>
+                      მარკეტინგული მომსახურების ხელშეკრულება
+                    </DropdownItem>
+                    <DropdownItem onClick={() => setAgreementType("service")}>
+                      მომსახურების ხელშეკრულება
+                    </DropdownItem>
+                    <DropdownItem onClick={() => setAgreementType("local")}>
+                      ადგილობრივი შესყიდვის ხელშეკრულება
+                    </DropdownItem>
+                    <DropdownItem onClick={() => setAgreementType("delivery")}>
+                      მიღება-ჩაბარების აქტი
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </div>
+              {renderAgreementArchive()}
+            </TabPane>
+            <TabPane tabId="2">
+              <TripPageArchive />
+            </TabPane>
+            <TabPane tabId="3">
+              <ProcurementPageArchive />
+            </TabPane>
+            <TabPane tabId="4">
+              <VacationPageArchive />
+            </TabPane>
+            <TabPane tabId="5">
+              <HrPageArchive />
+            </TabPane>
+          </TabContent>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

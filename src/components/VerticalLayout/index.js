@@ -15,6 +15,8 @@ import {
 // Layout Related Components
 import Header from "./Header"
 import Sidebar from "./Sidebar"
+import Footer from "./Footer"
+import Breadcrumbs from "./Breadcrumbs"
 
 //redux
 import { useSelector, useDispatch } from "react-redux"
@@ -122,7 +124,7 @@ const Layout = props => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <Sidebar
         theme={leftSideBarTheme}
@@ -130,13 +132,21 @@ const Layout = props => {
         isMobile={isMobile}
         isOpen={isSidebarOpen}
       />
-      <main
-        className={`pt-16 transition-all duration-300 ${
-          isSidebarOpen ? "md:ml-72" : ""
-        }`}
-      >
-        {props.children}
-      </main>
+      <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "md:ml-72" : ""}`}>
+        <div className="flex flex-col min-h-screen pt-16">
+          <div className="flex-1 flex flex-col">
+            <div className="mx-4 mt-4">
+              <Breadcrumbs />
+            </div>
+            <main className="flex-1 px-4 py-6">
+              <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+                {props.children}
+              </div>
+            </main>
+          </div>
+          <Footer />
+        </div>
+      </div>
     </div>
   )
 }

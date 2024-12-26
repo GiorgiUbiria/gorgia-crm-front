@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom"
 import {
   Card,
   CardBody,
-  Container,
   Form,
   Input,
   Label,
@@ -18,7 +17,6 @@ import {
 } from "reactstrap"
 import { useFormik } from "formik"
 import { businessSchema } from "./validationSchema"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import { createBusinessTrip } from "../../../../services/admin/business"
 import { getPublicDepartments as getDepartments } from "../../../../services/admin/department"
 import { toast, ToastContainer } from "react-toastify"
@@ -441,8 +439,6 @@ const BusinessPage = () => {
       )
     }
 
-    console.log("Current departments state:", departments)
-
     return (
       <Form onSubmit={formik.handleSubmit}>
         <h5 className="mt-4 text-lg font-semibold">მივლინების ტიპი</h5>
@@ -693,69 +689,67 @@ const BusinessPage = () => {
 
   return (
     <>
-      <div className="page-content">
-        <Container fluid>
-          <Breadcrumbs
-            title="განცხადებები"
-            breadcrumbItem="მივლინების გაგზავნა"
-          />
-          <div className="row">
-            <div className="col-12">
-              <Card>
-                <CardBody>
-                  {isAdmin && (
-                    <Nav tabs className="mb-3">
-                      <NavItem>
-                        <NavLink
-                          className={classnames({
-                            active: activeTab === "1",
-                          })}
-                          onClick={() => toggleTab("1")}
-                          style={{ cursor: "pointer" }}
-                        >
-                          ჩემი მივლინება
-                        </NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink
-                          className={classnames({
-                            active: activeTab === "2",
-                          })}
-                          onClick={() => toggleTab("2")}
-                          style={{ cursor: "pointer" }}
-                        >
-                          თანამშრომლის მივლინება
-                        </NavLink>
-                      </NavItem>
-                    </Nav>
-                  )}
-
-                  {!isAdmin && activeTab !== "1" && toggleTab("1")}
-
-                  <TabContent activeTab={activeTab}>
-                    <TabPane tabId="1">
-                      {renderForm(
-                        formikMyTrip,
-                        handleVehicleExpenseChangeMyTrip,
-                        "1"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="p-4 sm:p-6">
+          <Card>
+            <CardBody className="p-6">
+              {isAdmin && (
+                <Nav tabs className="mb-6 border-b border-gray-200">
+                  <NavItem>
+                    <NavLink
+                      className={classnames(
+                        "border-0 pb-3 px-6 cursor-pointer transition-colors hover:text-blue-600",
+                        {
+                          "border-b-2 border-blue-600 text-blue-600":
+                            activeTab === "1",
+                        }
                       )}
-                    </TabPane>
+                      onClick={() => toggleTab("1")}
+                    >
+                      ჩემი მივლინება
+                    </NavLink>
+                  </NavItem>
+                  <NavItem>
+                    <NavLink
+                      className={classnames(
+                        "border-0 pb-3 px-6 cursor-pointer transition-colors hover:text-blue-600",
+                        {
+                          "border-b-2 border-blue-600 text-blue-600":
+                            activeTab === "2",
+                        }
+                      )}
+                      onClick={() => toggleTab("2")}
+                    >
+                      თანამშრომლის მივლინება
+                    </NavLink>
+                  </NavItem>
+                </Nav>
+              )}
 
-                    {isAdmin && (
-                      <TabPane tabId="2">
-                        {renderForm(
-                          formikEmployeeTrip,
-                          handleVehicleExpenseChangeEmployeeTrip,
-                          "2"
-                        )}
-                      </TabPane>
+              {!isAdmin && activeTab !== "1" && toggleTab("1")}
+
+              <TabContent activeTab={activeTab}>
+                <TabPane tabId="1">
+                  {renderForm(
+                    formikMyTrip,
+                    handleVehicleExpenseChangeMyTrip,
+                    "1"
+                  )}
+                </TabPane>
+
+                {isAdmin && (
+                  <TabPane tabId="2">
+                    {renderForm(
+                      formikEmployeeTrip,
+                      handleVehicleExpenseChangeEmployeeTrip,
+                      "2"
                     )}
-                  </TabContent>
-                </CardBody>
-              </Card>
-            </div>
-          </div>
-        </Container>
+                  </TabPane>
+                )}
+              </TabContent>
+            </CardBody>
+          </Card>
+        </div>
       </div>
       <ToastContainer
         position="top-right"

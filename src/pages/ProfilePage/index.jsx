@@ -3,287 +3,9 @@ import { changePassword, updateUser } from "../../services/user"
 import { useTranslation } from "react-i18next"
 import { useSelector } from "react-redux"
 import { FiCamera, FiUser, FiMail, FiLock } from "react-icons/fi"
-import styled from "@emotion/styled"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import "./index.css"
 import NoAvatarIcon from "../../assets/images/no-avatar.jpg"
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  padding-top: 80px;
-  background: var(--bg-primary);
-  min-height: 100vh;
-`
-
-const PageHeader = styled.header`
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, #2a3f54 100%);
-  border-radius: 10px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow-md);
-`
-
-const HeaderContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  max-width: 1200px;
-  width: 100%;
-`
-
-const ImageSection = styled.div`
-  position: relative;
-  margin-right: 15px;
-`
-
-const ProfileImageWrapper = styled.div`
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: scale(1.03);
-  }
-`
-
-const ProfileImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`
-
-const UploadOverlay = styled.label`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  cursor: pointer;
-
-  &:hover {
-    opacity: 1;
-  }
-`
-
-const UserInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-
-const UserName = styled.h1`
-  font-size: 24px;
-  font-weight: 600;
-  color: #fff;
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`
-
-const UserRole = styled.p`
-  display: flex;
-  gap: 8px;
-  margin-top: 6px;
-`
-
-const Badge = styled.span`
-  padding: 5px 10px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 500;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-  }
-`
-
-const RoleBadge = styled(Badge)`
-  background-color: var(--success-color);
-  color: white;
-`
-
-const DepartmentBadge = styled(Badge)`
-  background-color: var(--primary-color);
-  color: white;
-`
-
-const ContentGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-  padding: 15px;
-
-  @media (min-width: 1024px) {
-    grid-template-columns: 1fr;
-    > * {
-      height: 100%;
-    }
-  }
-`
-
-const InfoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1rem;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-`
-
-const InfoItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-`
-
-const InfoLabel = styled.span`
-  font-size: 0.875rem;
-  color: #6c757d;
-  font-weight: 500;
-`
-
-const InfoValue = styled.span`
-  font-size: 1rem;
-  color: #2c3e50;
-  font-weight: 500;
-`
-
-const Section = styled.div`
-  background-color: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease;
-  display: flex;
-  flex-direction: column;
-
-  &:hover {
-    transform: translateY(-1px);
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    justify-content: space-between;
-  }
-`
-
-const SectionTitle = styled.h2`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 1rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid #f0f0f0;
-`
-
-const FormGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
-`
-
-const PasswordFormGrid = styled(FormGrid)`
-  @media (min-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
-`
-
-const FormField = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 0.8rem;
-`
-
-const Label = styled.label`
-  font-weight: 500;
-  color: #4a5568;
-`
-
-const Input = styled.input`
-  padding: 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 14px;
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(16, 93, 141, 0.2);
-    outline: none;
-  }
-`
-
-const ErrorText = styled.p`
-  color: var(--error-color);
-  font-size: 13px;
-`
-
-const ActionButton = styled.button`
-  padding: 10px 20px;
-  background-color: ${props =>
-    props.disabled ? "#ccc" : "var(--primary-color)"};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: ${props => (props.disabled ? "not-allowed" : "pointer")};
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => (props.disabled ? "#ccc" : "#0f4a6a")};
-    transform: ${props => (props.disabled ? "none" : "translateY(-1px)")};
-  }
-
-  &:active {
-    transform: ${props => (props.disabled ? "none" : "translateY(0)")};
-  }
-`
-
-const ButtonContainer = styled.div`
-  margin-top: 0.8rem;
-  padding-top: 0.8rem;
-`
-
-const SectionDivider = styled.div`
-  height: 1px;
-  background: #e9ecef;
-  margin: 2rem 0;
-  width: 100%;
-`
-
-const SectionDescription = styled.p`
-  color: #6c757d;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-`
 
 const ProfilePage = () => {
   const { t } = useTranslation()
@@ -447,39 +169,26 @@ const ProfilePage = () => {
   }
 
   return (
-    <Container className="mb-4">
-      <PageHeader>
-        <HeaderContent
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: "center",
-            gap: 2,
-          }}
-        >
-          <ImageSection
-            sx={{
-              flex: { xs: "0 0 auto", sm: "0 0 150px" },
-              textAlign: "center",
-            }}
-          >
-            <ProfileImageWrapper>
-              <ProfileImage
+    <>
+      <header className="bg-gradient-to-br from-gray-400 to-gray-900 rounded-lg p-4 sm:p-8 mb-8 shadow-md">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 max-w-7xl w-full">
+          <div className="relative">
+            <div className="relative w-[80px] sm:w-[100px] h-[80px] sm:h-[100px] rounded-lg overflow-hidden border-3 border-white/20 transition-transform hover:scale-[1.03]">
+              <img
                 src={profileImageSrc}
                 alt={`${userData?.name} ${userData?.sur_name}`}
-                sx={{
-                  width: { xs: "100px", sm: "150px" },
-                  height: { xs: "100px", sm: "150px" },
-                  borderRadius: "50%",
-                }}
+                className="w-full h-full object-cover"
               />
-              <UploadOverlay htmlFor="profile-image-upload">
-                <FiCamera size={16} />
-              </UploadOverlay>
+              <label
+                htmlFor="profile-image-upload"
+                className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                <FiCamera size={16} className="text-white" />
+              </label>
               <input
                 id="profile-image-upload"
                 type="file"
-                hidden
+                className="hidden"
                 accept="image/*"
                 onChange={e => {
                   setProfileForm({
@@ -488,221 +197,250 @@ const ProfilePage = () => {
                   })
                 }}
               />
-            </ProfileImageWrapper>
-          </ImageSection>
-          <UserInfo
-            sx={{ textAlign: { xs: "center", sm: "left" }, width: "100%" }}
-          >
-            <UserName
-              sx={{
-                fontSize: { xs: "1.2rem", sm: "1.5rem" },
-                wordBreak: "break-word",
-              }}
-            >
-              {userData?.name} {userData?.sur_name}
-            </UserName>
-            <UserRole
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                gap: 1,
-                justifyContent: { xs: "center", sm: "flex-start" },
-                flexWrap: "wrap",
-                textAlign: { xs: "center", sm: "left" },
-              }}
-            >
-              <DepartmentBadge>{userData?.department?.name}</DepartmentBadge>
-              {userData?.roles?.map(role => (
-                <RoleBadge key={role.id}>{role.name}</RoleBadge>
-              ))}
-            </UserRole>
-          </UserInfo>
-        </HeaderContent>
-      </PageHeader>
+            </div>
+          </div>
 
-      <ContentGrid>
-        <Section>
-          <SectionTitle>
+          <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+            <h1 className="text-xl sm:text-2xl font-semibold text-white m-0 shadow-sm">
+              {userData?.name} {userData?.sur_name}
+            </h1>
+            <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-1.5">
+              <span className="px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-blue-600 text-white hover:-translate-y-0.5 transition-transform">
+                {userData?.department?.name}
+              </span>
+              {userData?.roles?.map(role => (
+                <span
+                  key={role.id}
+                  className="px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-green-600 text-white hover:-translate-y-0.5 transition-transform"
+                >
+                  {role.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="grid gap-6 p-2 sm:p-4">
+        <section className="bg-white rounded-lg p-4 sm:p-6 shadow-sm hover:-translate-y-0.5 transition-transform">
+          <h2 className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
             <FiUser size={20} />
             <span>{t("ზოგადი ინფორმაცია")}</span>
-          </SectionTitle>
-          <SectionDescription>
+          </h2>
+          <p className="text-gray-600 text-xs sm:text-sm mb-6">
             {t("თქვენი პროფილის ძირითადი ინფორმაცია")}
-          </SectionDescription>
+          </p>
 
-          <InfoGrid>
-            <InfoItem>
-              <InfoLabel>{t("სახელი")}</InfoLabel>
-              <InfoValue>{userData?.name}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>{t("გვარი")}</InfoLabel>
-              <InfoValue>{userData?.sur_name}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>{t("პირადი ნომერი")}</InfoLabel>
-              <InfoValue>{userData?.id_number || "-"}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>{t("დაბადების თარიღი")}</InfoLabel>
-              <InfoValue>{userData?.date_of_birth || "-"}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>{t("პოზიცია")}</InfoLabel>
-              <InfoValue>{userData?.position || "-"}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>{t("მდებარეობა")}</InfoLabel>
-              <InfoValue>{userData?.location || "-"}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>{t("დაწყების თარიღი")}</InfoLabel>
-              <InfoValue>{userData?.working_start_date || "-"}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>{t("მობილური")}</InfoLabel>
-              <InfoValue>{userData?.mobile_number || "-"}</InfoValue>
-            </InfoItem>
-            <InfoItem>
-              <InfoLabel>{t("ელ-ფოსტა")}</InfoLabel>
-              <InfoValue>{userData?.email}</InfoValue>
-            </InfoItem>
-          </InfoGrid>
-        </Section>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <InfoItem label={t("სახელი")} value={userData?.name} />
+            <InfoItem label={t("გვარი")} value={userData?.sur_name} />
+            <InfoItem
+              label={t("პირადი ნომერი")}
+              value={userData?.id_number || "-"}
+            />
+            <InfoItem
+              label={t("დაბადების თარიღი")}
+              value={userData?.date_of_birth || "-"}
+            />
+            <InfoItem label={t("პოზიცია")} value={userData?.position || "-"} />
+            <InfoItem
+              label={t("მდებარეობა")}
+              value={userData?.location || "-"}
+            />
+            <InfoItem
+              label={t("დაწყების თარიღი")}
+              value={userData?.working_start_date || "-"}
+            />
+            <InfoItem
+              label={t("მობილური")}
+              value={userData?.mobile_number || "-"}
+            />
+            <InfoItem label={t("ელ-ფოსტა")} value={userData?.email} />
+          </div>
+        </section>
 
-        <SectionDivider />
+        <div className="h-px bg-gray-200 my-4 sm:my-8" />
 
-        <Section>
-          <SectionTitle>
+        <section className="bg-white rounded-lg p-4 sm:p-6 shadow-sm hover:-translate-y-0.5 transition-transform">
+          <h2 className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
             <FiMail size={20} />
             <span>{t("პროფილის განახლება")}</span>
-          </SectionTitle>
-          <SectionDescription>
+          </h2>
+          <p className="text-gray-600 text-xs sm:text-sm mb-6">
             {t("განაახლეთ თქვენი პროფილის ინფორმაცია")}
-          </SectionDescription>
+          </p>
 
           <form onSubmit={submitProfileForm}>
-            <FormGrid>
-              <FormField>
-                <Label>{t("სახელი")}</Label>
-                <Input
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {t("სახელი")}
+                </label>
+                <input
                   type="text"
                   name="name"
                   value={profileForm.name}
                   onChange={handleChangeProfile}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
                 {profileError?.name && (
-                  <ErrorText>{profileError.name}</ErrorText>
+                  <p className="text-sm text-red-600">{profileError.name}</p>
                 )}
-              </FormField>
+              </div>
 
-              <FormField>
-                <Label>{t("გვარი")}</Label>
-                <Input
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {t("გვარი")}
+                </label>
+                <input
                   type="text"
                   name="sur_name"
                   value={profileForm.sur_name}
                   onChange={handleChangeProfile}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
                 {profileError?.sur_name && (
-                  <ErrorText>{profileError.sur_name}</ErrorText>
+                  <p className="text-sm text-red-600">
+                    {profileError.sur_name}
+                  </p>
                 )}
-              </FormField>
+              </div>
 
-              <FormField>
-                <Label>{t("ელ-ფოსტა")}</Label>
-                <Input
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {t("ელ-ფოსტა")}
+                </label>
+                <input
                   type="email"
                   name="email"
                   value={profileForm.email}
                   onChange={handleChangeProfile}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
                 {profileError?.email && (
-                  <ErrorText>{profileError.email}</ErrorText>
+                  <p className="text-sm text-red-600">{profileError.email}</p>
                 )}
-              </FormField>
+              </div>
 
-              <FormField>
-                <Label>{t("მობილური")}</Label>
-                <Input
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {t("მობილური")}
+                </label>
+                <input
                   type="text"
                   name="mobile_number"
                   value={profileForm.mobile_number}
                   onChange={handleChangeProfile}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
                 {profileError?.mobile_number && (
-                  <ErrorText>{profileError.mobile_number}</ErrorText>
+                  <p className="text-sm text-red-600">
+                    {profileError.mobile_number}
+                  </p>
                 )}
-              </FormField>
-            </FormGrid>
+              </div>
+            </div>
 
-            <ButtonContainer>
-              <ActionButton type="submit" disabled={!isProfileFormChanged()}>
+            <div className="mt-4">
+              <button
+                type="submit"
+                disabled={!isProfileFormChanged()}
+                className="w-full flex items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
                 {t("შენახვა")}
-              </ActionButton>
-            </ButtonContainer>
+              </button>
+            </div>
           </form>
-        </Section>
+        </section>
 
-        <SectionDivider />
+        <div className="h-px bg-gray-200 my-4 sm:my-8" />
 
-        <Section>
-          <SectionTitle>
+        <section className="bg-white rounded-lg p-4 sm:p-6 shadow-sm hover:-translate-y-0.5 transition-transform">
+          <h2 className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
             <FiLock size={20} />
             <span>{t("პაროლის შეცვლა")}</span>
-          </SectionTitle>
-          <SectionDescription>
+          </h2>
+          <p className="text-gray-600 text-xs sm:text-sm mb-6">
             {t("უსაფრთხოების მიზნით, შეცვალეთ თქვენი პაროლი პერიოდულად")}
-          </SectionDescription>
+          </p>
 
           <form onSubmit={submitPassForm}>
-            <PasswordFormGrid>
-              <FormField>
-                <Label>{t("ძველი პაროლი")}</Label>
-                <Input
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {t("ძველი პაროლი")}
+                </label>
+                <input
                   type="password"
                   name="old_password"
                   onChange={handleChangePass}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
                 {passError?.old_password && (
-                  <ErrorText>{passError.old_password}</ErrorText>
+                  <p className="text-sm text-red-600">
+                    {passError.old_password}
+                  </p>
                 )}
-              </FormField>
+              </div>
 
-              <FormField>
-                <Label>{t("ახალი პაროლი")}</Label>
-                <Input
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {t("ახალი პაროლი")}
+                </label>
+                <input
                   type="password"
                   name="password"
                   onChange={handleChangePass}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
                 {passError?.password && (
-                  <ErrorText>{passError.password}</ErrorText>
+                  <p className="text-sm text-red-600">{passError.password}</p>
                 )}
-              </FormField>
+              </div>
 
-              <FormField>
-                <Label>{t("გაიმეორე პაროლი")}</Label>
-                <Input
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {t("გაიმეორე პაროლი")}
+                </label>
+                <input
                   type="password"
                   name="confirm_password"
                   onChange={handleChangePass}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
                 {passError?.confirm_password && (
-                  <ErrorText>{passError.confirm_password}</ErrorText>
+                  <p className="text-sm text-red-600">
+                    {passError.confirm_password}
+                  </p>
                 )}
-              </FormField>
-            </PasswordFormGrid>
+              </div>
+            </div>
 
-            <ButtonContainer>
-              <ActionButton type="submit">{t("შეცვლა")}</ActionButton>
-            </ButtonContainer>
+            <div className="mt-4">
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                {t("შეცვლა")}
+              </button>
+            </div>
           </form>
-        </Section>
-      </ContentGrid>
+        </section>
+      </div>
       <ToastContainer />
-    </Container>
+    </>
   )
 }
+
+const InfoItem = ({ label, value }) => (
+  <div className="flex flex-col gap-2 p-3 sm:p-4 bg-gray-50 rounded-lg">
+    <span className="text-xs sm:text-sm text-gray-600 font-medium">
+      {label}
+    </span>
+    <span className="text-sm sm:text-base text-gray-800 font-medium">
+      {value}
+    </span>
+  </div>
+)
 
 export default ProfilePage

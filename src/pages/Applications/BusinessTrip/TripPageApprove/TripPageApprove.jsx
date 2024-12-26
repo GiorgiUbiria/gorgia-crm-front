@@ -10,7 +10,6 @@ import {
   FormGroup,
   Label,
 } from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getAllTripsList, updateTripStatus } from "../../../../services/trip"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
@@ -494,35 +493,23 @@ const TripPageApprove = () => {
   const expandedRow = row => <ExpandedRowContent rowData={row} />
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="განცხადებები"
-                breadcrumbItem="მივლინებების ვიზირება"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <MuiTable
-                columns={columns}
-                data={transformedTrips}
-                filterOptions={filterOptions}
-                initialPageSize={10}
-                searchableFields={[
-                  "requested_by",
-                  "requested_for",
-                  "departure_location",
-                  "arrival_location",
-                ]}
-                enableSearch={true}
-                renderRowDetails={expandedRow}
-              />
-            </Col>
-          </Row>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="p-4 sm:p-6">
+          <MuiTable
+            columns={columns}
+            data={transformedTrips}
+            filterOptions={filterOptions}
+            initialPageSize={10}
+            searchableFields={[
+              "requested_by",
+              "requested_for",
+              "departure_location",
+              "arrival_location",
+            ]}
+            enableSearch={true}
+            renderRowDetails={expandedRow}
+          />
         </div>
       </div>
       <Modal isOpen={confirmModal} toggle={() => setConfirmModal(false)}>
@@ -599,7 +586,7 @@ const TripPageApprove = () => {
           </div>
         </ModalBody>
       </Modal>
-    </React.Fragment>
+    </>
   )
 }
 

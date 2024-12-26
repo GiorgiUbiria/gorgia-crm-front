@@ -10,7 +10,6 @@ import {
   ModalHeader,
   ModalBody,
 } from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getVacations } from "../../../../services/admin/vacation"
 import { updateVacationStatus } from "../../../../services/vacation"
 import MuiTable from "../../../../components/Mui/MuiTable"
@@ -444,18 +443,9 @@ const VacationPageApprove = () => {
   const expandedRow = row => <ExpandedRowContent rowData={row} />
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="განცხადებები"
-                breadcrumbItem="შვებულებების ვიზირება"
-              />
-            </Col>
-          </Row>
-          <Row>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="p-4 sm:p-6">
             <MuiTable
               data={transformedVacations}
               columns={columns}
@@ -464,8 +454,7 @@ const VacationPageApprove = () => {
               searchableFields={["requested_by", "requested_for"]}
               initialPageSize={10}
               renderRowDetails={expandedRow}
-            />
-          </Row>
+          />
         </div>
       </div>
       <Modal isOpen={confirmModal} toggle={() => setConfirmModal(false)}>
@@ -542,7 +531,7 @@ const VacationPageApprove = () => {
           </div>
         </ModalBody>
       </Modal>
-    </React.Fragment>
+    </>
   )
 }
 

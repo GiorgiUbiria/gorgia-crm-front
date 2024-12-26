@@ -151,79 +151,71 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="bg-gray-50">
+    <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 sm:mb-6">
-          <span>მთავარი</span>
-          <span className="text-gray-400">/</span>
-          <span className="font-medium text-gray-900">ადმინისტრირება</span>
-        </div>
+        <div className="p-4 sm:p-6">
+          {isAdmin ? (
+            <>
+              <Nav tabs className="nav-tabs-custom nav-justified">
+                <NavItem>
+                  <NavLink
+                    className={classnames({ active: activeTab === "1" })}
+                    onClick={() => toggle("1")}
+                  >
+                    <span>დეპარტამენტები</span>
+                  </NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink
+                    className={classnames({ active: activeTab === "2" })}
+                    onClick={() => toggle("2")}
+                  >
+                    <span>მომხმარებლები</span>
+                  </NavLink>
+                </NavItem>
+              </Nav>
 
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            {isAdmin ? (
-              <>
-                <Nav tabs className="nav-tabs-custom nav-justified">
-                  <NavItem>
-                    <NavLink
-                      className={classnames({ active: activeTab === "1" })}
-                      onClick={() => toggle("1")}
-                    >
-                      <span>დეპარტამენტები</span>
-                    </NavLink>
-                  </NavItem>
-                  <NavItem>
-                    <NavLink
-                      className={classnames({ active: activeTab === "2" })}
-                      onClick={() => toggle("2")}
-                    >
-                      <span>მომხმარებლები</span>
-                    </NavLink>
-                  </NavItem>
-                </Nav>
+              <TabContent activeTab={activeTab} className="p-3">
+                <TabPane tabId="1">
+                  <DepartmentsTab
+                    departments={departments}
+                    onDepartmentDeleted={handleDepartmentDeleted}
+                    users={users}
+                  />
+                </TabPane>
 
-                <TabContent activeTab={activeTab} className="p-3">
-                  <TabPane tabId="1">
-                    <DepartmentsTab
-                      departments={departments}
-                      onDepartmentDeleted={handleDepartmentDeleted}
-                      users={users}
-                    />
-                  </TabPane>
-
-                  <TabPane tabId="2">
-                    <UsersTab
-                      users={users}
-                      onUserDeleted={handleUserDeleted}
-                      currentUserDepartmentId={userDepartmentId}
-                      isDepartmentHead={isDepartmentHead}
-                    />
-                  </TabPane>
-                </TabContent>
-              </>
-            ) : isHrMember ? (
-              <UsersTab
-                users={users}
-                onUserDeleted={handleUserDeleted}
-                isDepartmentHead={true}
-                currentUserDepartmentId={userDepartmentId}
-              />
-            ) : isDepartmentHead && users.length > 0 ? (
-              <UsersTab
-                users={users}
-                onUserDeleted={handleUserDeleted}
-                isDepartmentHead={true}
-                currentUserDepartmentId={userDepartmentId}
-              />
-            ) : (
-              <div className="alert alert-warning">
-                Unauthorized access. Please contact administrator.
-              </div>
-            )}
-          </div>
+                <TabPane tabId="2">
+                  <UsersTab
+                    users={users}
+                    onUserDeleted={handleUserDeleted}
+                    currentUserDepartmentId={userDepartmentId}
+                    isDepartmentHead={isDepartmentHead}
+                  />
+                </TabPane>
+              </TabContent>
+            </>
+          ) : isHrMember ? (
+            <UsersTab
+              users={users}
+              onUserDeleted={handleUserDeleted}
+              isDepartmentHead={true}
+              currentUserDepartmentId={userDepartmentId}
+            />
+          ) : isDepartmentHead && users.length > 0 ? (
+            <UsersTab
+              users={users}
+              onUserDeleted={handleUserDeleted}
+              isDepartmentHead={true}
+              currentUserDepartmentId={userDepartmentId}
+            />
+          ) : (
+            <div className="alert alert-warning">
+              Unauthorized access. Please contact administrator.
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

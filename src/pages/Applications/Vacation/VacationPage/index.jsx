@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom"
 import {
   Card,
   CardBody,
-  Container,
   Form,
   Input,
   Label,
@@ -18,7 +17,6 @@ import {
 } from "reactstrap"
 import { useFormik } from "formik"
 import { vacationSchema } from "./validationSchema"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import { createVacation } from "../../../../services/vacation"
 import { getPublicDepartments as getDepartments } from "../../../../services/admin/department"
 import { toast, ToastContainer } from "react-toastify"
@@ -464,363 +462,353 @@ const VacationPage = () => {
 
   return (
     <>
-      <div className="page-content">
-        <Container fluid>
-          <Breadcrumbs
-            title="განცხადებები"
-            breadcrumbItem="შვებულების გაგზავნა"
-          />
-          <div className="row">
-            <div className="col-12">
-              <Card>
-                <CardBody>
-                  {isAdmin && (
-                    <Nav tabs className="mb-3">
-                      <NavItem>
-                        <NavLink
-                          className={classnames({ active: activeTab === "1" })}
-                          onClick={() => toggleTab("1")}
-                          style={{ cursor: "pointer" }}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="p-4 sm:p-6">
+          <Card>
+            <CardBody>
+              {isAdmin && (
+                <Nav tabs className="mb-3">
+                  <NavItem>
+                    <NavLink
+                      className={classnames({ active: activeTab === "1" })}
+                      onClick={() => toggleTab("1")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      ჩემი შვებულება
+                    </NavLink>
+                  </NavItem>
+                  <NavItem>
+                    <NavLink
+                      className={classnames({ active: activeTab === "2" })}
+                      onClick={() => toggleTab("2")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      თანამშრომლის შვებულება
+                    </NavLink>
+                  </NavItem>
+                </Nav>
+              )}
+
+              {!isAdmin && activeTab !== "1" && toggleTab("1")}
+
+              <TabContent activeTab={activeTab}>
+                <TabPane tabId="1">
+                  <Form onSubmit={formikMyVacation.handleSubmit}>
+                    {/* Employee Information Section */}
+                    <h5 className="mb-3 text-lg font-semibold">
+                      თანამშრომლის ინფორმაცია
+                    </h5>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <InputWithError
+                          formik={formikMyVacation}
+                          name="employee_name"
+                          label="სახელი და გვარი"
+                          disabled
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <InputWithError
+                          formik={formikMyVacation}
+                          name="department"
+                          label="დეპარტამენტი"
+                          type="text"
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <InputWithError
+                          formik={formikMyVacation}
+                          name="position"
+                          label="პოზიცია"
+                          disabled
+                        />
+                      </div>
+                    </div>
+
+                    {/* Substitute Information Section */}
+                    <h5 className="mb-3 text-lg font-semibold">
+                      შემცვლელის ინფორმაცია
+                    </h5>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <InputWithError
+                          formik={formikMyVacation}
+                          name="substitute_name"
+                          label="შემცვლელის სახელი/გვარი"
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <InputWithError
+                          formik={formikMyVacation}
+                          name="substitute_position"
+                          label="შემცვლელის პოზიცია"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Vacation Details Section */}
+                    <h5 className="mb-3 text-lg font-semibold">
+                      შვებულების დეტალები
+                    </h5>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <InputWithError
+                          formik={formikMyVacation}
+                          name="start_date"
+                          label="დაწყების თარიღი"
+                          type="date"
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <InputWithError
+                          formik={formikMyVacation}
+                          name="end_date"
+                          label="დასრულების თარიღი"
+                          type="date"
+                        />
+                      </div>
+                    </div>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <InputWithError
+                          formik={formikMyVacation}
+                          name="vacation_type"
+                          label="შვებულების ტიპი"
+                          type="select"
                         >
-                          ჩემი შვებულება
-                        </NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink
-                          className={classnames({ active: activeTab === "2" })}
-                          onClick={() => toggleTab("2")}
-                          style={{ cursor: "pointer" }}
-                        >
-                          თანამშრომლის შვებულება
-                        </NavLink>
-                      </NavItem>
-                    </Nav>
-                  )}
+                          <option value="">აირჩიეთ ტიპი</option>
+                          <option value="paid_leave">ანაზღაურებადი</option>
+                          <option value="unpaid_leave">
+                            ანაზღაურების გარეშე
+                          </option>
+                          <option value="maternity_leave">
+                            უხელფასო შვებულება ორსულობის, მშობიარობისა და
+                            ბავშვის მოვლის გამო
+                          </option>
+                          <option value="administrative_leave">
+                            ადმინისტრაციული
+                          </option>
+                        </InputWithError>
+                      </div>
+                    </div>
 
-                  {!isAdmin && activeTab !== "1" && toggleTab("1")}
+                    {/* Rest Days Section */}
+                    <div className="row">
+                      <div className="col-12">
+                        <RestDaysCheckbox
+                          holidays={holidays}
+                          formik={formikMyVacation}
+                          handleCheckboxChange={handleCheckboxChange}
+                        />
+                      </div>
+                    </div>
 
-                  <TabContent activeTab={activeTab}>
-                    <TabPane tabId="1">
-                      <Form onSubmit={formikMyVacation.handleSubmit}>
-                        {/* Employee Information Section */}
-                        <h5 className="mb-3 text-lg font-semibold">
-                          თანამშრომლის ინფორმაცია
-                        </h5>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyVacation}
-                              name="employee_name"
-                              label="სახელი და გვარი"
-                              disabled
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyVacation}
-                              name="department"
-                              label="დეპარტამენტი"
-                              type="text"
-                              disabled
-                            />
-                          </div>
+                    {/* Duration Section */}
+                    <div className="row">
+                      <div className="col-12">
+                        <div className="mb-3">
+                          <Label className="mb-2 text-lg font-semibold">
+                            ხანგრძლივობა დღეებში
+                          </Label>
+                          <Input
+                            type="text"
+                            value={formikMyVacation.values.duration_days}
+                            readOnly
+                          />
                         </div>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyVacation}
-                              name="position"
-                              label="პოზიცია"
-                              disabled
-                            />
-                          </div>
-                        </div>
+                      </div>
+                    </div>
 
-                        {/* Substitute Information Section */}
-                        <h5 className="mb-3 text-lg font-semibold">
-                          შემცვლელის ინფორმაცია
-                        </h5>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyVacation}
-                              name="substitute_name"
-                              label="შემცვლელის სახელი/გვარი"
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyVacation}
-                              name="substitute_position"
-                              label="შემცვლელის პოზიცია"
-                            />
-                          </div>
-                        </div>
+                    {/* Submit Button */}
+                    <div className="d-flex justify-content-end">
+                      <Button
+                        type="submit"
+                        color="primary"
+                        disabled={
+                          !formikMyVacation.isValid ||
+                          formikMyVacation.isSubmitting
+                        }
+                      >
+                        {formikMyVacation.isSubmitting
+                          ? "იგზავნება..."
+                          : "გაგზავნა"}
+                      </Button>
+                    </div>
+                  </Form>
+                </TabPane>
 
-                        {/* Vacation Details Section */}
-                        <h5 className="mb-3 text-lg font-semibold">
-                          შვებულების დეტალები
-                        </h5>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyVacation}
-                              name="start_date"
-                              label="დაწყების თარიღი"
-                              type="date"
-                            />
-                          </div>
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyVacation}
-                              name="end_date"
-                              label="დასრულების თარიღი"
-                              type="date"
-                            />
-                          </div>
+                {isAdmin && (
+                  <TabPane tabId="2">
+                    <Form onSubmit={formikEmployeeVacation.handleSubmit}>
+                      {/* Employee Information Section */}
+                      <h5 className="mb-3 text-lg font-semibold">
+                        თანამშრომლის ინფორმაცია
+                      </h5>
+                      <div className="row">
+                        <div className="col-md-6">
+                          <InputWithError
+                            formik={formikEmployeeVacation}
+                            name="employee_name"
+                            label="თანამშრომლის სახელი და გვარი"
+                            disabled={false}
+                          />
                         </div>
-                        <div className="row">
-                          <div className="col-md-6">
-                            <InputWithError
-                              formik={formikMyVacation}
-                              name="vacation_type"
-                              label="შვებულების ტიპი"
-                              type="select"
-                            >
-                              <option value="">აირჩიეთ ტიპი</option>
-                              <option value="paid_leave">ანაზღაურებადი</option>
-                              <option value="unpaid_leave">
-                                ანაზღაურების გარეშე
-                              </option>
-                              <option value="maternity_leave">
-                                უხელფასო შვებულება ორსულობის, მშობიარობისა და
-                                ბავშვის მოვლის გამო
-                              </option>
-                              <option value="administrative_leave">
-                                ადმინისტრაციული
-                              </option>
-                            </InputWithError>
-                          </div>
-                        </div>
-
-                        {/* Rest Days Section */}
-                        <div className="row">
-                          <div className="col-12">
-                            <RestDaysCheckbox
-                              holidays={holidays}
-                              formik={formikMyVacation}
-                              handleCheckboxChange={handleCheckboxChange}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Duration Section */}
-                        <div className="row">
-                          <div className="col-12">
-                            <div className="mb-3">
-                              <Label className="mb-2 text-lg font-semibold">
-                                ხანგრძლივობა დღეებში
-                              </Label>
-                              <Input
-                                type="text"
-                                value={formikMyVacation.values.duration_days}
-                                readOnly
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Submit Button */}
-                        <div className="d-flex justify-content-end">
-                          <Button
-                            type="submit"
-                            color="primary"
-                            disabled={
-                              !formikMyVacation.isValid ||
-                              formikMyVacation.isSubmitting
-                            }
+                        <div className="col-md-6">
+                          <InputWithError
+                            formik={formikEmployeeVacation}
+                            name="department"
+                            label="თანამშრომლის დეპარტამენტი"
+                            type="select"
+                            disabled={false}
                           >
-                            {formikMyVacation.isSubmitting
-                              ? "იგზავნება..."
-                              : "გაგზავნა"}
-                          </Button>
+                            <option value="">აირჩიეთ დეპარტამენტი</option>
+                            {Array.isArray(departments) &&
+                            departments.length > 0 ? (
+                              departments.map(dept => (
+                                <option key={dept.id} value={dept.name}>
+                                  {dept.name}
+                                </option>
+                              ))
+                            ) : (
+                              <option value="" disabled>
+                                დეპარტამენტები არ არის ხელმისაწვდომი
+                              </option>
+                            )}
+                          </InputWithError>
                         </div>
-                      </Form>
-                    </TabPane>
+                      </div>
+                      <div className="row">
+                        <div className="col-md-6">
+                          <InputWithError
+                            formik={formikEmployeeVacation}
+                            name="position"
+                            label="თანამშამლის პოზიცია"
+                            disabled={false}
+                          />
+                        </div>
+                      </div>
 
-                    {isAdmin && (
-                      <TabPane tabId="2">
-                        <Form onSubmit={formikEmployeeVacation.handleSubmit}>
-                          {/* Employee Information Section */}
-                          <h5 className="mb-3 text-lg font-semibold">
-                            თანამშრომლის ინფორმაცია
-                          </h5>
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeVacation}
-                                name="employee_name"
-                                label="თანამშრომლის სახელი და გვარი"
-                                disabled={false}
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeVacation}
-                                name="department"
-                                label="თანამშრომლის დეპარტამენტი"
-                                type="select"
-                                disabled={false}
-                              >
-                                <option value="">აირჩიეთ დეპარტამენტი</option>
-                                {Array.isArray(departments) &&
-                                departments.length > 0 ? (
-                                  departments.map(dept => (
-                                    <option key={dept.id} value={dept.name}>
-                                      {dept.name}
-                                    </option>
-                                  ))
-                                ) : (
-                                  <option value="" disabled>
-                                    დეპარტამენტები არ არის ხელმისაწვდომი
-                                  </option>
-                                )}
-                              </InputWithError>
-                            </div>
-                          </div>
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeVacation}
-                                name="position"
-                                label="თანამშამლის პოზიცია"
-                                disabled={false}
-                              />
-                            </div>
-                          </div>
+                      {/* Substitute Information Section */}
+                      <h5 className="mb-3 text-lg font-semibold">
+                        შემცვლელის ინფორმაცია
+                      </h5>
+                      <div className="row">
+                        <div className="col-md-6">
+                          <InputWithError
+                            formik={formikEmployeeVacation}
+                            name="substitute_name"
+                            label="შემცვლელის სახელი/გვარი"
+                          />
+                        </div>
+                        <div className="col-md-6">
+                          <InputWithError
+                            formik={formikEmployeeVacation}
+                            name="substitute_position"
+                            label="შემცვლელის პოზიცია"
+                          />
+                        </div>
+                      </div>
 
-                          {/* Substitute Information Section */}
-                          <h5 className="mb-3 text-lg font-semibold">
-                            შემცვლელის ინფორმაცია
-                          </h5>
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeVacation}
-                                name="substitute_name"
-                                label="შემცვლელის სახელი/გვარი"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeVacation}
-                                name="substitute_position"
-                                label="შემცვლელის პოზიცია"
-                              />
-                            </div>
-                          </div>
+                      {/* Vacation Details Section */}
+                      <h5 className="mb-3 text-lg font-semibold">
+                        შვებულების დეტალები
+                      </h5>
+                      <div className="row">
+                        <div className="col-md-6">
+                          <InputWithError
+                            formik={formikEmployeeVacation}
+                            name="start_date"
+                            label="დაწყების თარიღი"
+                            type="date"
+                          />
+                        </div>
+                        <div className="col-md-6">
+                          <InputWithError
+                            formik={formikEmployeeVacation}
+                            name="end_date"
+                            label="დასრულების თარიღი"
+                            type="date"
+                          />
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="col-md-6">
+                          <InputWithError
+                            formik={formikEmployeeVacation}
+                            name="vacation_type"
+                            label="შვებულების ტიპი"
+                            type="select"
+                          >
+                            <option value="">აირჩიეთ ტიპი</option>
+                            <option value="paid_leave">ანაზღაურებადი</option>
+                            <option value="unpaid_leave">
+                              ანაზღაურების გარეშე
+                            </option>
+                            <option value="maternity_leave">
+                              უხელფასო შვებულება ორსულობის, მშობიარობისა და
+                              ბავშვის მოვლის გამო
+                            </option>
+                            <option value="administrative_leave">
+                              ადმინისტრაციული
+                            </option>
+                          </InputWithError>
+                        </div>
+                      </div>
 
-                          {/* Vacation Details Section */}
-                          <h5 className="mb-3 text-lg font-semibold">
-                            შვებულების დეტალები
-                          </h5>
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeVacation}
-                                name="start_date"
-                                label="დაწყების თარიღი"
-                                type="date"
-                              />
-                            </div>
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeVacation}
-                                name="end_date"
-                                label="დასრულების თარიღი"
-                                type="date"
-                              />
-                            </div>
-                          </div>
-                          <div className="row">
-                            <div className="col-md-6">
-                              <InputWithError
-                                formik={formikEmployeeVacation}
-                                name="vacation_type"
-                                label="შვებულების ტიპი"
-                                type="select"
-                              >
-                                <option value="">აირჩიეთ ტიპი</option>
-                                <option value="paid_leave">
-                                  ანაზღაურებადი
-                                </option>
-                                <option value="unpaid_leave">
-                                  ანაზღაურების გარეშე
-                                </option>
-                                <option value="maternity_leave">
-                                  უხელფასო შვებულება ორსულობის, მშობიარობისა და
-                                  ბავშვის მოვლის გამო
-                                </option>
-                                <option value="administrative_leave">
-                                  ადმინისტრაციული
-                                </option>
-                              </InputWithError>
-                            </div>
-                          </div>
+                      {/* Rest Days Section */}
+                      <div className="row">
+                        <div className="col-12">
+                          <RestDaysCheckbox
+                            holidays={holidays}
+                            formik={formikEmployeeVacation}
+                            handleCheckboxChange={handleCheckboxChange}
+                          />
+                        </div>
+                      </div>
 
-                          {/* Rest Days Section */}
-                          <div className="row">
-                            <div className="col-12">
-                              <RestDaysCheckbox
-                                holidays={holidays}
-                                formik={formikEmployeeVacation}
-                                handleCheckboxChange={handleCheckboxChange}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Duration Section */}
-                          <div className="row">
-                            <div className="col-12">
-                              <div className="mb-3">
-                                <Label className="mb-2 text-lg font-semibold">
-                                  ხანგრძლივობა დღეებში
-                                </Label>
-                                <Input
-                                  type="text"
-                                  value={
-                                    formikEmployeeVacation.values.duration_days
-                                  }
-                                  readOnly
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Submit Button */}
-                          <div className="d-flex justify-content-end">
-                            <Button
-                              type="submit"
-                              color="primary"
-                              disabled={
-                                !formikEmployeeVacation.isValid ||
-                                formikEmployeeVacation.isSubmitting
+                      {/* Duration Section */}
+                      <div className="row">
+                        <div className="col-12">
+                          <div className="mb-3">
+                            <Label className="mb-2 text-lg font-semibold">
+                              ხანგრძლივობა დღეებში
+                            </Label>
+                            <Input
+                              type="text"
+                              value={
+                                formikEmployeeVacation.values.duration_days
                               }
-                            >
-                              {formikEmployeeVacation.isSubmitting
-                                ? "იგზავნება..."
-                                : "გაგზავნა"}
-                            </Button>
+                              readOnly
+                            />
                           </div>
-                        </Form>
-                      </TabPane>
-                    )}
-                  </TabContent>
-                </CardBody>
-              </Card>
-            </div>
-          </div>
-        </Container>
+                        </div>
+                      </div>
+
+                      {/* Submit Button */}
+                      <div className="d-flex justify-content-end">
+                        <Button
+                          type="submit"
+                          color="primary"
+                          disabled={
+                            !formikEmployeeVacation.isValid ||
+                            formikEmployeeVacation.isSubmitting
+                          }
+                        >
+                          {formikEmployeeVacation.isSubmitting
+                            ? "იგზავნება..."
+                            : "გაგზავნა"}
+                        </Button>
+                      </div>
+                    </Form>
+                  </TabPane>
+                )}
+              </TabContent>
+            </CardBody>
+          </Card>
+        </div>
         <ToastContainer
           position="top-right"
           autoClose={5000}

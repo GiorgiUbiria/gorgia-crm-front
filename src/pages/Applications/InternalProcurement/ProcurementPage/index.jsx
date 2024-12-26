@@ -350,23 +350,12 @@ const ProcurementPage = () => {
   }
 
   return (
-    <div className="bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 sm:mb-6">
-          <span>განცხადებები</span>
-          <span className="text-gray-400">/</span>
-          <span className="font-medium text-gray-900">
-            შიდა შესყიდვების დამატება
-          </span>
-        </div>
-
-        {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-sm">
+    <>
+      <div className="max-w-7xl shadow-sm mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div>
           <div className="p-4 sm:p-6">
             <Form onSubmit={formik.handleSubmit}>
               <div className="space-y-6">
-                {/* First Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <InputWithError
                     formik={formik}
@@ -403,7 +392,6 @@ const ProcurementPage = () => {
                   />
                 </div>
 
-                {/* Purpose and Needs */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InputWithError
                     formik={formik}
@@ -421,7 +409,6 @@ const ProcurementPage = () => {
                   />
                 </div>
 
-                {/* Stock Creation and Date */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>იქმნება მარაგი?</Label>
@@ -458,7 +445,6 @@ const ProcurementPage = () => {
                   />
                 </div>
 
-                {/* Products Section */}
                 <div className="space-y-4">
                   {formik.values.products.map((product, index) => (
                     <ProductForm
@@ -472,14 +458,12 @@ const ProcurementPage = () => {
                   ))}
                 </div>
 
-                {/* Add Product Button */}
                 <div>
                   <Button type="button" color="primary" onClick={addProduct}>
                     პროდუქტის დამატება
                   </Button>
                 </div>
 
-                {/* Submit Button */}
                 <div className="flex justify-end">
                   <Button type="submit" color="primary" disabled={isLoading}>
                     {isLoading ? "იგზავნება..." : "გაგზავნა"}
@@ -491,7 +475,7 @@ const ProcurementPage = () => {
         </div>
       </div>
       <ToastContainer />
-    </div>
+    </>
   )
 }
 

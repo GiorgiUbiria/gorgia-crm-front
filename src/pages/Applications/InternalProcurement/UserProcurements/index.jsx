@@ -242,7 +242,7 @@ const UserProcurements = () => {
             <div className="d-flex align-items-center gap-2">
               <BiTime className="text-primary" size={24} />
               <h6 className="mb-0">
-                სტატუსი: {getStatusLabel(rowData.status)}
+                სტატუსი: {statusMap[rowData.status]?.label || rowData.status}
               </h6>
             </div>
 
@@ -464,31 +464,21 @@ const UserProcurements = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
+    <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-          <span>განცხადებები</span>
-          <span className="text-gray-400">/</span>
-          <span className="font-medium text-gray-900">ჩემი შესყიდვები</span>
-        </div>
-
-        {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="p-4 sm:p-6">
-            <MuiTable
-              data={purchaseData?.data || []}
-              columns={columns}
-              filterOptions={filterOptions}
-              enableSearch={false}
-              initialPageSize={10}
-              renderRowDetails={ExpandedRowContent}
-              isLoading={isLoading}
-            />
-          </div>
+        <div className="p-4 sm:p-6">
+          <MuiTable
+            data={purchaseData?.data || []}
+            columns={columns}
+            filterOptions={filterOptions}
+            enableSearch={false}
+            initialPageSize={10}
+            renderRowDetails={ExpandedRowContent}
+            isLoading={isLoading}
+          />
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

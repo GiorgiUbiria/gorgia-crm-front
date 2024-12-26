@@ -183,68 +183,60 @@ const Dailies = () => {
   )
 
   return (
-    <div className="bg-gray-50">
+    <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 sm:mb-6">
-          <span>მთავარი</span>
-          <span className="text-gray-400">/</span>
-          <span className="font-medium text-gray-900">დღიური შეფასება</span>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            <div className="mb-4">
-              <div className="flex gap-3">
-                {isAdmin && (
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={exportToExcel}
-                  >
-                    <i className="bx bx-export me-1"></i>
-                    Excel გადმოწერა
-                  </Button>
-                )}
+        <div className="p-4 sm:p-6">
+          <div className="mb-4">
+            <div className="flex gap-3">
+              {isAdmin && (
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   color="primary"
-                  onClick={() => updateState({ addDailyModal: true })}
+                  onClick={exportToExcel}
                 >
-                  <i className="bx bx-plus me-1"></i>
-                  შეფასების დამატება
+                  <i className="bx bx-export me-1"></i>
+                  Excel გადმოწერა
                 </Button>
-              </div>
+              )}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => updateState({ addDailyModal: true })}
+              >
+                <i className="bx bx-plus me-1"></i>
+                შეფასების დამატება
+              </Button>
             </div>
-
-            <MuiTable
-              columns={columns}
-              data={transformedDailies}
-              filterOptions={filterOptions}
-              searchableFields={["name", "department.name"]}
-              enableSearch={true}
-              initialPageSize={pageSize}
-              pageSizeOptions={PAGE_SIZE_OPTIONS}
-              currentPage={currentPage}
-              totalItems={dailiesData.total}
-              onPageChange={page => updateState({ currentPage: page })}
-              onPageSizeChange={size => updateState({ pageSize: size })}
-              isLoading={isLoading}
-              onRowClick={handleRowClick}
-              renderRowDetails={renderExpandedRow}
-              rowClassName="cursor-pointer hover:bg-gray-50"
-            />
           </div>
-        </div>
 
-        <AddDailyModal
-          isOpen={addDailyModal}
-          toggle={() => updateState({ addDailyModal: false })}
-          onDailyAdded={fetchDailies}
-          departmentId={user.department_id}
-          type="regular"
-        />
+          <MuiTable
+            columns={columns}
+            data={transformedDailies}
+            filterOptions={filterOptions}
+            searchableFields={["name", "department.name"]}
+            enableSearch={true}
+            initialPageSize={pageSize}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
+            currentPage={currentPage}
+            totalItems={dailiesData.total}
+            onPageChange={page => updateState({ currentPage: page })}
+            onPageSizeChange={size => updateState({ pageSize: size })}
+            isLoading={isLoading}
+            onRowClick={handleRowClick}
+            renderRowDetails={renderExpandedRow}
+            rowClassName="cursor-pointer hover:bg-gray-50"
+          />
+        </div>
       </div>
-    </div>
+
+      <AddDailyModal
+        isOpen={addDailyModal}
+        toggle={() => updateState({ addDailyModal: false })}
+        onDailyAdded={fetchDailies}
+        departmentId={user.department_id}
+        type="regular"
+      />
+    </>
   )
 }
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col } from "reactstrap"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import { getCurrentUserVocations } from "services/vacation"
 import MuiTable from "components/Mui/MuiTable"
 
@@ -329,31 +328,21 @@ const UserVocation = () => {
   const expandedRow = row => <ExpandedRowContent rowData={row} />
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="განცხადებები"
-                breadcrumbItem="ჩემი შვებულებები"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <MuiTable
-              data={transformedVacations}
-              columns={columns}
-              filterOptions={filterOptions}
-              enableSearch={true}
-              searchableFields={["type"]}
-              initialPageSize={10}
-              renderRowDetails={expandedRow}
-            />
-          </Row>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="p-4 sm:p-6">
+          <MuiTable
+            data={transformedVacations}
+            columns={columns}
+            filterOptions={filterOptions}
+            enableSearch={true}
+            searchableFields={["type"]}
+            initialPageSize={10}
+            renderRowDetails={expandedRow}
+          />
         </div>
       </div>
-    </React.Fragment>
+    </>
   )
 }
 

@@ -511,32 +511,22 @@ const ProcurementPageArchive = () => {
   }
 
   return (
-    <div className="bg-gray-50">
+    <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 sm:mb-6">
-          <span>განცხადებები</span>
-          <span className="text-gray-400">/</span>
-          <span className="font-medium text-gray-900">შესყიდვების არქივი</span>
-        </div>
-
-        {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-4 sm:p-6">
-            <MuiTable
-              columns={columns}
-              data={purchaseData?.data || []}
-              filterOptions={filterOptions}
-              customSearchFunction={customSearchFunction}
-              enableSearch={true}
-              isLoading={isLoading}
-              renderRowDetails={ExpandedRowContent}
-              rowClassName="cursor-pointer hover:bg-gray-50"
-            />
-          </div>
+        <div className="p-4 sm:p-6">
+          <MuiTable
+            columns={columns}
+            data={purchaseData?.data || []}
+            filterOptions={filterOptions}
+            customSearchFunction={customSearchFunction}
+            enableSearch={true}
+            isLoading={isLoading}
+            renderRowDetails={ExpandedRowContent}
+            rowClassName="cursor-pointer hover:bg-gray-50"
+          />
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

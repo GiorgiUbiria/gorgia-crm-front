@@ -10,6 +10,7 @@ import {
   PlaneTakeoff,
 } from "lucide-react"
 import { useSelector } from "react-redux"
+import { Link } from "react-router-dom"
 
 const widgets = [
   {
@@ -99,18 +100,22 @@ const colorVariants = {
 
 function Dashboard() {
   const user = useSelector(state => state.user.user)
-  if (!user) return null
+
+  document.title = "მთავარი გვერდი | Gorgia LLC"
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div className="text-gray-600">Loading user data...</div>
+      </div>
+    )
+  }
 
   return (
-    <div className="bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4 sm:mb-6">
-          <span>მთავარი</span>
-          <span className="text-gray-400">/</span>
-          <span className="font-medium text-gray-900">მთავარი</span>
-        </div>
-
-        <div className="mb-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg overflow-hidden">
+    <div className="flex-1 px-4 py-6 overflow-auto">
+      <div className="max-w-7xl mx-auto">
+        {/* Welcome Card */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-sm overflow-hidden mb-6">
           <div className="px-4 sm:px-6 lg:px-8 py-6">
             <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">
               მოგესალმებით, {user.name}!
@@ -121,40 +126,43 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {widgets.map(widget => {
-            const Icon = widget.icon
-            return (
-              <div
-                key={widget.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-100 hover:border-gray-200 hover:shadow transition-all duration-200 overflow-hidden"
-              >
-                <div className="p-4">
-                  <div
-                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${
-                      colorVariants[widget.color]
-                    } flex items-center justify-center mb-3`}
-                  >
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+        {/* Main Content */}
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {widgets.map(widget => {
+              const Icon = widget.icon
+              return (
+                <div
+                  key={widget.id}
+                  className="bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200 overflow-hidden"
+                >
+                  <div className="p-4">
+                    <div
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${
+                        colorVariants[widget.color]
+                      } flex items-center justify-center mb-3`}
+                    >
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
+                      {widget.title}
+                    </h3>
+                    <p className="text-gray-600 text-xs sm:text-sm mb-3">
+                      {widget.description}
+                    </p>
+                    <Link
+                      to={widget.link}
+                      className={`inline-block text-xs sm:text-sm font-medium ${
+                        colorVariants[widget.color]
+                      } px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200`}
+                    >
+                      {widget.buttonText}
+                    </Link>
                   </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
-                    {widget.title}
-                  </h3>
-                  <p className="text-gray-600 text-xs sm:text-sm mb-3">
-                    {widget.description}
-                  </p>
-                  <button
-                    onClick={() => (window.location.href = widget.link)}
-                    className={`text-xs sm:text-sm font-medium ${
-                      colorVariants[widget.color]
-                    } px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200`}
-                  >
-                    {widget.buttonText}
-                  </button>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>

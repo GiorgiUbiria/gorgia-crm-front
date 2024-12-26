@@ -167,7 +167,7 @@ const SidebarContent = ({ t }) => {
         scrollbarWidth: "none",
       }}
     >
-      <div className="px-6 py-1 w-full">
+      <div className="w-full">
         <ul className="list-none space-y-3 w-full">{menuItems}</ul>
       </div>
     </div>

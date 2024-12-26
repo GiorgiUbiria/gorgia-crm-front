@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col } from "reactstrap"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import { getAllTripsList } from "../../../../services/trip"
 import MuiTable from "../../../../components/Mui/MuiTable"
 
@@ -392,38 +391,27 @@ const TripPageArchive = () => {
   const expandedRow = row => <ExpandedRowContent rowData={row} />
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="განცხადებები"
-                breadcrumbItem="მივლინებების არქივი"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <MuiTable
-                columns={columns}
-                data={transformedTrips}
-                filterOptions={filterOptions}
-                initialPageSize={10}
-                enableSearch={true}
-                searchableFields={[
-                  "requested_by",
-                  "reviewed_by",
-                  "departure_location",
-                  "arrival_location",
-                ]}
-                renderRowDetails={expandedRow}
-              />
-            </Col>
-          </Row>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="p-4 sm:p-6">
+          <MuiTable
+            title="განცხადებები"
+            columns={columns}
+            data={transformedTrips}
+            filterOptions={filterOptions}
+            initialPageSize={10}
+            enableSearch={true}
+            searchableFields={[
+              "requested_by",
+              "reviewed_by",
+              "departure_location",
+              "arrival_location",
+            ]}
+            renderRowDetails={expandedRow}
+          />
         </div>
       </div>
-    </React.Fragment>
+    </>
   )
 }
 
