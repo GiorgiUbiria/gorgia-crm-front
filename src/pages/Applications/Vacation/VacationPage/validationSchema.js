@@ -73,15 +73,41 @@ export const vacationSchema = Yup.object().shape({
       Yup.ref("start_date"),
       "დასრულების თარიღი უნდა იყოს დაწყების თარიღის შემდეგ ან იმავე დღეს."
     )
+    .test("duration", "შვებულება ვერ გაგრძელდება 90 დღეზე მეტს.", function (value) {
+      const start = this.parent.start_date
+      if (start && value) {
+        const diffTime = Math.abs(value - start)
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        return diffDays <= 90
+      }
+      return true
+    })
     .test(
-      "duration",
-      "შვებულება ვერ გაგრძელდება 90 დღეზე მეტს.",
+      "administrative-leave-duration",
+      "ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღეს",
       function (value) {
         const start = this.parent.start_date
-        if (start && value) {
+        const type = this.parent.vacation_type
+        if (start && value && type === "administrative_leave") {
           const diffTime = Math.abs(value - start)
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-          return diffDays <= 90
+          return diffDays <= 7
+        }
+        return true
+      }
+    )
+    .test(
+      "paid-leave-balance",
+      "მოთხოვნილი დღეების რაოდენობა აღემატება დარჩენილ ანაზღაურებად შვებულებას",
+      function (value) {
+        const start = this.parent.start_date
+        const type = this.parent.vacation_type
+        const remainingDays = this.parent.remaining_days
+
+        if (start && value && type === "paid_leave" && remainingDays !== undefined) {
+          const diffTime = Math.abs(value - start)
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          return diffDays <= remainingDays
         }
         return true
       }
@@ -112,4 +138,9 @@ export const vacationSchema = Yup.object().shape({
     .positive("ხანგრძლივობის დრო უნდა იყოს მინიმუმ 1 დღე.")
     .integer("ხანგრძლივობის მნიშვნელობა უნდა იყოს მთელი რიცხვი.")
     .max(90, "ხანგრძლივობა ვერ იქნება 90 დღეზე მეტი."),
+  remaining_days: Yup.number().when('vacation_type', {
+    is: 'paid_leave',
+    then: () => Yup.number().required("დარჩენილი დღეების რაოდენობა სავალდებულოა"),
+    otherwise: () => Yup.number().nullable()
+  })
 })

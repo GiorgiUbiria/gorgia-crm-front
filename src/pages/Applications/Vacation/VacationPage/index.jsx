@@ -17,13 +17,18 @@ import {
 } from "reactstrap"
 import { useFormik } from "formik"
 import { vacationSchema } from "./validationSchema"
-import { createVacation } from "../../../../services/vacation"
+import {
+  createVacation,
+  getVacationBalance,
+} from "../../../../services/admin/vacation"
 import { getPublicDepartments as getDepartments } from "../../../../services/admin/department"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import useFetchUser from "hooks/useFetchUser"
 import useUserRoles from "hooks/useUserRoles"
 import classnames from "classnames"
+import VacationBalance from "../../../../components/Vacation/VacationBalance"
+import { Tooltip } from "@mui/material"
 
 const InputWithError = React.memo(function InputWithError({
   formik,
@@ -96,6 +101,8 @@ const VacationPage = () => {
   const [departmentsLoading, setDepartmentsLoading] = useState(false)
   const [departmentsError, setDepartmentsError] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
+  const [vacationBalance, setVacationBalance] = useState(null)
+  const [balanceLoading, setBalanceLoading] = useState(false)
 
   const holidays = useMemo(
     () => [
@@ -111,11 +118,27 @@ const VacationPage = () => {
   )
 
   useEffect(() => {
+    const fetchVacationBalance = async () => {
+      setBalanceLoading(true)
+      try {
+        const response = await getVacationBalance()
+        setVacationBalance(response.data)
+      } catch (error) {
+        console.error("Error fetching vacation balance:", error)
+        toast.error("შვებულების ბალანსის მიღება ვერ მოხერხდა")
+      } finally {
+        setBalanceLoading(false)
+      }
+    }
+
+    fetchVacationBalance()
+  }, [])
+
+  useEffect(() => {
     const fetchDepartments = async () => {
       setDepartmentsLoading(true)
       try {
         const response = await getDepartments()
-        console.log("Departments response:", response)
         if (response?.data) {
           setDepartments(response.data)
         } else {
@@ -180,8 +203,9 @@ const VacationPage = () => {
       is_saturday: null,
       is_sunday: null,
       duration_days: 0,
+      remaining_days: vacationBalance?.remaining_days,
     }),
-    [user]
+    [user, vacationBalance]
   )
 
   const initialValuesEmployeeVacation = useMemo(
@@ -211,6 +235,24 @@ const VacationPage = () => {
     validationSchema: vacationSchema,
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
+      if (
+        values.vacation_type === "paid_leave" &&
+        values.duration_days > vacationBalance?.remaining_days
+      ) {
+        toast.error(
+          "მოთხოვნილი დღეების რაოდენობა აღემატება დარჩენილ ანაზღაურებად შვებულებას"
+        )
+        return
+      }
+
+      if (
+        values.vacation_type === "administrative_leave" &&
+        values.duration_days > 7
+      ) {
+        toast.error("ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღეს")
+        return
+      }
+
       try {
         const submitData = {
           vacation_type: values.vacation_type,
@@ -235,11 +277,7 @@ const VacationPage = () => {
           duration_days: values.duration_days,
         }
 
-        console.log("Submitting data:", submitData)
-
         const response = await createVacation(submitData)
-
-        console.log("Server response:", response)
 
         if (response && (response.status === 200 || response.status === 201)) {
           toast.success("შვებულება წარმატებით გაიგზავნა", {
@@ -250,6 +288,10 @@ const VacationPage = () => {
             pauseOnHover: true,
             draggable: true,
           })
+
+          // Refresh vacation balance after successful submission
+          const balanceResponse = await getVacationBalance()
+          setVacationBalance(balanceResponse.data)
 
           setTimeout(() => {
             resetForm({
@@ -368,8 +410,8 @@ const VacationPage = () => {
         position: user.position || "",
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, userLoading])
+  }, [user, userLoading, initialValuesMyVacation])
+
   useEffect(() => {
     const newDuration = calculateDuration(
       formikMyVacation.values.start_date,
@@ -378,6 +420,23 @@ const VacationPage = () => {
     )
     if (newDuration !== formikMyVacation.values.duration_days) {
       formikMyVacation.setFieldValue("duration_days", newDuration)
+
+      // Show warnings for duration limits
+      if (formikMyVacation.values.vacation_type === "paid_leave") {
+        if (newDuration > vacationBalance?.remaining_days) {
+          toast.warning(
+            `მოთხოვნილი დღეების რაოდენობა (${newDuration}) აღემატება დარჩენილ ანაზღაურებად შვებულებას (${vacationBalance?.remaining_days})`
+          )
+        }
+      } else if (
+        formikMyVacation.values.vacation_type === "administrative_leave"
+      ) {
+        if (newDuration > 7) {
+          toast.warning(
+            "ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღეს"
+          )
+        }
+      }
     }
   }, [
     formikMyVacation.values.start_date,
@@ -385,6 +444,7 @@ const VacationPage = () => {
     formikMyVacation.values,
     calculateDuration,
     formikMyVacation,
+    vacationBalance,
   ])
 
   useEffect(() => {
@@ -444,7 +504,7 @@ const VacationPage = () => {
     [formikMyVacation, formikEmployeeVacation]
   )
 
-  if (userLoading || departmentsLoading) {
+  if (userLoading || departmentsLoading || balanceLoading) {
     return (
       <div className="text-center mt-5">
         <Spinner color="primary" />
@@ -464,6 +524,26 @@ const VacationPage = () => {
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
+          {vacationBalance && (
+            <>
+              <VacationBalance balance={vacationBalance} />
+              {vacationBalance.pending_requests > 0 && (
+                <Alert color="warning" className="mb-4">
+                  <i className="bx bx-time-five me-2"></i>
+                  თქვენ გაქვთ {vacationBalance.pending_requests}, ანაზღაურებადი
+                  შვებულების მოთხოვნა განხილვის პროცესში
+                </Alert>
+              )}
+              {vacationBalance.approved_future_requests > 0 && (
+                <Alert color="info" className="mb-4">
+                  <i className="bx bx-calendar-check me-2"></i>
+                  თქვენ გაქვთ {vacationBalance.approved_future_requests},
+                  დამტკიცებული ანაზღაურებადი შვებულება
+                </Alert>
+              )}
+            </>
+          )}
+
           <Card>
             <CardBody>
               {isAdmin && (
@@ -573,25 +653,53 @@ const VacationPage = () => {
                     </div>
                     <div className="row">
                       <div className="col-md-6">
-                        <InputWithError
-                          formik={formikMyVacation}
-                          name="vacation_type"
-                          label="შვებულების ტიპი"
-                          type="select"
-                        >
-                          <option value="">აირჩიეთ ტიპი</option>
-                          <option value="paid_leave">ანაზღაურებადი</option>
-                          <option value="unpaid_leave">
-                            ანაზღაურების გარეშე
-                          </option>
-                          <option value="maternity_leave">
-                            უხელფასო შვებულება ორსულობის, მშობიარობისა და
-                            ბავშვის მოვლის გამო
-                          </option>
-                          <option value="administrative_leave">
-                            ადმინისტრაციული
-                          </option>
-                        </InputWithError>
+                        <div className="mb-3">
+                          <Label for="vacation_type">
+                            შვებულების ტიპი{" "}
+                            {formikMyVacation.values.vacation_type ===
+                              "paid_leave" && (
+                              <Tooltip
+                                title={`დარჩენილი ანაზღაურებადი შვებულება: ${vacationBalance?.remaining_days} დღე`}
+                                arrow
+                              >
+                                <span className="badge bg-info">
+                                  {vacationBalance?.remaining_days} დღე
+                                </span>
+                              </Tooltip>
+                            )}
+                          </Label>
+                          <Input
+                            type="select"
+                            id="vacation_type"
+                            name="vacation_type"
+                            onChange={formikMyVacation.handleChange}
+                            onBlur={formikMyVacation.handleBlur}
+                            value={formikMyVacation.values.vacation_type}
+                            invalid={
+                              formikMyVacation.touched.vacation_type &&
+                              Boolean(formikMyVacation.errors.vacation_type)
+                            }
+                          >
+                            <option value="">აირჩიეთ ტიპი</option>
+                            <option value="paid_leave">ანაზღაურებადი</option>
+                            <option value="unpaid_leave">
+                              ანაზღაურების გარეშე
+                            </option>
+                            <option value="maternity_leave">
+                              უხელფასო შვებულება ორსულობის, მშობიარობისა და
+                              ბავშვის მოვლის გამო
+                            </option>
+                            <option value="administrative_leave">
+                              ადმინისტრაციული
+                            </option>
+                          </Input>
+                          {formikMyVacation.touched.vacation_type &&
+                            formikMyVacation.errors.vacation_type && (
+                              <div className="text-danger mt-1">
+                                {formikMyVacation.errors.vacation_type}
+                              </div>
+                            )}
+                        </div>
                       </div>
                     </div>
 
@@ -629,7 +737,14 @@ const VacationPage = () => {
                         color="primary"
                         disabled={
                           !formikMyVacation.isValid ||
-                          formikMyVacation.isSubmitting
+                          formikMyVacation.isSubmitting ||
+                          (formikMyVacation.values.vacation_type ===
+                            "paid_leave" &&
+                            formikMyVacation.values.duration_days >
+                              vacationBalance?.remaining_days) ||
+                          (formikMyVacation.values.vacation_type ===
+                            "administrative_leave" &&
+                            formikMyVacation.values.duration_days > 7)
                         }
                       >
                         {formikMyVacation.isSubmitting
