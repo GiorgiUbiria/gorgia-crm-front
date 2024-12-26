@@ -56,28 +56,24 @@ const JobDetails = () => {
   }
 
   return (
-    <div className="page-content">
-      <Container fluid>
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white shadow rounded-lg mb-6">
-            <TaskHeader task={task} />
-            <div className="p-6 flex justify-between items-center border-b border-gray-200">
-              <TaskStatus status={task.status} />
-              <TaskActions
-                status={task.status}
-                canEdit={hasEditPermission}
-                onUpdateStatus={handleUpdateStatus}
-                userId={currentUser?.id}
-                taskAssignedTo={task.assigned_to}
-              />
-            </div>
-            <div className="p-6">
-              <TaskTimeline task={task} />
-            </div>
-          </div>
-          <CommentSection task={task} setTask={setTask} />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bg-white shadow rounded-lg mb-6">
+        <TaskHeader task={task} />
+        <div className="p-6 flex justify-between items-center border-b border-gray-200">
+          <TaskStatus status={task.status} />
+          <TaskActions
+            status={task.status}
+            canEdit={hasEditPermission}
+            onUpdateStatus={handleUpdateStatus}
+            userId={currentUser?.id}
+            taskAssignedTo={task.assigned_to}
+          />
         </div>
-      </Container>
+        <div className="p-6">
+          <TaskTimeline task={task} />
+        </div>
+      </div>
+      <CommentSection task={task} setTask={setTask} />
     </div>
   )
 }

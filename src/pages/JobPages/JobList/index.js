@@ -4,11 +4,8 @@ import * as Yup from "yup"
 import { useFormik } from "formik"
 import { MdEdit, MdDelete, MdChevronLeft, MdChevronRight } from "react-icons/md"
 
-// Import components
-import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import DeleteModal from "../../../components/Common/DeleteModal"
 
-// Import task services
 import {
   getTaskList,
   createTask,
@@ -30,8 +27,6 @@ import {
   Input,
   FormFeedback,
   Label,
-  Card,
-  CardBody,
 } from "reactstrap"
 import Spinners from "components/Common/Spinner"
 import { ToastContainer } from "react-toastify"
@@ -361,406 +356,410 @@ const TaskList = () => {
   }, [sortConfig])
 
   return (
-    <React.Fragment>
+    <>
       <DeleteModal
         show={deleteModal}
         onDeleteClick={handleDeleteTask}
         onCloseClick={() => setDeleteModal(false)}
       />
-      <div className="page-content">
-        <div className="container-fluid">
-          <Breadcrumbs title="IT" breadcrumbItem="მხარდაჭერა" />
-          {isLoading ? (
-            <Spinners setLoading={setLoading} />
-          ) : (
-            <Row>
-              <Col lg="12">
-                <Card>
-                  <CardBody className="border-bottom">
-                    <div className="d-flex align-items-center">
-                      <h5 className="mb-0 card-title flex-grow-1">
-                        ბილეთების სია
-                      </h5>
-                      <div className="flex-shrink-0">
-                        <Link
-                          to="#!"
-                          onClick={() => setModal(true)}
-                          className="btn btn-primary me-1"
-                        >
-                          ახალი ბილეთის გახსნა
-                        </Link>
-                      </div>
-                    </div>
-                  </CardBody>
-                  <CardBody>
-                    {tasks.length > 0 ? (
-                      <Fragment>
-                        <div className="table-responsive">
-                          <Table hover className="table-nowrap">
-                            <thead className="thead-light">
-                              <tr>
-                                {columns.map((column, index) => (
-                                  <th key={column.accessorKey || index}>
-                                    {column.header}
-                                  </th>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        {isLoading ? (
+          <Spinners setLoading={setLoading} />
+        ) : (
+          <Row>
+            <Col xs="12">
+              <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
+                <h5 className="text-xl font-medium mb-3 sm:mb-0">
+                  ბილეთების სია
+                </h5>
+                <div>
+                  <Link
+                    to="#!"
+                    onClick={() => setModal(true)}
+                    className="btn btn-primary w-full sm:w-auto"
+                  >
+                    ახალი ბილეთის გახსნა
+                  </Link>
+                </div>
+              </div>
+              {tasks.length > 0 ? (
+                <Fragment>
+                  <div className="overflow-x-auto">
+                    <Table hover className="table-nowrap min-w-full">
+                      <thead className="thead-light">
+                        <tr>
+                          {columns.map((column, index) => (
+                            <th
+                              key={column.accessorKey || index}
+                              className="whitespace-nowrap"
+                            >
+                              {column.header}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tasks
+                          .slice(
+                            (currentPage - 1) * itemsPerPage,
+                            currentPage * itemsPerPage
+                          )
+                          .map((task, index) => (
+                            <React.Fragment key={task.id}>
+                              <tr
+                                onClick={() => toggleRow(index)}
+                                className="cursor-pointer hover:bg-gray-50"
+                              >
+                                {columns.map(column => (
+                                  <td
+                                    key={`${task.id}-${column.accessorKey}`}
+                                    className="whitespace-nowrap"
+                                  >
+                                    {column.cell
+                                      ? column.cell({
+                                          row: { original: task },
+                                        })
+                                      : task[column.accessorKey]}
+                                  </td>
                                 ))}
                               </tr>
-                            </thead>
-                            <tbody>
-                              {tasks
-                                .slice(
-                                  (currentPage - 1) * itemsPerPage,
-                                  currentPage * itemsPerPage
-                                )
-                                .map((task, index) => (
-                                  <React.Fragment key={task.id}>
-                                    <tr
-                                      onClick={() => toggleRow(index)}
-                                      style={{ cursor: "pointer" }}
-                                    >
-                                      {columns.map(column => (
-                                        <td
-                                          key={`${task.id}-${column.accessorKey}`}
-                                        >
-                                          {column.cell
-                                            ? column.cell({
-                                                row: { original: task },
-                                              })
-                                            : task[column.accessorKey]}
-                                        </td>
-                                      ))}
-                                    </tr>
-                                    {expandedRows.includes(index) && (
-                                      <tr>
-                                        <td colSpan={columns.length}>
-                                          <div className="p-3">
-                                            <p>დეტალური ინფორმაცია</p>
-                                            <ul>
-                                              <li>
-                                                <strong>პრობლემის ტიპი:</strong>{" "}
-                                                {task.task_title}
-                                              </li>
-                                              <li>
-                                                <strong>აღწერა:</strong>{" "}
-                                                {task.description}
-                                              </li>
-                                              <li>
-                                                <strong>IP მისამართი:</strong>{" "}
-                                                {task.ip_address}
-                                              </li>
-                                              <li>
-                                                <strong>თარიღი:</strong>{" "}
-                                                {task.due_date}
-                                              </li>
-                                              <li>
-                                                <strong>პრიორიტეტი:</strong>{" "}
-                                                {task.priority}
-                                              </li>
-                                              <li>
-                                                <strong>სტატუსი:</strong>{" "}
-                                                {task.status}
-                                              </li>
-                                              <li>
-                                                <strong>
-                                                  პასუხისმგებელი პირი:
-                                                </strong>{" "}
-                                                {task.assigned_user
-                                                  ? `${task.assigned_user.name} ${task.assigned_user.sur_name}`
-                                                  : "არ არის მითითებული"}
-                                              </li>
-                                            </ul>
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    )}
-                                  </React.Fragment>
-                                ))}
-                            </tbody>
-                          </Table>
-                        </div>
-                        {totalPages > 1 && (
-                          <Row className="justify-content-between align-items-center mt-3">
-                            <Col sm={12} md={5}>
-                              <div className="text-muted">
-                                Page {currentPage} of {totalPages}
-                              </div>
-                            </Col>
-                            <Col sm={12} md={7}>
-                              <ul className="pagination">
-                                <li
-                                  className={`page-item ${
-                                    currentPage <= 1 ? "disabled" : ""
-                                  }`}
-                                >
-                                  <Link
-                                    className="page-link"
-                                    to="#"
-                                    onClick={handlePreviousPage}
-                                  >
-                                    <MdChevronLeft />
-                                  </Link>
-                                </li>
-                                {[...Array(totalPages).keys()].map(page => (
-                                  <li
-                                    key={page + 1}
-                                    className={`page-item ${
-                                      currentPage === page + 1 ? "active" : ""
-                                    }`}
-                                  >
-                                    <Link
-                                      className="page-link"
-                                      to="#"
-                                      onClick={() => handlePageClick(page + 1)}
-                                    >
-                                      {page + 1}
-                                    </Link>
-                                  </li>
-                                ))}
-                                <li
-                                  className={`page-item ${
-                                    currentPage >= totalPages ? "disabled" : ""
-                                  }`}
-                                >
-                                  <Link
-                                    className="page-link"
-                                    to="#"
-                                    onClick={handleNextPage}
-                                  >
-                                    <MdChevronRight />
-                                  </Link>
-                                </li>
-                              </ul>
-                            </Col>
-                          </Row>
-                        )}
-                      </Fragment>
-                    ) : (
-                      <div>თასქები არ არის</div>
-                    )}
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
-          )}
-          <Modal isOpen={modal} toggle={toggleModal}>
-            <ModalHeader toggle={toggleModal} tag="h4">
-              {isEdit ? "რედაქტირება" : "ახალი თასქის დამატება"}
-            </ModalHeader>
-            <ModalBody>
-              <Form
-                onSubmit={e => {
-                  e.preventDefault()
-                  validation.handleSubmit()
-                  return false
-                }}
-              >
-                <Row>
-                  <Col className="col-12">
-                    <div className="mb-3">
-                      <Label>აირჩიეთ პრობლემის ტიპი</Label>
-                      <Input
-                        name="task_title"
-                        type="select"
-                        onChange={validation.handleChange}
-                        onBlur={validation.handleBlur}
-                        value={validation.values.task_title || ""}
-                        invalid={
-                          validation.touched.task_title &&
-                          validation.errors.task_title
-                            ? true
-                            : false
-                        }
-                      >
-                        <option value="" disabled hidden>
-                          აირჩიეთ პრობლემის ტიპი
-                        </option>
-                        <option value="პრინტერის პრობლემა">
-                          პრინტერის პრობლემა
-                        </option>
-                        <option value="სერვისი">სერვისი</option>
-                        <option value="პაროლის აღდგენა">პარლის აღდგენა</option>
-                        <option value="ელ-ფოსტის პრობლემა">
-                          ელ-ფოსტის პრობლემა
-                        </option>
-                        <option value="ტექნიკური პრობლემა">
-                          ტექნიკური პრობლემა
-                        </option>
-                        <option value="სერვისის პრობლემა">
-                          სერვისის პრობლემა
-                        </option>
-                        <option value="ფაილების აღდგენა">
-                          ფაილების აღდგენა
-                        </option>
-                        <option value="სხვა">სხვა</option>
-                      </Input>
-                      {validation.touched.task_title &&
-                      validation.errors.task_title ? (
-                        <FormFeedback type="invalid">
-                          {validation.errors.task_title}
-                        </FormFeedback>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <Label>აღწერა</Label>
-                      <Input
-                        name="description"
-                        type="textarea"
-                        placeholder="აღწერეთ პრობლემა"
-                        onChange={validation.handleChange}
-                        onBlur={validation.handleBlur}
-                        value={validation.values.description || ""}
-                        invalid={
-                          validation.touched.description &&
-                          validation.errors.description
-                            ? true
-                            : false
-                        }
-                      />
-                      {validation.touched.description &&
-                      validation.errors.description ? (
-                        <FormFeedback type="invalid">
-                          {validation.errors.description}
-                        </FormFeedback>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <Label>პრიორიტეტი</Label>
-                      <Input
-                        name="priority"
-                        type="select"
-                        onChange={validation.handleChange}
-                        onBlur={validation.handleBlur}
-                        value={validation.values.priority || ""}
-                        invalid={
-                          validation.touched.priority &&
-                          validation.errors.priority
-                            ? true
-                            : false
-                        }
-                      >
-                        <option value="Low">დაბალი</option>
-                        <option value="Medium">საშუალო</option>
-                        <option value="High">მაღალი</option>
-                      </Input>
-                      {validation.touched.priority &&
-                      validation.errors.priority ? (
-                        <FormFeedback type="invalid">
-                          {validation.errors.priority}
-                        </FormFeedback>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <Label>სტატუსი</Label>
-                      <Input
-                        name="status"
-                        type="select"
-                        onChange={validation.handleChange}
-                        onBlur={validation.handleBlur}
-                        value={validation.values.status || ""}
-                        invalid={
-                          validation.touched.status && validation.errors.status
-                            ? true
-                            : false
-                        }
-                      >
-                        <option value="Pending">ახალი</option>
-                        <option value="In Progress">მიმდინარე</option>
-                        <option value="Completed">დასრულებული</option>
-                        <option value="Cancelled">გაუქმებული</option>
-                      </Input>
-                      {validation.touched.status && validation.errors.status ? (
-                        <FormFeedback type="invalid">
-                          {validation.errors.status}
-                        </FormFeedback>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <Label>IP მისამართი</Label>
-                      <Input
-                        name="ip_address"
-                        type="text"
-                        placeholder="ჩაწერეთ თქვენი იპ მისამართი"
-                        onChange={validation.handleChange}
-                        onBlur={validation.handleBlur}
-                        value={validation.values.ip_address || ""}
-                        invalid={
-                          validation.touched.ip_address &&
-                          validation.errors.ip_address
-                            ? true
-                            : false
-                        }
-                      />
-                      {validation.touched.ip_address &&
-                      validation.errors.ip_address ? (
-                        <FormFeedback type="invalid">
-                          {validation.errors.ip_address}
-                        </FormFeedback>
-                      ) : null}
-                    </div>
-
-                    <div className="mb-3">
-                      <Label>პასუხისმგებელი პირი</Label>
-                      {userRoles.includes("admin") ? (
-                        <>
-                          <Input
-                            name="assigned_to"
-                            type="select"
-                            onChange={validation.handleChange}
-                            onBlur={validation.handleBlur}
-                            value={validation.values.assigned_to || ""}
-                            invalid={
-                              validation.touched.assigned_to &&
-                              validation.errors.assigned_to
-                                ? true
-                                : false
-                            }
+                              {expandedRows.includes(index) && (
+                                <tr>
+                                  <td colSpan={columns.length}>
+                                    <div className="p-3 text-sm">
+                                      <p className="font-medium mb-2">
+                                        დეტალური ინფორმაცია
+                                      </p>
+                                      <ul className="space-y-2">
+                                        <li>
+                                          <strong>პრობლემის ტიპი:</strong>{" "}
+                                          {task.task_title}
+                                        </li>
+                                        <li>
+                                          <strong>აღწერა:</strong>{" "}
+                                          {task.description}
+                                        </li>
+                                        <li>
+                                          <strong>IP მისამართი:</strong>{" "}
+                                          {task.ip_address}
+                                        </li>
+                                        <li>
+                                          <strong>თარიღი:</strong>{" "}
+                                          {task.due_date}
+                                        </li>
+                                        <li>
+                                          <strong>პრიორიტეტი:</strong>{" "}
+                                          {task.priority}
+                                        </li>
+                                        <li>
+                                          <strong>სტატუსი:</strong>{" "}
+                                          {task.status}
+                                        </li>
+                                        <li>
+                                          <strong>პასუხისმგებელი პირი:</strong>{" "}
+                                          {task.assigned_user
+                                            ? `${task.assigned_user.name} ${task.assigned_user.sur_name}`
+                                            : "არ არის მითითებული"}
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                  {totalPages > 1 && (
+                    <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-3">
+                      <div className="text-sm text-gray-600 order-2 sm:order-1">
+                        Page {currentPage} of {totalPages}
+                      </div>
+                      <div className="flex justify-center order-1 sm:order-2 w-full sm:w-auto">
+                        <ul className="pagination flex">
+                          <li
+                            className={`page-item ${
+                              currentPage <= 1 ? "disabled opacity-50" : ""
+                            }`}
                           >
-                            <option value="" disabled>
-                              აირჩიეთ პასუხისმგებელი პირი
-                            </option>
-                            {!usersLoading &&
-                              usersList.map(user => (
-                                <option key={user.id} value={user.id}>
-                                  {`${user.name} ${user.sur_name}`}
-                                </option>
-                              ))}
-                          </Input>
-                          {validation.touched.assigned_to &&
-                          validation.errors.assigned_to ? (
-                            <FormFeedback type="invalid">
-                              {validation.errors.assigned_to}
-                            </FormFeedback>
-                          ) : null}
-                        </>
-                      ) : (
-                        <div className="text-muted">
-                          მხოლოდ ადმინისტრატორს შეუძლია პასუხისმგებელი პირის
-                          მითითება
-                        </div>
-                      )}
+                            <Link
+                              className="page-link px-3 py-2"
+                              to="#"
+                              onClick={handlePreviousPage}
+                            >
+                              <MdChevronLeft />
+                            </Link>
+                          </li>
+                          {[...Array(totalPages).keys()].map(page => (
+                            <li
+                              key={page + 1}
+                              className={`page-item hidden sm:block ${
+                                currentPage === page + 1 ? "active" : ""
+                              }`}
+                            >
+                              <Link
+                                className="page-link px-3 py-2"
+                                to="#"
+                                onClick={() => handlePageClick(page + 1)}
+                              >
+                                {page + 1}
+                              </Link>
+                            </li>
+                          ))}
+                          <li
+                            className={`page-item ${
+                              currentPage >= totalPages
+                                ? "disabled opacity-50"
+                                : ""
+                            }`}
+                          >
+                            <Link
+                              className="page-link px-3 py-2"
+                              to="#"
+                              onClick={handleNextPage}
+                            >
+                              <MdChevronRight />
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <div className="text-end">
-                      <Button
-                        color="success"
-                        type="submit"
-                        className="save-task"
-                      >
-                        გაგზავნა
-                      </Button>
-                    </div>
-                  </Col>
-                </Row>
-              </Form>
-            </ModalBody>
-          </Modal>
-        </div>
+                  )}
+                </Fragment>
+              ) : (
+                <div className="text-center py-8">თასქები არ არის</div>
+              )}
+            </Col>
+          </Row>
+        )}
+        <Modal
+          isOpen={modal}
+          toggle={toggleModal}
+          className="modal-dialog-centered"
+        >
+          <ModalHeader toggle={toggleModal} tag="h4">
+            {isEdit ? "რედაქტირება" : "ახალი თასქის დამატება"}
+          </ModalHeader>
+          <ModalBody>
+            <Form
+              onSubmit={e => {
+                e.preventDefault()
+                validation.handleSubmit()
+                return false
+              }}
+            >
+              <Row>
+                <Col xs="12">
+                  <div className="mb-3">
+                    <Label className="form-label">აირჩიეთ პრობლემის ტიპი</Label>
+                    <Input
+                      name="task_title"
+                      type="select"
+                      className="form-select"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.task_title || ""}
+                      invalid={
+                        validation.touched.task_title &&
+                        validation.errors.task_title
+                          ? true
+                          : false
+                      }
+                    >
+                      <option value="" disabled hidden>
+                        აირჩიეთ პრობლემის ტიპი
+                      </option>
+                      <option value="პრინტერის პრობლემა">
+                        პრინტერის პრობლემა
+                      </option>
+                      <option value="სერვისი">სერვისი</option>
+                      <option value="პაროლის აღდგენა">პარლის აღდგენა</option>
+                      <option value="ელ-ფოსტის პრობლემა">
+                        ელ-ფოსტის პრობლემა
+                      </option>
+                      <option value="ტექნიკური პრობლემა">
+                        ტექნიკური პრობლემა
+                      </option>
+                      <option value="სერვისის პრობლემა">
+                        სერვისის პრობლემა
+                      </option>
+                      <option value="ფაილების აღდგენა">ფაილების აღდგენა</option>
+                      <option value="სხვა">სხვა</option>
+                    </Input>
+                    {validation.touched.task_title &&
+                    validation.errors.task_title ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.task_title}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+                  <div className="mb-3">
+                    <Label className="form-label">აღწერა</Label>
+                    <Input
+                      name="description"
+                      type="textarea"
+                      className="form-control"
+                      placeholder="აღწერეთ პრობლემა"
+                      rows="4"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.description || ""}
+                      invalid={
+                        validation.touched.description &&
+                        validation.errors.description
+                          ? true
+                          : false
+                      }
+                    />
+                    {validation.touched.description &&
+                    validation.errors.description ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.description}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+                  <div className="mb-3">
+                    <Label className="form-label">პრიორიტეტი</Label>
+                    <Input
+                      name="priority"
+                      type="select"
+                      className="form-select"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.priority || ""}
+                      invalid={
+                        validation.touched.priority &&
+                        validation.errors.priority
+                          ? true
+                          : false
+                      }
+                    >
+                      <option value="Low">დაბალი</option>
+                      <option value="Medium">საშუალო</option>
+                      <option value="High">მაღალი</option>
+                    </Input>
+                    {validation.touched.priority &&
+                    validation.errors.priority ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.priority}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+                  <div className="mb-3">
+                    <Label className="form-label">სტატუსი</Label>
+                    <Input
+                      name="status"
+                      type="select"
+                      className="form-select"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.status || ""}
+                      invalid={
+                        validation.touched.status && validation.errors.status
+                          ? true
+                          : false
+                      }
+                    >
+                      <option value="Pending">ახალი</option>
+                      <option value="In Progress">მიმდინარე</option>
+                      <option value="Completed">დასრულებული</option>
+                      <option value="Cancelled">გაუქმებული</option>
+                    </Input>
+                    {validation.touched.status && validation.errors.status ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.status}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+                  <div className="mb-3">
+                    <Label className="form-label">IP მისამართი</Label>
+                    <Input
+                      name="ip_address"
+                      type="text"
+                      className="form-control"
+                      placeholder="ჩაწერეთ თქვენი იპ მისამართი"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.ip_address || ""}
+                      invalid={
+                        validation.touched.ip_address &&
+                        validation.errors.ip_address
+                          ? true
+                          : false
+                      }
+                    />
+                    {validation.touched.ip_address &&
+                    validation.errors.ip_address ? (
+                      <FormFeedback type="invalid">
+                        {validation.errors.ip_address}
+                      </FormFeedback>
+                    ) : null}
+                  </div>
+
+                  <div className="mb-3">
+                    <Label className="form-label">პასუხისმგებელი პირი</Label>
+                    {userRoles.includes("admin") ? (
+                      <>
+                        <Input
+                          name="assigned_to"
+                          type="select"
+                          className="form-select"
+                          onChange={validation.handleChange}
+                          onBlur={validation.handleBlur}
+                          value={validation.values.assigned_to || ""}
+                          invalid={
+                            validation.touched.assigned_to &&
+                            validation.errors.assigned_to
+                              ? true
+                              : false
+                          }
+                        >
+                          <option value="" disabled>
+                            აირჩიეთ პასუხისმგებელი პირი
+                          </option>
+                          {!usersLoading &&
+                            usersList.map(user => (
+                              <option key={user.id} value={user.id}>
+                                {`${user.name} ${user.sur_name}`}
+                              </option>
+                            ))}
+                        </Input>
+                        {validation.touched.assigned_to &&
+                        validation.errors.assigned_to ? (
+                          <FormFeedback type="invalid">
+                            {validation.errors.assigned_to}
+                          </FormFeedback>
+                        ) : null}
+                      </>
+                    ) : (
+                      <div className="text-muted text-sm">
+                        მხოლოდ ადმინისტრატორს შეუძლია პასუხისმგებელი პირის
+                        მითითება
+                      </div>
+                    )}
+                  </div>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <div className="text-end mt-4">
+                    <Button
+                      color="success"
+                      type="submit"
+                      className="w-full sm:w-auto"
+                    >
+                      გაგზავნა
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+            </Form>
+          </ModalBody>
+        </Modal>
       </div>
       <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

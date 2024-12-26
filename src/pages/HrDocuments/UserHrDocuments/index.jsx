@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react"
-import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { getCurrentUserHrDocuments } from "services/hrDocument"
 import MuiTable from "../../../components/Mui/MuiTable"
 import { downloadHrDocument as downloadHrDocumentService } from "services/hrDocument"
-import { Row, Col } from "reactstrap"
 import { toast, ToastContainer } from "react-toastify"
 
 const statusMap = {
@@ -53,12 +51,19 @@ const UserHrDocuments = () => {
     created_at: document.created_at,
     user: {
       name:
-      document.is_other_user !== 1 ?
-        document.user?.name && document.user?.sur_name
-          ? `${document.user.name} ${document.user.sur_name}`
-          : "N/A" : `${document.first_name} ${document.last_name}`,
-      id: document.is_other_user !== 1 ? document.user.id_number : document.id_number,
-      position: document.is_other_user !== 1 ? document.user.position : document.position,
+        document.is_other_user !== 1
+          ? document.user?.name && document.user?.sur_name
+            ? `${document.user.name} ${document.user.sur_name}`
+            : "N/A"
+          : `${document.first_name} ${document.last_name}`,
+      id:
+        document.is_other_user !== 1
+          ? document.user.id_number
+          : document.id_number,
+      position:
+        document.is_other_user !== 1
+          ? document.user.position
+          : document.position,
     },
     name: document.name,
     salary: document.salary,
@@ -196,17 +201,9 @@ const UserHrDocuments = () => {
   }
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="HR დოკუმენტები"
-                breadcrumbItem="ჩემი დოკუმენტები"
-              />
-            </Col>
-          </Row>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div>
           <MuiTable
             data={transformedHrDocuments}
             columns={columns}
@@ -224,7 +221,7 @@ const UserHrDocuments = () => {
         </div>
       </div>
       <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

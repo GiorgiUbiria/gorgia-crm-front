@@ -116,9 +116,11 @@ const AdminPage = () => {
 
   if (isLoading && !currentUser) {
     return (
-      <div className="bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center">Loading user data...</div>
+      <div className="bg-gray-50 min-h-screen w-full">
+        <div className="w-full px-4 py-6">
+          <div className="flex justify-center items-center">
+            <div className="text-center">Loading user data...</div>
+          </div>
         </div>
       </div>
     )
@@ -126,9 +128,11 @@ const AdminPage = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center">Loading content...</div>
+      <div className="bg-gray-50 min-h-screen w-full">
+        <div className="w-full px-4 py-6">
+          <div className="flex justify-center items-center">
+            <div className="text-center">Loading content...</div>
+          </div>
         </div>
       </div>
     )
@@ -136,10 +140,10 @@ const AdminPage = () => {
 
   if (error) {
     return (
-      <div className="bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="alert alert-danger" role="alert">
-            <pre style={{ whiteSpace: "pre-wrap" }}>
+      <div className="bg-gray-50 min-h-screen w-full">
+        <div className="w-full px-4 py-6">
+          <div className="alert alert-danger w-full mx-auto" role="alert">
+            <pre className="whitespace-pre-wrap break-words">
               {typeof error === "string"
                 ? error
                 : JSON.stringify(error, null, 2)}
@@ -152,22 +156,31 @@ const AdminPage = () => {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="p-4 sm:p-6">
+      <div className="w-full px-4 py-6">
+        <div className="p-2 sm:p-4 md:p-6">
           {isAdmin ? (
             <>
-              <Nav tabs className="nav-tabs-custom nav-justified">
-                <NavItem>
+              <Nav
+                tabs
+                className="nav-tabs-custom nav-justified flex flex-wrap"
+              >
+                <NavItem className="w-1/2">
                   <NavLink
-                    className={classnames({ active: activeTab === "1" })}
+                    className={classnames(
+                      "text-sm sm:text-base py-2 px-1 sm:px-4",
+                      { active: activeTab === "1" }
+                    )}
                     onClick={() => toggle("1")}
                   >
                     <span>დეპარტამენტები</span>
                   </NavLink>
                 </NavItem>
-                <NavItem>
+                <NavItem className="w-1/2">
                   <NavLink
-                    className={classnames({ active: activeTab === "2" })}
+                    className={classnames(
+                      "text-sm sm:text-base py-2 px-1 sm:px-4",
+                      { active: activeTab === "2" }
+                    )}
                     onClick={() => toggle("2")}
                   >
                     <span>მომხმარებლები</span>
@@ -175,7 +188,7 @@ const AdminPage = () => {
                 </NavItem>
               </Nav>
 
-              <TabContent activeTab={activeTab} className="p-3">
+              <TabContent activeTab={activeTab} className="p-2 sm:p-3">
                 <TabPane tabId="1">
                   <DepartmentsTab
                     departments={departments}
@@ -209,7 +222,7 @@ const AdminPage = () => {
               currentUserDepartmentId={userDepartmentId}
             />
           ) : (
-            <div className="alert alert-warning">
+            <div className="alert alert-warning w-full mx-auto">
               Unauthorized access. Please contact administrator.
             </div>
           )}

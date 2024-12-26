@@ -14,6 +14,7 @@ const MenuItem = memo(
     onClick,
     children,
     isActive,
+    onLinkClick,
   }) => (
     <li className="mb-1 w-full">
       <Link
@@ -33,7 +34,10 @@ const MenuItem = memo(
                 e.preventDefault()
                 onClick()
               }
-            : onClick
+            : (e) => {
+                if (onClick) onClick(e)
+                if (!hasSubmenu && onLinkClick) onLinkClick()
+              }
         }
       >
         <div className="w-5 flex-shrink-0 flex items-center justify-center">
@@ -62,7 +66,9 @@ const MenuItem = memo(
             }
           `}
         >
-          {children}
+          {React.Children.map(children, child =>
+            React.cloneElement(child, { onLinkClick })
+          )}
         </ul>
       )}
     </li>
@@ -78,6 +84,7 @@ MenuItem.propTypes = {
   isActive: PropTypes.bool,
   onClick: PropTypes.func,
   children: PropTypes.node,
+  onLinkClick: PropTypes.func,
 }
 
 MenuItem.displayName = "MenuItem"

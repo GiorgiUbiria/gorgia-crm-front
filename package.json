@@ -10,6 +10,7 @@
     "@fullcalendar/interaction": "^6.1.8",
     "@fullcalendar/react": "^6.1.8",
     "@fullcalendar/timegrid": "^6.1.15",
+    "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.16.7",

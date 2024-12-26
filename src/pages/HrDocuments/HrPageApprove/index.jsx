@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from "react"
-import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { getHrDocuments, updateHrDocumentStatus } from "services/hrDocument"
 import MuiTable from "../../../components/Mui/MuiTable"
 import {
@@ -9,7 +8,7 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material"
-import { Row, Col, TabContent, Label, Spinner } from "reactstrap"
+import { TabContent, Label, Spinner } from "reactstrap"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import DatePicker from "components/DatePicker"
 import moment from "moment"
@@ -351,17 +350,9 @@ const HrPageApprove = () => {
   }
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="HR დოკუმენტები"
-                breadcrumbItem="დოკუმენტების ვიზირება"
-              />
-            </Col>
-          </Row>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div>
           {isProcessing ? (
             <div className="text-center">
               <Spinner color="primary" />
@@ -701,7 +692,7 @@ const HrPageApprove = () => {
           </Dialog>
         </div>
       </div>
-    </React.Fragment>
+    </>
   )
 }
 

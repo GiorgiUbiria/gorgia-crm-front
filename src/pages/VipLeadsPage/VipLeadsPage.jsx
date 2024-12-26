@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react"
 import {
   Col,
-  Container,
   Row,
   Modal,
   ModalHeader,
@@ -17,7 +16,6 @@ import {
   updateVipLead,
   deleteVipLead,
 } from "../../services/vipLeadsService"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import MuiTable from "components/Mui/MuiTable"
 import Dialog from "@mui/material/Dialog"
 import DialogActions from "@mui/material/DialogActions"
@@ -152,97 +150,94 @@ const VipLeadsPage = () => {
   }
 
   return (
-    <React.Fragment>
-      <div className="w-3/4 mx-auto m-4">
-        <Container fluid>
-          <Breadcrumbs title="ლიდები" breadcrumbItem="VIP" />
-          <Row className="mb-3">
-            <Col className="d-flex justify-content-end">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleModalOpen("add")}
-              >
-                <i className="bx bx-plus me-1"></i>
-                ლიდის დამატება
-              </Button>
-            </Col>
-          </Row>
-          <Row>
-            <MuiTable data={transformedVipLeads} columns={columns} />
-          </Row>
-          <Dialog
-            open={confirmModal.isOpen}
-            onClose={() =>
-              setConfirmModal({ isOpen: false, type: null, leadId: null })
-            }
-          >
-            <DialogTitle>{"ლიდის წაშლა"}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                დარწმუნებული ხართ, რომ გსურთ ლიდის წაშლა?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() =>
-                  setConfirmModal({ isOpen: false, type: null, leadId: null })
-                }
-                color="primary"
-              >
-                გაუქმება
-              </Button>
-              <Button onClick={handleDeleteVipLead} color="error" autoFocus>
-                წაშლა
-              </Button>
-            </DialogActions>
-          </Dialog>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Row className="mb-3">
+          <Col className="d-flex justify-content-end">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handleModalOpen("add")}
+            >
+              <i className="bx bx-plus me-1"></i>
+              ლიდის დამატება
+            </Button>
+          </Col>
+        </Row>
+        <Row>
+          <MuiTable data={transformedVipLeads} columns={columns} />
+        </Row>
+        <Dialog
+          open={confirmModal.isOpen}
+          onClose={() =>
+            setConfirmModal({ isOpen: false, type: null, leadId: null })
+          }
+        >
+          <DialogTitle>{"ლიდის წაშლა"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              დარწმუნებული ხართ, რომ გსურთ ლიდის წაშლა?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() =>
+                setConfirmModal({ isOpen: false, type: null, leadId: null })
+              }
+              color="primary"
+            >
+              გაუქმება
+            </Button>
+            <Button onClick={handleDeleteVipLead} color="error" autoFocus>
+              წაშლა
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-          <Modal isOpen={modal} toggle={() => setModal(!modal)}>
-            <ModalHeader toggle={() => setModal(!modal)}>
-              {isEdit ? "განახლება" : "დამატება"}
-            </ModalHeader>
-            <ModalBody>
-              <Form onSubmit={handleSaveVipLead}>
-                <FormGroup>
-                  <Label for="first_name">სახელი</Label>
-                  <Input
-                    id="first_name"
-                    name="first_name"
-                    defaultValue={vipLead ? vipLead.name.split(" ")[0] : ""}
-                    required
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label for="last_name">გვარი</Label>
-                  <Input
-                    id="last_name"
-                    name="last_name"
-                    defaultValue={vipLead ? vipLead.name.split(" ")[1] : ""}
-                    required
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label for="phone">ტელეფონის ნომერი</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    defaultValue={vipLead ? vipLead.phone : ""}
-                    maxLength={9}
-                    required
-                  />
-                </FormGroup>
-                <Col style={{ textAlign: "right" }}>
-                  <Button type="submit" color="primary">
-                    {isEdit ? "გნახლება" : "დამატება"}
-                  </Button>
-                </Col>
-              </Form>
-            </ModalBody>
-          </Modal>
-        </Container>
+        <Modal isOpen={modal} toggle={() => setModal(!modal)}>
+          <ModalHeader toggle={() => setModal(!modal)}>
+            {isEdit ? "განახლება" : "დამატება"}
+          </ModalHeader>
+          <ModalBody>
+            <Form onSubmit={handleSaveVipLead}>
+              <FormGroup>
+                <Label for="first_name">სახელი</Label>
+                <Input
+                  id="first_name"
+                  name="first_name"
+                  defaultValue={vipLead ? vipLead.name.split(" ")[0] : ""}
+                  required
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label for="last_name">გვარი</Label>
+                <Input
+                  id="last_name"
+                  name="last_name"
+                  defaultValue={vipLead ? vipLead.name.split(" ")[1] : ""}
+                  required
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label for="phone">ტელეფონის ნომერი</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  defaultValue={vipLead ? vipLead.phone : ""}
+                  maxLength={9}
+                  required
+                />
+              </FormGroup>
+              <Col style={{ textAlign: "right" }}>
+                <Button type="submit" color="primary">
+                  {isEdit ? "გნახლება" : "დამატება"}
+                </Button>
+              </Col>
+            </Form>
+          </ModalBody>
+        </Modal>
       </div>
-    </React.Fragment>
+    </>
   )
 }
 

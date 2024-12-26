@@ -5,7 +5,13 @@ import withRouter from "components/Common/withRouter"
 import { withTranslation } from "react-i18next"
 import SidebarContent from "./SidebarContent"
 
-const Sidebar = ({ isOpen }) => {
+const Sidebar = ({ isOpen, setIsOpen }) => {
+  const handleLinkClick = () => {
+    if (window.innerWidth < 768) { // md breakpoint
+      setIsOpen(false)
+    }
+  }
+
   return (
     <>
       {/* Overlay for mobile */}
@@ -16,6 +22,7 @@ const Sidebar = ({ isOpen }) => {
           ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
         `}
         aria-hidden="true"
+        onClick={() => setIsOpen(false)}
       />
 
       {/* Sidebar */}
@@ -40,7 +47,7 @@ const Sidebar = ({ isOpen }) => {
             }}
           >
             <div className="p-4">
-              <SidebarContent />
+              <SidebarContent onLinkClick={handleLinkClick} />
             </div>
           </div>
         </div>
@@ -51,6 +58,7 @@ const Sidebar = ({ isOpen }) => {
 
 Sidebar.propTypes = {
   isOpen: PropTypes.bool.isRequired,
+  setIsOpen: PropTypes.func.isRequired,
 }
 
 const mapStatetoProps = state => {

@@ -10,7 +10,6 @@ import { usePermissions } from "hooks/usePermissions"
 import { Row, Col, Label } from "reactstrap"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import classnames from "classnames"
-import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
 import { Button } from "reactstrap"
 import { useNavigate } from "react-router-dom"
@@ -283,85 +282,74 @@ const HrPage = () => {
   }
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-4">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="HR დოკუმენტები"
-                breadcrumbItem="ცნობის მოთხოვნა"
-              />
-            </Col>
-          </Row>
-
-          <Row>
-            <Col xl={8} className="mx-auto">
-              <div className="card">
-                <div className="card-body">
-                  <Nav tabs className="nav-tabs-custom">
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Row>
+          <Col xl={8} className="mx-auto">
+            <div>
+              <div>
+                <Nav tabs className="nav-tabs-custom">
+                  <NavItem>
+                    <NavLink
+                      className={classnames({ active: activeTab === "1" })}
+                      onClick={() => setActiveTab("1")}
+                    >
+                      ჩემთვის
+                    </NavLink>
+                  </NavItem>
+                  {canAccessOtherTab && (isAdmin || isHrMember) && (
                     <NavItem>
                       <NavLink
-                        className={classnames({ active: activeTab === "1" })}
-                        onClick={() => setActiveTab("1")}
+                        className={classnames({ active: activeTab === "2" })}
+                        onClick={() => setActiveTab("2")}
                       >
-                        ჩემთვის
+                        სხვისთვის
                       </NavLink>
                     </NavItem>
-                    {canAccessOtherTab && (isAdmin || isHrMember) && (
-                      <NavItem>
-                        <NavLink
-                          className={classnames({ active: activeTab === "2" })}
-                          onClick={() => setActiveTab("2")}
-                        >
-                          სხვისთვის
-                        </NavLink>
-                      </NavItem>
-                    )}
-                  </Nav>
+                  )}
+                </Nav>
 
-                  <div className="mt-4">
-                    <Formik
-                      enableReinitialize
-                      initialValues={getInitialValues(activeTab, currentUser)}
-                      validationSchema={forUserValidationSchema(activeTab)}
-                      onSubmit={handleDocumentSubmit}
-                    >
-                      {({ values, isSubmitting }) => (
-                        <Form>
-                          <TabContent activeTab={activeTab}>
-                            <TabPane tabId="1">
-                              {renderUserForm(values, 1)}
+                <div className="mt-4">
+                  <Formik
+                    enableReinitialize
+                    initialValues={getInitialValues(activeTab, currentUser)}
+                    validationSchema={forUserValidationSchema(activeTab)}
+                    onSubmit={handleDocumentSubmit}
+                  >
+                    {({ values, isSubmitting }) => (
+                      <Form>
+                        <TabContent activeTab={activeTab}>
+                          <TabPane tabId="1">
+                            {renderUserForm(values, 1)}
+                          </TabPane>
+
+                          {canAccessOtherTab && (
+                            <TabPane tabId="2">
+                              {renderUserForm(values, 2)}
                             </TabPane>
+                          )}
+                        </TabContent>
 
-                            {canAccessOtherTab && (
-                              <TabPane tabId="2">
-                                {renderUserForm(values, 2)}
-                              </TabPane>
-                            )}
-                          </TabContent>
-
-                          <div className="mt-4">
-                            <Button
-                              color="primary"
-                              type="submit"
-                              disabled={isSubmitting}
-                            >
-                              {isSubmitting ? "გთხოვთ დაელოდოთ..." : "შენახვა"}
-                            </Button>
-                          </div>
-                        </Form>
-                      )}
-                    </Formik>
-                  </div>
+                        <div className="mt-4">
+                          <Button
+                            color="primary"
+                            type="submit"
+                            disabled={isSubmitting}
+                          >
+                            {isSubmitting ? "გთხოვთ დაელოდოთ..." : "შენახვა"}
+                          </Button>
+                        </div>
+                      </Form>
+                    )}
+                  </Formik>
                 </div>
               </div>
-            </Col>
-          </Row>
-          <ToastContainer />
-        </div>
+            </div>
+          </Col>
+        </Row>
+        <ToastContainer />
       </div>
-    </React.Fragment>
+    </>
   )
 }
 

@@ -6,8 +6,9 @@ import { usePermissions } from "hooks/usePermissions"
 import MenuItem from "./MenuItem"
 import { getMenuConfig } from "./menuConfig"
 import "../customScrollbars.css"
+import PropTypes from "prop-types"
 
-const SidebarContent = ({ t }) => {
+const SidebarContent = ({ t, onLinkClick }) => {
   const ref = useRef()
   const location = useLocation()
   const { user } = usePermissions()
@@ -104,35 +105,34 @@ const SidebarContent = ({ t }) => {
   const handleMenuClick = useCallback(
     item => {
       if (!item.submenu) {
-        document.body.classList.remove("sidebar-enable")
-        document.dispatchEvent(new CustomEvent("closeSidebar"))
+        // Close the sidebar on mobile screens
+        onLinkClick()
       }
       if (item.submenu) {
         toggleMenu(item.key)
       }
     },
-    [toggleMenu]
+    [toggleMenu, onLinkClick]
   )
 
-  const renderSubmenu = useCallback(
-    submenuItems => {
-      return submenuItems.map((item, index) => (
-        <MenuItem
-          key={`${item.to}-${index}`}
-          to={item.to}
-          icon={item.icon}
-          label={item.label}
-          hasSubmenu={!!item.submenu}
-          isExpanded={item.submenu && expandedMenus[item.key]}
-          isActive={activeMenus.includes(item.to)}
-          onClick={() => handleMenuClick(item)}
-        >
-          {item.submenu && renderSubmenu(item.submenu)}
-        </MenuItem>
-      ))
-    },
-    [expandedMenus, activeMenus, handleMenuClick]
-  )
+  // Define renderSubmenu as a regular function to avoid circular dependencies
+  const renderSubmenu = (submenuItems) => {
+    return submenuItems.map((item, index) => (
+      <MenuItem
+        key={`${item.to}-${index}`}
+        to={item.to}
+        icon={item.icon}
+        label={item.label}
+        hasSubmenu={!!item.submenu}
+        isExpanded={item.submenu && expandedMenus[item.key]}
+        isActive={activeMenus.includes(item.to)}
+        onClick={() => handleMenuClick(item)}
+        onLinkClick={onLinkClick}
+      >
+        {item.submenu ? renderSubmenu(item.submenu) : null}
+      </MenuItem>
+    ))
+  }
 
   const menuItems = useMemo(
     () =>
@@ -146,11 +146,12 @@ const SidebarContent = ({ t }) => {
           isExpanded={item.submenu && expandedMenus[item.key]}
           isActive={activeMenus.includes(item.to)}
           onClick={() => handleMenuClick(item)}
+          onLinkClick={onLinkClick}
         >
           {item.submenu && renderSubmenu(item.submenu)}
         </MenuItem>
       )),
-    [menuConfig, expandedMenus, activeMenus, handleMenuClick, renderSubmenu]
+    [menuConfig, expandedMenus, activeMenus, handleMenuClick, onLinkClick]
   )
 
   useEffect(() => {
@@ -172,6 +173,11 @@ const SidebarContent = ({ t }) => {
       </div>
     </div>
   )
+}
+
+SidebarContent.propTypes = {
+  t: PropTypes.func.isRequired,
+  onLinkClick: PropTypes.func.isRequired,
 }
 
 export default withTranslation()(React.memo(SidebarContent))

@@ -1,128 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { Card, CardBody, Modal, ModalHeader, ModalBody, Form, 
-         FormGroup, Label, Input, Button, Spinner, Badge,
-         Popover, PopoverBody, ButtonGroup, Row, Col } from 'reactstrap';
-import { 
-  getMeetings, 
-  createMeeting, 
-  updateMeeting, 
+import React, { useState, useEffect } from "react"
+import FullCalendar from "@fullcalendar/react"
+import dayGridPlugin from "@fullcalendar/daygrid"
+import timeGridPlugin from "@fullcalendar/timegrid"
+import interactionPlugin from "@fullcalendar/interaction"
+import Select from "react-select"
+import ka from "@fullcalendar/core/locales/ka"
+import moment from "moment-timezone"
+import {
+  getMeetings,
+  createMeeting,
+  updateMeeting,
   deleteMeeting,
-  updateAttendeeStatus
-} from '../../services/meetingService';
-import Select from 'react-select';
-import { Tooltip } from 'react-tooltip';
-import './MeetingCalendar.scss';
-import useFetchUsers from 'hooks/useFetchUsers';
-import ka from '@fullcalendar/core/locales/ka';
-import moment from 'moment-timezone';
+  updateAttendeeStatus,
+} from "../../services/meetingService"
+import useFetchUsers from "hooks/useFetchUsers"
 
 const MeetingCalendar = () => {
-  const [modal, setModal] = useState(false);
-  const [meetings, setMeetings] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedView] = useState('dayGridMonth');
-  const [popoverEvent, setPopoverEvent] = useState(null);
-  const [filterStatus, setFilterStatus] = useState('all');
-  
+  const [modal, setModal] = useState(false)
+  const [meetings, setMeetings] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [selectedView] = useState("dayGridMonth")
+  const [popoverEvent, setPopoverEvent] = useState(null)
+  const [filterStatus, setFilterStatus] = useState("all")
+
   const [currentMeeting, setCurrentMeeting] = useState({
-    title: '',
-    start: '',
-    end: '',
+    title: "",
+    start: "",
+    end: "",
     invitees: [],
-    reason: '',
-    comments: '',
-    status: 'pending',
+    reason: "",
+    comments: "",
+    status: "pending",
     isRecurring: false,
     recurrence: {
-      frequency: 'none',
+      frequency: "none",
       interval: 1,
-      endDate: null
-    }
-  });
+      endDate: null,
+    },
+  })
 
-  const { users: fetchedUsers, loading: usersLoading } = useFetchUsers();
+  const { users: fetchedUsers, loading: usersLoading } = useFetchUsers()
 
   useEffect(() => {
-    fetchMeetings();
-  }, [filterStatus]);
+    fetchMeetings()
+  }, [filterStatus])
 
   const fetchMeetings = async () => {
     try {
-      setLoading(true);
-      const response = await getMeetings();
-      let filteredMeetings = response.data;
-      
-      if (filterStatus !== 'all') {
-        filteredMeetings = filteredMeetings.filter(meeting => meeting.status === filterStatus);
+      setLoading(true)
+      const response = await getMeetings()
+      let filteredMeetings = response.data
+
+      if (filterStatus !== "all") {
+        filteredMeetings = filteredMeetings.filter(
+          meeting => meeting.status === filterStatus
+        )
       }
-      
+
       const formattedMeetings = filteredMeetings.map(meeting => ({
         ...meeting,
         backgroundColor: getStatusColor(meeting.status),
         borderColor: getStatusColor(meeting.status),
         extendedProps: {
           ...meeting.extendedProps,
-          status: meeting.status
-        }
-      }));
-      
-      setMeetings(formattedMeetings);
+          status: meeting.status,
+        },
+      }))
+
+      setMeetings(formattedMeetings)
     } catch (error) {
-      console.error('Error fetching meetings:', error);
+      console.error("Error fetching meetings:", error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const getStatusColor = (status) => {
+  const getStatusColor = status => {
     const colors = {
-      pending: '#ffc107',
-      accepted: '#28a745',
-      declined: '#dc3545',
-      tentative: '#17a2b8'
-    };
-    return colors[status] || '#0056b3';
-  };
+      pending: "#ffc107",
+      accepted: "#28a745",
+      declined: "#dc3545",
+      tentative: "#17a2b8",
+    }
+    return colors[status] || "#0056b3"
+  }
 
-  const handleDateClick = (arg) => {
-    const startDate = new Date(arg.date);
-    const endDate = new Date(arg.date.getTime() + 3600000);
-    
-    resetForm();
+  const handleDateClick = arg => {
+    const startDate = new Date(arg.date)
+    const endDate = new Date(arg.date.getTime() + 3600000)
+
+    resetForm()
     setCurrentMeeting({
-      title: '',
+      title: "",
       start: startDate,
       end: endDate,
       invitees: [],
-      reason: '',
-      comments: '',
-      status: 'pending',
+      reason: "",
+      comments: "",
+      status: "pending",
       isRecurring: false,
       recurrence: {
-        frequency: 'none',
+        frequency: "none",
         interval: 1,
-        endDate: null
-      }
-    });
-    setModal(true);
-  };
+        endDate: null,
+      },
+    })
+    setModal(true)
+  }
 
-  const handleEventClick = (arg) => {
-    const event = arg.event;
-    if (arg.jsEvent.target.classList.contains('quick-view-trigger')) {
-      setPopoverEvent(event);
-      return;
+  const handleEventClick = arg => {
+    const event = arg.event
+    if (arg.jsEvent.target.classList.contains("quick-view-trigger")) {
+      setPopoverEvent(event)
+      return
     }
 
-    const attendees = event.extendedProps.attendees || [];
+    const attendees = event.extendedProps.attendees || []
     const attendeeOptions = attendees.map(attendee => ({
       value: attendee.id,
-      label: attendee.name
-    }));
+      label: attendee.name,
+    }))
 
     setCurrentMeeting({
       id: event.id,
@@ -130,45 +127,45 @@ const MeetingCalendar = () => {
       start: event.start,
       end: event.end,
       invitees: attendeeOptions,
-      reason: event.extendedProps.reason || '',
-      comments: event.extendedProps.comments || '',
-      status: event.extendedProps.status || 'pending',
+      reason: event.extendedProps.reason || "",
+      comments: event.extendedProps.comments || "",
+      status: event.extendedProps.status || "pending",
       isRecurring: event.extendedProps.isRecurring || false,
       recurrence: event.extendedProps.recurrence || {
-        frequency: 'none',
+        frequency: "none",
         interval: 1,
-        endDate: null
-      }
-    });
-    setModal(true);
-  };
+        endDate: null,
+      },
+    })
+    setModal(true)
+  }
 
-  const handleEventDrop = async (info) => {
+  const handleEventDrop = async info => {
     try {
-      const { event } = info;
+      const { event } = info
       await updateMeeting(event.id, {
         ...currentMeeting,
         start: event.start,
-        end: event.end
-      });
-      await fetchMeetings();
+        end: event.end,
+      })
+      await fetchMeetings()
     } catch (error) {
-      console.error('Error updating meeting time:', error);
-      info.revert();
+      console.error("Error updating meeting time:", error)
+      info.revert()
     }
-  };
+  }
 
   const handleStatusUpdate = async (meetingId, status) => {
     try {
-      setLoading(true);
-      await updateAttendeeStatus(meetingId, status);
-      await fetchMeetings();
+      setLoading(true)
+      await updateAttendeeStatus(meetingId, status)
+      await fetchMeetings()
     } catch (error) {
-      console.error('Error updating status:', error);
+      console.error("Error updating status:", error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -241,22 +238,30 @@ const MeetingCalendar = () => {
     }
   }
 
-  const getEventContent = (eventInfo) => {
+  const getEventContent = eventInfo => {
     return (
-      <div 
-        className={`fc-event-content status-${eventInfo.event.extendedProps.status || 'pending'}`}
-        data-tooltip-id="meeting-tooltip"
-        data-tooltip-content={`${eventInfo.event.title}
-Status: ${eventInfo.event.extendedProps.status || 'pending'}
-Reason: ${eventInfo.event.extendedProps.reason || 'N/A'}`}
-      >
-        <div className="fc-event-title">{eventInfo.event.title}</div>
-        <div className="fc-event-time">
-          {moment(eventInfo.event.start).format('HH:mm')} - {moment(eventInfo.event.end).format('HH:mm')}
+      <div className="p-1">
+        <div className="font-medium text-sm">{eventInfo.event.title}</div>
+        <div className="text-xs mt-0.5 flex items-center gap-1">
+          <svg
+            className="w-3 h-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          {moment(eventInfo.event.start).format("HH:mm")} -{" "}
+          {moment(eventInfo.event.end).format("HH:mm")}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   const calendarOptions = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
@@ -264,8 +269,7 @@ Reason: ${eventInfo.event.extendedProps.reason || 'N/A'}`}
     headerToolbar: {
       left: "prev,next today",
       center: "title",
-      right:
-        "filterDropdown scheduleButton dayGridMonth,timeGridWeek,timeGridDay",
+      right: "dayGridMonth,timeGridWeek,timeGridDay",
     },
     customButtons: {
       scheduleButton: {
@@ -321,10 +325,10 @@ Reason: ${eventInfo.event.extendedProps.reason || 'N/A'}`}
     },
     height: "auto",
     eventDisplay: "block",
-    eventBackgroundColor: "#0056b3",
-    eventBorderColor: "#0056b3",
-    eventTextColor: "#ffffff",
-    dayCellClassNames: "calendar-day",
+    eventBackgroundColor: "transparent",
+    eventBorderColor: "transparent",
+    eventTextColor: "inherit",
+    dayCellClassNames: "min-h-[120px] hover:bg-slate-50 transition-colors",
     nowIndicator: true,
     views: {
       timeGrid: {
@@ -342,339 +346,443 @@ Reason: ${eventInfo.event.extendedProps.reason || 'N/A'}`}
         dayMaxEvents: true,
       },
     },
+    eventClassNames: ({ event }) => [
+      "rounded-md shadow-sm border-l-4 px-2 py-1 mb-1 cursor-pointer transition-all hover:shadow-md",
+      {
+        "border-amber-500 bg-amber-50 text-amber-900":
+          event.extendedProps.status === "pending",
+        "border-emerald-500 bg-emerald-50 text-emerald-900":
+          event.extendedProps.status === "accepted",
+        "border-rose-500 bg-rose-50 text-rose-900":
+          event.extendedProps.status === "declined",
+        "border-sky-500 bg-sky-50 text-sky-900":
+          event.extendedProps.status === "tentative",
+      },
+    ],
+    buttonClassNames:
+      "bg-primary-600 text-white rounded px-3 py-1 text-sm font-medium hover:bg-primary-700 transition-colors",
+    buttonText: {
+      today: "დღეს",
+      month: "თვე",
+      week: "კვირა",
+      day: "დღე",
+    },
+    contentHeight: "auto",
+    aspectRatio: 1.5,
+    handleWindowResize: true,
+    dayMaxEvents: true,
+    viewClassNames: "bg-white rounded-lg shadow-lg p-4",
+    dayHeaderClassNames: "text-gray-700 font-medium py-2",
+    slotLabelClassNames: "text-gray-600 font-medium",
   }
 
   return (
-    <Card className="calendar-card">
-      <CardBody>
+    <div className="w-full min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {loading && (
-          <div className="calendar-loading">
-            <Spinner color="primary" />
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
           </div>
         )}
 
-        <div className="calendar-filters mb-3">
-          <ButtonGroup>
-            <Button
-              color={filterStatus === "all" ? "primary" : "secondary"}
-              onClick={() => setFilterStatus("all")}
-            >
-              All
-            </Button>
-            <Button
-              color={filterStatus === "pending" ? "primary" : "secondary"}
-              onClick={() => setFilterStatus("pending")}
-            >
-              Pending
-            </Button>
-            <Button
-              color={filterStatus === "accepted" ? "primary" : "secondary"}
-              onClick={() => setFilterStatus("accepted")}
-            >
-              Accepted
-            </Button>
-          </ButtonGroup>
+        <div className="mb-4 sm:mb-6 flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            კალენდარი
+          </h1>
+
+          <div className="flex flex-wrap gap-2">
+            {["all", "pending", "accepted", "declined"].map(status => (
+              <button
+                key={status}
+                onClick={() => setFilterStatus(status)}
+                className={`
+                  px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all
+                  ${
+                    filterStatus === status
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+                  }
+                `}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <FullCalendar
-          {...calendarOptions}
-          events={meetings}
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-          eventContent={getEventContent}
-        />
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+          <div className="p-2 sm:p-4">
+            <FullCalendar
+              {...calendarOptions}
+              events={meetings}
+              dateClick={handleDateClick}
+              eventClick={handleEventClick}
+              eventContent={getEventContent}
+            />
+          </div>
+        </div>
 
-        <Tooltip id="meeting-tooltip" place="top" transition={{ timeout: 200 }} />
+        {modal && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex min-h-screen items-end sm:items-center justify-center p-0 sm:p-4">
+              <div
+                className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+                onClick={() => setModal(false)}
+              />
 
-        <Modal
-          isOpen={modal}
-          toggle={() => setModal(!modal)}
-          className="meeting-modal"
-          size="lg"
-        >
-          <ModalHeader toggle={() => setModal(!modal)}>
-            {currentMeeting.id ? "შეხვედრის რედაქტირება" : "ახალი შეხვედრა"}
-          </ModalHeader>
-          <ModalBody>
-            <Form onSubmit={handleSubmit} className="meeting-form">
-              <Row>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>სათაური</Label>
-                    <Input
-                      type="text"
-                      value={currentMeeting.title}
-                      onChange={e =>
-                        setCurrentMeeting({
-                          ...currentMeeting,
-                          title: e.target.value,
-                        })
-                      }
-                      required
-                      disabled={loading}
-                    />
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>სტატუსი</Label>
-                    <Input
-                      type="select"
-                      value={currentMeeting.status}
-                      onChange={e =>
-                        setCurrentMeeting({
-                          ...currentMeeting,
-                          status: e.target.value,
-                        })
-                      }
-                      disabled={loading}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="accepted">Accepted</option>
-                      <option value="declined">Declined</option>
-                      <option value="tentative">Tentative</option>
-                    </Input>
-                  </FormGroup>
-                </Col>
-              </Row>
+              <div className="relative bg-white w-full sm:rounded-xl shadow-2xl sm:max-w-2xl">
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                    {currentMeeting.id
+                      ? "შეხვედრის რედაქტირება"
+                      : "ახალი შეხვედრა"}
+                  </h2>
+                </div>
 
-              <Row>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>დაწყების დრო</Label>
-                    <Input
-                      type="datetime-local"
-                      value={formatDateTimeLocal(currentMeeting.start)}
-                      onChange={e => handleTimeChange(e, "start")}
-                      required
-                      disabled={loading}
-                      step="900"
-                      className="time-input"
-                    />
-                  </FormGroup>
-                </Col>
-                <Col md={6}>
-                  <FormGroup>
-                    <Label>დასრულების დრო</Label>
-                    <Input
-                      type="datetime-local"
-                      value={formatDateTimeLocal(currentMeeting.end)}
-                      onChange={e => handleTimeChange(e, "end")}
-                      required
-                      disabled={loading}
-                      step="900"
-                      min={formatDateTimeLocal(currentMeeting.start)}
-                      className="time-input"
-                    />
-                  </FormGroup>
-                </Col>
-              </Row>
-
-              <FormGroup>
-                <Label>მონაწილეები</Label>
-                <Select
-                  isMulti
-                  value={currentMeeting.invitees}
-                  onChange={selectedOptions =>
-                    setCurrentMeeting({
-                      ...currentMeeting,
-                      invitees: selectedOptions,
-                    })
-                  }
-                  options={fetchedUsers.map(user => ({
-                    value: user.id,
-                    label: user.name,
-                  }))}
-                  isDisabled={loading || usersLoading}
-                  placeholder="აირჩიეთ მონაწილეები"
-                  noOptionsMessage={() => "მონაწილეები არ მოიძებნა"}
-                  className="basic-multi-select"
-                  classNamePrefix="select"
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>
-                  <Input
-                    type="checkbox"
-                    checked={currentMeeting.isRecurring}
-                    onChange={e =>
-                      setCurrentMeeting({
-                        ...currentMeeting,
-                        isRecurring: e.target.checked,
-                      })
-                    }
-                  />{" "}
-                  Recurring Meeting
-                </Label>
-              </FormGroup>
-
-              {currentMeeting.isRecurring && (
-                <Row>
-                  <Col md={4}>
-                    <FormGroup>
-                      <Label>Frequency</Label>
-                      <Input
-                        type="select"
-                        value={currentMeeting.recurrence.frequency}
+                <form
+                  onSubmit={handleSubmit}
+                  className="p-4 sm:p-6 space-y-4 sm:space-y-6"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        სათაური
+                      </label>
+                      <input
+                        type="text"
+                        value={currentMeeting.title}
                         onChange={e =>
                           setCurrentMeeting({
                             ...currentMeeting,
-                            recurrence: {
-                              ...currentMeeting.recurrence,
-                              frequency: e.target.value,
-                            },
+                            title: e.target.value,
                           })
                         }
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors text-sm sm:text-base"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        სტატუსი
+                      </label>
+                      <select
+                        value={currentMeeting.status}
+                        onChange={e =>
+                          setCurrentMeeting({
+                            ...currentMeeting,
+                            status: e.target.value,
+                          })
+                        }
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors text-sm sm:text-base"
+                        disabled={loading}
                       >
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                      </Input>
-                    </FormGroup>
-                  </Col>
-                  <Col md={4}>
-                    <FormGroup>
-                      <Label>Interval</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={currentMeeting.recurrence.interval}
-                        onChange={e =>
+                        <option value="pending">Pending</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="declined">Declined</option>
+                        <option value="tentative">Tentative</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        დაწყების დრო
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={formatDateTimeLocal(currentMeeting.start)}
+                        onChange={e => handleTimeChange(e, "start")}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        required
+                        disabled={loading}
+                        step="900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        დასრულების დრო
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={formatDateTimeLocal(currentMeeting.end)}
+                        onChange={e => handleTimeChange(e, "end")}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        required
+                        disabled={loading}
+                        step="900"
+                        min={formatDateTimeLocal(currentMeeting.start)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        მონაწილეები
+                      </label>
+                      <Select
+                        isMulti
+                        value={currentMeeting.invitees}
+                        onChange={selectedOptions =>
                           setCurrentMeeting({
                             ...currentMeeting,
-                            recurrence: {
-                              ...currentMeeting.recurrence,
-                              interval: parseInt(e.target.value),
-                            },
+                            invitees: selectedOptions,
                           })
                         }
+                        options={fetchedUsers.map(user => ({
+                          value: user.id,
+                          label: user.name,
+                        }))}
+                        isDisabled={loading || usersLoading}
+                        className="basic-multi-select text-sm"
+                        classNamePrefix="select"
                       />
-                    </FormGroup>
-                  </Col>
-                  <Col md={4}>
-                    <FormGroup>
-                      <Label>End Date</Label>
-                      <Input
-                        type="date"
-                        value={currentMeeting.recurrence.endDate}
-                        onChange={e =>
-                          setCurrentMeeting({
-                            ...currentMeeting,
-                            recurrence: {
-                              ...currentMeeting.recurrence,
-                              endDate: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </FormGroup>
-                  </Col>
-                </Row>
-              )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={currentMeeting.isRecurring}
+                          onChange={e =>
+                            setCurrentMeeting({
+                              ...currentMeeting,
+                              isRecurring: e.target.checked,
+                            })
+                          }
+                          className="mr-2"
+                        />
+                        Recurring Meeting
+                      </label>
+                    </div>
+                  </div>
 
-              <FormGroup>
-                <Label>მიზეზი</Label>
-                <Input
-                  type="textarea"
-                  value={currentMeeting.reason}
-                  onChange={e =>
-                    setCurrentMeeting({
-                      ...currentMeeting,
-                      reason: e.target.value,
-                    })
-                  }
-                  disabled={loading}
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>კომენტარები</Label>
-                <Input
-                  type="textarea"
-                  value={currentMeeting.comments}
-                  onChange={e =>
-                    setCurrentMeeting({
-                      ...currentMeeting,
-                      comments: e.target.value,
-                    })
-                  }
-                  disabled={loading}
-                />
-              </FormGroup>
-
-              <div className="d-flex justify-content-between">
-                <Button color="primary" type="submit" disabled={loading}>
-                  {loading ? (
-                    <Spinner size="sm" />
-                  ) : currentMeeting.id ? (
-                    "განახლება"
-                  ) : (
-                    "შექმნა"
+                  {currentMeeting.isRecurring && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Frequency
+                        </label>
+                        <select
+                          value={currentMeeting.recurrence.frequency}
+                          onChange={e =>
+                            setCurrentMeeting({
+                              ...currentMeeting,
+                              recurrence: {
+                                ...currentMeeting.recurrence,
+                                frequency: e.target.value,
+                              },
+                            })
+                          }
+                          className="mt-1 block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        >
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Interval
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={currentMeeting.recurrence.interval}
+                          onChange={e =>
+                            setCurrentMeeting({
+                              ...currentMeeting,
+                              recurrence: {
+                                ...currentMeeting.recurrence,
+                                interval: parseInt(e.target.value),
+                              },
+                            })
+                          }
+                          className="mt-1 block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          End Date
+                        </label>
+                        <input
+                          type="date"
+                          value={currentMeeting.recurrence.endDate}
+                          onChange={e =>
+                            setCurrentMeeting({
+                              ...currentMeeting,
+                              recurrence: {
+                                ...currentMeeting.recurrence,
+                                endDate: e.target.value,
+                              },
+                            })
+                          }
+                          className="mt-1 block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        />
+                      </div>
+                    </div>
                   )}
-                </Button>
-                {currentMeeting.id && (
-                  <Button
-                    color="danger"
-                    type="button"
-                    onClick={handleDelete}
-                    disabled={loading}
-                  >
-                    {loading ? <Spinner size="sm" /> : "წაშლა"}
-                  </Button>
-                )}
-              </div>
-            </Form>
-          </ModalBody>
-        </Modal>
 
-        {/* Quick View Popover */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        მიზეზი
+                      </label>
+                      <textarea
+                        value={currentMeeting.reason}
+                        onChange={e =>
+                          setCurrentMeeting({
+                            ...currentMeeting,
+                            reason: e.target.value,
+                          })
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        disabled={loading}
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        კომენტარები
+                      </label>
+                      <textarea
+                        value={currentMeeting.comments}
+                        onChange={e =>
+                          setCurrentMeeting({
+                            ...currentMeeting,
+                            comments: e.target.value,
+                          })
+                        }
+                        className="mt-1 block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 text-sm"
+                        disabled={loading}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-gray-100">
+                    {currentMeeting.id && (
+                      <button
+                        type="button"
+                        onClick={handleDelete}
+                        className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                      >
+                        წაშლა
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setModal(false)}
+                      className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      გაუქმება
+                    </button>
+                    <button
+                      type="submit"
+                      className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                    >
+                      {currentMeeting.id ? "განახლება" : "შექმნა"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
         {popoverEvent && (
-          <Popover
-            placement="top"
-            isOpen={!!popoverEvent}
-            target={popoverEvent.el}
-            toggle={() => setPopoverEvent(null)}
-          >
-            <PopoverBody>
-              <h5>{popoverEvent.title}</h5>
-              <p>
-                <strong>Time:</strong> {moment(popoverEvent.start).format("LT")}{" "}
-                - {moment(popoverEvent.end).format("LT")}
+          <div className="fixed sm:absolute bottom-0 sm:bottom-auto left-0 sm:left-auto w-full sm:w-auto sm:max-w-sm z-40 bg-white sm:rounded-lg shadow-xl p-4 border border-gray-200">
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-semibold text-lg text-gray-900">
+                {popoverEvent.title}
+              </h3>
+              <button
+                onClick={() => setPopoverEvent(null)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm text-gray-600 flex items-center gap-2">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {moment(popoverEvent.start).format("LT")} -{" "}
+                {moment(popoverEvent.end).format("LT")}
               </p>
-              <p>
-                <strong>Status:</strong>{" "}
-                <Badge
-                  color={getStatusColor(popoverEvent.extendedProps.status)}
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Status:
+                </span>
+                <span
+                  className={`
+                  inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                  ${
+                    popoverEvent.extendedProps.status === "pending" &&
+                    "bg-amber-100 text-amber-800"
+                  }
+                  ${
+                    popoverEvent.extendedProps.status === "accepted" &&
+                    "bg-emerald-100 text-emerald-800"
+                  }
+                  ${
+                    popoverEvent.extendedProps.status === "declined" &&
+                    "bg-rose-100 text-rose-800"
+                  }
+                  ${
+                    popoverEvent.extendedProps.status === "tentative" &&
+                    "bg-sky-100 text-sky-800"
+                  }
+                `}
                 >
                   {popoverEvent.extendedProps.status}
-                </Badge>
-              </p>
-              <div className="mt-2">
-                <ButtonGroup size="sm">
-                  <Button
-                    color="success"
-                    onClick={() =>
-                      handleStatusUpdate(popoverEvent.id, "accepted")
-                    }
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    color="danger"
-                    onClick={() =>
-                      handleStatusUpdate(popoverEvent.id, "declined")
-                    }
-                  >
-                    Decline
-                  </Button>
-                </ButtonGroup>
+                </span>
               </div>
-            </PopoverBody>
-          </Popover>
+            </div>
+
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => handleStatusUpdate(popoverEvent.id, "accepted")}
+                className="flex-1 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 transition-colors"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => handleStatusUpdate(popoverEvent.id, "declined")}
+                className="flex-1 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 transition-colors"
+              >
+                Decline
+              </button>
+            </div>
+          </div>
         )}
-      </CardBody>
-    </Card>
+      </div>
+    </div>
   )
 }
 

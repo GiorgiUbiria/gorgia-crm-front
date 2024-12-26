@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
-import { Row, Col, Card, CardBody } from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
+import { Row, Col } from "reactstrap"
 import {
   getDepartmentAgreements,
   downloadAgreement,
@@ -439,40 +438,22 @@ const ServiceAgreementArchive = () => {
   }, [])
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ხელშეკრულებების არქივი"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={["executor_firm_name", "requested_by"]}
-                    filterOptions={filterOptions}
-                    onRowClick={() => {}}
-                    renderRowDetails={renderRowDetails}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </div>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["executor_firm_name", "requested_by"]}
+          filterOptions={filterOptions}
+          onRowClick={() => {}}
+          renderRowDetails={renderRowDetails}
+        />
       </div>
       <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

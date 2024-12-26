@@ -1,6 +1,4 @@
 import React, { useEffect, useState, useMemo } from "react"
-import { Row, Col, Card, CardBody } from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getUserAgreemnets } from "services/localAgreement"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import { ToastContainer } from "react-toastify"
@@ -179,40 +177,22 @@ const LocalAgreementUser = () => {
   ]
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ჩემი ხელშეკრულებები"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={["executor_firm_name"]}
-                    filterOptions={filterOptions}
-                    onRowClick={() => {}}
-                    renderRowDetails={expandedRows}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </div>
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["executor_firm_name"]}
+          filterOptions={filterOptions}
+          onRowClick={() => {}}
+          renderRowDetails={expandedRows}
+        />
       </div>
       <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

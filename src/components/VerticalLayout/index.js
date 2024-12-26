@@ -131,6 +131,7 @@ const Layout = props => {
         type={leftSideBarType}
         isMobile={isMobile}
         isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
       />
       <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "md:ml-72" : ""}`}>
         <div className="flex flex-col min-h-screen pt-16">
