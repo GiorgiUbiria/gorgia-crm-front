@@ -24,6 +24,7 @@ import "react-toastify/dist/ReactToastify.css"
 import useFetchUser from "hooks/useFetchUser"
 import useUserRoles from "hooks/useUserRoles"
 import classnames from "classnames"
+import cities from "../common/distances"
 
 const InputWithError = React.memo(function InputWithError({
   formik,
@@ -76,6 +77,7 @@ const BusinessPage = () => {
   const { user, loading: userLoading } = useFetchUser()
   const roles = useUserRoles()
   const isAdmin = useMemo(() => roles.includes("admin"), [roles])
+  const [availableDestinations, setAvailableDestinations] = useState([])
 
   const [departments, setDepartments] = useState([])
   const [departmentsLoading, setDepartmentsLoading] = useState(true)
@@ -156,7 +158,10 @@ const BusinessPage = () => {
       vehicle_expense: false,
       vehicle_model: "",
       vehicle_plate: "",
-      fuel_cost: 0,
+      fuel_type: "",
+      fuel_consumption_per_100: 0,
+      total_fuel: 0,
+      final_cost: 0,
     }),
     [user]
   )
@@ -181,7 +186,10 @@ const BusinessPage = () => {
       vehicle_expense: false,
       vehicle_model: "",
       vehicle_plate: "",
-      fuel_cost: 0,
+      fuel_type: "",
+      fuel_consumption_per_100: 0,
+      total_fuel: 0,
+      final_cost: 0,
     }),
     []
   )
@@ -200,6 +208,26 @@ const BusinessPage = () => {
       (values.vehicle_expense ? Number(fuel_cost) : 0)
     )
   }
+
+  const calculateTotalFuel = useCallback(values => {
+    if (
+      !values.vehicle_expense ||
+      !values.departure_location ||
+      !values.arrival_location ||
+      !values.fuel_consumption_per_100
+    ) {
+      return 0
+    }
+
+    const distance =
+      cities[values.departure_location]?.[values.arrival_location]
+    if (!distance) {
+      return 0
+    }
+
+    // Calculate fuel for round trip (distance * 2) and convert to litres per 100km
+    return (distance * 2 * values.fuel_consumption_per_100) / 100
+  }, [])
 
   const formikMyTrip = useFormik({
     initialValues: initialValuesMyTrip,
@@ -315,6 +343,23 @@ const BusinessPage = () => {
   })
 
   useEffect(() => {
+    if (formikMyTrip.values.departure_location) {
+      const destinations = cities[formikMyTrip.values.departure_location] || {}
+      setAvailableDestinations(Object.keys(destinations))
+
+      // Reset arrival location if it's not valid for the new departure location
+      if (
+        formikMyTrip.values.arrival_location &&
+        !destinations[formikMyTrip.values.arrival_location]
+      ) {
+        formikMyTrip.setFieldValue("arrival_location", "")
+      }
+    } else {
+      setAvailableDestinations([])
+    }
+  }, [formikMyTrip.values.departure_location])
+
+  useEffect(() => {
     const newDuration = calculateDuration(
       formikMyTrip.values.start_date,
       formikMyTrip.values.end_date,
@@ -345,6 +390,34 @@ const BusinessPage = () => {
     formikEmployeeTrip.values.end_date,
     formikEmployeeTrip.values,
     calculateDuration,
+    formikEmployeeTrip,
+  ])
+
+  useEffect(() => {
+    const newTotalFuel = calculateTotalFuel(formikMyTrip.values)
+    if (newTotalFuel !== formikMyTrip.values.total_fuel) {
+      formikMyTrip.setFieldValue("total_fuel", newTotalFuel)
+    }
+  }, [
+    formikMyTrip.values.departure_location,
+    formikMyTrip.values.arrival_location,
+    formikMyTrip.values.fuel_consumption_per_100,
+    formikMyTrip.values.vehicle_expense,
+    calculateTotalFuel,
+    formikMyTrip,
+  ])
+
+  useEffect(() => {
+    const newTotalFuel = calculateTotalFuel(formikEmployeeTrip.values)
+    if (newTotalFuel !== formikEmployeeTrip.values.total_fuel) {
+      formikEmployeeTrip.setFieldValue("total_fuel", newTotalFuel)
+    }
+  }, [
+    formikEmployeeTrip.values.departure_location,
+    formikEmployeeTrip.values.arrival_location,
+    formikEmployeeTrip.values.fuel_consumption_per_100,
+    formikEmployeeTrip.values.vehicle_expense,
+    calculateTotalFuel,
     formikEmployeeTrip,
   ])
 
@@ -455,14 +528,31 @@ const BusinessPage = () => {
               formik={formik}
               name="departure_location"
               label="გასვლის ადგილი"
-            />
+              type="select"
+            >
+              <option value="">აირჩიეთ გასვლის ადგილი</option>
+              {Object.keys(cities).map(city => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </InputWithError>
           </div>
           <div className="col-md-6">
             <InputWithError
               formik={formik}
               name="arrival_location"
               label="დანიშნულების ადგილი"
-            />
+              type="select"
+              disabled={!formik.values.departure_location}
+            >
+              <option value="">აირჩიეთ დანიშნულების ადგილი</option>
+              {availableDestinations.map(city => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </InputWithError>
           </div>
         </div>
 
@@ -595,7 +685,7 @@ const BusinessPage = () => {
             />
           </div>
           <div className="col-md-6">
-            <Label for="vehicle_expense">ტრანსპორტის ხარჯი</Label>
+            <Label for="vehicle_expense">საკუთარი ტრანსპორტის ხარჯი</Label>
             <Input
               type="select"
               id="vehicle_expense"
@@ -641,12 +731,37 @@ const BusinessPage = () => {
               </div>
             </div>
             <div className="row">
-              <div className="col-md-6">
+              <div className="col-md-4">
                 <InputWithError
                   formik={formik}
-                  name="fuel_cost"
-                  label="საწვავის ღირებულება/100კმ"
+                  name="fuel_type"
+                  label="საწვავის ტიპი"
+                  type="select"
+                >
+                  <option value="">აირჩიეთ საწვავის ტიპი</option>
+                  <option value="benzin">ბენზინი</option>
+                  <option value="diesel">დიზელი</option>
+                  <option value="gas">გაზი</option>
+                </InputWithError>
+              </div>
+              <div className="col-md-4">
+                <InputWithError
+                  formik={formik}
+                  name="fuel_consumption_per_100"
+                  label="წვა 100კმ-ზე"
                   type="number"
+                  max={10}
+                  step="0.1"
+                />
+              </div>
+              <div className="col-md-4">
+                <Label for="total_fuel">სულ საჭირო საწვავი (წასვლა/წამოსვლა)</Label>
+                <Input
+                  type="text"
+                  id="total_fuel"
+                  name="total_fuel"
+                  value={formik.values.total_fuel?.toFixed(2) || "0.00"}
+                  readOnly
                 />
               </div>
             </div>
