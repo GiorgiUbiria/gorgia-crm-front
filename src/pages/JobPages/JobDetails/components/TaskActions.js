@@ -1,16 +1,42 @@
 import React from "react"
-import { Play, CheckCircle, XCircle, RefreshCcw } from "lucide-react"
+import { Play, CheckCircle } from "lucide-react"
+import { useStartTask, useFinishTask } from "../../../../queries/tasks"
+import { toast } from "react-toastify"
+import useCurrentUser from "../../../../hooks/useCurrentUser"
 
-const TaskActions = ({
-  status,
-  canEdit,
-  onUpdateStatus,
-  userId,
-  taskAssignedTo,
-}) => {
-  if (!canEdit) return null
+const TaskActions = ({ task, canEdit }) => {
+  const startTaskMutation = useStartTask()
+  const finishTaskMutation = useFinishTask()
+  const { currentUser, isLoading } = useCurrentUser()
 
-  const canUpdateStatus = userId === taskAssignedTo
+  if (isLoading || !currentUser || !canEdit) return null
+
+  const canUpdateStatus =
+    currentUser.department_id === 5 && task.assigned_to === currentUser.id
+
+  const handleStartTask = async () => {
+    try {
+      await startTaskMutation.mutateAsync(task.id)
+      toast.success("დავალება დაწყებულია")
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "დავალების დაწყების დროს დაფიქსირდა შეცდომა"
+      )
+    }
+  }
+
+  const handleFinishTask = async () => {
+    try {
+      await finishTaskMutation.mutateAsync(task.id)
+      toast.success("დავალება დასრულებულია")
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "დავალების დასრულების დროს დაფიქსირდა შეცდომა"
+      )
+    }
+  }
 
   const statusColors = {
     in_progress: "bg-[#105D8D] hover:bg-[#0D4D75]",
@@ -20,37 +46,23 @@ const TaskActions = ({
 
   return (
     <div className="flex gap-3">
-      {status !== "In Progress" && status !== "Completed" && (
+      {canUpdateStatus && task.status === "Pending" && (
         <button
-          onClick={() => onUpdateStatus("In Progress")}
+          onClick={handleStartTask}
           className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.in_progress}`}
         >
-          {status === "Cancelled" ? (
-            <RefreshCcw size={16} />
-          ) : (
-            <Play size={16} />
-          )}
-          {status === "Cancelled" ? "თავიდან დაწყება" : "დაწყება"}
+          <Play size={16} />
+          დაწყება
         </button>
       )}
 
-      {status === "In Progress" && canUpdateStatus && (
+      {canUpdateStatus && task.status === "In Progress" && (
         <button
-          onClick={() => onUpdateStatus("Completed")}
+          onClick={handleFinishTask}
           className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.completed}`}
         >
           <CheckCircle size={16} />
           დასრულება
-        </button>
-      )}
-
-      {status !== "Cancelled" && status !== "Completed" && canUpdateStatus && (
-        <button
-          onClick={() => onUpdateStatus("Cancelled")}
-          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.cancelled}`}
-        >
-          <XCircle size={16} />
-          გაუქმება
         </button>
       )}
     </div>

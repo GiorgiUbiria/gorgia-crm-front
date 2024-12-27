@@ -1,4 +1,9 @@
 import React, { useState } from "react"
+import { toast } from "react-toastify"
+import {
+  useCreateTaskComment,
+  useDeleteTaskComment,
+} from "../../../../queries/taskComments"
 
 const formatTimeAgo = date => {
   const now = new Date()
@@ -38,50 +43,45 @@ const formatTimeAgo = date => {
   return `${diffInYears} წლის წინ`
 }
 
-const CommentThread = ({
-  comment,
-  currentUser,
-  onAddReply,
-  onEditComment,
-  onDeleteComment,
-  depth = 0,
-}) => {
+const CommentThread = ({ comment, currentUser, taskId, depth = 0 }) => {
   const [isReplying, setIsReplying] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
   const [replyContent, setReplyContent] = useState("")
-  const [editContent, setEditContent] = useState(comment.comment_text)
+
+  const createCommentMutation = useCreateTaskComment()
+  const deleteCommentMutation = useDeleteTaskComment()
 
   const handleSubmitReply = async e => {
     e.preventDefault()
     if (!replyContent.trim()) return
 
     try {
-      await onAddReply(comment.id, replyContent)
+      await createCommentMutation.mutateAsync({
+        taskId,
+        data: {
+          task_id: taskId,
+          comment_text: replyContent,
+          parent_id: comment.id,
+        },
+      })
       setReplyContent("")
       setIsReplying(false)
     } catch (error) {
-      console.error("Error submitting reply:", error)
-    }
-  }
-
-  const handleSubmitEdit = async e => {
-    e.preventDefault()
-    if (!editContent.trim()) return
-
-    try {
-      await onEditComment(comment.id, editContent)
-      setIsEditing(false)
-    } catch (error) {
-      console.error("Error updating comment:", error)
+      toast.error(
+        error.response?.data?.message ||
+          "პასუხის დამატების დროს დაფიქსირდა შეცდომა"
+      )
     }
   }
 
   const handleDelete = async () => {
     if (window.confirm("ნამდვილად გსურთ კომენტარის წაშლა?")) {
       try {
-        await onDeleteComment(comment.id)
+        await deleteCommentMutation.mutateAsync(comment.id)
       } catch (error) {
-        console.error("Error deleting comment:", error)
+        toast.error(
+          error.response?.data?.message ||
+            "კომენტარის წაშლის დროს დაფიქსირდა შეცდომა"
+        )
       }
     }
   }
@@ -110,38 +110,9 @@ const CommentThread = ({
               </span>
             </div>
 
-            {isEditing ? (
-              <form onSubmit={handleSubmitEdit} className="mt-2">
-                <textarea
-                  value={editContent}
-                  onChange={e => setEditContent(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#105D8D] focus:ring-1 focus:ring-[#105D8D] focus:outline-none resize-none"
-                  rows={3}
-                />
-                <div className="mt-2 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditing(false)
-                      setEditContent(comment.comment_text)
-                    }}
-                    className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-                  >
-                    გაუქმება
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 text-sm text-white bg-[#105D8D] hover:bg-[#0D4D75] rounded"
-                  >
-                    შენახვა
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <p className="mt-1 text-gray-700 whitespace-pre-wrap">
-                {comment.comment_text}
-              </p>
-            )}
+            <p className="mt-1 text-gray-700 whitespace-pre-wrap">
+              {comment.comment_text}
+            </p>
 
             <div className="mt-2 flex items-center gap-4">
               <button
@@ -151,20 +122,13 @@ const CommentThread = ({
                 პასუხის გაცემა
               </button>
               {comment.user_id === currentUser?.id && (
-                <>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    რედაქტირება
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    className="text-sm text-red-500 hover:text-red-700"
-                  >
-                    წაშლა
-                  </button>
-                </>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteCommentMutation.isPending}
+                  className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deleteCommentMutation.isPending ? "იშლება..." : "წაშლა"}
+                </button>
               )}
             </div>
           </div>
@@ -189,9 +153,12 @@ const CommentThread = ({
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm text-white bg-[#105D8D] hover:bg-[#0D4D75] rounded"
+                disabled={createCommentMutation.isPending}
+                className="px-4 py-2 text-sm text-white bg-[#105D8D] hover:bg-[#0D4D75] rounded disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                პასუხის გაგზავნა
+                {createCommentMutation.isPending
+                  ? "იგზავნება..."
+                  : "პასუხის გაგზავნა"}
               </button>
             </div>
           </form>
@@ -205,9 +172,7 @@ const CommentThread = ({
               key={reply.id}
               comment={reply}
               currentUser={currentUser}
-              onAddReply={onAddReply}
-              onEditComment={onEditComment}
-              onDeleteComment={onDeleteComment}
+              taskId={taskId}
               depth={depth + 1}
             />
           ))}

@@ -1,58 +1,78 @@
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useMemo } from "react"
 import { Container } from "reactstrap"
-import { useParams } from "react-router-dom"
-import { getTask, updateTaskStatus } from "services/tasks"
+import { useParams, useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
+import { useGetTask } from "../../../queries/tasks"
 import TaskHeader from "./components/TaskHeader"
 import TaskStatus from "./components/TaskStatus"
 import TaskActions from "./components/TaskActions"
 import TaskTimeline from "./components/TaskTimeline"
 import CommentSection from "./components/CommentSection"
 import useUserRoles from "../../../hooks/useUserRoles"
+import useCurrentUser from "../../../hooks/useCurrentUser"
+import Spinners from "../../../components/Common/Spinner"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+
 const JobDetails = () => {
   document.title = "Job Details | Gorgia LLC"
   const { id } = useParams()
-  const [task, setTask] = useState(null)
+  const navigate = useNavigate()
   const userRoles = useUserRoles()
-  const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
+  const { currentUser, isLoading: userLoading } = useCurrentUser()
 
-  const hasEditPermission = useMemo(() => {
-    return userRoles.includes("admin") || currentUser?.department_id === 5
-  }, [userRoles, currentUser])
-
-  useEffect(() => {
-    const fetchTask = async () => {
-      try {
-        const response = await getTask(id)
-        if (response) {
-          setTask(response)
-        } else {
-          console.error("Task not found or response format is incorrect")
-        }
-      } catch (error) {
+  const {
+    data: task,
+    isLoading: taskLoading,
+    error,
+  } = useGetTask(id, {
+    onError: error => {
+      if (error.response?.status === 403) {
+        toast.error("შენ არ გაქვს უფლება იხილო ეს დავალება")
+        navigate("/support/it-tasks")
+      } else {
+        toast.error("დავალების ინფორმაციის ჩატვირთვის დროს დაფიქსირდა შეცდომა")
         console.error("Error fetching task details:", error)
       }
-    }
+    },
+  })
 
-    fetchTask()
-  }, [id])
+  const hasEditPermission = useMemo(() => {
+    if (!task) return false
 
-  const handleUpdateStatus = async newStatus => {
-    try {
-      const updatedTask = await updateTaskStatus(task.id, newStatus)
-      setTask(updatedTask)
-    } catch (error) {
-      console.error("Error updating task status:", error)
-    }
-  }
+    return (
+      userRoles.includes("admin") ||
+      (currentUser?.department_id === 5 && task.assigned_to === currentUser?.id)
+    )
+  }, [userRoles, currentUser, task])
 
-  if (!task) {
+  const isITDepartment = currentUser?.department_id === 5
+
+  const canAccessTask = useMemo(() => {
+    if (!task || !currentUser) return false
+    return (
+      hasEditPermission ||
+      isITDepartment ||
+      task.user_id === currentUser.id ||
+      task.assigned_to === currentUser.id
+    )
+  }, [task, hasEditPermission, isITDepartment, currentUser])
+
+  if (userLoading || taskLoading) {
     return (
       <div className="page-content">
         <Container fluid>
-          <div>იტვირთება...</div>
+          <div className="d-flex justify-content-center align-items-center min-vh-100">
+            <Spinners />
+          </div>
         </Container>
       </div>
     )
+  }
+
+  if (error || !task || !canAccessTask) {
+    navigate("/support/it-tasks")
+    return null
   }
 
   return (
@@ -61,19 +81,14 @@ const JobDetails = () => {
         <TaskHeader task={task} />
         <div className="p-6 flex justify-between items-center border-b border-gray-200">
           <TaskStatus status={task.status} />
-          <TaskActions
-            status={task.status}
-            canEdit={hasEditPermission}
-            onUpdateStatus={handleUpdateStatus}
-            userId={currentUser?.id}
-            taskAssignedTo={task.assigned_to}
-          />
+          <TaskActions task={task} canEdit={hasEditPermission} />
         </div>
         <div className="p-6">
           <TaskTimeline task={task} />
         </div>
       </div>
-      <CommentSection task={task} setTask={setTask} />
+      <CommentSection task={task} canComment={canAccessTask} />
+      <ToastContainer />
     </div>
   )
 }
