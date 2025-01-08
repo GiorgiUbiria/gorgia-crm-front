@@ -6,7 +6,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-white border-t border-gray-200 mt-auto">
-      <div className="max-w-9xl mx-auto px-4 py-3">
+      <div className="max-w-10xl mx-auto px-4 py-3">
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-sm text-gray-600">
             © {currentYear} Gorgia. All rights reserved.

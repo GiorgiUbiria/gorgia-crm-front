@@ -132,7 +132,6 @@ const VipLeadsPage = () => {
       if (isEdit) {
         await updateVipLead(vipLead.id, leadData)
       } else {
-        console.log(leadData)
         await createVipLead(leadData)
       }
       fetchVipLeads()
@@ -144,14 +143,13 @@ const VipLeadsPage = () => {
 
   const handleModalOpen = (type, leadData = null) => {
     setIsEdit(type === "edit")
-    console.log(leadData)
     setVipLead(leadData)
     setModal(true)
   }
 
   return (
     <>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Row className="mb-3">
           <Col className="d-flex justify-content-end">
             <Button

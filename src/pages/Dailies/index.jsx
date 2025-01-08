@@ -59,7 +59,6 @@ const Dailies = () => {
 
   useEffect(() => {
     fetchDailies()
-    console.log(dailiesData)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize])
 
@@ -127,8 +126,6 @@ const Dailies = () => {
         }
       })
       .sort((a, b) => a.label.localeCompare(b.label))
-
-    console.log("Unique Departments:", uniqueDepartments)
 
     return [
       {

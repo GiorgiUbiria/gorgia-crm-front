@@ -55,7 +55,6 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
     const fetchRoles = async () => {
       try {
         const rolesResponse = await getRoles()
-        console.log("All roles: ", rolesResponse)
         setAvailableRoles(rolesResponse.data.roles || [])
       } catch (error) {
         console.error("Error fetching roles:", error)

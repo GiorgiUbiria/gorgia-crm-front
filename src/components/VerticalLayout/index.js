@@ -133,7 +133,11 @@ const Layout = props => {
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
       />
-      <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "md:ml-72" : ""}`}>
+      <div
+        className={`flex-1 transition-all duration-300 ${
+          isSidebarOpen ? "md:ml-72" : ""
+        }`}
+      >
         <div className="flex flex-col min-h-screen pt-16">
           <div className="flex-1 flex flex-col">
             <div className="mx-4 mt-4">

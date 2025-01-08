@@ -53,7 +53,6 @@ const DeliveryAgreementApprove = () => {
   const fetchAgreements = async () => {
     try {
       const response = await getDeliveryDepartmentAgreements()
-      console.log(response.data.data)
       setAgreements(response.data.data)
     } catch (err) {
       console.error("Error fetching agreements:", err)
@@ -69,16 +68,12 @@ const DeliveryAgreementApprove = () => {
       setIsProcessing(true)
     }
 
-    console.log(additionalData, status, agreementId)
-
     try {
       const response = await updateDeliveryAgreementStatus(
         agreementId,
         status,
         additionalData
       )
-
-      console.log(response)
 
       setAgreements(prevAgreements =>
         prevAgreements.map(agreement =>
@@ -293,7 +288,7 @@ const DeliveryAgreementApprove = () => {
 
   return (
     <>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <MuiTable
           columns={columns}
           data={transformedAgreements}

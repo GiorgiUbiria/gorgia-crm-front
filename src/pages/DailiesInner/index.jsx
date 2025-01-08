@@ -51,7 +51,6 @@ const DailiesInner = () => {
         dailiesResponse = await getMyRegularDailies(params)
       }
 
-      console.log(dailiesResponse)
       updateState({
         dailiesData: {
           data: dailiesResponse.dailies,
@@ -192,7 +191,7 @@ const DailiesInner = () => {
 
   return (
     <>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
           {/* Action Buttons */}
           <div className="mb-4">

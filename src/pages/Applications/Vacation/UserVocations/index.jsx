@@ -207,7 +207,6 @@ const UserVocation = () => {
   const fetchVacations = async () => {
     try {
       const response = await getCurrentUserVocations()
-      console.log(response.data.data)
       setVacations(response.data.data)
     } catch (err) {
       console.error("Error fetching vocations:", err)
@@ -410,7 +409,7 @@ const UserVocation = () => {
 
   return (
     <>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
           {vacationBalance && <VacationBalance balance={vacationBalance} />}
 

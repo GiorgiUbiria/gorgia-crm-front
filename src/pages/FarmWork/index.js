@@ -54,7 +54,6 @@ const FarmWork = () => {
     setLoading(true)
     try {
       const response = await getTaskList()
-      console.log(response)
       const sortedTasks = response.sort((a, b) => b.id - a.id)
       setTasks(sortedTasks || [])
     } catch (error) {
@@ -100,8 +99,6 @@ const FarmWork = () => {
           assigned_to: values.assigned_to.toString(),
           due_date: currentDate,
         }
-
-        console.log("Submitting payload:", payload)
 
         if (isEdit) {
           await updateTask(task.id, payload)
@@ -352,7 +349,7 @@ const FarmWork = () => {
         onDeleteClick={handleDeleteTask}
         onCloseClick={() => setDeleteModal(false)}
       />
-      <div className="max-w-9xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-6">
+      <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-6">
         {isLoading ? (
           <Spinners setLoading={setLoading} />
         ) : (

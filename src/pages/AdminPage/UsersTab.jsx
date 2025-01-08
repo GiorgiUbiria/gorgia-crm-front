@@ -256,7 +256,7 @@ const UsersTab = ({
         },
       },
     ],
-    [isAdmin, isDepartmentHead, isHrMember, currentUserDepartmentId]
+    [canManageUser, isDepartmentHead, isAdmin, isHrMember]
   )
 
   const transformedUsers = useMemo(() => {
@@ -349,13 +349,7 @@ const UsersTab = ({
             },
           },
         ]}
-        searchableFields={[
-          "name.fullName",
-          "email",
-          "department",
-          "mobile_number",
-          "user_id",
-        ]}
+        searchableFields={["name.fullName", "email"]}
         enableSearch={true}
         initialPageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}

@@ -24,11 +24,8 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
   const handleSubmit = async e => {
     e.preventDefault()
     try {
-      console.log(formData)
       setIsSubmitting(true)
-      const response = await createDaily("department_head", formData)
-      console.log(response)
-      console.log("Daily created successfully")
+      await createDaily("department_head", formData)
       onDailyAdded()
       toggle()
       setFormData({

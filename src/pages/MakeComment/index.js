@@ -1,10 +1,8 @@
-import echo from 'plugins/echo';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button, Form, FormGroup, Label, Input, Col, Row, Card, CardBody, ListGroup, ListGroupItem } from 'reactstrap';
 import { getDaily } from 'services/daily';
 import { createDailyComment } from 'services/dailyComment';
-import Pusher from 'pusher-js'
 
 const MakeComment = () => {
   const { id } = useParams();
@@ -37,14 +35,9 @@ const MakeComment = () => {
   const userId = 1;
 
   useEffect(() => {
-    console.log(window.Echo)
     if (window.Echo) {
-      // Subscribe to the correct channel with user ID
       const channel = window.Echo.channel(`user.${userId}`);
-      // Listen for the event
-      channel.listen('ReplyMade', (event) => {
-        console.log('Event received:', event);
-        // setUserData(event.user);
+      channel.listen('ReplyMade', () => {
       });
 
       // Cleanup on unmount

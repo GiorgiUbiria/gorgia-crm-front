@@ -76,7 +76,7 @@ const JobDetails = () => {
   }
 
   return (
-    <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white shadow rounded-lg mb-6">
         <TaskHeader task={task} />
         <div className="p-6 flex justify-between items-center border-b border-gray-200">

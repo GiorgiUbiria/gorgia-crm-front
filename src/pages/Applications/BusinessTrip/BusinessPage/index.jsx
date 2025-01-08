@@ -89,10 +89,8 @@ const BusinessPage = () => {
       setDepartmentsLoading(true)
       try {
         const response = await getDepartments()
-        console.log("Departments response:", response)
 
         if (response?.data) {
-          console.log("Departments data:", response.data.data)
           setDepartments(response.data.data)
         } else {
           setDepartmentsError("დეპარტამენტების ჩატვირთვა ვერ მოხერხდა")
@@ -312,8 +310,6 @@ const BusinessPage = () => {
             ? values.vehicle_plate
             : "არ არის მითითებული",
         }
-
-        console.log("Submitting Employee Trip data:", submitData)
 
         const res = await createBusinessTrip(submitData)
         if (res.status === 200) {
@@ -817,7 +813,7 @@ const BusinessPage = () => {
 
   return (
     <>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
           <Card>
             <CardBody className="p-6">

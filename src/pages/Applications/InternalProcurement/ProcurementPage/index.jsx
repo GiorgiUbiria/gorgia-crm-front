@@ -351,7 +351,7 @@ const ProcurementPage = () => {
 
   return (
     <>
-      <div className="max-w-9xl shadow-sm mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full shadow-sm mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div>
           <div className="p-4 sm:p-6">
             <Form onSubmit={formik.handleSubmit}>

@@ -46,10 +46,6 @@ const DetailsSection = ({ task }) => {
     }
   }
 
-  console.log(comments)
-
-  console.log(comments)
-
   return (
     <React.Fragment>
       <Col xl={9}>

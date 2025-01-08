@@ -84,6 +84,42 @@ const widgets = [
     link: "/applications/business-trip/new",
     color: "slate",
   },
+  {
+    id: 9,
+    title: "E-Learning",
+    description: "გადადი სასწავლო პლატფორმაზე",
+    icon: PlaneTakeoff,
+    buttonText: "მოითხოვე",
+    link: "/applications/business-trip/new",
+    color: "slate",
+  },
+  {
+    id: 10,
+    title: "კალენდარი",
+    description: "გადადი კალენდარზე",
+    icon: PlaneTakeoff,
+    buttonText: "მოითხოვე",
+    link: "/applications/business-trip/new",
+    color: "slate",
+  },
+  {
+    id: 11,
+    title: "რაღაც",
+    description: "მოითხოვე მომსახურება.",
+    icon: PlaneTakeoff,
+    buttonText: "მოითხოვე",
+    link: "/applications/business-trip/new",
+    color: "slate",
+  },
+  {
+    id: 12,
+    title: "რაღაც",
+    description: "მოითხოვე მომსახურება.",
+    icon: PlaneTakeoff,
+    buttonText: "მოითხოვე",
+    link: "/applications/business-trip/new",
+    color: "slate",
+  },
 ]
 
 const colorVariants = {
@@ -110,7 +146,7 @@ function Dashboard() {
 
   return (
     <div className="flex-1 px-4 py-6 overflow-auto">
-      <div className="max-w-9xl mx-auto">
+      <div className="max-w-full mx-auto">
         {/* Welcome Card */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-sm overflow-hidden mb-6">
           <div className="px-4 sm:px-6 lg:px-8 py-6">

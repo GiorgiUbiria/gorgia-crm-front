@@ -45,7 +45,8 @@ const EditUserModal = ({
   currentUserDepartmentId,
 }) => {
   const { mutateAsync: updateUserMutation } = useUpdateUser()
-  const { mutateAsync: updateDepartmentMemberMutation } = useUpdateDepartmentMember()
+  const { mutateAsync: updateDepartmentMemberMutation } =
+    useUpdateDepartmentMember()
 
   const [formData, setFormData] = useState(initialFormData)
   const [showPassword, setShowPassword] = useState(false)
@@ -69,7 +70,6 @@ const EditUserModal = ({
     const fetchRoles = async () => {
       try {
         const rolesResponse = await getRoles()
-        console.log("Roles response: ", rolesResponse)
         setAvailableRoles(rolesResponse.data.roles || [])
 
         if (user && user.id) {
@@ -88,7 +88,6 @@ const EditUserModal = ({
 
   useEffect(() => {
     if (user) {
-      console.log("User information:", user)
       setFormData(prevData => ({
         ...prevData,
         name: user.name.firstName || "",
@@ -201,7 +200,11 @@ const EditUserModal = ({
       }
 
       if (isDepartmentHead) {
-        const allowedFields = ["position", "mobile_number", "working_start_date"]
+        const allowedFields = [
+          "position",
+          "mobile_number",
+          "working_start_date",
+        ]
         Object.keys(updateData).forEach(key => {
           if (!allowedFields.includes(key)) {
             delete updateData[key]

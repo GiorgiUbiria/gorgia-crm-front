@@ -237,12 +237,10 @@ const TripPageApprove = () => {
   const [rejectionComment, setRejectionComment] = useState("")
   const [confirmModal, setConfirmModal] = useState(false)
   const [actionType, setActionType] = useState(null)
-  console.log(trips)
 
   const fetchTrips = async () => {
     try {
       const response = await getAllTripsList()
-      console.log(response.data.business_trips)
       setTrips(response.data.business_trips)
     } catch (err) {
       console.error("Error fetching trip requests:", err)
@@ -508,7 +506,7 @@ const TripPageApprove = () => {
 
   return (
     <>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
           <MuiTable
             columns={columns}

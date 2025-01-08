@@ -80,7 +80,6 @@ const HrPageApprove = () => {
   const findDocument = async documentId => {
     const response = await getHrDocuments()
     const documentData = response.data.find(d => d.id === documentId)
-    console.log(documentData)
     setFormData(data => ({
       ...data,
       user_id: documentData?.user?.id,
@@ -351,7 +350,7 @@ const HrPageApprove = () => {
 
   return (
     <>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div>
           {isProcessing ? (
             <div className="text-center">

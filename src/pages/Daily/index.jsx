@@ -120,7 +120,6 @@ const Daily = () => {
 
   const memoizedDepartments = useMemo(
     () => {
-      console.log("departments in useMemo:", departments);
       return departments.map((dept) => ({
         id: dept.id,
         display: dept.name,

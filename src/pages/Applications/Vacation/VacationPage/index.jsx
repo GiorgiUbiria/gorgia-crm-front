@@ -357,11 +357,7 @@ const VacationPage = () => {
           duration_days: values.duration_days,
         }
 
-        console.log("Submitting data:", submitData)
-
         const response = await createVacation(submitData)
-
-        console.log("Server response:", response)
 
         if (response && (response.status === 200 || response.status === 201)) {
           toast.success("შვებულება წარმატებით გაიგზავნა", {
@@ -522,7 +518,7 @@ const VacationPage = () => {
 
   return (
     <>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
           {vacationBalance && (
             <>

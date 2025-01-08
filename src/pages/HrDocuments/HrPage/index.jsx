@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react"
 import { createHrDocument } from "services/hrDocument"
-import { useSelector } from "react-redux"
 import * as Yup from "yup"
 import moment from "moment"
 import { ToastContainer, toast } from "react-toastify"
@@ -38,9 +37,7 @@ const isEmploymentDocument = type => {
 
 const hasWorkedSixMonths = startDate => {
   if (!startDate) return false
-  console.log(startDate)
   const sixMonthsAgo = moment().subtract(6, "months")
-  console.log(sixMonthsAgo)
   return moment(startDate).isBefore(sixMonthsAgo)
 }
 
@@ -104,7 +101,7 @@ const forUserValidationSchema = activeTab => {
 
 const HrPage = () => {
   const navigate = useNavigate()
-  const reduxUser = useSelector(state => state.user.user)
+  const reduxUser = JSON.parse(sessionStorage.getItem("authUser"))
   const [currentUser, setCurrentUser] = useState(reduxUser)
   const { users } = useFetchUsers()
   const [selectedUser, setSelectedUser] = useState(null)
@@ -113,8 +110,6 @@ const HrPage = () => {
   const [startedDate, setStartedDate] = useState({
     started_date: "",
   })
-
-  console.log(startedDate)
 
   const isHrMember = currentUser?.department_id === 8
   const isHrDepartmentHead =
@@ -285,7 +280,7 @@ const HrPage = () => {
 
   return (
     <>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Row>
           <Col xl={8} className="mx-auto">
             <div>

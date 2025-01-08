@@ -9,7 +9,7 @@ const ProfileHeader = ({ userData, onImageChange }) => {
 
   return (
     <header className="bg-gradient-to-br from-blue-500 to-blue-900 rounded-lg p-4 sm:p-8 mb-8 shadow-lg">
-      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 max-w-9xl w-full">
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full">
         <div className="relative">
           <div className="relative w-[80px] sm:w-[100px] h-[80px] sm:h-[100px] rounded-lg overflow-hidden border-3 border-white/20 transition-transform hover:scale-[1.03]">
             <img
@@ -56,4 +56,4 @@ const ProfileHeader = ({ userData, onImageChange }) => {
   )
 }
 
-export default ProfileHeader 
+export default ProfileHeader
