@@ -50,17 +50,19 @@ const UpdateProfile = ({
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
-              ელ-ფოსტა
+              სამუშაოს დაწყების თარიღი
             </label>
             <input
-              type="email"
-              name="email"
-              value={profileForm.email}
+              type="date"
+              name="working_start_date"
+              value={profileForm.working_start_date}
               onChange={handleChangeProfile}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
             />
-            {profileError?.email && (
-              <p className="text-sm text-red-600">{profileError.email}</p>
+            {profileError?.working_start_date && (
+              <p className="text-sm text-red-600">
+                {profileError.working_start_date}
+              </p>
             )}
           </div>
 

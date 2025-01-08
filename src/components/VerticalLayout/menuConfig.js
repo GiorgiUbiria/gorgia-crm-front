@@ -14,7 +14,7 @@ import {
   LuFileCode,
   LuHeadset,
   LuPencilRuler,
-  LuCalendar,
+  // LuCalendar,
   LuPlus,
   LuNotebook,
   // LuUsers,
@@ -388,12 +388,12 @@ export const getMenuConfig = (t, user) => {
     //     },
     //   ],
     // },
-    {
-      to: "/tools/calendar",
-      icon: LuCalendar,
-      label: t("კალენდარი"),
-      conditions: "",
-    },
+    // {
+    //   to: "/tools/calendar",
+    //   icon: LuCalendar,
+    //   label: t("კალენდარი"),
+    //   conditions: "",
+    // },
     {
       to: "/tools/notes",
       icon: LuNotebook,

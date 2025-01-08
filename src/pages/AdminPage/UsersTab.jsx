@@ -1,12 +1,6 @@
 import React, { useState, useMemo } from "react"
-import {
-  deleteUser,
-  approveDepartmentMember,
-  rejectDepartmentMember,
-} from "services/admin/department"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
-import { usePermissions } from "hooks/usePermissions"
 import Dialog from "@mui/material/Dialog"
 import DialogActions from "@mui/material/DialogActions"
 import DialogContent from "@mui/material/DialogContent"
@@ -16,6 +10,12 @@ import * as XLSX from "xlsx"
 import { Row, Col } from "reactstrap"
 import AddUserModal from "./AddUserModal"
 import EditUserModal from "./EditUserModal"
+import { usePermissions } from "hooks/usePermissions"
+import {
+  useDeleteUser,
+  useApproveDepartmentMember,
+  useRejectDepartmentMember,
+} from "../../queries/admin"
 
 const UsersTab = ({
   users = [],
@@ -24,6 +24,10 @@ const UsersTab = ({
   currentUserDepartmentId,
 }) => {
   const { isAdmin, isHrMember } = usePermissions()
+  const { mutateAsync: deleteUserMutation } = useDeleteUser()
+  const { mutateAsync: approveMemberMutation } = useApproveDepartmentMember()
+  const { mutateAsync: rejectMemberMutation } = useRejectDepartmentMember()
+
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: null,
@@ -57,20 +61,32 @@ const UsersTab = ({
 
       if ((isDepartmentHead || isHrMember) && currentUserDepartmentId) {
         if (type === "delete") {
-          await deleteUser(userId)
+          await deleteUserMutation(userId)
         } else if (type === "approve") {
-          await approveDepartmentMember(currentUserDepartmentId, userId)
+          await approveMemberMutation({
+            departmentId: currentUserDepartmentId,
+            userId,
+          })
         } else if (type === "reject") {
-          await rejectDepartmentMember(currentUserDepartmentId, userId)
+          await rejectMemberMutation({
+            departmentId: currentUserDepartmentId,
+            userId,
+          })
         }
       }
 
       if (type === "delete") {
-        await deleteUser(userId)
+        await deleteUserMutation(userId)
       } else if (type === "approve") {
-        await approveDepartmentMember(currentUserDepartmentId, userId)
+        await approveMemberMutation({
+          departmentId: currentUserDepartmentId,
+          userId,
+        })
       } else if (type === "reject") {
-        await rejectDepartmentMember(currentUserDepartmentId, userId)
+        await rejectMemberMutation({
+          departmentId: currentUserDepartmentId,
+          userId,
+        })
       }
 
       onUserDeleted()
@@ -276,7 +292,7 @@ const UsersTab = ({
         "ელ-ფოსტა",
         "დეპარტამენტი",
         "მობილური",
-        "დაწყები�� თარიღი",
+        "დაწყების თარიღი",
         "როლი",
       ],
       ...transformedUsers.map(user => [

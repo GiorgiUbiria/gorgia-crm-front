@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react"
-import { changePassword, updateUser } from "../../services/user"
 import { useTranslation } from "react-i18next"
-import { useSelector } from "react-redux"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import { useGetUser, useChangePassword, useUpdateUser } from "../../queries/user"
 
 import ProfileHeader from "./components/ProfileHeader"
 import GeneralInfo from "./components/GeneralInfo"
@@ -12,7 +11,10 @@ import ChangePassword from "./components/ChangePassword"
 
 const ProfilePage = () => {
   const { t } = useTranslation()
-  const userData = useSelector(state => state.user.user)
+  const { data: userData } = useGetUser()
+  const { mutateAsync: changePasswordMutation } = useChangePassword()
+  const { mutateAsync: updateUserMutation } = useUpdateUser()
+
   const [passForm, setPassForm] = useState({
     old_password: "",
     password: "",
@@ -107,7 +109,7 @@ const ProfilePage = () => {
         password: "",
         confirm_password: "",
       })
-      const res = await changePassword(passForm)
+      const res = await changePasswordMutation(passForm)
       if (res.data.status === 401) {
         setPassError({ old_password: res.data.message })
       } else {
@@ -135,7 +137,7 @@ const ProfilePage = () => {
     }
 
     try {
-      const res = await updateUser(formData)
+      const res = await updateUserMutation(formData)
       if (res.data.status === 401) {
         setPassError({ old_password: res.data.message })
       } else {
@@ -167,7 +169,7 @@ const ProfilePage = () => {
     return (
       profileForm.name !== userData?.name ||
       profileForm.sur_name !== userData?.sur_name ||
-      profileForm.email !== userData?.email ||
+      profileForm.working_start_date !== userData?.working_start_date ||
       profileForm.mobile_number !== userData?.mobile_number ||
       profileForm.profile_image
     )

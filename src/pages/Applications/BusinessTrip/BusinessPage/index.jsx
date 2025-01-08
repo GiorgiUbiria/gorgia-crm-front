@@ -92,8 +92,8 @@ const BusinessPage = () => {
         console.log("Departments response:", response)
 
         if (response?.data) {
-          console.log("Departments data:", response.data)
-          setDepartments(response.data)
+          console.log("Departments data:", response.data.data)
+          setDepartments(response.data.data)
         } else {
           setDepartmentsError("დეპარტამენტების ჩატვირთვა ვერ მოხერხდა")
         }

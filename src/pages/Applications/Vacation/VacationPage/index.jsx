@@ -139,8 +139,8 @@ const VacationPage = () => {
       setDepartmentsLoading(true)
       try {
         const response = await getDepartments()
-        if (response?.data) {
-          setDepartments(response.data)
+        if (response?.data?.data) {
+          setDepartments(response.data.data)
         } else {
           setDepartmentsError("Failed to fetch departments.")
         }

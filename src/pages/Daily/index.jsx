@@ -31,7 +31,7 @@ const Daily = () => {
         setDaily(dailyResponse.daily)
         const departmentsArray = Array.isArray(departmentsResponse.data)
           ? departmentsResponse.data
-          : departmentsResponse.data?.departments || []
+          : departmentsResponse.data?.data || []
         setDepartments(departmentsArray)
       } catch (err) {
         console.error("Error fetching data:", err)

@@ -8,33 +8,39 @@ import {
   FormGroup,
   Label,
   Input,
+  Button,
 } from "reactstrap"
-import Button from "@mui/material/Button"
-import { createDepartment } from "services/admin/department"
+import { useCreateDepartment } from "../../queries/admin"
 
-const AddDepartmentModal = ({ isOpen, toggle, onDepartmentAdded, users }) => {
+const AddDepartmentModal = ({ isOpen, toggle, onDepartmentAdded }) => {
+  const { mutateAsync: createDepartmentMutation } = useCreateDepartment()
+
   const [formData, setFormData] = useState({
     name: "",
-    department_head: "",
+    description: "",
   })
 
   const handleChange = e => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
   const handleSubmit = async e => {
     e.preventDefault()
     try {
-      console.log(formData)
-      await createDepartment(formData)
+      await createDepartmentMutation(formData)
       onDepartmentAdded()
       toggle()
-      setFormData({})
+      setFormData({
+        name: "",
+        description: "",
+      })
     } catch (error) {
       console.error("Error creating department:", error)
+      alert("დეპარტამენტის შექმნა ვერ მოხერხდა")
     }
   }
 
@@ -44,39 +50,32 @@ const AddDepartmentModal = ({ isOpen, toggle, onDepartmentAdded, users }) => {
       <Form onSubmit={handleSubmit}>
         <ModalBody>
           <FormGroup>
-            <Label>სახელი</Label>
+            <Label for="name">სახელი</Label>
             <Input
-              type="text"
+              id="name"
               name="name"
-              value={formData.name || ""}
+              type="text"
+              value={formData.name}
               onChange={handleChange}
               required
             />
           </FormGroup>
-
           <FormGroup>
-            <Label>დეპარტამენტის უფროსი</Label>
+            <Label for="description">აღწერა</Label>
             <Input
-              type="select"
-              name="department_head"
-              value={formData.department_head || ""}
+              id="description"
+              name="description"
+              type="textarea"
+              value={formData.description}
               onChange={handleChange}
-              required
-            >
-              <option value="">აირჩიეთ დეპარტამენტის უფროსი</option>
-              {users.map(user => (
-                <option value={user.id} key={user.id}>
-                  {user.name + " " + user.sur_name}
-                </option>
-              ))}
-            </Input>
+            />
           </FormGroup>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={toggle} color="secondary">
+          <Button color="secondary" onClick={toggle}>
             გაუქმება
           </Button>
-          <Button type="submit" variant="contained" color="primary">
+          <Button color="primary" type="submit">
             დამატება
           </Button>
         </ModalFooter>

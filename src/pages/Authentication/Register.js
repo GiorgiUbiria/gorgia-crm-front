@@ -49,7 +49,7 @@ const Register = () => {
     const fetchDepartments = async () => {
       try {
         const response = await getPublicDepartments()
-        setDepartments(response.data?.departments || response.data || [])
+        setDepartments(response.data?.data || [])
       } catch (error) {
         console.error("დეპარტამენტები ვერ მოიძებნა: ", error)
         setDepartments([])

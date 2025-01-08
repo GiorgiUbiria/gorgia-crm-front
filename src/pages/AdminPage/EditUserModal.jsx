@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import {
   Modal,
   ModalHeader,
@@ -9,34 +9,31 @@ import {
   Label,
   Input,
   FormFeedback,
+  Button,
 } from "reactstrap"
-import Button from "@mui/material/Button"
 import IconButton from "@mui/material/IconButton"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import Autocomplete from "@mui/material/Autocomplete"
 import TextField from "@mui/material/TextField"
-import {
-  updateUserById,
-  getPublicDepartments,
-  updateDepartmentMember,
-} from "services/admin/department"
-import { getRoles, getUserRoles, updateUserRoles } from "services/role"
+import { useUpdateUser, useUpdateDepartmentMember } from "../../queries/admin"
+import { getRoles, getUserRoles } from "services/role"
+import { getPublicDepartments } from "services/admin/department"
 
 const initialFormData = {
   name: "",
   sur_name: "",
   email: "",
-  mobile_number: "",
-  department_id: "",
-  roles: [],
   password: "",
   confirm_password: "",
+  mobile_number: "",
   position: "",
+  department_id: "",
   location: "",
   working_start_date: "",
   date_of_birth: "",
   id_number: "",
+  roles: [],
 }
 
 const EditUserModal = ({
@@ -47,6 +44,9 @@ const EditUserModal = ({
   isDepartmentHead,
   currentUserDepartmentId,
 }) => {
+  const { mutateAsync: updateUserMutation } = useUpdateUser()
+  const { mutateAsync: updateDepartmentMemberMutation } = useUpdateDepartmentMember()
+
   const [formData, setFormData] = useState(initialFormData)
   const [showPassword, setShowPassword] = useState(false)
   const [departments, setDepartments] = useState([])
@@ -54,31 +54,10 @@ const EditUserModal = ({
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
-    if (user) {
-      console.log("User information:", user)
-      setFormData({
-        name: user.name.firstName || "",
-        sur_name: user.name.lastName || "",
-        email: user.email || "",
-        mobile_number: user.mobile_number || "",
-        department_id: user.department_id || "",
-        roles: user.roles?.map(role => role.id) || [],
-        password: "",
-        confirm_password: "",
-        position: user.position || "",
-        location: user.location || "",
-        working_start_date: user.working_start_date || "",
-        date_of_birth: user.date_of_birth || "",
-        id_number: user.id_number || "",
-      })
-    }
-  }, [user])
-
-  useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const departments = await getPublicDepartments()
-        setDepartments(departments.data || [])
+        setDepartments(departments.data.data || [])
       } catch (error) {
         console.error("Error fetching departments:", error)
       }
@@ -107,13 +86,34 @@ const EditUserModal = ({
     fetchRoles()
   }, [user])
 
-  const handleChange = useCallback(e => {
+  useEffect(() => {
+    if (user) {
+      console.log("User information:", user)
+      setFormData(prevData => ({
+        ...prevData,
+        name: user.name.firstName || "",
+        sur_name: user.sur_name || "",
+        email: user.email || "",
+        mobile_number: user.mobile_number || "",
+        department_id: user.department_id || "",
+        position: user.position || "",
+        location: user.location || "",
+        working_start_date: user.working_start_date || "",
+        date_of_birth: user.date_of_birth || "",
+        id_number: user.id_number || "",
+        password: "",
+        confirm_password: "",
+      }))
+    }
+  }, [user])
+
+  const handleChange = e => {
     const { name, value } = e.target
-    setFormData(prevData => ({
-      ...prevData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value,
     }))
-  }, [])
+  }
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
@@ -126,21 +126,21 @@ const EditUserModal = ({
     const phoneRegex = /^[0-9]{9,}$/
     const idNumberRegex = /^[0-9]+$/
 
-    if (!formData.name.trim()) {
+    if (!formData.name?.trim()) {
       newErrors.name = "სახელი სავალდებულოა."
     } else if (!georgianRegex.test(formData.name)) {
       newErrors.name =
         "სახელი უნდა შეიცავდეს მხოლოდ ქართულ ასოებს (2-30 სიმბოლო)."
     }
 
-    if (!formData.sur_name.trim()) {
+    if (!formData.sur_name?.trim()) {
       newErrors.sur_name = "გვარი სავალდებულოა."
     } else if (!georgianRegex.test(formData.sur_name)) {
       newErrors.sur_name =
         "გვარი უნდა შეიცავდეს მხოლოდ ქართულ ასოებს (2-30 სიმბოლო)."
     }
 
-    if (!formData.email.trim()) {
+    if (!formData.email?.trim()) {
       newErrors.email = "ელ-ფოსტა სავალდებულოა."
     } else if (!emailRegex.test(formData.email)) {
       newErrors.email = "ელ-ფოსტა სავალდებულოა."
@@ -157,14 +157,14 @@ const EditUserModal = ({
       }
     }
 
-    if (!formData.mobile_number.trim()) {
+    if (!formData.mobile_number?.trim()) {
       newErrors.mobile_number = "მობილურის ნომერი სავალდებულოა."
     } else if (!phoneRegex.test(formData.mobile_number)) {
       newErrors.mobile_number =
         "მობილურის ნომერი უნდა შეიცავდეს მხოლოდ ციფრებს და მინიმუმ 9 ციფრს."
     }
 
-    if (!formData.id_number.trim()) {
+    if (!formData.id_number?.trim()) {
       newErrors.id_number = "პირადი ნომერი სავალდებულოა."
     } else if (!idNumberRegex.test(formData.id_number)) {
       newErrors.id_number = "პირადი ნომერი უნდა შეიცავდეს მხოლოდ ციფრებს."
@@ -174,11 +174,10 @@ const EditUserModal = ({
       newErrors.department_id = "დეპარტამენტი სავალდებულოა."
     }
 
-    if (!formData.position.trim()) {
+    if (!formData.position?.trim()) {
       newErrors.position = "პოზიცია სავალდებულოა."
     }
 
-    // Role validation
     if (!formData.roles || formData.roles.length === 0) {
       newErrors.roles = "მინიმუმ ერთი როლი სავალდებულოა."
     }
@@ -187,11 +186,10 @@ const EditUserModal = ({
     return Object.keys(newErrors).length === 0
   }
 
-  console.log("All roles: ", availableRoles)
-
   const handleSubmit = async e => {
     e.preventDefault()
     if (!validateForm()) return
+
     try {
       const updateData = {
         ...formData,
@@ -203,27 +201,23 @@ const EditUserModal = ({
       }
 
       if (isDepartmentHead) {
-        const allowedFields = [
-          "position",
-          "mobile_number",
-          "working_start_date",
-        ]
+        const allowedFields = ["position", "mobile_number", "working_start_date"]
         Object.keys(updateData).forEach(key => {
           if (!allowedFields.includes(key)) {
             delete updateData[key]
           }
         })
-        await updateDepartmentMember(
-          currentUserDepartmentId,
-          user.id,
-          updateData
-        )
+        await updateDepartmentMemberMutation({
+          departmentId: currentUserDepartmentId,
+          userId: user.id,
+          data: updateData,
+        })
       } else {
-        await updateUserById(user.id, updateData)
+        await updateUserMutation({
+          id: user.id,
+          data: updateData,
+        })
       }
-
-      // Update user roles
-      await updateUserRoles(user.id, formData.roles)
 
       onUserUpdated()
       toggle()
@@ -231,7 +225,7 @@ const EditUserModal = ({
       setErrors({})
     } catch (error) {
       console.error("Error updating user:", error)
-      // Optionally set a global error message here
+      alert("მომხმარებლის განახლება ვერ მოხერხდა")
     }
   }
 
@@ -466,15 +460,17 @@ const EditUserModal = ({
             <Autocomplete
               multiple
               options={availableRoles}
-              getOptionLabel={(option) => option.name}
-              value={availableRoles.filter(role => formData.roles.includes(role.id))}
+              getOptionLabel={option => option.name}
+              value={availableRoles.filter(role =>
+                formData.roles.includes(role.id)
+              )}
               onChange={(event, value) => {
                 setFormData(prevData => ({
                   ...prevData,
                   roles: value.map(role => role.id),
                 }))
               }}
-              renderInput={(params) => (
+              renderInput={params => (
                 <TextField
                   {...params}
                   variant="outlined"
@@ -488,14 +484,19 @@ const EditUserModal = ({
                 />
               )}
             />
+            {errors.roles && (
+              <FormFeedback style={{ display: "block" }}>
+                {errors.roles}
+              </FormFeedback>
+            )}
           </FormGroup>
         </ModalBody>
-        <ModalFooter className="d-flex gap-2">
-          <Button onClick={toggle} color="error">
+        <ModalFooter>
+          <Button color="secondary" onClick={toggle}>
             გაუქმება
           </Button>
-          <Button type="submit" variant="contained" color="primary">
-            შენახვა
+          <Button color="primary" type="submit">
+            განახლება
           </Button>
         </ModalFooter>
       </Form>

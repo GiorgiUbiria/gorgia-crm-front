@@ -1,153 +1,65 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
 import classnames from "classnames"
-import { useSelector } from "react-redux"
-import {
-  getDepartments,
-  getUsers,
-  getDepartmentMembers,
-} from "../../services/admin/department"
 import UsersTab from "./UsersTab"
 import DepartmentsTab from "./DepartmentsTab"
 import { usePermissions } from "hooks/usePermissions"
+import useFetchUser from "hooks/useFetchUser"
+import {
+  useGetDepartments,
+  useGetAdminUsers,
+  useGetDepartmentMembers,
+} from "../../queries/admin"
 
 const AdminPage = () => {
   document.title = "ადმინისტრირება | Gorgia LLC"
 
   const [activeTab, setActiveTab] = useState("1")
-  const [departments, setDepartments] = useState([])
-  const [users, setUsers] = useState([])
-  const [error, setError] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const currentUser = useSelector(state => state.user.user)
-
+  const { user: currentUser } = useFetchUser()
   const { isAdmin, isDepartmentHead, userDepartmentId, isHrMember } =
     usePermissions()
 
-  useEffect(() => {
-    const initializeData = async () => {
-      if (!currentUser) {
-        setIsLoading(true)
-        return
-      }
+    
 
-      setIsLoading(true)
-      setError(null)
+  const { data: departments = [] } = useGetDepartments({
+    enabled: isAdmin,
+  })
 
-      try {
-        if (isHrMember) {
-          const response = await getUsers()
-          console.log(response)
-          if (response.data?.users) {
-            setUsers(response.data.users)
-          } else if (response.data?.message) {
-            setError(response.data.message)
-          }
-        } else if (isDepartmentHead && currentUser.department_id) {
-          const response = await getDepartmentMembers(currentUser.department_id)
-          if (response.data?.members) {
-            setUsers(response.data.members)
-          } else if (response.data?.message) {
-            setError(response.data.message)
-          }
-        } else if (isAdmin) {
-          const [deptResponse, usersResponse] = await Promise.all([
-            getDepartments(),
-            getUsers(),
-          ])
-          setDepartments(deptResponse.data)
-          setUsers(usersResponse.data.users)
-        } else if (currentUser.roles) {
-          setError("Unauthorized access. Required role not found.")
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err.response || err)
-        const errorMessage =
-          err.response?.data?.message ||
-          err.response?.data?.exception ||
-          err.message ||
-          "Error fetching data"
-        setError(errorMessage)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  const { data: adminUsers = [], refetch: refetchUsers } = useGetAdminUsers({
+    enabled: isAdmin || isHrMember,
+  })
 
-    initializeData()
-  }, [currentUser, isDepartmentHead, isAdmin, isHrMember])
+  const { data: departmentMembers = [], refetch: refetchDepartmentMembers } =
+    useGetDepartmentMembers(userDepartmentId, {
+      enabled: isDepartmentHead && !!userDepartmentId,
+    })
+
+  const users = isDepartmentHead ? departmentMembers : adminUsers
 
   const toggle = tab => {
     if (activeTab !== tab) setActiveTab(tab)
   }
 
-  const handleUserDeleted = async () => {
-    if (isDepartmentHead && userDepartmentId) {
-      try {
-        const response = await getDepartmentMembers(userDepartmentId)
-        if (response.data?.members) {
-          setUsers(response.data.members)
-        }
-      } catch (err) {
-        setError(err.response?.data?.message || "Error refreshing members list")
-      }
-    } else if (isAdmin) {
-      try {
-        const response = await getUsers()
-        setUsers(response.data.users)
-      } catch (err) {
-        setError(err.response?.data?.message || "Error refreshing users list")
-      }
+  const handleUserDeleted = () => {
+    if (isDepartmentHead) {
+      refetchDepartmentMembers()
+    } else {
+      refetchUsers()
     }
   }
 
-  const handleDepartmentDeleted = async () => {
+  const handleDepartmentDeleted = () => {
     if (isAdmin) {
-      try {
-        const response = await getDepartments()
-        setDepartments(response.data.departments)
-      } catch (err) {
-        setError(
-          err.response?.data?.message || "Error refreshing departments list"
-        )
-      }
+      refetchUsers()
     }
   }
 
-  if (isLoading && !currentUser) {
+  if (!currentUser) {
     return (
       <div className="bg-gray-50 min-h-screen w-full">
         <div className="w-full px-4 py-6">
           <div className="flex justify-center items-center">
             <div className="text-center">Loading user data...</div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <div className="bg-gray-50 min-h-screen w-full">
-        <div className="w-full px-4 py-6">
-          <div className="flex justify-center items-center">
-            <div className="text-center">Loading content...</div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="bg-gray-50 min-h-screen w-full">
-        <div className="w-full px-4 py-6">
-          <div className="alert alert-danger w-full mx-auto" role="alert">
-            <pre className="whitespace-pre-wrap break-words">
-              {typeof error === "string"
-                ? error
-                : JSON.stringify(error, null, 2)}
-            </pre>
           </div>
         </div>
       </div>
@@ -219,6 +131,8 @@ const AdminPage = () => {
               users={users}
               onUserDeleted={handleUserDeleted}
               isDepartmentHead={true}
+              isAdmin={isAdmin}
+              isHrMember={isHrMember}
               currentUserDepartmentId={userDepartmentId}
             />
           ) : (

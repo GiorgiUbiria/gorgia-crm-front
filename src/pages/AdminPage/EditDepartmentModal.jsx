@@ -8,12 +8,9 @@ import {
   FormGroup,
   Label,
   Input,
-  Row,
-  Col,
+  Button,
 } from "reactstrap"
-import Button from "@mui/material/Button"
-import Select from "react-select"
-import { updateDepartment } from "services/admin/department"
+import { useUpdateDepartment, useAssignHead } from "../../queries/admin"
 
 const EditDepartmentModal = ({
   isOpen,
@@ -22,53 +19,49 @@ const EditDepartmentModal = ({
   onDepartmentUpdated,
   users,
 }) => {
+  const { mutateAsync: updateDepartmentMutation } = useUpdateDepartment()
+  const { mutateAsync: assignHeadMutation } = useAssignHead()
+
   const [formData, setFormData] = useState({
     name: "",
-    department_head: null,
+    description: "",
+    department_head: "",
   })
 
   useEffect(() => {
     if (department) {
-      const headUser = users.find(
-        user => `${user.name} ${user.sur_name}` === department.department_head
-      )
-
       setFormData({
-        name: department.name,
-        department_head: headUser?.id || null,
+        name: department.name || "",
+        description: department.description || "",
+        department_head: department.department_head?.id || "",
       })
     }
-  }, [department, users])
-
-  const userOptions = users.map(user => ({
-    value: user.id,
-    label: `${user.name} ${user.sur_name}`,
-  }))
+  }, [department])
 
   const handleChange = e => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
-  }
-
-  const handleHeadChange = selectedOption => {
-    setFormData({
-      ...formData,
-      department_head: selectedOption ? selectedOption.value : null,
-    })
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
   const handleSubmit = async e => {
     e.preventDefault()
-
     try {
-      const updateData = {
-        ...formData,
+      await updateDepartmentMutation({
         id: department.id,
+        name: formData.name,
+        description: formData.description,
+      })
+
+      if (formData.department_head !== department.department_head?.id) {
+        await assignHeadMutation({
+          departmentId: department.id,
+          userId: formData.department_head,
+        })
       }
 
-      await updateDepartment(updateData)
       onDepartmentUpdated()
       toggle()
     } catch (error) {
@@ -77,77 +70,56 @@ const EditDepartmentModal = ({
     }
   }
 
-  const selectedHead =
-    userOptions.find(option => option.value === formData.department_head) ||
-    null
-
-  const customStyles = {
-    control: base => ({
-      ...base,
-      backgroundColor: "white",
-      borderColor: "#dee2e6",
-      "&:hover": {
-        borderColor: "#ced4da",
-      },
-    }),
-    menu: base => ({
-      ...base,
-      backgroundColor: "white",
-      zIndex: 9999,
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isFocused ? "#f8f9fa" : "white",
-      color: "#333",
-      "&:hover": {
-        backgroundColor: "#f8f9fa",
-      },
-    }),
-  }
-
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
       <ModalHeader toggle={toggle}>დეპარტამენტის რედაქტირება</ModalHeader>
       <Form onSubmit={handleSubmit}>
         <ModalBody>
-          <Row>
-            <Col>
-              <FormGroup>
-                <Label for="name">დეპარტამენტის სახელი</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </FormGroup>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <FormGroup>
-                <Label for="department_head">დეპარტამენტის უფროსი</Label>
-                <Select
-                  value={selectedHead}
-                  onChange={handleHeadChange}
-                  options={userOptions}
-                  isClearable
-                  placeholder="აირჩიეთ დეპარტამენტის უფროსი"
-                  styles={customStyles}
-                  className="basic-single"
-                  classNamePrefix="select"
-                />
-              </FormGroup>
-            </Col>
-          </Row>
+          <FormGroup>
+            <Label for="name">სახელი</Label>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label for="description">აღწერა</Label>
+            <Input
+              id="description"
+              name="description"
+              type="textarea"
+              value={formData.description}
+              onChange={handleChange}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label for="department_head">დეპარტამენტის უფროსი</Label>
+            <Input
+              id="department_head"
+              type="select"
+              name="department_head"
+              value={formData.department_head}
+              onChange={handleChange}
+            >
+              <option value="">აირჩიეთ დეპარტამენტის უფროსი</option>
+              {users.map(user => (
+                <option key={user.id} value={user.id}>
+                  {user.name} {user.sur_name}
+                </option>
+              ))}
+            </Input>
+          </FormGroup>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={toggle} color="secondary">
+          <Button color="secondary" onClick={toggle}>
             გაუქმება
           </Button>
-          <Button type="submit" variant="contained" color="primary">
-            შენახვა
+          <Button color="primary" type="submit">
+            განახლება
           </Button>
         </ModalFooter>
       </Form>

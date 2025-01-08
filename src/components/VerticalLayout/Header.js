@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline"
 
 // Import components
-import NotificationDropdown from "../CommonForBoth/TopbarDropdown/NotificationDropdown"
+// import NotificationDropdown from "../CommonForBoth/TopbarDropdown/NotificationDropdown"
 import ProfileMenu from "../CommonForBoth/TopbarDropdown/ProfileMenu"
 
 // Import logo
@@ -41,9 +41,9 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-4">
-          <div className="hidden md:block">
+          {/* <div className="hidden md:block">
             <NotificationDropdown />
-          </div>
+          </div> */}
           <div className="relative">
             <ProfileMenu />
           </div>

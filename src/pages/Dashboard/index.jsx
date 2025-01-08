@@ -9,7 +9,6 @@ import {
   Umbrella,
   PlaneTakeoff,
 } from "lucide-react"
-import { useSelector } from "react-redux"
 import { Link } from "react-router-dom"
 
 const widgets = [
@@ -99,9 +98,7 @@ const colorVariants = {
 }
 
 function Dashboard() {
-  const user = useSelector(state => state.user.user)
-
-  document.title = "მთავარი გვერდი | Gorgia LLC"
+  const user = JSON.parse(sessionStorage.getItem("authUser"))
 
   if (!user) {
     return (

@@ -68,7 +68,7 @@ const DailiesInner = () => {
   const fetchDepartments = async () => {
     try {
       const response = await getDepartments()
-      updateState({ departments: response.data })
+      updateState({ departments: response.data.data })
     } catch (error) {
       console.error("Error fetching departments:", error)
     }
@@ -132,7 +132,6 @@ const DailiesInner = () => {
 
   const filterOptions = useMemo(() => {
     const departmentOptions = departments
-      .filter(dept => dept.type === "department")
       .map(department => ({
         value: department.name,
         label: department.name,
