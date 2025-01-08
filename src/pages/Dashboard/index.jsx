@@ -4,6 +4,7 @@ import {
   Calendar,
   Laptop2,
   Sprout,
+  BookOpen,
   FileText,
   ShoppingCart,
   Umbrella,
@@ -86,39 +87,41 @@ const widgets = [
   },
   {
     id: 9,
-    title: "E-Learning",
+    title: "elearning.gorgia.ge",
     description: "გადადი სასწავლო პლატფორმაზე",
-    icon: PlaneTakeoff,
-    buttonText: "მოითხოვე",
-    link: "/applications/business-trip/new",
-    color: "slate",
+    icon: BookOpen,
+    buttonText: "გადასვლა",
+    link: "https://elearning.gorgia.ge/",
+    color: "blue",
   },
   {
     id: 10,
-    title: "კალენდარი",
-    description: "გადადი კალენდარზე",
-    icon: PlaneTakeoff,
-    buttonText: "მოითხოვე",
-    link: "/applications/business-trip/new",
-    color: "slate",
+    title: "shemosvlebi.gorgia.ge",
+    description: "გადადი შემოსვლების კალენდარზე",
+    icon: Calendar,
+    buttonText: "გადასვლა",
+    link: "https://shemosvlebi.gorgia.ge/",
+    color: "violet",
   },
   {
     id: 11,
-    title: "რაღაც",
-    description: "მოითხოვე მომსახურება.",
+    title: "...",
+    description: "მალე დაემატება",
     icon: PlaneTakeoff,
     buttonText: "მოითხოვე",
     link: "/applications/business-trip/new",
     color: "slate",
+    disabled: true,
   },
   {
     id: 12,
-    title: "რაღაც",
-    description: "მოითხოვე მომსახურება.",
+    title: "...",
+    description: "მალე დაემატება",
     icon: PlaneTakeoff,
     buttonText: "მოითხოვე",
     link: "/applications/business-trip/new",
     color: "slate",
+    disabled: true,
   },
 ]
 
@@ -167,7 +170,9 @@ function Dashboard() {
               return (
                 <div
                   key={widget.id}
-                  className="bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200 overflow-hidden"
+                  className={`${
+                    widget.disabled ? "bg-gray-300" : "bg-gray-50"
+                  } rounded-lg border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200 overflow-hidden`}
                 >
                   <div className="p-4">
                     <div
@@ -183,14 +188,20 @@ function Dashboard() {
                     <p className="text-gray-600 text-xs sm:text-sm mb-3">
                       {widget.description}
                     </p>
-                    <Link
-                      to={widget.link}
-                      className={`inline-block text-xs sm:text-sm font-medium ${
-                        colorVariants[widget.color]
-                      } px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200`}
-                    >
-                      {widget.buttonText}
-                    </Link>
+                    {widget.disabled ? (
+                      <button className="inline-block text-xs sm:text-sm font-medium bg-gray-200 text-gray-600 px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200">
+                        {widget.buttonText}
+                      </button>
+                    ) : (
+                      <Link
+                        to={widget.link}
+                        className={`inline-block text-xs sm:text-sm font-medium ${
+                          colorVariants[widget.color]
+                        } px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200`}
+                      >
+                        {widget.buttonText}
+                      </Link>
+                    )}
                   </div>
                 </div>
               )

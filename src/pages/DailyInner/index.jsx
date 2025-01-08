@@ -53,41 +53,41 @@ const DailyInner = () => {
         const response = await createDailyComment({
           daily_id: id,
           comment,
-          parent_id: replyTo?.id,
+          parent_id: replyTo?.id || null,
         })
         const newComment = response.data
         setComment("")
         setReplyTo(null)
         setDaily(prevDaily => {
           if (!prevDaily) return prevDaily
-          if (!replyTo) {
-            return {
-              ...prevDaily,
-              comments: [...prevDaily.comments, newComment],
-            }
-          } else {
-            const addReply = comments =>
-              comments.map(c => {
-                if (c.id === replyTo.id) {
-                  return {
+
+          if (replyTo) {
+            const updatedComments = prevDaily.comments.map(c =>
+              c.id === replyTo.id
+                ? {
+                    ...c,
+                    replies: [...(c.replies || []), newComment],
+                  }
+                : {
                     ...c,
                     replies: c.replies
-                      ? [...c.replies, newComment]
-                      : [newComment],
+                      ? c.replies.map(r =>
+                          r.id === replyTo.id
+                            ? {
+                                ...r,
+                                replies: [...(r.replies || []), newComment],
+                              }
+                            : r
+                        )
+                      : [],
                   }
-                }
-                if (c.replies) {
-                  return {
-                    ...c,
-                    replies: addReply(c.replies),
-                  }
-                }
-                return c
-              })
-            return {
-              ...prevDaily,
-              comments: addReply(prevDaily.comments),
-            }
+            )
+            return { ...prevDaily, comments: updatedComments }
+          }
+
+          return {
+            ...prevDaily,
+            comments: [...(prevDaily.comments || []), newComment],
           }
         })
       } catch (err) {
