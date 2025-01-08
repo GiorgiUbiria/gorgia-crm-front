@@ -664,6 +664,9 @@ const BusinessPage = () => {
               name="accommodation_cost"
               label="სასტუმროს ღირებულება"
               type="number"
+              onInput={e =>
+                (e.target.value = e.target.value.replace(/^0+/, ""))
+              }
             />
           </div>
           <div className="col-md-6">
@@ -672,6 +675,9 @@ const BusinessPage = () => {
               name="transportation_cost"
               label="მოგზაურობის ღირებულება"
               type="number"
+              onInput={e =>
+                (e.target.value = e.target.value.replace(/^0+/, ""))
+              }
             />
           </div>
         </div>
@@ -682,6 +688,9 @@ const BusinessPage = () => {
               name="food_cost"
               label="საკვების ღირებულება"
               type="number"
+              onInput={e =>
+                (e.target.value = e.target.value.replace(/^0+/, ""))
+              }
             />
           </div>
           <div className="col-md-6">
@@ -751,11 +760,15 @@ const BusinessPage = () => {
                   label="წვა 100კმ-ზე"
                   type="number"
                   max={10}
-                  step="0.1"
+                  onInput={e =>
+                    (e.target.value = e.target.value.replace(/^0+/, ""))
+                  }
                 />
               </div>
               <div className="col-md-4">
-                <Label for="total_fuel">სულ საჭირო საწვავი (წასვლა/წამოსვლა)</Label>
+                <Label for="total_fuel">
+                  სულ საჭირო საწვავი (წასვლა/წამოსვლა)
+                </Label>
                 <Input
                   type="text"
                   id="total_fuel"

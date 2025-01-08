@@ -38,7 +38,7 @@ export const getMenuConfig = (t, user) => {
           to: "/admin/dashboard",
           icon: LuLayoutDashboard,
           label: t("მთავარი"),
-          conditions: "role:admin|role:department_head,department:8",
+          conditions: "role:admin|role:department_head|department:8",
         },
         {
           to: "/admin/approvals",
