@@ -151,7 +151,7 @@ const VipLeadsPage = () => {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Row className="mb-3">
           <Col className="d-flex justify-content-end">
             <Button

@@ -55,7 +55,7 @@ const AgreementRequest = () => {
         pauseOnHover
         theme="colored"
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Card className="border-0 rounded-md mt-5">
           <CardBody>
             <Row className="mb-4">

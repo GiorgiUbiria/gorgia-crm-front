@@ -38,7 +38,9 @@ const isEmploymentDocument = type => {
 
 const hasWorkedSixMonths = startDate => {
   if (!startDate) return false
+  console.log(startDate)
   const sixMonthsAgo = moment().subtract(6, "months")
+  console.log(sixMonthsAgo)
   return moment(startDate).isBefore(sixMonthsAgo)
 }
 
@@ -283,7 +285,7 @@ const HrPage = () => {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Row>
           <Col xl={8} className="mx-auto">
             <div>

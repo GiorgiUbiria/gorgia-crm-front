@@ -54,7 +54,7 @@ const ArchivePage = () => {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-3 sm:py-6">
+      <div className="max-w-9xl mx-auto px-2 sm:px-4 lg:px-6 py-3 sm:py-6">
         <div className="p-2 sm:p-4 lg:p-6">
           <Nav
             tabs

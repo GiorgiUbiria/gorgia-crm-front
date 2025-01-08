@@ -174,7 +174,7 @@ const MeetingCalendar = () => {
 
   return (
     <div className="w-full min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {loading && (
           <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>

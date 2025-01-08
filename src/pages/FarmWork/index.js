@@ -352,7 +352,7 @@ const FarmWork = () => {
         onDeleteClick={handleDeleteTask}
         onCloseClick={() => setDeleteModal(false)}
       />
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-6">
+      <div className="max-w-9xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-6">
         {isLoading ? (
           <Spinners setLoading={setLoading} />
         ) : (

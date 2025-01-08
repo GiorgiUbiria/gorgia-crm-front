@@ -110,7 +110,7 @@ function Dashboard() {
 
   return (
     <div className="flex-1 px-4 py-6 overflow-auto">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-9xl mx-auto">
         {/* Welcome Card */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-sm overflow-hidden mb-6">
           <div className="px-4 sm:px-6 lg:px-8 py-6">

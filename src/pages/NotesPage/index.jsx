@@ -117,7 +117,7 @@ const NotesPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <Row className="mb-4">
         <Box display="flex" justifyContent="flex-end" width="100%">
           <Input
