@@ -192,6 +192,17 @@ function Dashboard() {
                       <button className="inline-block text-xs sm:text-sm font-medium bg-gray-200 text-gray-600 px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200">
                         {widget.buttonText}
                       </button>
+                    ) : widget.link.startsWith('http') ? (
+                      <a
+                        href={widget.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-block text-xs sm:text-sm font-medium ${
+                          colorVariants[widget.color]
+                        } px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200`}
+                      >
+                        {widget.buttonText}
+                      </a>
                     ) : (
                       <Link
                         to={widget.link}

@@ -15,6 +15,10 @@ export const createVacation = async data => {
   return defaultInstance.post("/api/vacation/create", data)
 }
 
+export const createVacationForEmployee = async data => {
+  return defaultInstance.post("/api/vacation/create-for-employee", data)
+}
+
 export const approveVacation = async (id, data) => {
   return defaultInstance.post("/api//" + id + "/update", data)
 }
