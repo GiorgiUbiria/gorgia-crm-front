@@ -44,17 +44,17 @@ const ProfileMenu = props => {
         className="d-inline-block"
       >
         <DropdownToggle
-          className="btn header-item"
+          className="flex items-center justify-center h-16 transition-colors"
           id="page-header-user-dropdown"
           tag="button"
         >
           <img
-            className="rounded-circle header-profile-user"
+            className="w-8 h-8 rounded-full object-cover"
             src={profileImageSrc}
             alt="Header Avatar"
           />
-          <span className="d-none d-xl-inline-block ms-2 me-1">{username}</span>
-          <i className="mdi mdi-chevron-down d-none d-xl-inline-block" />
+          <span className="hidden xl:inline-block ml-2 mr-1">{username}</span>
+          <i className="mdi mdi-chevron-down hidden xl:inline-block" />
         </DropdownToggle>
         <DropdownMenu className="dropdown-menu-end">
           <DropdownItem tag="a" href="/profile">

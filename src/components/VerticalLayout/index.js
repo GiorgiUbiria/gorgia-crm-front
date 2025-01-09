@@ -11,6 +11,8 @@ import {
   changeLayoutWidth,
   showRightSidebarAction,
 } from "../../store/actions"
+import { IoArrowBack } from "react-icons/io5"
+import { useTheme } from "../../hooks/useTheme"
 
 // Layout Related Components
 import Header from "./Header"
@@ -24,6 +26,7 @@ import { createSelector } from "reselect"
 
 const Layout = props => {
   const dispatch = useDispatch()
+  useTheme() // Initialize theme handling
 
   const selectLayoutProperties = createSelector(
     state => state.Layout,
@@ -123,6 +126,10 @@ const Layout = props => {
     setIsSidebarOpen(!isSidebarOpen)
   }
 
+  const handleGoBack = () => {
+    window.history.back()
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
@@ -140,7 +147,14 @@ const Layout = props => {
       >
         <div className="flex flex-col min-h-screen pt-16">
           <div className="flex-1 flex flex-col">
-            <div className="mx-4 mt-4">
+            <div className="mx-4 mt-4 flex justify-between items-center">
+              <button
+                onClick={handleGoBack}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <IoArrowBack className="text-lg" />
+                <span>უკან</span>
+              </button>
               <Breadcrumbs />
             </div>
             <main className="flex-1 px-4 py-6">

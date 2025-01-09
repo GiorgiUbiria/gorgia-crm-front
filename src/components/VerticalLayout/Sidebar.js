@@ -28,7 +28,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-16 bottom-0 left-0 w-72 bg-[#edf3fd] border-r border-gray-200
+          fixed top-16 bottom-0 left-0 w-72 bg-[#edf3fd] dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
           transition-all duration-300 z-40 
           transform ${isOpen ? "translate-x-0" : "-translate-x-full"}
           overflow-hidden

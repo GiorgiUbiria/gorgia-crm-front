@@ -4,20 +4,18 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       spacing: {
-        '1.5': '0.375rem', // for gap-1.5
-        // Add more custom spacing if needed
+        '1.5': '0.375rem',
       },
       colors: {
-        'sidebar-bg': '#EDF3FD', // Example: define sidebar background if needed
-        // Define other custom colors
+        'sidebar-bg': '#EDF3FD',
       },
       maxHeight: {
-        '96': '24rem', // for max-h-96
+        '96': '24rem',
       },
-      // Add other extensions as necessary
     },
   },
   variants: {},
