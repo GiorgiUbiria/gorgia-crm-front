@@ -17,7 +17,9 @@ const CommentSection = ({ task, canComment }) => {
     data: comments = [],
     isLoading: commentsLoading,
     error,
-  } = useGetTaskComments(task.id)
+  } = useGetTaskComments(task.data.id)
+
+  console.log("Comments", comments)
 
   const createCommentMutation = useCreateTaskComment()
 
@@ -27,9 +29,9 @@ const CommentSection = ({ task, canComment }) => {
 
     try {
       await createCommentMutation.mutateAsync({
-        taskId: task.id,
+        taskId: task.data.id,
         data: {
-          task_id: task.id,
+          task_id: task.data.id,
           comment_text: newComment,
         },
       })
@@ -96,13 +98,13 @@ const CommentSection = ({ task, canComment }) => {
         )}
 
         <div className="space-y-6">
-          {comments.data.length > 0 ? (
+          {comments?.data?.length > 0 ? (
             comments.data.map(comment => (
               <CommentThread
                 key={comment.id}
                 comment={comment}
                 currentUser={currentUser}
-                taskId={task.id}
+                taskId={task.data.id}
                 canEdit={false}
               />
             ))

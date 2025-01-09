@@ -8,7 +8,7 @@ const TaskStatus = ({ status }) => {
       label: "მიმდინარე",
       classes: "bg-[#105D8D] text-white",
     },
-    "Pending": {
+    Pending: {
       icon: AlertCircle,
       label: "მოლოდინის რეჟიმში",
       classes: "bg-yellow-100 text-yellow-800",
@@ -25,7 +25,7 @@ const TaskStatus = ({ status }) => {
     },
   }
 
-  const config = statusConfig[status] || statusConfig.pending
+  const config = statusConfig[status] || statusConfig["Pending"]
   const Icon = config.icon
 
   return (

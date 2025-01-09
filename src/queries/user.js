@@ -29,7 +29,7 @@ export const useGetUsers = (options = {}) => {
   return useQuery({
     queryKey: userKeys.users(),
     queryFn: fetchUsers,
-    select: response => response.data.users || [],
+    select: response => response.data?.data || [],
     ...options,
   })
 }
@@ -72,4 +72,4 @@ export const useUpdateUserIdNumber = () => {
       queryClient.invalidateQueries({ queryKey: userKeys.profile() })
     },
   })
-} 
+}

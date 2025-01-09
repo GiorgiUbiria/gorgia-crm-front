@@ -31,7 +31,6 @@ export const getTasksAssignedToMe = async () => {
   }
 }
 
-// Individual Task Operations
 export const getTask = async id => {
   try {
     const response = await defaultInstance.get(`/api/tasks/${id}`)
@@ -77,10 +76,11 @@ export const deleteTask = async id => {
   }
 }
 
-// Task Status Operations
-export const assignTask = async id => {
+export const assignTask = async ({ taskId, userIds }) => {
   try {
-    const response = await defaultInstance.post(`/api/tasks/${id}/assign`)
+    const response = await defaultInstance.post(`/api/tasks/${taskId}/assign`, {
+      user_ids: userIds
+    })
     return response.data
   } catch (error) {
     console.error("Error assigning task:", error)
@@ -108,7 +108,6 @@ export const finishTask = async id => {
   }
 }
 
-// Task Comments Operations
 export const getTaskComments = async taskId => {
   try {
     const response = await defaultInstance.get(`/api/tasks/${taskId}/comments`)

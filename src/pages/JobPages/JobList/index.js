@@ -17,6 +17,8 @@ import {
   useUpdateTask,
   useDeleteTask,
   useAssignTask,
+  useStartTask,
+  useFinishTask,
 } from "../../../queries/tasks"
 
 import useFetchUsers from "../../../hooks/useFetchUsers"
@@ -42,15 +44,19 @@ const TaskList = () => {
   const isITDepartment = currentUser?.department_id === 5
 
   const { users: allUsers, loading: usersLoading } = useFetchUsers()
+  console.log("All Users", allUsers)
   const usersList = allUsers?.filter(user => user.department_id === 5)
   const userRoles = useUserRoles()
 
-  const hasEditPermission = useMemo(() => userRoles.includes("admin"), [userRoles])
+  const hasEditPermission = useMemo(
+    () => userRoles.includes("admin"),
+    [userRoles]
+  )
   const hasAssignPermission = useMemo(() => isITDepartment, [isITDepartment])
 
-  const { 
-    tasksList, 
-    myTasksList, 
+  const {
+    tasksList,
+    myTasksList,
     assignedTasksList,
     isTasksListLoading,
     isMyTasksLoading,
@@ -59,27 +65,38 @@ const TaskList = () => {
 
   const sortedTasks = useMemo(() => {
     const tasksToSort = isITDepartment
-      ? (activeTab === "all" ? [...tasksList] : [...assignedTasksList])
-      : [...myTasksList]
+      ? activeTab === "all"
+        ? [...(tasksList?.data || [])]
+        : [...(assignedTasksList?.data || [])]
+      : [...(myTasksList?.data || [])]
 
     return tasksToSort.sort((a, b) => {
       const dateA = new Date(a.created_at).getTime()
       const dateB = new Date(b.created_at).getTime()
-      
-      return sortConfig.direction === "asc" 
-        ? dateA - dateB 
-        : dateB - dateA
-    })
-  }, [isITDepartment, activeTab, tasksList, assignedTasksList, myTasksList, sortConfig])
 
-  const isLoading = isITDepartment 
-    ? (activeTab === "all" ? isTasksListLoading : isAssignedTasksLoading)
+      return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA
+    })
+  }, [
+    isITDepartment,
+    activeTab,
+    tasksList?.data,
+    assignedTasksList?.data,
+    myTasksList?.data,
+    sortConfig,
+  ])
+
+  const isLoading = isITDepartment
+    ? activeTab === "all"
+      ? isTasksListLoading
+      : isAssignedTasksLoading
     : isMyTasksLoading
 
   const createTaskMutation = useCreateTask()
   const updateTaskMutation = useUpdateTask()
   const deleteTaskMutation = useDeleteTask()
   const assignTaskMutation = useAssignTask()
+  const startTaskMutation = useStartTask()
+  const finishTaskMutation = useFinishTask()
 
   const handleTaskClick = task => {
     setTask(task)
@@ -108,12 +125,35 @@ const TaskList = () => {
     }
   }
 
-  const handleAssignTask = async () => {
+  const handleAssignTask = async selectedUsers => {
     try {
-      await assignTaskMutation.mutateAsync(task.id)
+      await assignTaskMutation.mutateAsync({
+        taskId: task.id,
+        userIds: selectedUsers
+      })
       setAssignModal(false)
     } catch (error) {
       console.error("Error assigning task:", error)
+      toast.error(
+        error.response?.data?.message ||
+          "დავალების მიღების დროს დაფიქსირდა შეცდომა"
+      )
+    }
+  }
+
+  const handleStartTask = async taskId => {
+    try {
+      await startTaskMutation.mutateAsync(taskId)
+    } catch (error) {
+      console.error("Error starting task:", error)
+    }
+  }
+
+  const handleFinishTask = async taskId => {
+    try {
+      await finishTaskMutation.mutateAsync(taskId)
+    } catch (error) {
+      console.error("Error finishing task:", error)
     }
   }
 
@@ -167,6 +207,7 @@ const TaskList = () => {
         isOpen={assignModal}
         toggle={setAssignModal}
         onAssign={handleAssignTask}
+        usersList={usersList}
       />
 
       {isLoading ? (
@@ -227,7 +268,10 @@ const TaskList = () => {
                   onEdit={handleTaskClick}
                   onDelete={onClickDelete}
                   onAssign={onClickAssign}
+                  onStartTask={handleStartTask}
+                  onFinishTask={handleFinishTask}
                   activeTab={activeTab}
+                  currentUser={currentUser}
                 />
                 <PaginationControls
                   currentPage={currentPage}

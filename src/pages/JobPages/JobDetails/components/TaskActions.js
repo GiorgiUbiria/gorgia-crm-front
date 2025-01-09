@@ -2,21 +2,23 @@ import React from "react"
 import { Play, CheckCircle } from "lucide-react"
 import { useStartTask, useFinishTask } from "../../../../queries/tasks"
 import { toast } from "react-toastify"
-import useCurrentUser from "../../../../hooks/useCurrentUser"
 
 const TaskActions = ({ task, canEdit }) => {
   const startTaskMutation = useStartTask()
   const finishTaskMutation = useFinishTask()
-  const { currentUser, isLoading } = useCurrentUser()
 
-  if (isLoading || !currentUser || !canEdit) return null
+  if (!task) return null
+  if (!canEdit) return null
+
+  const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
 
   const canUpdateStatus =
-    currentUser.department_id === 5 && task.assigned_to === currentUser.id
+    currentUser.department_id === 5 &&
+    task.data.assigned_users?.some(user => user.id === currentUser.id)
 
   const handleStartTask = async () => {
     try {
-      await startTaskMutation.mutateAsync(task.id)
+      await startTaskMutation.mutateAsync(task.data.id)
       toast.success("დავალება დაწყებულია")
     } catch (error) {
       toast.error(
@@ -28,7 +30,7 @@ const TaskActions = ({ task, canEdit }) => {
 
   const handleFinishTask = async () => {
     try {
-      await finishTaskMutation.mutateAsync(task.id)
+      await finishTaskMutation.mutateAsync(task.data.id)
       toast.success("დავალება დასრულებულია")
     } catch (error) {
       toast.error(
@@ -46,7 +48,7 @@ const TaskActions = ({ task, canEdit }) => {
 
   return (
     <div className="flex gap-3">
-      {canUpdateStatus && task.status === "Pending" && (
+      {canUpdateStatus && task.data.status === "Pending" && (
         <button
           onClick={handleStartTask}
           className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.in_progress}`}
@@ -56,7 +58,7 @@ const TaskActions = ({ task, canEdit }) => {
         </button>
       )}
 
-      {canUpdateStatus && task.status === "In Progress" && (
+      {canUpdateStatus && task.data.status === "In Progress" && (
         <button
           onClick={handleFinishTask}
           className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.completed}`}

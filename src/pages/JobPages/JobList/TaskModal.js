@@ -15,6 +15,7 @@ import {
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import useCurrentUser from "../../../hooks/useCurrentUser"
+import Select from "react-select"
 
 const TaskModal = ({
   isOpen,
@@ -38,7 +39,12 @@ const TaskModal = ({
       priority: task?.priority || "Medium",
       status: task?.status || "Pending",
       ip_address: task?.ip_address || "",
-      assigned_to: task?.assigned_to || "",
+      phone_number: task?.phone_number || "",
+      assigned_users:
+        task?.assigned_users?.map(user => ({
+          value: user.id,
+          label: `${user.name} ${user.sur_name}`,
+        })) || [],
       due_date: task?.due_date || new Date().toISOString().split("T")[0],
     },
     validationSchema: Yup.object({
@@ -57,15 +63,28 @@ const TaskModal = ({
           /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
           "Invalid IP address format"
         ),
-      assigned_to: Yup.string().nullable(),
+      phone_number: Yup.string()
+        .required("მიუთითეთ ტელეფონის ნომერი")
+        .matches(/^[0-9+\-\s()]*$/, "Invalid phone number format"),
+      assigned_users: Yup.array().of(
+        Yup.object().shape({
+          value: Yup.number().required(),
+          label: Yup.string().required(),
+        })
+      ),
       due_date: Yup.date().nullable(),
     }),
     onSubmit: async values => {
       try {
+        const formData = {
+          ...values,
+          assigned_users: values.assigned_users.map(user => user.value),
+        }
+
         if (isEdit) {
-          await updateTaskMutation.mutateAsync({ id: task.id, data: values })
+          await updateTaskMutation.mutateAsync({ id: task.id, data: formData })
         } else {
-          await createTaskMutation.mutateAsync(values)
+          await createTaskMutation.mutateAsync(formData)
         }
 
         validation.resetForm()
@@ -93,6 +112,14 @@ const TaskModal = ({
     return null
   }
 
+  const userOptions =
+    usersList?.map(user => ({
+      value: user.id,
+      label: `${user.name} ${user.sur_name}`,
+    })) || []
+
+  console.log("User List", usersList)
+
   return (
     <Modal
       isOpen={isOpen}
@@ -100,7 +127,7 @@ const TaskModal = ({
       className="modal-dialog-centered"
     >
       <ModalHeader toggle={() => toggle(false)} tag="h4">
-        {isEdit ? "რედაქტირება" : "ახალი თასქის დამატება"}
+        {isEdit ? "რედაქტირება" : "ახალი თილეთის გახსნა"}
       </ModalHeader>
       <ModalBody>
         <Form
@@ -165,6 +192,28 @@ const TaskModal = ({
                   )}
               </div>
               <div className="mb-3">
+                <Label className="form-label">ტელეფონის ნომერი</Label>
+                <Input
+                  name="phone_number"
+                  type="text"
+                  className="form-control"
+                  placeholder="ჩაწერეთ თელეფონის ნომერი"
+                  onChange={validation.handleChange}
+                  onBlur={validation.handleBlur}
+                  value={validation.values.phone_number || ""}
+                  invalid={
+                    validation.touched.phone_number &&
+                    validation.errors.phone_number
+                  }
+                />
+                {validation.touched.phone_number &&
+                  validation.errors.phone_number && (
+                    <FormFeedback>
+                      {validation.errors.phone_number}
+                    </FormFeedback>
+                  )}
+              </div>
+              <div className="mb-3">
                 <Label className="form-label">IP მისამართი</Label>
                 <Input
                   name="ip_address"
@@ -207,34 +256,30 @@ const TaskModal = ({
               </div>
               {userRoles.includes("admin") && (
                 <div className="mb-3">
-                  <Label className="form-label">პასუხისმგებელი პირი</Label>
-                  <Input
-                    name="assigned_to"
-                    type="select"
-                    className="form-select"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.assigned_to || ""}
-                    invalid={
-                      validation.touched.assigned_to &&
-                      validation.errors.assigned_to
+                  <Label className="form-label">პასუხისმგებელი პირები</Label>
+                  <Select
+                    isMulti
+                    name="assigned_users"
+                    options={userOptions}
+                    className="basic-multi-select"
+                    classNamePrefix="select"
+                    value={validation.values.assigned_users}
+                    onChange={selectedOptions => {
+                      validation.setFieldValue(
+                        "assigned_users",
+                        selectedOptions || []
+                      )
+                    }}
+                    onBlur={() =>
+                      validation.setFieldTouched("assigned_users", true)
                     }
-                  >
-                    <option value="" disabled>
-                      აირჩიეთ პასუხისმგებელი პირი
-                    </option>
-                    {!usersLoading &&
-                      usersList.map(user => (
-                        <option key={user.id} value={user.id}>
-                          {`${user.name} ${user.sur_name}`}
-                        </option>
-                      ))}
-                  </Input>
-                  {validation.touched.assigned_to &&
-                    validation.errors.assigned_to && (
-                      <FormFeedback>
-                        {validation.errors.assigned_to}
-                      </FormFeedback>
+                    isLoading={usersLoading}
+                  />
+                  {validation.touched.assigned_users &&
+                    validation.errors.assigned_users && (
+                      <div className="text-danger mt-1">
+                        {validation.errors.assigned_users}
+                      </div>
                     )}
                 </div>
               )}

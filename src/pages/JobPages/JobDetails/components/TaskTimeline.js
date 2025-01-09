@@ -23,34 +23,36 @@ const TaskTimeline = ({ task }) => {
           <div>
             <p className="text-sm font-medium text-gray-900">შეიქმნა</p>
             <p className="text-sm text-gray-500">
-              {formatDate(task.created_at)}
+              {formatDate(task.data.created_at)}
             </p>
           </div>
         </div>
 
-        {task.status === "In Progress" && (
+        {task.data.status === "In Progress" && (
           <div className="flex items-center gap-3">
             <Clock size={20} className="text-[#105D8D]" />
             <div>
               <p className="text-sm font-medium text-gray-900">დაიწყო</p>
               <p className="text-sm text-gray-500">
-                {formatDate(task.updated_at)}
+                {formatDate(task.data.updated_at)}
               </p>
             </div>
           </div>
         )}
 
-        {(task.status === "Completed" || task.status === "Cancelled") && (
+        {(task.data.status === "Completed" ||
+          task.data.status === "Cancelled") && (
           <div className="flex items-center gap-3">
-            {getTimelineIcon(task.status)}
+            {getTimelineIcon(task.data.status)}
             <div>
               <p className="text-sm font-medium text-gray-900">
-                {task.status === "Completed" ? "დასრულდა" : "გაუქმდა"}
+                {task.data.status === "Completed" ? "დასრულდა" : "გაუქმდა"}
               </p>
               <p className="text-sm text-gray-500">
-                {formatDate(task.updated_at)}
+                {formatDate(task.data.updated_at)}
                 <span className="ml-2 text-[#105D8D]">
-                  (Duration: {getTimeElapsed(task.created_at, task.updated_at)})
+                  (დრო:{" "}
+                  {getTimeElapsed(task.data.created_at, task.data.updated_at)})
                 </span>
               </p>
             </div>

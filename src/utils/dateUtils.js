@@ -1,10 +1,11 @@
 export const formatDate = date => {
-  return new Date(date).toLocaleString("en-US", {
+  return new Date(date).toLocaleString("ka-GE", {
     year: "numeric",
-    month: "long",
+    month: "numeric",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   })
 }
 

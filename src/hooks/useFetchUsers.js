@@ -1,14 +1,7 @@
 import { useGetUsers } from "../queries/user"
 
-const useFetchUsers = ({ isAdmin = false } = {}) => {
-  const {
-    data: users = [],
-    isLoading: loading,
-    error,
-    refetch,
-  } = useGetUsers({
-    enabled: isAdmin,
-  })
+const useFetchUsers = () => {
+  const { data: users = [], isLoading: loading, error, refetch } = useGetUsers()
 
   return {
     users,

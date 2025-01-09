@@ -25,5 +25,6 @@ export const fetchUser = async () => {
 }
 
 export const fetchUsers = async () => {
-  return defaultInstance.get("/api/admin/users")
+  const response = await defaultInstance.get("/api/admin/users")
+  return response
 }

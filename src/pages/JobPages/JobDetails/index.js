@@ -37,12 +37,15 @@ const JobDetails = () => {
     },
   })
 
+  console.log("Task", task)
+
   const hasEditPermission = useMemo(() => {
     if (!task) return false
 
     return (
       userRoles.includes("admin") ||
-      (currentUser?.department_id === 5 && task.assigned_to === currentUser?.id)
+      (currentUser?.department_id === 5 &&
+        task.data.assigned_users?.some(user => user.id === currentUser?.id))
     )
   }, [userRoles, currentUser, task])
 
@@ -53,8 +56,8 @@ const JobDetails = () => {
     return (
       hasEditPermission ||
       isITDepartment ||
-      task.user_id === currentUser.id ||
-      task.assigned_to === currentUser.id
+      task.data.user.id === currentUser.id ||
+      task.data.assigned_users?.some(user => user.id === currentUser.id)
     )
   }, [task, hasEditPermission, isITDepartment, currentUser])
 
@@ -80,7 +83,7 @@ const JobDetails = () => {
       <div className="bg-white shadow rounded-lg mb-6">
         <TaskHeader task={task} />
         <div className="p-6 flex justify-between items-center border-b border-gray-200">
-          <TaskStatus status={task.status} />
+          <TaskStatus status={task.data.status} />
           <TaskActions task={task} canEdit={hasEditPermission} />
         </div>
         <div className="p-6">

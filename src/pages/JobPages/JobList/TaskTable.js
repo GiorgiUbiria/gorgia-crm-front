@@ -1,5 +1,5 @@
 import React from "react"
-import { Table, Badge, Spinner } from "reactstrap"
+import { Table, Badge, Spinner, UncontrolledTooltip } from "reactstrap"
 import { Link, useNavigate } from "react-router-dom"
 import { MdEdit, MdDelete, Md1kPlus } from "react-icons/md"
 import { formatDate } from "../../../utils/dateUtils"
@@ -36,11 +36,13 @@ const TaskTable = ({
   }
 
   const canAccessTaskDetails = task => {
+    if (!task) return false
+
     return (
       hasEditPermission || // Admin
       task.user_id === currentUser?.id || // Task creator
-      (currentUser?.department_id === 5 && // IT department
-        task.assigned_to === currentUser?.id) // Assigned user
+      currentUser?.department_id === 5 || // IT department
+      task.assigned_users?.some(user => user.id === currentUser?.id) // Assigned user
     )
   }
 
@@ -54,6 +56,14 @@ const TaskTable = ({
     } else {
       console.warn("You don't have permission to view this task's details")
     }
+  }
+
+  const canShowAssignButton = task => {
+    if (!currentUser?.department_id === 5) return false
+    if (task.status === "Completed" || task.status === "Cancelled") return false
+    if (task.assigned_users?.some(user => user.id === currentUser?.id)) return false
+    if (activeTab === "assigned") return false
+    return true
   }
 
   const columns = [
@@ -75,6 +85,17 @@ const TaskTable = ({
     {
       header: "პრობლემის ტიპი",
       accessorKey: "task_title",
+    },
+    {
+      header: "მომხმარებელი",
+      accessorKey: "user",
+      cell: task =>
+        task.user ? `${task.user.name} ${task.user.sur_name}` : "N/A",
+    },
+    {
+      header: "ტელეფონი",
+      accessorKey: "phone_number",
+      cell: task => task.phone_number || "N/A",
     },
     {
       header: "IP მისამართი",
@@ -137,11 +158,31 @@ const TaskTable = ({
       },
     },
     {
-      header: "პასუხისმგებელი პირი",
-      accessorKey: "assigned_to",
+      header: "პასუხისმგებელი პირები",
+      accessorKey: "assigned_users",
       cell: task => {
-        const user = task.assigned_user
-        return user ? `${user.name} ${user.sur_name}` : "დაუნიშნავი"
+        if (!task.assigned_users?.length) return "დაუნიშნავი"
+
+        const assignedUsers = task.assigned_users
+        const mainUser = assignedUsers[0]
+        const displayName = `${mainUser.name} ${mainUser.sur_name}`
+
+        if (assignedUsers.length === 1) return displayName
+
+        const tooltipId = `assigned-users-${task.id}`
+        return (
+          <>
+            <span id={tooltipId} style={{ cursor: "help" }}>
+              {displayName} +{assignedUsers.length - 1}
+            </span>
+            <UncontrolledTooltip target={tooltipId} placement="top">
+              {assignedUsers
+                .slice(1)
+                .map(user => `${user.name} ${user.sur_name}`)
+                .join(", ")}
+            </UncontrolledTooltip>
+          </>
+        )
       },
     },
     {
@@ -180,23 +221,20 @@ const TaskTable = ({
               </li>
             </>
           )}
-          {hasAssignPermission &&
-            !task.assigned_to &&
-            task.status === "Pending" &&
-            activeTab !== "assigned" && (
-              <li>
-                <Link
-                  to="#"
-                  className="btn btn-sm btn-soft-info action-button"
-                  onClick={e => {
-                    e.stopPropagation()
-                    onAssign(task)
-                  }}
-                >
-                  <Md1kPlus />
-                </Link>
-              </li>
-            )}
+          {hasAssignPermission && canShowAssignButton(task) && (
+            <li>
+              <Link
+                to="#"
+                className="btn btn-sm btn-soft-info action-button"
+                onClick={e => {
+                  e.stopPropagation()
+                  onAssign(task)
+                }}
+              >
+                <Md1kPlus />
+              </Link>
+            </li>
+          )}
         </ul>
       ),
     },
