@@ -18,13 +18,13 @@ import Dailies from "pages/Dailies/index.jsx"
 import Daily from "pages/Daily"
 import DailiesInner from "pages/DailiesInner/index.jsx"
 import DailyInner from "pages/DailyInner"
-import FarmWork from "pages/FarmWork"
 import HeadPage from "pages/HeadPage"
 import HrPage from "pages/HrDocuments/HrPage"
 import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import UserHrDocuments from "pages/HrDocuments/UserHrDocuments"
 import JobDetails from "pages/JobPages/JobDetails"
-
+import FarmTaskDetails from "pages/FarmJobPages/JobDetails"
+import FarmTaskList from "pages/FarmJobPages/JobList"
 // Request Agreement
 import AgreementRequest from "pages/Agreements/AgreementRequest"
 
@@ -67,7 +67,6 @@ import Register from "../pages/Authentication/Register"
 import Calendar from "../pages/Calendar/index"
 import Dashboard from "../pages/Dashboard/index"
 import TaskList from "../pages/JobPages/JobList"
-import FarmTaskDetails from "../pages/FarmDetails"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
@@ -198,11 +197,17 @@ const hrRoutes = {
         },
         approve: {
           path: "/hr/documents/approve",
-          component: withAccessRoute(<HrPageApprove />, "role:admin|role:department_head|department:8"),
+          component: withAccessRoute(
+            <HrPageApprove />,
+            "role:admin|role:department_head|department:8"
+          ),
         },
         archive: {
           path: "/hr/documents/archive",
-          component: withAccessRoute(<HrPageArchive />, "role:admin|role:department_head|department:8"),
+          component: withAccessRoute(
+            <HrPageArchive />,
+            "role:admin|role:department_head|department:8"
+          ),
         },
         myRequests: {
           path: "/hr/documents/my-requests",
@@ -326,7 +331,7 @@ const supportRoutes = {
     },
     farmTasks: {
       path: "/support/farm-tasks",
-      component: <FarmWork />,
+      component: <FarmTaskList />,
     },
     farmTaskDetails: {
       path: "/support/farm-tasks/:id",

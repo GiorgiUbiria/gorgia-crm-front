@@ -10,7 +10,7 @@ export const getTaskComments = async (
 ) => {
   try {
     const response = await defaultInstance.get(
-      `/api/tasks/${taskId}/comments`,
+      `/api/farm-tasks/${taskId}/comments`,
       {
         params: {
           page,
@@ -48,30 +48,13 @@ export const getTaskComment = async commentId => {
 export const createTaskComment = async (taskId, data) => {
   try {
     const response = await defaultInstance.post(
-      `/api/tasks/${taskId}/comments`,
+      `/api/farm-tasks/${taskId}/comments`,
       data
     )
-    return response.data // Ensure you're returning the actual data
+    return response.data
   } catch (error) {
     console.error(
       "Error creating task comment:",
-      error?.response?.data || error.message
-    )
-    throw error
-  }
-}
-
-// Update an existing comment
-export const updateTaskComment = async (commentId, data) => {
-  try {
-    const response = await defaultInstance.put(
-      `/api/comments/${commentId}`,
-      data
-    )
-    return response.data // Ensure you're returning the actual data
-  } catch (error) {
-    console.error(
-      "Error updating task comment:",
       error?.response?.data || error.message
     )
     throw error
@@ -82,7 +65,7 @@ export const updateTaskComment = async (commentId, data) => {
 export const deleteTaskComment = async commentId => {
   try {
     const response = await defaultInstance.delete(`/api/comments/${commentId}`)
-    return response.data // Ensure you're returning the actual data
+    return response.data
   } catch (error) {
     console.error(
       "Error deleting task comment:",

@@ -19,13 +19,13 @@ import {
   useAssignTask,
   useStartTask,
   useFinishTask,
-} from "../../../queries/tasks"
+} from "../../../queries/farmTasks"
 
 import useFetchUsers from "../../../hooks/useFetchUsers"
 import useUserRoles from "../../../hooks/useUserRoles"
 
 const TaskList = () => {
-  document.title = "Tasks List | Gorgia LLC"
+  document.title = "Farm Tasks List | Gorgia LLC"
 
   const [activeTab, setActiveTab] = useState("all")
   const [modal, setModal] = useState(false)
@@ -41,17 +41,20 @@ const TaskList = () => {
   })
 
   const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
-  const isITDepartment = currentUser?.department_id === 5
+  const isFarmDepartment = currentUser?.department_id === 38
 
   const { users: allUsers, loading: usersLoading } = useFetchUsers()
-  const usersList = allUsers?.filter(user => user.department_id === 5)
+  const usersList = allUsers?.filter(user => user.department_id === 38)
   const userRoles = useUserRoles()
 
   const hasEditPermission = useMemo(
     () => userRoles.includes("admin"),
     [userRoles]
   )
-  const hasAssignPermission = useMemo(() => isITDepartment, [isITDepartment])
+  const hasAssignPermission = useMemo(
+    () => isFarmDepartment,
+    [isFarmDepartment]
+  )
 
   const {
     tasksList,
@@ -60,10 +63,10 @@ const TaskList = () => {
     isTasksListLoading,
     isMyTasksLoading,
     isAssignedTasksLoading,
-  } = useTaskQueries(isITDepartment)
+  } = useTaskQueries(isFarmDepartment, hasEditPermission)
 
   const sortedTasks = useMemo(() => {
-    const tasksToSort = isITDepartment || hasEditPermission
+    const tasksToSort = isFarmDepartment || hasEditPermission
       ? activeTab === "all"
         ? [...(tasksList?.data || [])]
         : [...(assignedTasksList?.data || [])]
@@ -76,7 +79,7 @@ const TaskList = () => {
       return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA
     })
   }, [
-    isITDepartment,
+    isFarmDepartment,
     activeTab,
     tasksList?.data,
     assignedTasksList?.data,
@@ -85,7 +88,7 @@ const TaskList = () => {
     hasEditPermission,
   ])
 
-  const isLoading = isITDepartment
+  const isLoading = isFarmDepartment
     ? activeTab === "all"
       ? isTasksListLoading
       : isAssignedTasksLoading
@@ -129,7 +132,7 @@ const TaskList = () => {
     try {
       await assignTaskMutation.mutateAsync({
         taskId: task.id,
-        userIds: selectedUsers
+        userIds: selectedUsers,
       })
       setAssignModal(false)
     } catch (error) {
@@ -220,7 +223,7 @@ const TaskList = () => {
                 <h5 className="text-xl font-medium mb-3 sm:mb-0">
                   ბილეთების სია
                 </h5>
-                {(isITDepartment || hasEditPermission) && (
+                {(isFarmDepartment || hasEditPermission) && (
                   <Nav tabs className="mt-3 sm:mt-2">
                     <NavItem>
                       <NavLink
