@@ -130,8 +130,9 @@ const TaskModal = ({
                 <Label className="form-label">აირჩიეთ პრობლემის ტიპი</Label>
                 <Input
                   name="task_title"
-                  type="select"
-                  className="form-select"
+                  type="text"
+                  className="form-control"
+                  placeholder="მიუთითეთ პრობლემის ტიპი"
                   onChange={validation.handleChange}
                   onBlur={validation.handleBlur}
                   value={validation.values.task_title || ""}
@@ -139,19 +140,7 @@ const TaskModal = ({
                     validation.touched.task_title &&
                     validation.errors.task_title
                   }
-                >
-                  <option value="" disabled hidden>
-                    აირჩიეთ პრობლემის ტიპი
-                  </option>
-                  <option value="პრინტერის პრობლემა">პრინტერის პრობლემა</option>
-                  <option value="სერვისი">სერვისი</option>
-                  <option value="პაროლის აღდგენა">პაროლის აღდგენა</option>
-                  <option value="ელ-ფოსტის პრობლემა">ელ-ფოსტის პრობლემა</option>
-                  <option value="ტექნიკური პრობლემა">ტექნიკური პრობლემა</option>
-                  <option value="სერვისის პრობლემა">სერვისის პრობლემა</option>
-                  <option value="ფაილების აღდგენა">ფაილების აღდგენა</option>
-                  <option value="სხვა">სხვა</option>
-                </Input>
+                />
                 {validation.touched.task_title &&
                   validation.errors.task_title && (
                     <FormFeedback>{validation.errors.task_title}</FormFeedback>
