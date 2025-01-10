@@ -171,6 +171,8 @@ const ProfilePage = () => {
       profileForm.sur_name !== userData?.sur_name ||
       profileForm.working_start_date !== userData?.working_start_date ||
       profileForm.mobile_number !== userData?.mobile_number ||
+      profileForm.id_number !== userData?.id_number ||
+      profileForm.date_of_birth !== userData?.date_of_birth ||
       profileForm.profile_image
     )
   }

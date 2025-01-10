@@ -83,6 +83,34 @@ const UpdateProfile = ({
               </p>
             )}
           </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">პირადი ნომერი</label>
+            <input
+              type="text"
+              name="id_number"
+              value={profileForm.id_number}
+              onChange={handleChangeProfile}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            />
+            {profileError?.id_number && (
+              <p className="text-sm text-red-600">{profileError.id_number}</p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">დაბადების თარიღი</label>
+            <input
+              type="date"
+              name="date_of_birth"
+              value={profileForm.date_of_birth}
+              onChange={handleChangeProfile}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            />
+            {profileError?.date_of_birth && (
+              <p className="text-sm text-red-600">{profileError.date_of_birth}</p>
+            )}
+          </div>
         </div>
 
         <div className="mt-4">
