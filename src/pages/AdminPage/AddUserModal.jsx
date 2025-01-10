@@ -102,6 +102,13 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
 
     if (!formData.password?.trim()) {
       newErrors.password = "პაროლი სავალდებულოა."
+    } else if (formData.password.length < 8) {
+      newErrors.password = "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს."
+    } else if (
+      !formData.password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/)
+    ) {
+      newErrors.password =
+        "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს, რომელშიც არის ერთი ციფრი, ერთი დიდი ასო, ერთი პატარა ასო და ერთი სპეციალური სიმბოლო."
     }
 
     if (!formData.mobile_number?.trim()) {

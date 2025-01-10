@@ -6,10 +6,7 @@ const ThemeSwitcher = () => {
   const dispatch = useDispatch()
   const isDarkMode = useSelector(state => state.Layout.isDarkMode)
 
-  console.log("Current theme state:", isDarkMode)
-
   const toggleTheme = () => {
-    console.log("Theme toggle clicked, dispatching action")
     dispatch({ type: "TOGGLE_THEME" })
   }
 
@@ -28,4 +25,4 @@ const ThemeSwitcher = () => {
   )
 }
 
-export default ThemeSwitcher 
+export default ThemeSwitcher

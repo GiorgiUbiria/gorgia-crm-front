@@ -12,7 +12,7 @@ import {
   SHOW_SIDEBAR,
   CHANGE_LAYOUT_MODE,
   TOGGLE_THEME,
-} from "./actionTypes";
+} from "./actionTypes"
 
 const INIT_STATE = {
   layoutType: "vertical",
@@ -30,8 +30,6 @@ const INIT_STATE = {
   isDarkMode: false,
 }
 const Layout = (state = INIT_STATE, action) => {
-  console.log("Layout reducer received action:", action.type)
-
   switch (action.type) {
     case CHANGE_LAYOUT:
       return {
@@ -95,7 +93,6 @@ const Layout = (state = INIT_STATE, action) => {
         ...state,
         isDarkMode: !state.isDarkMode,
       }
-      console.log("Theme toggled, new state:", newState)
       return newState
     }
 
