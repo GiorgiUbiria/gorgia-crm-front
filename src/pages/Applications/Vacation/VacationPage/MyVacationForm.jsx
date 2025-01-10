@@ -190,7 +190,14 @@ const MyVacationForm = ({ user, vacationBalance, setVacationBalance }) => {
         }
       }
     }
-  }, [formik.values.start_date, formik.values.end_date, formik.values, calculateDuration, vacationBalance, formik])
+  }, [
+    formik.values.start_date,
+    formik.values.end_date,
+    formik.values,
+    calculateDuration,
+    vacationBalance,
+    formik,
+  ])
 
   const handleCheckboxChange = useCallback(
     fieldName => e => {
@@ -228,7 +235,7 @@ const MyVacationForm = ({ user, vacationBalance, setVacationBalance }) => {
 
       <Form onSubmit={formik.handleSubmit}>
         {/* Employee Information Section */}
-        <h5 className="mb-3 text-lg font-semibold">თანამუშაოს ინფორმაცია</h5>
+        <h5 className="mb-3 text-lg font-semibold">თანამშრომლის ინფორმაცია</h5>
         <div className="row">
           <div className="col-md-6">
             <InputWithError
@@ -260,20 +267,20 @@ const MyVacationForm = ({ user, vacationBalance, setVacationBalance }) => {
         </div>
 
         {/* Substitute Information Section */}
-        <h5 className="mb-3 text-lg font-semibold">შიმცვლელის ინფორმაცია</h5>
+        <h5 className="mb-3 text-lg font-semibold">შემცვლელის ინფორმაცია</h5>
         <div className="row">
           <div className="col-md-6">
             <InputWithError
               formik={formik}
               name="substitute_name"
-              label="შიმცვლელის სახელი/გვარი"
+              label="შემცვლელის სახელი/გვარი"
             />
           </div>
           <div className="col-md-6">
             <InputWithError
               formik={formik}
               name="substitute_position"
-              label="შიმცვლელის პოზიცია"
+              label="შემცვლელის პოზიცია"
             />
           </div>
         </div>

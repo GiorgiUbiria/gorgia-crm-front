@@ -1,18 +1,15 @@
-import React, { useState, useMemo, useEffect } from "react"
+import React, { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { getDailies } from "services/daily"
-import { getDepartments } from "services/auth"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
 import { usePermissions } from "hooks/usePermissions"
 import AddDailyModal from "./AddDailyModal"
 import * as XLSX from "xlsx"
+import { useGetDailies } from "queries/daily"
 
 const INITIAL_STATE = {
   currentPage: 1,
   pageSize: 10,
-  dailiesData: { data: [], total: 0 },
-  isLoading: false,
   addDailyModal: false,
 }
 
@@ -24,58 +21,32 @@ const Dailies = () => {
   const user = JSON.parse(sessionStorage.getItem("authUser"))
 
   const [state, setState] = useState(INITIAL_STATE)
-  const { currentPage, pageSize, dailiesData, isLoading, addDailyModal } = state
+  const { currentPage, pageSize, addDailyModal } = state
 
   const updateState = newState => {
     setState(prev => ({ ...prev, ...newState }))
   }
 
-  const fetchDailies = async () => {
-    try {
-      updateState({ isLoading: true })
-      const params = { page: currentPage, limit: pageSize }
-      const { dailies } = await getDailies("department_head", params)
-      updateState({
-        dailiesData: {
-          data: dailies,
-          total: dailies.length,
-        },
-      })
-    } catch (error) {
-      console.error("Error fetching regular dailies:", error)
-    } finally {
-      updateState({ isLoading: false })
-    }
-  }
-
-  const fetchDepartments = async () => {
-    try {
-      const response = await getDepartments()
-      updateState({ departments: response.data.departments })
-    } catch (error) {
-      console.error("Error fetching departments:", error)
-    }
-  }
-
-  useEffect(() => {
-    fetchDailies()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize])
-
-  useEffect(() => {
-    fetchDepartments()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const {
+    data: dailiesData,
+    isLoading,
+    refetch,
+  } = useGetDailies("department_head", {
+    page: currentPage,
+    limit: pageSize,
+  })
 
   const handleRowClick = row => {
     navigate(`/tools/daily-results/${row.id}`)
   }
 
   const transformedDailies = useMemo(() => {
-    return dailiesData.data.map(daily => ({
-      ...daily,
-      user_full_name: `${daily.user.name} ${daily.user.sur_name}`,
-    }))
+    return (
+      dailiesData?.dailies?.map(daily => ({
+        ...daily,
+        user_full_name: `${daily.user.name} ${daily.user.sur_name}`,
+      })) || []
+    )
   }, [dailiesData])
 
   const columns = useMemo(
@@ -115,11 +86,13 @@ const Dailies = () => {
 
   const filterOptions = useMemo(() => {
     const uniqueDepartments = [
-      ...new Set(dailiesData.data.map(daily => daily.department?.id)),
+      ...new Set(dailiesData?.dailies?.map(daily => daily.department?.id)),
     ]
       .filter(Boolean)
       .map(deptId => {
-        const daily = dailiesData.data.find(d => d.department?.id === deptId)
+        const daily = dailiesData?.dailies?.find(
+          d => d.department?.id === deptId
+        )
         return {
           value: deptId,
           label: daily?.department?.name || "",
@@ -134,7 +107,7 @@ const Dailies = () => {
         options: [{ value: "", label: "ყველა" }, ...uniqueDepartments],
       },
     ]
-  }, [dailiesData.data])
+  }, [dailiesData])
 
   const exportToExcel = () => {
     const headers = [
@@ -215,7 +188,7 @@ const Dailies = () => {
             initialPageSize={pageSize}
             pageSizeOptions={PAGE_SIZE_OPTIONS}
             currentPage={currentPage}
-            totalItems={dailiesData.total}
+            totalItems={dailiesData?.total || 0}
             onPageChange={page => updateState({ currentPage: page })}
             onPageSizeChange={size => updateState({ pageSize: size })}
             isLoading={isLoading}
@@ -229,9 +202,9 @@ const Dailies = () => {
       <AddDailyModal
         isOpen={addDailyModal}
         toggle={() => updateState({ addDailyModal: false })}
-        onDailyAdded={fetchDailies}
+        onDailyAdded={refetch}
         departmentId={user.department_id}
-        type="regular"
+        type="department_head"
       />
     </>
   )
