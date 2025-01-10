@@ -1,29 +1,48 @@
-import React, { useEffect, useState } from "react"
-import {
-  Card,
-  CardBody,
-  Col,
-  Container,
-  Form,
-  Input,
-  Label,
-  Row,
-  Button,
-  FormGroup,
-} from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { getPurchaseList, createPurchase } from "../../../../services/purchase"
-import {
-  getDepartments,
-  getPurchaseDepartments,
-} from "../../../../services/auth"
+import React, { useState } from "react"
+import { Col, Form, Input, Label, Row, Button, FormGroup } from "reactstrap"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import "./index.css"
 import { useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import { procurementSchema } from "./validationSchema"
-import useFetchUser from "hooks/useFetchUser"
+import { useCreatePurchase } from "../../../../queries/purchase"
+
+const branchOptions = [
+  "დიდუბე",
+  "გლდანი",
+  "საბურთალო",
+  "ვაკე",
+  "ლილო",
+  "ბათუმი",
+  "ქუთაისი",
+  "ზუგდიდი",
+  "თელავი",
+  "მარნეული",
+  "რუსთავი",
+  "გორი",
+  "საჩხერე",
+  "წყალსადენი - საწყობი",
+  "დსკ - საწყობი",
+  "სარაჯიშვილი - საწყობი",
+]
+
+const categoryOptions = [
+  "IT",
+  "Marketing",
+  "Security",
+  "Network",
+  "Office Manager",
+  "Farm",
+]
+
+const CategoryOptions = {
+  IT: "IT",
+  Marketing: "მარკეტინგი",
+  Security: "უსაფრთხოება",
+  Network: "საცალო ქსელი",
+  "Office Manager": "ოფის-მენეჯერი",
+  Farm: "სამეურნეო",
+}
 
 const InputWithError = ({
   formik,
@@ -66,276 +85,397 @@ const InputWithError = ({
   </div>
 )
 
-const ProcurementPage = () => {
-  const navigate = useNavigate()
-  const [departments, setDepartments] = useState([])
-  const { user } = useFetchUser()
+const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
+  <div className="border rounded p-2 mb-2">
+    <div
+      className="d-flex justify-content-between align-items-center"
+      onClick={onToggle}
+      style={{ cursor: "pointer" }}
+    >
+      <h6 className="mb-0">
+        პროდუქტი {index + 1} - {formik.values.products[index].name || "უსახელო"}
+      </h6>
+      <Button type="button" color="link" className="p-0">
+        {isExpanded ? "▼" : "▶"}
+      </Button>
+    </div>
 
-  console.log(user)
+    {isExpanded && (
+      <div className="mt-2">
+        <Row className="g-3">
+          <Col md="3">
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.name`}
+              label="პროდუქტის სახელი"
+            />
+          </Col>
+          <Col md="3">
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.quantity`}
+              label="რაოდენობა"
+              type="number"
+            />
+          </Col>
+          <Col md="3">
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.dimensions`}
+              label="ზომები"
+            />
+          </Col>
+          <Col md="3">
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.payer`}
+              label="ვინ ანაზღაურებს თანხას?"
+              type="text"
+            ></InputWithError>
+          </Col>
+        </Row>
+        <Row className="g-2">
+          <Col md="12">
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.description`}
+              label="აღწერა"
+              type="textarea"
+              rows="2"
+            />
+          </Col>
+        </Row>
+        <Row className="g-2">
+          <Col md="12">
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.search_variant`}
+              label="თქვენი მოძიებული ვარიანტი (მომწოდებელი, საკონტაქტო ინფორმაცია, ფასი)"
+              type="textarea"
+              rows="2"
+            />
+          </Col>
+        </Row>
+        <Row className="g-2">
+          <Col md="12">
+            <FormGroup className="mb-2">
+              <InputWithError
+                formik={formik}
+                name={`products.${index}.similar_purchase_planned`}
+                label="იგეგმება, თუ არა უახლოეს 1 თვეში ანალოგიური პროდუქციის შესყიდვა?"
+                type="textarea"
+                rows="2"
+              />
+            </FormGroup>
+          </Col>
+        </Row>
+        <Row className="g-2">
+          {formik.values.category &&
+            formik.values.category !== "IT" &&
+            formik.values.category !== "Marketing" && (
+              <Col md="12">
+                <InputWithError
+                  formik={formik}
+                  name={`products.${index}.in_stock_explanation`}
+                  label="გვაქვს თუ არა ეს პროდუქცია ასორტიმენტში ჩვენ?"
+                  type="textarea"
+                  rows="2"
+                />
+              </Col>
+            )}
+        </Row>
+        {formik.values.products.length > 1 && (
+          <div className="mt-2">
+            <Button
+              type="button"
+              color="danger"
+              size="sm"
+              onClick={() => onRemove(index)}
+            >
+              პროდუქტის წაშლა
+            </Button>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+)
+
+const ProcurementPage = () => {
+  document.title = "შიდა შესყიდვების დამატება | Gorgia LLC"
+  const navigate = useNavigate()
+  const [expandedProducts, setExpandedProducts] = useState([0])
+
+  const { mutate: createPurchase, isLoading } = useCreatePurchase()
+
+  const toggleProduct = index => {
+    setExpandedProducts(prev =>
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    )
+  }
 
   const formik = useFormik({
     initialValues: {
-      department_id: "",
-      objective: "",
-      deadline: "",
-      short_period_reason: "",
-      requested_procurement_object_exceed: "",
+      branch: "",
+      category: "",
+      purchase_purpose: "",
+      requested_arrival_date: "",
+      short_date_notice_explanation: "",
+      exceeds_needs_reason: "",
+      creates_stock: false,
       stock_purpose: "",
       delivery_address: "",
-      brand_model: "",
-      alternative: "",
-      competetive_price: "",
-      who_pay_amount: "",
-      name_surname_of_employee: "",
-      reason: "",
-      planned_next_month: "",
+      products: [
+        {
+          name: "",
+          quantity: "",
+          dimensions: "",
+          description: "",
+          search_variant: "",
+          similar_purchase_planned: "",
+          in_stock_explanation: "",
+          payer: "",
+        },
+      ],
     },
     validationSchema: procurementSchema,
     onSubmit: async values => {
-      const submitData = {
-        ...values,
-        department_purchase_id: Number(values.department_id),
-        deadline: new Date(values.deadline).toISOString().split("T")[0],
-      }
-
       try {
-        await createPurchase(submitData)
+        // Validate all fields first
+        await procurementSchema.validate(values, { abortEarly: false })
 
-        toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+        // Add category to each product before submission
+        const productsWithCategory = values.products.map(product => ({
+          ...product,
+          category: values.category,
+        }))
+
+        const dataToSubmit = {
+          ...values,
+          products: productsWithCategory,
+        }
+
+        createPurchase(dataToSubmit, {
+          onSuccess: () => {
+            toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            })
+
+            formik.resetForm()
+            setTimeout(() => {
+              navigate("/applications/purchases/my-requests")
+            }, 1000)
+          },
+          onError: err => {
+            // Combine backend validation errors into a single message
+            if (err?.response?.data?.errors) {
+              const errorMessages = Object.entries(err.response.data.errors)
+                .map(([field, messages]) => `${field}: ${messages[0]}`)
+                .join("\n")
+
+              toast.error(errorMessages, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+              })
+            } else {
+              // Handle general error
+              const errorMessage =
+                err?.response?.data?.message ||
+                err?.response?.data?.data?.message ||
+                "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
+
+              toast.error(errorMessage, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+              })
+            }
+          },
         })
-
-        formik.resetForm()
-        setTimeout(() => {
-          navigate("/applications/purchases/my-requests")
-        }, 1000)
       } catch (err) {
-        console.error("Submission error:", err)
-        const errorMessage =
-          err?.response?.data?.message ||
-          err?.response?.data?.data?.message ||
-          "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
+        // Combine Yup validation errors into a single message
+        if (err.inner) {
+          const errorMessages = err.inner
+            .map(error => `${error.path}: ${error.message}`)
+            .join("\n")
 
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000,
-        })
+          toast.error(errorMessages, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          })
+        }
       }
     },
   })
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const res = await getPurchaseList()
-        setPurchases(res.data.internal_purchases)
-      } catch (err) {
-        console.log(err)
-      }
-    }
+  const addProduct = () => {
+    const newProductIndex = formik.values.products.length
+    formik.setFieldValue("products", [
+      ...formik.values.products,
+      {
+        name: "",
+        quantity: "",
+        dimensions: "",
+        description: "",
+        search_variant: "",
+        similar_purchase_planned: "",
+        in_stock_explanation: "",
+        payer: "",
+      },
+    ])
+    setExpandedProducts(prev => [...prev, newProductIndex])
+  }
 
-    fetchRequests()
-
-    const fetchDepartments = async () => {
-      let departmentsArray = []
-      try {
-        const res = await getDepartments()
-        departmentsArray = [...departmentsArray, ...res.data.departments]
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setDepartments(departmentsArray)
-      }
-    }
-
-    const fetchPurchaseDepartments = async () => {
-      let departmentsArray = []
-      try {
-        const res = await getPurchaseDepartments()
-        departmentsArray = [...departmentsArray, ...res.data.departments]
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setDepartments(prevDepartments => [
-          ...prevDepartments,
-          ...departmentsArray,
-        ])
-      }
-    }
-
-    fetchDepartments()
-    fetchPurchaseDepartments()
-  }, [])
+  const removeProduct = index => {
+    const products = [...formik.values.products]
+    products.splice(index, 1)
+    formik.setFieldValue("products", products)
+    setExpandedProducts(prev => prev.filter(i => i !== index))
+  }
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <Container fluid={true}>
-          <Breadcrumbs
-            title="განცხადებები"
-            breadcrumbItem="შიდა შესყიდვების დამატება"
-          />
-          <Row>
-            <Col lg="12">
-              <Card>
-                <CardBody>
-                  <Form onSubmit={formik.handleSubmit} encType="multipart/form-data">
-                    <Row>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="department_id"
-                          label="დეპარტამენტი"
-                          type="select"
-                        >
-                          <option value="">აირჩიეთ დეპარტამენტი</option>
-                          {departments.map(dep => (
-                            <option key={dep.id} value={dep.id}>
-                              {dep.name}
-                            </option>
-                          ))}
-                        </InputWithError>
-                      </Col>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="objective"
-                          label="ზოგადად აღწერეთ რა არის შესყიდვის ობიექტი?"
+    <>
+      <div className="max-w-full shadow-sm mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div>
+          <div className="p-4 sm:p-6">
+            <Form onSubmit={formik.handleSubmit}>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <InputWithError
+                    formik={formik}
+                    name="branch"
+                    label="ფილიალი"
+                    type="select"
+                  >
+                    <option value="">აირჩიეთ ფილიალი</option>
+                    {branchOptions.map(branch => (
+                      <option key={branch} value={branch}>
+                        {branch}
+                      </option>
+                    ))}
+                  </InputWithError>
+
+                  <InputWithError
+                    formik={formik}
+                    name="category"
+                    label="მიმართულება"
+                    type="select"
+                  >
+                    <option value="">აირჩიეთ მიმართულება</option>
+                    {categoryOptions.map(category => (
+                      <option key={category} value={category}>
+                        {CategoryOptions[category]}
+                      </option>
+                    ))}
+                  </InputWithError>
+
+                  <InputWithError
+                    formik={formik}
+                    name="delivery_address"
+                    label="მიწოდების მისამართი"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <InputWithError
+                    formik={formik}
+                    name="purchase_purpose"
+                    label="შესყიდვის მიზანი"
+                    type="textarea"
+                    rows="2"
+                  />
+                  <InputWithError
+                    formik={formik}
+                    name="exceeds_needs_reason"
+                    label="შესყიდვის საჭიროება"
+                    type="textarea"
+                    rows="2"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>იქმნება მარაგი?</Label>
+                    <div className="flex gap-4">
+                      <FormGroup check inline>
+                        <Input
+                          type="radio"
+                          name="creates_stock"
+                          onChange={() =>
+                            formik.setFieldValue("creates_stock", true)
+                          }
+                          checked={formik.values.creates_stock === true}
                         />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="deadline"
-                          label="რა ვადაში ითხოვთ შესყიდვის ობიექტის მიღებას?"
-                          type="date"
+                        <Label check>დიახ</Label>
+                      </FormGroup>
+                      <FormGroup check inline>
+                        <Input
+                          type="radio"
+                          name="creates_stock"
+                          onChange={() =>
+                            formik.setFieldValue("creates_stock", false)
+                          }
+                          checked={formik.values.creates_stock === false}
                         />
-                      </Col>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="short_period_reason"
-                          label="თუ შესყიდვის ობიექტის მიღებისთვის ითხოვთ მცირე ვადას, განმარტეთ მიზეზი:"
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="requested_procurement_object_exceed"
-                          label="ხომ არ აღემატება მოთხოვნილი შესყიდვის ობიექტი საჭიროებს?"
-                        />
-                      </Col>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="stock_purpose"
-                          label="იქმნება თუ არა მარაგი და რა მიზნით?"
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="delivery_address"
-                          label="მიწოდების ადგილი (მისამართი)"
-                        />
-                      </Col>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="brand_model"
-                          label="სპეციფიურობის გათვალისწინებით მიუთითეთ მარკა, მოდელი, ნიშანდება"
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="alternative"
-                          label="დასაშვებია თუ არა შესყიდის ობიექტის ალტერნატივა?"
-                        />
-                      </Col>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="competetive_price"
-                          label="მიუთითეთ ინფორმაცია მიმწოდებლის შესახებ, კონკურენტული ფასი"
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="who_pay_amount"
-                          label="ვინ ანაზღაურებს ამ თანხას?"
-                        />
-                      </Col>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="name_surname_of_employee"
-                          label="თანამშრომლის სახელი გვარი, რომელიც მარკეტში/საწოობში ჩაიბარებს ნივთს"
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="reason"
-                          label="რით არის განპირობებული შესყიდვის საჭიროება?"
-                        />
-                      </Col>
-                      <Col lg="6">
-                        <InputWithError
-                          formik={formik}
-                          name="planned_next_month"
-                          label="იგეგმება თუ არა უახლოეს 1 თვეში ანალოგიური პროდუქციის შესყიდვა?"
-                        />
-                      </Col>
-                    </Row>
-                    <FormGroup>
-                      <Label for="file">დამატებითი დოკუმენტი</Label>
-                      <Input
-                        type="file"
-                        name="file"
-                        id="file"
-                        onChange={(event) => {
-                          const file = event.currentTarget.files[0];
-                          console.log('Selected file:', file); // Debug log
-                          formik.setFieldValue('file', file);
-                        }}
-                      />
-                      <small className="form-text text-muted">
-                        დაშვებული ფორმატები: PDF, DOC, DOCX, XLS, XLSX. მაქსიმალური ზომა: 10MB
-                      </small>
-                    </FormGroup>
-                    <div className="d-flex justify-content-end">
-                      <Button type="submit" color="primary">
-                        გაგზავნა
-                      </Button>
+                        <Label check>არა</Label>
+                      </FormGroup>
                     </div>
-                  </Form>
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
+                  </div>
+                  <InputWithError
+                    formik={formik}
+                    name="requested_arrival_date"
+                    label="მოთხოვნის მიღების თარიღი"
+                    type="date"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  {formik.values.products.map((product, index) => (
+                    <ProductForm
+                      key={index}
+                      formik={formik}
+                      index={index}
+                      isExpanded={expandedProducts.includes(index)}
+                      onToggle={() => toggleProduct(index)}
+                      onRemove={removeProduct}
+                    />
+                  ))}
+                </div>
+
+                <div>
+                  <Button type="button" color="primary" onClick={addProduct}>
+                    პროდუქტის დამატება
+                  </Button>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button type="submit" color="primary" disabled={isLoading}>
+                    {isLoading ? "იგზავნება..." : "გაგზავნა"}
+                  </Button>
+                </div>
+              </div>
+            </Form>
+          </div>
+        </div>
       </div>
       <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

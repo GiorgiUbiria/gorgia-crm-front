@@ -1,19 +1,18 @@
 import React from "react"
 import { Navigate } from "react-router-dom"
 import { usePermissions } from "hooks/usePermissions"
+import { checkAccess } from "utils/accessControl"
 
-const PermissionRoute = ({ permission, departmentId, children }) => {
-  const { hasPermission, isAdmin } = usePermissions()
+const RoleRoute = ({ requiredRoles = [], requiredDepartmentIds = [], children }) => {
+  const { user } = usePermissions()
 
-  if (isAdmin) {
-    return <React.Fragment>{children}</React.Fragment>
-  }
+  const hasAccess = checkAccess(user, requiredRoles, requiredDepartmentIds)
 
-  if (permission && !hasPermission(permission, departmentId)) {
+  if (!hasAccess) {
     return <Navigate to="/dashboard" replace />
   }
 
-  return <React.Fragment>{children}</React.Fragment>
+  return <>{children}</>
 }
 
-export default PermissionRoute
+export default RoleRoute

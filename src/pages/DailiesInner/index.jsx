@@ -4,11 +4,8 @@ import { getRegularDailies, getMyRegularDailies } from "services/daily"
 import { getDepartments } from "services/auth"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
-import { Row, Col } from "reactstrap"
+import { usePermissions } from "hooks/usePermissions"
 import AddDailyModal from "./AddDailyModal"
-import Breadcrumbs from "components/Common/Breadcrumb"
-import useUserRoles from "hooks/useUserRoles"
 import * as XLSX from "xlsx"
 
 const INITIAL_STATE = {
@@ -24,9 +21,8 @@ const PAGE_SIZE_OPTIONS = [5, 10, 15, 20]
 
 const DailiesInner = () => {
   const navigate = useNavigate()
-  const isAdmin = useIsAdmin()
+  const { isAdmin, isDepartmentHead } = usePermissions()
   const user = JSON.parse(sessionStorage.getItem("authUser"))
-  const userRoles = useUserRoles()
 
   const [state, setState] = useState(INITIAL_STATE)
   const {
@@ -49,11 +45,12 @@ const DailiesInner = () => {
 
       let dailiesResponse
 
-      if (userRoles.includes("admin") || userRoles.includes("department_head")) {
+      if (isAdmin || isDepartmentHead) {
         dailiesResponse = await getRegularDailies(params)
       } else {
         dailiesResponse = await getMyRegularDailies(params)
       }
+
       updateState({
         dailiesData: {
           data: dailiesResponse.dailies,
@@ -70,7 +67,7 @@ const DailiesInner = () => {
   const fetchDepartments = async () => {
     try {
       const response = await getDepartments()
-      updateState({ departments: response.data.departments })
+      updateState({ departments: response.data.data })
     } catch (error) {
       console.error("Error fetching departments:", error)
     }
@@ -134,7 +131,6 @@ const DailiesInner = () => {
 
   const filterOptions = useMemo(() => {
     const departmentOptions = departments
-      .filter(dept => dept.type === "department")
       .map(department => ({
         value: department.name,
         label: department.name,
@@ -194,36 +190,34 @@ const DailiesInner = () => {
   )
 
   return (
-    <div className="page-content bg-gray-100">
-      <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
-        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="დეპარტამენტის დღის შედეგები" />
-
-        <div className="bg-white rounded-xl shadow p-6">
-          <Row className="mb-3">
-            <Col className="d-flex justify-content-between align-items-center">
-              <div style={{ display: "flex", gap: "1rem" }}>
-                {isAdmin && (
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={exportToExcel}
-                  >
-                    <i className="bx bx-export me-1"></i>
-                    Excel გადმოწერა
-                  </Button>
-                )}
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="p-4 sm:p-6">
+          {/* Action Buttons */}
+          <div className="mb-4">
+            <div className="flex gap-3">
+              {isAdmin && (
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   color="primary"
-                  onClick={() => updateState({ addDailyModal: true })}
+                  onClick={exportToExcel}
                 >
-                  <i className="bx bx-plus me-1"></i>
-                  შეფასების დამატება
+                  <i className="bx bx-export me-1"></i>
+                  Excel გადმოწერა
                 </Button>
-              </div>
-            </Col>
-          </Row>
+              )}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => updateState({ addDailyModal: true })}
+              >
+                <i className="bx bx-plus me-1"></i>
+                შეფასების დამატება
+              </Button>
+            </div>
+          </div>
 
+          {/* Table */}
           <MuiTable
             columns={columns}
             data={transformedDailies}
@@ -242,16 +236,16 @@ const DailiesInner = () => {
             rowClassName="cursor-pointer hover:bg-gray-50"
           />
         </div>
-
-        <AddDailyModal
-          isOpen={addDailyModal}
-          toggle={() => updateState({ addDailyModal: false })}
-          onDailyAdded={fetchDailies}
-          departmentId={user.department_id}
-          type="department_head"
-        />
       </div>
-    </div>
+
+      <AddDailyModal
+        isOpen={addDailyModal}
+        toggle={() => updateState({ addDailyModal: false })}
+        onDailyAdded={fetchDailies}
+        departmentId={user.department_id}
+        type="department_head"
+      />
+    </>
   )
 }
 

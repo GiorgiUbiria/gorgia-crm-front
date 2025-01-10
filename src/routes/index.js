@@ -1,5 +1,6 @@
 import React from "react"
 import { Navigate } from "react-router-dom"
+import AccessRoute from "./AccessRoute"
 
 import AdminPage from "pages/AdminPage"
 import BusinessPage from "pages/Applications/BusinessTrip/BusinessPage"
@@ -17,13 +18,13 @@ import Dailies from "pages/Dailies/index.jsx"
 import Daily from "pages/Daily"
 import DailiesInner from "pages/DailiesInner/index.jsx"
 import DailyInner from "pages/DailyInner"
-import FarmWork from "pages/FarmWork"
 import HeadPage from "pages/HeadPage"
 import HrPage from "pages/HrDocuments/HrPage"
 import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import UserHrDocuments from "pages/HrDocuments/UserHrDocuments"
 import JobDetails from "pages/JobPages/JobDetails"
-
+import FarmTaskDetails from "pages/FarmJobPages/JobDetails"
+import FarmTaskList from "pages/FarmJobPages/JobList"
 // Request Agreement
 import AgreementRequest from "pages/Agreements/AgreementRequest"
 
@@ -66,13 +67,16 @@ import Register from "../pages/Authentication/Register"
 import Calendar from "../pages/Calendar/index"
 import Dashboard from "../pages/Dashboard/index"
 import TaskList from "../pages/JobPages/JobList"
-import FarmTaskDetails from "../pages/FarmDetails"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
 import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 import CreateNote from "pages/NotesEditor/CreateNote"
 import EditNote from "pages/NotesEditor/EditNote"
 import ChatBox from "pages/Chat/ChatBox"
+
+const withAccessRoute = (component, conditions = "") => (
+  <AccessRoute conditions={conditions}>{component}</AccessRoute>
+)
 
 const dashboardRoutes = {
   path: "/dashboard",
@@ -89,21 +93,25 @@ const adminRoutes = {
   children: {
     dashboard: {
       path: "/admin/dashboard",
-      component: <AdminPage />,
-      permission: "admin.access",
+      component: withAccessRoute(
+        <AdminPage />,
+        "role:admin|role:department_head|role:hr_member"
+      ),
     },
     approvals: {
       path: "/admin/approvals",
-      component: <HeadPage />,
-      permission: "admin.approvals",
-    },
-    visitors: {
-      path: "/admin/visitors",
-      component: <VisitorsTraffic />,
+      component: withAccessRoute(<HeadPage />, "role:admin"),
     },
     archive: {
       path: "/admin/archive",
-      component: <ArchivePage />,
+      component: withAccessRoute(<ArchivePage />, "role:admin"),
+    },
+    visitors: {
+      path: "/admin/visitors",
+      component: withAccessRoute(
+        <VisitorsTraffic />,
+        "role:admin|role:department_head|role:hr_member"
+      ),
     },
   },
 }
@@ -189,15 +197,17 @@ const hrRoutes = {
         },
         approve: {
           path: "/hr/documents/approve",
-          component: <HrPageApprove />,
-          permission: "hr-documents.manage",
-          departmentId: 8,
+          component: withAccessRoute(
+            <HrPageApprove />,
+            "role:admin|role:department_head|department:8"
+          ),
         },
         archive: {
           path: "/hr/documents/archive",
-          component: <HrPageArchive />,
-          permission: "hr-documents.view",
-          departmentId: 8,
+          component: withAccessRoute(
+            <HrPageArchive />,
+            "role:admin|role:department_head|department:8"
+          ),
         },
         myRequests: {
           path: "/hr/documents/my-requests",
@@ -321,7 +331,7 @@ const supportRoutes = {
     },
     farmTasks: {
       path: "/support/farm-tasks",
-      component: <FarmWork />,
+      component: <FarmTaskList />,
     },
     farmTaskDetails: {
       path: "/support/farm-tasks/:id",
@@ -384,12 +394,10 @@ const toolsRoutes = {
     dailyResults: {
       path: "/tools/daily-results",
       component: <Dailies />,
-      permission: "daily-results.view-own",
     },
     dailyResultDetails: {
       path: "/tools/daily-results/:id",
       component: <Daily />,
-      permission: "daily-results.view-own",
     },
     innerDailyResults: {
       path: "/tools/inner-daily-results",
@@ -407,7 +415,7 @@ const flattenRoutes = routeObj => {
 
   const addRoute = route => {
     const { children, ...routeData } = route
-    if (routeData.path) {
+    if (routeData.path && routeData.component) {
       routes.push(routeData)
     }
     if (children) {

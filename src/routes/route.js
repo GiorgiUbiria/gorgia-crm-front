@@ -1,24 +1,24 @@
 import React from "react"
 import { Navigate } from "react-router-dom"
 import useAuth from "hooks/useAuth"
-import PermissionRoute from "./PermissionRoute"
+import RoleRoute from "./PermissionRoute"
 
-const Authmiddleware = ({ permission, departmentId, children }) => {
+const Authmiddleware = ({ requiredRoles = [], requiredDepartmentIds = [], children }) => {
   const isAuth = useAuth()
 
   if (!isAuth) {
     return <Navigate to="/auth/login" />
   }
 
-  if (permission) {
+  if (requiredRoles.length > 0 || requiredDepartmentIds.length > 0) {
     return (
-      <PermissionRoute permission={permission} departmentId={departmentId}>
+      <RoleRoute requiredRoles={requiredRoles} requiredDepartmentIds={requiredDepartmentIds}>
         {children}
-      </PermissionRoute>
+      </RoleRoute>
     )
   }
 
-  return <React.Fragment>{children}</React.Fragment>
+  return <>{children}</>
 }
 
 export default Authmiddleware

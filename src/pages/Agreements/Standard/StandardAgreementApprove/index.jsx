@@ -6,12 +6,9 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Card,
-  CardBody,
   Spinner,
 } from "reactstrap"
 import Button from "@mui/material/Button"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import {
   getDepartmentAgreements,
   updateAgreementStatus,
@@ -80,12 +77,12 @@ const StandardAgreementApprove = () => {
       setIsProcessing(true)
     }
 
-    console.log(additionalData, status, agreementId)
-
     try {
-      const response = await updateAgreementStatus(agreementId, status, additionalData)
-
-      console.log(response)
+      const response = await updateAgreementStatus(
+        agreementId,
+        status,
+        additionalData
+      )
 
       setAgreements(prevAgreements =>
         prevAgreements.map(agreement =>
@@ -130,7 +127,7 @@ const StandardAgreementApprove = () => {
       return
     }
     await handleUpdateStatus(agreementId, type, {
-      rejection_reason: type === "rejected" ? rejectionComment : null
+      rejection_reason: type === "rejected" ? rejectionComment : null,
     })
     setRejectionComment("")
     handleModalClose()
@@ -475,37 +472,19 @@ const StandardAgreementApprove = () => {
   }, [])
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ხელშეკრულებების ვიზირება"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={["contragent.name", "requested_by"]}
-                    filterOptions={filterOptions}
-                    renderRowDetails={renderRowDetails}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-          <ToastContainer />
-        </div>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["contragent.name", "requested_by"]}
+          filterOptions={filterOptions}
+          renderRowDetails={renderRowDetails}
+        />
+        <ToastContainer />
       </div>
 
       <Modal isOpen={confirmModal.isOpen} toggle={handleModalClose}>
@@ -558,7 +537,7 @@ const StandardAgreementApprove = () => {
           </Button>
         </ModalFooter>
       </Modal>
-    </React.Fragment>
+    </>
   )
 }
 

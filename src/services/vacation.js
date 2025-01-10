@@ -4,9 +4,7 @@ export const getVacationList = async () => {
   return defaultInstance.get("/api/vacation/list")
 }
 
-export const createVacation = async data => {
-  return defaultInstance.post("/api/vacation/create", data)
-}
+
 
 export const getPurchase = async data => {
   return defaultInstance.get("/api/vacation/create", data)

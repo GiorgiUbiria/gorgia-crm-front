@@ -6,36 +6,22 @@ const TaskNotification = () => {
   const [connected, setConnected] = useState(false)
 
   useEffect(() => {
-    console.log("Setting up WebSocket listener for IT tasks")
-
-    // Listen for connection success
     echo.connector.pusher.connection.bind("connected", () => {
-      console.log("Successfully connected to Reverb")
       setConnected(true)
     })
 
-    // Listen for connection errors
     echo.connector.pusher.connection.bind("error", error => {
       console.error("Failed to connect to Reverb:", error)
       setConnected(false)
     })
 
-    // Subscribe to the channel
     const channel = echo.private("department.5")
 
-    // Debug channel subscription
-    channel.subscribed(() => {
-      console.log("Successfully subscribed to it-tasks channel")
-    })
+    channel.subscribed(() => {})
 
-    channel.error(error => {
-      console.error("Channel subscription error:", error)
-    })
+    channel.error(() => {})
 
-    // Listen for events
     channel.listen(".it.task.added", data => {
-      console.log("New task notification received:", data)
-
       const notification = {
         id: Date.now(),
         title: data.task.task_title,
@@ -52,13 +38,11 @@ const TaskNotification = () => {
     })
 
     return () => {
-      console.log("Cleaning up WebSocket connection")
       channel.unsubscribe()
       echo.disconnect()
     }
   }, [])
 
-  // Add a connection status indicator (optional)
   return (
     <>
       {!connected && (

@@ -49,7 +49,7 @@ const Register = () => {
     const fetchDepartments = async () => {
       try {
         const response = await getPublicDepartments()
-        setDepartments(response.data?.departments || response.data || [])
+        setDepartments(response.data?.data || [])
       } catch (error) {
         console.error("დეპარტამენტები ვერ მოიძებნა: ", error)
         setDepartments([])
@@ -88,7 +88,12 @@ const Register = () => {
           /^[\u10A0-\u10FF]{2,30}$/,
           "გვარი უნდა შეიცავდეს მხოლოდ ქართულ ასოებს (2-30 სიმბოლო)"
         ),
-      password: Yup.string().required("გთხოვთ შეიყვანოთ პაროლი"),
+      password: Yup.string()
+        .required("გთხოვთ შეიყვანოთ პაროლი")
+        .matches(
+          /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/,
+          "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს, რომელშიც არის ერთი ციფრი, ერთი დიდი ასო, ერთი პატარა ასო და ერთი სპეციალური სიმბოლო"
+        ),
       department_id: Yup.number().required("გთხოვთ აირჩიოთ დეპარტამენტი"),
       position: Yup.string().required("გთხოვთ ჩაწეროთ პოზიცია"),
       id_number: Yup.number().required("გთხოვთ ჩაწეროთ პირადი ნომერი"),
@@ -98,28 +103,32 @@ const Register = () => {
         .min(9, "ტელეფონის ნომერი უნდა იყოს მინიმუმ 9 ციფრი"),
     }),
     onSubmit: async values => {
-      try {
-        const response = await registerUser({
-          ...values,
-          department_id: Number(values.department_id),
-        })
+      if (validation.isValid) {
+        try {
+          const response = await registerUser({
+            ...values,
+            department_id: Number(values.department_id),
+          })
 
-        if (response.status === 200) {
-          toast.success(
-            "მომხმარებელი წარმატებით დარეგისტრირდა! გთხოვთ დაელოდოთ ადმინისტრატორის დადასტურებას."
-          )
-          setTimeout(() => {
-            navigate("/auth/login")
-          }, 2000)
+          if (response.status === 200) {
+            toast.success(
+              "მომხმარებელი წარმატებით დარეგისტრირდა! გთხოვთ დაელოდოთ ადმინისტრატორის დადასტურებას."
+            )
+            setTimeout(() => {
+              navigate("/auth/login")
+            }, 2000)
+          }
+        } catch (error) {
+          const errorMessage = error.response?.data
+            ? typeof error.response.data === "object"
+              ? Object.values(error.response.data).flat().join(", ")
+              : error.response.data.message
+            : "რეგისტრაცია ვერ მოხერხდა. გთხოვთ სცადოთ თავიდან."
+
+          toast.error("რეგისტრაცია ვერ მოხერხდა: " + errorMessage)
         }
-      } catch (error) {
-        const errorMessage = error.response?.data
-          ? typeof error.response.data === "object"
-            ? Object.values(error.response.data).flat().join(", ")
-            : error.response.data.message
-          : "რეგისტრაცია ვერ მოხერხდა. გთხოვთ სცადოთ თავიდან."
-
-        toast.error("რეგისტრაცია ვერ მოხერხდა: " + errorMessage)
+      } else {
+        toast.error("გთხოვთ შეავსეთ ყველა ველი სწორად")
       }
     },
   })

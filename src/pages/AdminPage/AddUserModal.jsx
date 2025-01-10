@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import {
   Modal,
   ModalHeader,
@@ -9,12 +9,13 @@ import {
   Label,
   Input,
   FormFeedback,
+  Button,
 } from "reactstrap"
-import Button from "@mui/material/Button"
-import { createUser, getPublicDepartments } from "services/admin/department"
-import { getRoles, updateUserRoles } from "services/role"
 import Autocomplete from "@mui/material/Autocomplete"
 import TextField from "@mui/material/TextField"
+import { useCreateUser } from "../../queries/admin"
+import { getRoles } from "services/role"
+import { getPublicDepartments } from "services/admin/department"
 
 const initialFormData = {
   name: "",
@@ -32,6 +33,7 @@ const initialFormData = {
 }
 
 const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
+  const { mutateAsync: createUserMutation } = useCreateUser()
   const [formData, setFormData] = useState(initialFormData)
   const [departments, setDepartments] = useState([])
   const [availableRoles, setAvailableRoles] = useState([])
@@ -41,7 +43,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
     const fetchDepartments = async () => {
       try {
         const response = await getPublicDepartments()
-        setDepartments(response.data?.departments || response.data || [])
+        setDepartments(response.data?.data || response.data || [])
       } catch (error) {
         console.error("Error fetching departments:", error)
       }
@@ -53,7 +55,6 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
     const fetchRoles = async () => {
       try {
         const rolesResponse = await getRoles()
-        console.log("All roles: ", rolesResponse)
         setAvailableRoles(rolesResponse.data.roles || [])
       } catch (error) {
         console.error("Error fetching roles:", error)
@@ -62,20 +63,13 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
     fetchRoles()
   }, [])
 
-  const handleChange = useCallback(e => {
+  const handleChange = e => {
     const { name, value } = e.target
-    setFormData(prevData => ({
-      ...prevData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value,
     }))
-  }, [])
-
-  const handleRoleChange = useCallback((event, value) => {
-    setFormData(prevData => ({
-      ...prevData,
-      roles: value.map(role => role.id),
-    }))
-  }, [])
+  }
 
   const validateForm = () => {
     const newErrors = {}
@@ -84,51 +78,58 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
     const phoneRegex = /^[0-9]{9,}$/
     const idNumberRegex = /^[0-9]+$/
 
-    if (!formData.name.trim()) {
-      newErrors.name = "სახელი is required."
+    if (!formData.name?.trim()) {
+      newErrors.name = "სახელი სავალდებულოა."
     } else if (!georgianRegex.test(formData.name)) {
       newErrors.name =
         "სახელი უნდა შეიცავდეს მხოლოდ ქართულ ასოებს (2-30 სიმბოლო)."
     }
 
-    if (!formData.sur_name.trim()) {
-      newErrors.sur_name = "გვარი is required."
+    if (!formData.sur_name?.trim()) {
+      newErrors.sur_name = "გვარი სავალდებულოა."
     } else if (!georgianRegex.test(formData.sur_name)) {
       newErrors.sur_name =
         "გვარი უნდა შეიცავდეს მხოლოდ ქართულ ასოებს (2-30 სიმბოლო)."
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = "ელ-ფოსტა არის სავალდებულო."
+    if (!formData.email?.trim()) {
+      newErrors.email = "ელ-ფოსტა სავალდებულოა."
     } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "ელ-ფოსტა არის სავალდებულო."
+      newErrors.email = "ელ-ფოსტა სავალდებულოა."
     } else if (!formData.email.toLowerCase().endsWith("@gorgia.ge")) {
       newErrors.email = "ელ-ფოსტა უნდა მთავრდებოდეს @gorgia.ge-ით."
     }
 
-    if (!formData.password.trim()) {
-      newErrors.password = "პაროლი არის სავალდებულო."
+    if (!formData.password?.trim()) {
+      newErrors.password = "პაროლი სავალდებულოა."
+    } else if (formData.password.length < 8) {
+      newErrors.password = "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს."
+    } else if (
+      !formData.password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/)
+    ) {
+      newErrors.password =
+        "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს, რომელშიც არის ერთი ციფრი, ერთი დიდი ასო, ერთი პატარა ასო და ერთი სპეციალური სიმბოლო."
     }
 
-    if (!formData.mobile_number.trim()) {
-      newErrors.mobile_number = "მობილურის ნომერი არის სავალდებულო."
+    if (!formData.mobile_number?.trim()) {
+      newErrors.mobile_number = "მობილურის ნომერი სავალდებულოა."
     } else if (!phoneRegex.test(formData.mobile_number)) {
       newErrors.mobile_number =
         "მობილურის ნომერი უნდა შეიცავდეს მხოლოდ ციფრებს და მინიმუმ 9 ციფრს."
     }
 
-    if (!formData.id_number.trim()) {
-      newErrors.id_number = "პირადი ნომერი არის სავალდებულო."
+    if (!formData.id_number?.trim()) {
+      newErrors.id_number = "პირადი ნომერი სავალდებულოა."
     } else if (!idNumberRegex.test(formData.id_number)) {
       newErrors.id_number = "პირადი ნომერი უნდა შეიცავდეს მხოლოდ ციფრებს."
     }
 
     if (!formData.department_id) {
-      newErrors.department_id = "დეპარტამენტი არის სავალდებულო."
+      newErrors.department_id = "დეპარტამენტი სავალდებულოა."
     }
 
-    if (!formData.position.trim()) {
-      newErrors.position = "პოზიცია არის სავალდებულო."
+    if (!formData.position?.trim()) {
+      newErrors.position = "პოზიცია სავალდებულოა."
     }
 
     if (!formData.roles || formData.roles.length === 0) {
@@ -142,6 +143,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
   const handleSubmit = async e => {
     e.preventDefault()
     if (!validateForm()) return
+
     try {
       const userData = {
         name: formData.name,
@@ -158,15 +160,14 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
         roles: formData.roles,
       }
 
-      await createUser(userData)
-      await updateUserRoles(userData.id, formData.roles)
-
+      await createUserMutation(userData)
       onUserAdded()
       toggle()
       setFormData(initialFormData)
       setErrors({})
     } catch (error) {
       console.error("Error creating user:", error)
+      alert("მომხმარებლის შექმნა ვერ მოხერხდა")
     }
   }
 
@@ -357,7 +358,12 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
               value={availableRoles.filter(role =>
                 formData.roles.includes(role.id)
               )}
-              onChange={handleRoleChange}
+              onChange={(event, value) => {
+                setFormData(prevData => ({
+                  ...prevData,
+                  roles: value.map(role => role.id),
+                }))
+              }}
               renderInput={params => (
                 <TextField
                   {...params}
@@ -367,7 +373,7 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
                   helperText={
                     errors.roles
                       ? errors.roles
-                      : "მინიმუმ ერთი როლის მითითება აუცილებელია"
+                      : "მინიმუმ ერთი რროლის მითითება აუცილებელია"
                   }
                 />
               )}
@@ -379,11 +385,11 @@ const AddUserModal = ({ isOpen, toggle, onUserAdded }) => {
             )}
           </FormGroup>
         </ModalBody>
-        <ModalFooter className="d-flex gap-2">
-          <Button onClick={toggle} color="error">
+        <ModalFooter>
+          <Button color="secondary" onClick={toggle}>
             გაუქმება
           </Button>
-          <Button type="submit" variant="contained" color="primary">
+          <Button color="primary" type="submit">
             დამატება
           </Button>
         </ModalFooter>

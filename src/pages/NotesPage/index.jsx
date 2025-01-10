@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom"
 import { Container, Row, Col, Button, Input } from "reactstrap"
 import { debounce } from "lodash"
 import { getNoteList, deleteNote } from "../../services/note"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import NoteCard from "../../components/NoteCard"
 import DeleteModal from "../../components/DeleteModal"
 import { Box, CircularProgress, Typography } from "@mui/material"
@@ -118,27 +117,22 @@ const NotesPage = () => {
   }
 
   return (
-    <Container fluid className="page-content">
-      <Breadcrumbs title="ადმინი" breadcrumbItem="ჩემი ჩანაწერები" />
-
+    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <Row className="mb-4">
-        <Col md={{ size: 6, offset: 6 }} className="text-right">
-          <Box display="flex" justifyContent="flex-end" width="100%">
-            <Input
-              type="text"
-              placeholder="ძებნა..."
-              onChange={handleSearchChange}
-              style={{ maxWidth: "250px", marginRight: "10px" }}
-            />
-            <Link to="/tools/notes/create">
-              <Button color="primary" className="d-flex align-items-center">
-                დამატება
-              </Button>
-            </Link>
-          </Box>
-        </Col>
+        <Box display="flex" justifyContent="flex-end" width="100%">
+          <Input
+            type="text"
+            placeholder="ძებნა..."
+            onChange={handleSearchChange}
+            style={{ maxWidth: "250px", marginRight: "10px" }}
+          />
+          <Link to="/tools/notes/create">
+            <Button color="primary" className="d-flex align-items-center">
+              დამატება
+            </Button>
+          </Link>
+        </Box>
       </Row>
-
       <Row>
         {filteredNotes.length === 0 ? (
           <Col className="text-center pt-5">
@@ -171,13 +165,12 @@ const NotesPage = () => {
           ))
         )}
       </Row>
-
       <DeleteModal
         isOpen={deleteModalOpen}
         toggle={() => setDeleteModalOpen(!deleteModalOpen)}
         onDelete={handleDeleteNote}
       />
-    </Container>
+    </div>
   )
 }
 

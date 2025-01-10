@@ -23,3 +23,8 @@ export const updateUserIdNumber = async data => {
 export const fetchUser = async () => {
   return defaultInstance.get("/api/user")
 }
+
+export const fetchUsers = async () => {
+  const response = await defaultInstance.get("/api/admin/users")
+  return response
+}

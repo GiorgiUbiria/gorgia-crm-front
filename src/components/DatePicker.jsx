@@ -26,7 +26,6 @@ const DatePicker = ({startDate, handleStartedDate, initialValue = null}) => {
     const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
     if (datePattern.test(value)) {
       const formattedDate = formatToDateInput(value);
-      console.log('y-m-d' + formattedDate)
       handleStartedDate(data => ({...data, started_date: formattedDate}))
     }
   };

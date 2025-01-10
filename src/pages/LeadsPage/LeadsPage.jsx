@@ -5,7 +5,6 @@ import {
   Label,
   Input,
   Col,
-  Container,
   Modal,
   ModalHeader,
   ModalBody,
@@ -16,7 +15,6 @@ import {
   updateLead,
   deleteLead,
 } from "../../services/leadsService"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
 import Dialog from "@mui/material/Dialog"
@@ -240,124 +238,119 @@ const LeadsPage = () => {
   }
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <Container fluid>
-          <Breadcrumbs title="ლიდები" breadcrumbItem="კორპორატიული" />
-          <Row className="mb-3">
-            <Col className="d-flex justify-content-end">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleModalOpen("add")}
-              >
-                <i className="bx bx-plus me-1"></i>
-                ლიდის დამატება
-              </Button>
-            </Col>
-          </Row>
-          <Row>
-            <MuiTable
-              data={transformedLeads}
-              columns={columns}
-              filterOptions={filterOptions}
-              enableSearch={true}
-              searchableFields={["name", "request", "responsible_person"]}
-              initialPageSize={10}
-            />
-          </Row>
-          <Dialog
-            open={confirmModal.isOpen}
-            onClose={() =>
+    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <Row className="mb-3">
+        <Col className="d-flex justify-content-end">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleModalOpen("add")}
+          >
+            <i className="bx bx-plus me-1"></i>
+            ლიდის დამატება
+          </Button>
+        </Col>
+      </Row>
+      <Row>
+        <MuiTable
+          data={transformedLeads}
+          columns={columns}
+          filterOptions={filterOptions}
+          enableSearch={true}
+          searchableFields={["name", "request", "responsible_person"]}
+          initialPageSize={10}
+        />
+      </Row>
+      <Dialog
+        open={confirmModal.isOpen}
+        onClose={() =>
+          setConfirmModal({ isOpen: false, type: null, leadId: null })
+        }
+      >
+        <DialogTitle>{"ლიდის წაშლა"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            დარწმუნებული ხართ, რომ გსურთ ლიდის წაშლა?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() =>
               setConfirmModal({ isOpen: false, type: null, leadId: null })
             }
+            color="primary"
           >
-            <DialogTitle>{"ლიდის წაშლა"}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                დარწმუნებული ხართ, რომ გსურთ ლიდის წაშლა?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
+            გაუქმება
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            წაშლა
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Modal isOpen={modal} toggle={() => setModal(!modal)}>
+        <ModalHeader toggle={() => setModal(!modal)}>
+          {isEdit ? "რედაქტირება" : "დამატება"}
+        </ModalHeader>
+        <ModalBody>
+          <Form onSubmit={handleSaveLead}>
+            <Label for="first_name">სახელი</Label>
+            <Input
+              id="first_name"
+              name="first_name"
+              defaultValue={lead ? lead.name.split(" ")[0] : ""}
+              required
+            />
+            <Label for="last_name">გვარი</Label>
+            <Input
+              id="last_name"
+              name="last_name"
+              defaultValue={lead ? lead.name.split(" ")[1] : ""}
+              required
+            />
+            <Label for="request">მოთხოვნა</Label>
+            <Input
+              id="request"
+              name="request"
+              defaultValue={lead ? lead.request : ""}
+              required
+            />
+            <Label for="responsible_person">პასუხისმგებელი პირი</Label>
+            <Input
+              id="responsible_person"
+              name="responsible_person"
+              defaultValue={lead ? lead.responsible_person : ""}
+              required
+            />
+            <Label for="status">სტატუსი</Label>
+            <Input
+              type="select"
+              name="status"
+              defaultValue={lead ? lead.status : "Active"}
+            >
+              <option value="Active">აქტიური</option>
+              <option value="Closed">დახურული</option>
+              <option value="Problem">პრობლემური</option>
+            </Input>
+            <Label for="comment">კომენტარი</Label>
+            <Input
+              type="textarea"
+              id="comment"
+              name="comment"
+              defaultValue={lead ? lead.comment : ""}
+            />
+            <Col style={{ textAlign: "right" }}>
               <Button
-                onClick={() =>
-                  setConfirmModal({ isOpen: false, type: null, leadId: null })
-                }
+                style={{ marginTop: "10px" }}
+                type="submit"
                 color="primary"
               >
-                გაუქმება
+                {isEdit ? "განახლება" : "დამატება"}
               </Button>
-              <Button onClick={handleConfirmDelete} color="error" autoFocus>
-                წაშლა
-              </Button>
-            </DialogActions>
-          </Dialog>
-          <Modal isOpen={modal} toggle={() => setModal(!modal)}>
-            <ModalHeader toggle={() => setModal(!modal)}>
-              {isEdit ? "რედაქტირება" : "დამატება"}
-            </ModalHeader>
-            <ModalBody>
-              <Form onSubmit={handleSaveLead}>
-                <Label for="first_name">სახელი</Label>
-                <Input
-                  id="first_name"
-                  name="first_name"
-                  defaultValue={lead ? lead.name.split(" ")[0] : ""}
-                  required
-                />
-                <Label for="last_name">გვარი</Label>
-                <Input
-                  id="last_name"
-                  name="last_name"
-                  defaultValue={lead ? lead.name.split(" ")[1] : ""}
-                  required
-                />
-                <Label for="request">მოთხოვნა</Label>
-                <Input
-                  id="request"
-                  name="request"
-                  defaultValue={lead ? lead.request : ""}
-                  required
-                />
-                <Label for="responsible_person">პასუხისმგებელი პირი</Label>
-                <Input
-                  id="responsible_person"
-                  name="responsible_person"
-                  defaultValue={lead ? lead.responsible_person : ""}
-                  required
-                />
-                <Label for="status">სტატუსი</Label>
-                <Input
-                  type="select"
-                  name="status"
-                  defaultValue={lead ? lead.status : "Active"}
-                >
-                  <option value="Active">აქტიური</option>
-                  <option value="Closed">დახურული</option>
-                  <option value="Problem">პრობლემური</option>
-                </Input>
-                <Label for="comment">კომენტარი</Label>
-                <Input
-                  type="textarea"
-                  id="comment"
-                  name="comment"
-                  defaultValue={lead ? lead.comment : ""}
-                />
-                <Col style={{ textAlign: "right" }}>
-                  <Button
-                    style={{ marginTop: "10px" }}
-                    type="submit"
-                    color="primary"
-                  >
-                    {isEdit ? "განახლება" : "დამატება"}
-                  </Button>
-                </Col>
-              </Form>
-            </ModalBody>
-          </Modal>
-        </Container>
-      </div>
-    </React.Fragment>
+            </Col>
+          </Form>
+        </ModalBody>
+      </Modal>
+    </div>
   )
 }
 

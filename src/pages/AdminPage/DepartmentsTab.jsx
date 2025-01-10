@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from "react"
-import { deleteDepartment } from "services/admin/department"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
+import { usePermissions } from "hooks/usePermissions"
 import Dialog from "@mui/material/Dialog"
 import DialogActions from "@mui/material/DialogActions"
 import DialogContent from "@mui/material/DialogContent"
@@ -12,9 +11,12 @@ import * as XLSX from "xlsx"
 import { Row, Col } from "reactstrap"
 import AddDepartmentModal from "./AddDepartmentModal"
 import EditDepartmentModal from "./EditDepartmentModal"
+import { useDeleteDepartment } from "../../queries/admin"
 
 const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
-  const isAdmin = useIsAdmin()
+  const { isAdmin } = usePermissions()
+  const { mutateAsync: deleteDepartmentMutation } = useDeleteDepartment()
+
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: null,
@@ -45,7 +47,7 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
   const handleConfirmAction = async () => {
     const { departmentId } = confirmModal
     try {
-      await deleteDepartment(departmentId)
+      await deleteDepartmentMutation(departmentId)
       onDepartmentDeleted()
       handleModalClose()
     } catch (error) {
@@ -58,58 +60,65 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
     setAddDepartmentModal(true)
   }
 
+  const handleEditClick = (department) => {
+    setEditDepartmentModal({
+      isOpen: true,
+      department: department,
+    });
+  };
+
+  const handleDeleteClick = (department) => {
+    handleModalOpen("delete", department.id);
+  };
+
   const columns = useMemo(
     () => [
       {
-        Header: "#",
-        accessor: "id",
-      },
-      {
         Header: "სახელი",
         accessor: "name",
-        disableSortBy: true,
-        Cell: ({ value }) => (
-          <div className="d-flex align-items-center">
-            <span className="user-name">{value}</span>
-          </div>
-        ),
+      },
+      {
+        Header: "აღწერა",
+        accessor: "description",
+        Cell: ({ value }) => value || "-",
       },
       {
         Header: "დეპარტამენტის უფროსი",
         accessor: "department_head",
-        disableSortBy: true,
+        Cell: ({ row }) => {
+          const head = row.original.department_head;
+          if (head) {
+            return head.name + (head.sur_name ? ` ${head.sur_name}` : '');
+          }
+          return "-";
+        },
       },
       {
         Header: "მოქმედებები",
         accessor: "actions",
-        disableSortBy: true,
-        Cell: ({ row }) =>
-          isAdmin && (
-            <div className="d-flex gap-2">
-              <Button
-                onClick={() =>
-                  setEditDepartmentModal({
-                    isOpen: true,
-                    department: row.original,
-                  })
-                }
-                color="primary"
-                variant="contained"
-              >
-                რედაქტირება
-              </Button>
-              <Button
-                onClick={() => handleModalOpen("delete", row.original.id)}
-                color="error"
-                variant="contained"
-              >
-                წაშლა
-              </Button>
-            </div>
-          ),
+        Cell: ({ row }) => (
+          <div className="d-flex gap-2">
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              onClick={() => handleEditClick(row.original)}
+            >
+              რედაქტირება
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              size="small"
+              onClick={() => handleDeleteClick(row.original)}
+            >
+              წაშლა
+            </Button>
+          </div>
+        ),
       },
     ],
-    []
+    [isAdmin]
   )
 
   const transformedDepartments = useMemo(() => {
@@ -118,11 +127,9 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
     return departments.map(department => ({
       id: department.id,
       name: department.name,
-      department_head: department.head
-        ? `${department.head.name || ""} ${
-            department.head.sur_name || ""
-          }`.trim() || "არ არის მითითებული"
-        : "არ არის მითითებული",
+      description: department.description,
+      department_head: department.department_head,
+      actions: null // placeholder for actions column
     }))
   }, [departments])
 
@@ -156,18 +163,26 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
     <div>
       <Row className="mb-3">
         <Col className="d-flex justify-content-end gap-2">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddDepartmentClick}
-          >
-            <i className="bx bx-plus me-1"></i>
-            დეპარტამენტის დამატება
-          </Button>
-          <Button variant="outlined" color="primary" onClick={exportToExcel}>
-            <i className="bx bx-download me-1"></i>
-            ექსპორტი Excel-ში
-          </Button>
+          {isAdmin && (
+            <>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddDepartmentClick}
+              >
+                <i className="bx bx-plus me-1"></i>
+                დეპარტამენტის დამატება
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={exportToExcel}
+              >
+                <i className="bx bx-download me-1"></i>
+                ექსპორტი Excel-ში
+              </Button>
+            </>
+          )}
         </Col>
       </Row>
 

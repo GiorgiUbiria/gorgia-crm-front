@@ -11,13 +11,11 @@ import {
   FormFeedback,
   Label,
 } from "reactstrap"
-import { useDispatch } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import withRouter from "components/Common/withRouter"
 import * as Yup from "yup"
 import { useFormik } from "formik"
-import { loginUser } from "../../services/auth"
-import { fetchUserSuccess } from "../../store/user/actions"
+import { useLogin } from "../../queries/auth"
 import { toast } from "react-toastify"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -28,8 +26,8 @@ import logo from "assets/images/logo.svg"
 const Login = () => {
   document.title = "Login | Gorgia LLC"
 
-  const dispatch = useDispatch()
   const navigate = useNavigate()
+  const { mutateAsync: login } = useLogin()
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -45,7 +43,7 @@ const Login = () => {
     }),
     onSubmit: async values => {
       try {
-        const res = await loginUser(values)
+        const res = await login(values)
 
         if (res.data.status !== 200) {
           toast.error("შეცდომა: " + res.data.message)
@@ -54,7 +52,6 @@ const Login = () => {
 
         sessionStorage.setItem("token", res.data.token)
         sessionStorage.setItem("authUser", JSON.stringify(res.data.user))
-        dispatch(fetchUserSuccess(res.data.user))
         toast.success("წარმატებით გაიარეთ ავტორიზაცია")
 
         setTimeout(() => {

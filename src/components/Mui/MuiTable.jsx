@@ -108,6 +108,7 @@ const MuiTable = ({
   searchableFields = [],
   renderRowDetails,
   filterOptions = [],
+  customSearchFunction,
 }) => {
   const [openRows, setOpenRows] = useState({})
   const [filterField, setFilterField] = useState("")
@@ -121,7 +122,7 @@ const MuiTable = ({
   const memoizedData = useMemo(() => data, [data])
   const memoizedColumns = useMemo(() => columns, [columns])
 
-  const customGlobalFilter = useCallback(
+  const defaultGlobalFilter = useCallback(
     (rows, columnIds, filterValue) => {
       if (!filterValue || !selectedSearchField) return rows
 
@@ -153,7 +154,7 @@ const MuiTable = ({
           },
         ],
       },
-      globalFilter: customGlobalFilter,
+      globalFilter: customSearchFunction || defaultGlobalFilter,
       autoResetPage: false,
       autoResetFilters: false,
       autoResetGlobalFilter: false,
@@ -294,42 +295,44 @@ const MuiTable = ({
                 flex: 1,
               }}
             >
-              <FormControl
-                size="small"
-                sx={{ minWidth: { xs: "100%", sm: 200 } }}
-              >
-                <InputLabel sx={{ color: "text.secondary" }}>
-                  საძიებო ველი
-                </InputLabel>
-                <Select
-                  value={selectedSearchField}
-                  onChange={e => setSelectedSearchField(e.target.value)}
-                  label="საძიებო ველი"
-                  sx={{
-                    "& .MuiSelect-icon": { color: "text.secondary" },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "divider",
-                    },
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "primary.main",
-                    },
-                  }}
+              {!customSearchFunction && (
+                <FormControl
+                  size="small"
+                  sx={{ minWidth: { xs: "100%", sm: 200 } }}
                 >
-                  {searchableFields.map(field => (
-                    <MenuItem key={field} value={field}>
-                      {columns.find(col => col.accessor === field)?.Header ||
-                        field}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  <InputLabel sx={{ color: "text.secondary" }}>
+                    საძიებო ველი
+                  </InputLabel>
+                  <Select
+                    value={selectedSearchField}
+                    onChange={e => setSelectedSearchField(e.target.value)}
+                    label="საძიებო ველი"
+                    sx={{
+                      "& .MuiSelect-icon": { color: "text.secondary" },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "divider",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "primary.main",
+                      },
+                    }}
+                  >
+                    {searchableFields.map(field => (
+                      <MenuItem key={field} value={field}>
+                        {columns.find(col => col.accessor === field)?.Header ||
+                          field}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
               <TextField
                 size="small"
                 variant="outlined"
                 value={searchTerm}
                 onChange={e => handleSearch(e.target.value)}
                 placeholder="ძიება..."
-                disabled={!selectedSearchField}
+                disabled={!customSearchFunction && !selectedSearchField}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -646,6 +649,7 @@ MuiTable.propTypes = {
       valueLabels: PropTypes.object,
     })
   ),
+  customSearchFunction: PropTypes.func,
 }
 
 export default React.memo(MuiTable)

@@ -106,8 +106,7 @@ const MakeComment = () => {
   useEffect(() => {
     if (window.Echo) {
       const channel = window.Echo.channel(`user.${userId}`)
-      channel.listen("ReplyMade", event => {
-        console.log("Event received:", event)
+      channel.listen("ReplyMade", () => {
       })
 
       return () => {

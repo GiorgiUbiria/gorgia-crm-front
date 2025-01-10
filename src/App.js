@@ -36,8 +36,8 @@ const App = () => {
             path={route.path}
             element={
               <Authmiddleware
-                permission={route.permission}
-                departmentId={route.departmentId}
+                requiredRoles={route.requiredRoles}
+                requiredDepartmentIds={route.requiredDepartmentIds}
               >
                 <Layout>{route.component}</Layout>
               </Authmiddleware>

@@ -13,15 +13,27 @@ export const getDepartmentMembers = async id => {
 }
 
 export const createDepartment = async data => {
-  return defaultInstance.post("/api/admin/department", data)
+  const { name, description } = data
+  return defaultInstance.post("/api/admin/department", { name, description })
+}
+
+export const updateDepartment = async departmentData => {
+  const { id, name, description } = departmentData
+  return defaultInstance.put(
+    `/api/admin/department/${id}/update`,
+    { name, description }
+  )
+}
+
+export const assignHead = async (departmentId, userId) => {
+  return defaultInstance.post("/api/admin/department/assign-head", {
+    department_id: departmentId,
+    user_id: userId
+  })
 }
 
 export const deleteDepartment = async id => {
   return defaultInstance.delete("/api/admin/department/" + id + "/delete")
-}
-
-export const assignHead = async data => {
-  return defaultInstance.post("/api/admin/department/assign-head", data)
 }
 
 export const getUsers = async () => {
@@ -38,13 +50,6 @@ export const updateUserById = async (id, data) => {
 
 export const createUser = async data => {
   return defaultInstance.post("/api/admin/create-user", data)
-}
-
-export const updateDepartment = async departmentData => {
-  return defaultInstance.put(
-    `/api/admin/department/${departmentData.id}/update`,
-    departmentData
-  )
 }
 
 export const approveDepartmentMember = async (departmentId, userId) => {

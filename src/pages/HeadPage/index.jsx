@@ -1,6 +1,5 @@
 import React, { useState } from "react"
 import {
-  Breadcrumbs,
   Dialog,
   DialogContent,
   DialogContentText,
@@ -12,7 +11,6 @@ import {
   NavLink,
   TabContent,
   TabPane,
-  Container,
   Dropdown,
   DropdownToggle,
   DropdownMenu,
@@ -37,11 +35,7 @@ const HeadPage = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const toggleDropdown = () => setDropdownOpen(prevState => !prevState)
-
-  const closeModal = () => {
-    setModalIsOpen(false)
-  }
-
+  const closeModal = () => setModalIsOpen(false)
   const toggleTab = tab => {
     if (activeTab !== tab) {
       setActiveTab(tab)
@@ -80,158 +74,173 @@ const HeadPage = () => {
   }
 
   return (
-    <div className="page-content">
-      <div className="container-fluid">
-        <Breadcrumbs title="Admin" breadcrumbItem="Daily Report" />
-        <Container fluid>
-          <div className="vacation-dashboard-container">
-            <div className="container-fluid">
-              <Nav tabs className="nav-tabs-custom nav-justified w-100">
-                <NavItem>
-                  <NavLink
-                    style={{ cursor: "pointer" }}
-                    className={classnames({ active: activeTab === "1" })}
-                    onClick={() => {
-                      toggleTab("1")
-                    }}
-                  >
-                    ხელშეკრულებები
-                  </NavLink>
-                </NavItem>
-                <NavItem>
-                  <NavLink
-                    style={{ cursor: "pointer" }}
-                    className={classnames({ active: activeTab === "2" })}
-                    onClick={() => {
-                      toggleTab("2")
-                    }}
-                  >
-                    მივლინებები
-                  </NavLink>
-                </NavItem>
-                <NavItem>
-                  <NavLink
-                    style={{ cursor: "pointer" }}
-                    className={classnames({ active: activeTab === "3" })}
-                    onClick={() => {
-                      toggleTab("3")
-                    }}
-                  >
-                    შიდა შესყიდვები
-                  </NavLink>
-                </NavItem>
-                <NavItem>
-                  <NavLink
-                    style={{ cursor: "pointer" }}
-                    className={classnames({ active: activeTab === "4" })}
-                    onClick={() => {
-                      toggleTab("4")
-                    }}
-                  >
-                    შვებულებები
-                  </NavLink>
-                </NavItem>
-                <NavItem>
-                  <NavLink
-                    style={{ cursor: "pointer" }}
-                    className={classnames({ active: activeTab === "5" })}
-                    onClick={() => {
-                      toggleTab("5")
-                    }}
-                  >
-                    HR დოკუმენტები
-                  </NavLink>
-                </NavItem>
-              </Nav>
-
-              <TabContent activeTab={activeTab} className="p-3 text-muted">
-                <TabPane tabId="1">
-                  <div className="mb-3">
-                    <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-                      <DropdownToggle caret>
-                        {agreementType === "standard" &&
-                          "ნასყიდობის ხელშეკრულება"}
-                        {agreementType === "marketing" &&
-                          "მარკეტინგული მომსახურების ხელშეკრულება"}
-                        {agreementType === "service" &&
-                          "მომსახურების ხელშეკრულება"}
-                        {agreementType === "local" &&
-                          "ადგილობრივი შესყიდვის ხელშეკრულება"}
-                        {agreementType === "delivery" &&
-                          "მიღება-ჩაბარების აქტი"}
-                      </DropdownToggle>
-                      <DropdownMenu>
-                        <DropdownItem
-                          onClick={() => setAgreementType("standard")}
-                        >
-                          ნასყიდობის ხელშეკრულება
-                        </DropdownItem>
-                        <DropdownItem
-                          onClick={() => setAgreementType("marketing")}
-                        >
-                          მარკეტინგული მომსახურების ხელშეკრულება
-                        </DropdownItem>
-                        <DropdownItem
-                          onClick={() => setAgreementType("service")}
-                        >
-                          მომსახურების ხელშეკრულება
-                        </DropdownItem>
-                        <DropdownItem onClick={() => setAgreementType("local")}>
-                          ადგილობრივი შესყიდვის ხელშეკრულება
-                        </DropdownItem>
-                        <DropdownItem
-                          onClick={() => setAgreementType("delivery")}
-                        >
-                          მიღება-ჩაბარების აქტი
-                        </DropdownItem>
-                      </DropdownMenu>
-                    </Dropdown>
-                  </div>
-                  {renderAgreementApprove()}
-                </TabPane>
-                <TabPane tabId="2">
-                  <TripPageApprove />
-                </TabPane>
-                <TabPane tabId="3">
-                  <PurchasePageApprove />
-                </TabPane>
-                <TabPane tabId="4">
-                  <VacationPageApprove />
-                </TabPane>
-                <TabPane tabId="5">
-                  <HrPageApprove />
-                </TabPane>
-              </TabContent>
-              <Dialog
-                open={modalIsOpen}
-                onClose={closeModal}
-                aria-labelledby="modal-title"
-                aria-describedby="modal-description"
+    <>
+      <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6 py-3 sm:py-6">
+        <div className="p-2 sm:p-4 lg:p-6">
+          <Nav
+            tabs
+            className="nav-tabs-custom nav-justified w-full flex flex-wrap"
+          >
+            <NavItem className="w-1/2 sm:w-1/3 lg:w-auto">
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames(
+                  "text-sm sm:text-base py-2 px-1 sm:px-4",
+                  { active: activeTab === "1" }
+                )}
+                onClick={() => toggleTab("1")}
               >
-                <>
-                  <DialogTitle id="modal-title">
-                    {chosenApproval?.model_type.includes("Business") &&
-                      "მივლინების"}{" "}
-                    {chosenApproval?.model_type.includes("Vocation") &&
-                      "შვებულების"}{" "}
-                    {chosenApproval?.model_type.includes("Purchase") &&
-                      "შიდა შესყიდვის"}{" "}
-                    მოთხოვნა
-                  </DialogTitle>
-                  <DialogContent>
-                    <DialogContentText id="modal-description">
-                      <form className="w-96" onSubmit={vacationSubmit}>
-                        {/* Form Fields Based on chosenApproval Data */}
-                      </form>
-                    </DialogContentText>
-                  </DialogContent>
-                </>
-              </Dialog>
-            </div>
-          </div>
-        </Container>
+                ხელშეკრულებები
+              </NavLink>
+            </NavItem>
+            <NavItem className="w-1/2 sm:w-1/3 lg:w-auto">
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames(
+                  "text-sm sm:text-base py-2 px-1 sm:px-4",
+                  { active: activeTab === "2" }
+                )}
+                onClick={() => toggleTab("2")}
+              >
+                მივლინებები
+              </NavLink>
+            </NavItem>
+            <NavItem className="w-1/2 sm:w-1/3 lg:w-auto">
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames(
+                  "text-sm sm:text-base py-2 px-1 sm:px-4",
+                  { active: activeTab === "3" }
+                )}
+                onClick={() => toggleTab("3")}
+              >
+                შიდა შესყიდვები
+              </NavLink>
+            </NavItem>
+            <NavItem className="w-1/2 sm:w-1/3 lg:w-auto">
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames(
+                  "text-sm sm:text-base py-2 px-1 sm:px-4",
+                  { active: activeTab === "4" }
+                )}
+                onClick={() => toggleTab("4")}
+              >
+                შვებულებები
+              </NavLink>
+            </NavItem>
+            <NavItem className="w-full sm:w-1/3 lg:w-auto">
+              <NavLink
+                style={{ cursor: "pointer" }}
+                className={classnames(
+                  "text-sm sm:text-base py-2 px-1 sm:px-4",
+                  { active: activeTab === "5" }
+                )}
+                onClick={() => toggleTab("5")}
+              >
+                HR დოკუმენტები
+              </NavLink>
+            </NavItem>
+          </Nav>
+
+          <TabContent activeTab={activeTab} className="p-2 sm:p-3">
+            <TabPane tabId="1">
+              <div className="mb-3">
+                <Dropdown
+                  isOpen={dropdownOpen}
+                  toggle={toggleDropdown}
+                  className="w-full sm:w-auto"
+                >
+                  <DropdownToggle
+                    caret
+                    className="w-full sm:w-auto text-sm sm:text-base"
+                  >
+                    {agreementType === "standard" && "ნასყიდობის ხელშეკრულება"}
+                    {agreementType === "marketing" &&
+                      "მარკეტინგული მომსახურების ხელშეკრულება"}
+                    {agreementType === "service" && "მომსახურების ხელშეკრულება"}
+                    {agreementType === "local" &&
+                      "ადგილობრივი შესყიდვის ხელშეკრულება"}
+                    {agreementType === "delivery" && "მიღება-ჩაბარების აქტი"}
+                  </DropdownToggle>
+                  <DropdownMenu className="w-full sm:w-auto">
+                    <DropdownItem
+                      onClick={() => setAgreementType("standard")}
+                      className="text-sm sm:text-base"
+                    >
+                      ნასყიდობის ხელშეკრულება
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() => setAgreementType("marketing")}
+                      className="text-sm sm:text-base"
+                    >
+                      მარკეტინგული მომსახურების ხელშეკრულება
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() => setAgreementType("service")}
+                      className="text-sm sm:text-base"
+                    >
+                      მომსახურების ხელშეკრულება
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() => setAgreementType("local")}
+                      className="text-sm sm:text-base"
+                    >
+                      ადგილობრივი შესყიდვის ხელშეკრულება
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() => setAgreementType("delivery")}
+                      className="text-sm sm:text-base"
+                    >
+                      მიღება-ჩაბარების აქტი
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </div>
+              {renderAgreementApprove()}
+            </TabPane>
+            <TabPane tabId="2">
+              <TripPageApprove />
+            </TabPane>
+            <TabPane tabId="3">
+              <PurchasePageApprove />
+            </TabPane>
+            <TabPane tabId="4">
+              <VacationPageApprove />
+            </TabPane>
+            <TabPane tabId="5">
+              <HrPageApprove />
+            </TabPane>
+          </TabContent>
+        </div>
       </div>
-    </div>
+
+      {/* Modal */}
+      <Dialog
+        open={modalIsOpen}
+        onClose={closeModal}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+        className="fixed z-50"
+      >
+        <DialogTitle id="modal-title" className="text-base sm:text-lg">
+          {chosenApproval?.model_type.includes("Business") && "მივლინების"}{" "}
+          {chosenApproval?.model_type.includes("Vocation") && "შვებულების"}{" "}
+          {chosenApproval?.model_type.includes("Purchase") && "შიდა შესყიდვის"}{" "}
+          მოთხოვნა
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="modal-description">
+            <form
+              className="w-full max-w-sm sm:max-w-md md:max-w-lg"
+              onSubmit={vacationSubmit}
+            >
+              {/* Form Fields Based on chosenApproval Data */}
+            </form>
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 

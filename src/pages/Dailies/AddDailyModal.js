@@ -5,9 +5,15 @@ import DialogContent from "@mui/material/DialogContent"
 import DialogTitle from "@mui/material/DialogTitle"
 import Button from "@mui/material/Button"
 import TextField from "@mui/material/TextField"
-import { createDaily } from "services/daily"
+import { useCreateDaily, dailyKeys } from "queries/daily"
+import { useQueryClient } from "@tanstack/react-query"
 
-const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
+const AddDailyModal = ({
+  isOpen,
+  toggle,
+  departmentId,
+  type,
+}) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     name: "",
@@ -15,6 +21,8 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
     department_id: departmentId,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { mutate: create, isLoading: createLoading } = useCreateDaily()
+  const queryClient = useQueryClient()
 
   const handleInputChange = e => {
     const { name, value } = e.target
@@ -24,12 +32,9 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
   const handleSubmit = async e => {
     e.preventDefault()
     try {
-      console.log(formData)
       setIsSubmitting(true)
-      const response = await createDaily("department_head", formData)
-      console.log(response)
-      console.log("Daily created successfully")
-      onDailyAdded()
+      await create({ type, data: formData })
+      queryClient.invalidateQueries({ queryKey: dailyKeys.dailies(type) })
       toggle()
       setFormData({
         date: new Date().toISOString().split("T")[0],
@@ -89,7 +94,7 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
             type="submit"
             variant="contained"
             color="primary"
-            disabled={isSubmitting}
+            disabled={isSubmitting || createLoading}
           >
             დამატება
           </Button>

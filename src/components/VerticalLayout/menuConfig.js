@@ -1,270 +1,424 @@
+import { BsGear, BsPerson } from "react-icons/bs"
+import { checkAccess } from "utils/accessGate"
 import {
-  BsHouseDoor,
-  BsGear,
-  BsPerson,
-  BsFileText,
-  BsFolder,
-  BsJournal,
-  BsHeadset,
-  BsCreditCard2Front,
-  BsChatDots,
-  BsTelephone,
-  BsTools,
-  BsArchive,
-  BsPeople,
-  BsCalendar2DateFill,
-  BsJournalBookmarkFill,
-  BsFileCode,
-} from "react-icons/bs"
+  LuLayoutDashboard,
+  LuShieldCheck,
+  LuHouse,
+  LuArchive,
+  LuClipboardList,
+  LuFileText,
+  LuShoppingCart,
+  LuPlane,
+  LuCalendarDays,
+  LuFolder,
+  LuFileCode,
+  LuHeadset,
+  LuPencilRuler,
+  // LuCalendar,
+  LuPlus,
+  LuNotebook,
+  // LuUsers,
+} from "react-icons/lu"
 
-const createSubmenu = (
-  basePath,
-  labelKey,
-  isAdmin,
-  isDepartmentHead,
-  requiresNew = false
-) =>
-  [
-    requiresNew && { to: `${basePath}/new`, label: labelKey("დამატება") },
-    isAdmin && { to: `${basePath}/approve`, label: labelKey("ვიზირება") },
-    isAdmin
-      ? { to: `${basePath}/archive`, label: labelKey("არქივი") }
-      : isDepartmentHead
-      ? { to: `${basePath}/archive`, label: labelKey("ვიზირება") }
-      : null,
-    { to: `${basePath}/my-requests`, label: labelKey("გაგზავნილი") },
-  ].filter(Boolean)
-
-export const getMenuConfig = (
-  t,
-  isAdmin,
-  isDepartmentHead,
-  userDepartmentId,
-  hasPermission
-) => {
+export const getMenuConfig = (t, user) => {
   const menuItems = [
     {
       to: "/dashboard",
-      icon: BsHouseDoor,
+      icon: LuHouse,
       label: t("მთავარი გვერდი"),
+      conditions: "",
     },
     {
       key: "admin",
       icon: BsGear,
       label: t("სამართავი პანელი"),
-      permission: "users.view",
+      conditions: "",
       submenu: [
-        { to: "/admin/dashboard", label: t("მთავარი") },
-        { to: "/admin/approvals", label: t("ვიზირება") },
-        { to: "/admin/archive", icon: BsArchive, label: t("არქივი") },
-      ].filter(item => !item.visible || item.visible !== false),
+        {
+          to: "/admin/dashboard",
+          icon: LuLayoutDashboard,
+          label: t("მთავარი"),
+          conditions: "role:admin|role:department_head|department:8",
+        },
+        {
+          to: "/admin/approvals",
+          icon: LuShieldCheck,
+          label: t("ვიზირება"),
+          conditions: "role:admin",
+        },
+        {
+          to: "/admin/archive",
+          icon: LuArchive,
+          label: t("არქივი"),
+          conditions: "role:admin",
+        },
+      ],
     },
     {
       to: "/profile",
       icon: BsPerson,
       label: t("პროფილი"),
+      conditions: "",
     },
     {
       to: "/tools/daily-results",
-      icon: BsJournal,
-      label: t("დღის შედეგები"),
-      permission: "daily-results.view-own",
+      icon: LuClipboardList,
+      label: t("დეპარტამენტის დღის შედეგები"),
+      conditions: "role:admin|role:department_head",
     },
     {
       to: "/tools/inner-daily-results",
-      icon: BsJournal,
-      label: t("დეპარტამენტის დღის შედეგები"),
+      icon: LuClipboardList,
+      label: t("დღის შედეგები"),
+      conditions: "",
     },
     {
       key: "applications",
-      icon: BsFileCode,
+      icon: LuFileText,
       label: t("განცხადებები"),
+      conditions: "",
       submenu: [
         {
           key: "internalPurchases",
           label: t("შიდა შესყიდვები"),
-          submenu: createSubmenu(
-            "/applications/purchases",
-            t,
-            isAdmin,
-            isDepartmentHead,
-            true
-          ),
+          icon: LuShoppingCart,
+          to: "/applications/purchases",
+          conditions: "",
+          submenu: [
+            {
+              to: "/applications/purchases/new",
+              label: t("დამატება"),
+              icon: LuPlus,
+              conditions: "",
+            },
+            {
+              to: "/applications/purchases/approve",
+              label: t("ვიზირება"),
+              icon: LuShieldCheck,
+              conditions: "role:admin|role:department_head|department:17",
+            },
+            {
+              to: "/applications/purchases/archive",
+              label: t("არქივი"),
+              icon: LuArchive,
+              conditions: "role:admin|role:department_head|department:17",
+            },
+            {
+              to: "/applications/purchases/my-requests",
+              label: t("გაგზავნილი"),
+              icon: LuFileText,
+              conditions: "",
+            },
+          ],
+        },
+        {
+          key: "business-trip",
+          label: t("მივლინება"),
+          icon: LuPlane,
+          to: "/applications/business-trip",
+          conditions: "",
+          submenu: [
+            {
+              to: "/applications/business-trip/new",
+              label: t("დამატება"),
+              icon: LuPlus,
+              conditions: "",
+            },
+            {
+              to: "/applications/business-trip/approve",
+              label: t("ვიზირება"),
+              icon: LuShieldCheck,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/applications/business-trip/archive",
+              label: t("არქივი"),
+              icon: LuArchive,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/applications/business-trip/my-requests",
+              label: t("გაგზავნილი"),
+              icon: LuFileText,
+              conditions: "",
+            },
+          ],
         },
         {
           key: "vacation",
           label: t("შვებულება"),
-          submenu: createSubmenu(
-            "/applications/vacation",
-            t,
-            isAdmin,
-            isDepartmentHead,
-            true
-          ),
-        },
-        {
-          key: "business",
-          label: t("მივლინება"),
-          submenu: createSubmenu(
-            "/applications/business-trip",
-            t,
-            isAdmin,
-            isDepartmentHead,
-            true
-          ),
+          icon: LuCalendarDays,
+          to: "/applications/vacation",
+          conditions: "",
+          submenu: [
+            {
+              to: "/applications/vacation/new",
+              label: t("დამატება"),
+              icon: LuPlus,
+              conditions: "",
+            },
+            {
+              to: "/applications/vacation/approve",
+              label: t("ვიზირება"),
+              icon: LuShieldCheck,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/applications/vacation/archive",
+              label: t("არქივი"),
+              icon: LuArchive,
+              conditions: "role:admin|role:department_head|department:8",
+            },
+            {
+              to: "/applications/vacation/my-requests",
+              label: t("გაგზავნილი"),
+              icon: LuFileText,
+              conditions: "",
+            },
+          ],
         },
       ],
     },
     {
       key: "hrDocs",
-      icon: BsFolder,
+      icon: LuFolder,
       label: t("HR დოკუმენტები"),
+      conditions: "",
       submenu: [
-        { to: "/hr/documents/new", label: t("ახალი მოთხოვნა") },
+        {
+          to: "/hr/documents/new",
+          icon: LuPlus,
+          label: t("ახალი მოთხოვნა"),
+          conditions: "",
+        },
         {
           to: "/hr/documents/approve",
-          departmentId: 8,
-          permission: "hr-documents.manage",
+          icon: LuShieldCheck,
           label: t("ვიზირება"),
-          visible: userDepartmentId === 8 || isAdmin,
+          conditions: "role:admin|role:department_head,department:8|role:department_head_assistant,department:8",
         },
         {
           to: "/hr/documents/archive",
-          departmentId: 8,
-          permission: "hr-documents.view",
+          icon: LuArchive,
           label: t("არქივი"),
-          visible: userDepartmentId === 8 || isAdmin,
+          conditions: "role:admin|role:department_head,department:8|role:department_head_assistant,department:8",
         },
-        { to: "/hr/documents/my-requests", label: t("ჩემი მოთხოვნები") },
+        {
+          to: "/hr/documents/my-requests",
+          label: t("ჩემი მოთხოვნები"),
+          icon: LuFileText,
+          conditions: "",
+        },
       ],
     },
     {
-      key: "contracts",
-      icon: BsFileText,
+      key: "agreements",
+      icon: LuFileCode,
       label: t("ხელშეკრულებები"),
+      conditions: "",
       submenu: [
-        { to: "/legal/contracts/new", label: t("მოთხოვნა") },
+        {
+          key: "request",
+          label: t("მოთხოვნა"),
+          icon: LuPlus,
+          to: "/legal/contracts/new",
+          conditions: "",
+        },
         {
           key: "purchase",
-          to: "/legal/contracts/purchase",
           label: t("ნასყიდობის ხელშეკრულება"),
-          submenu: createSubmenu(
-            "/legal/contracts/purchase",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          icon: LuFileCode,
+          conditions: "",
+          submenu: [
+            {
+              to: "/legal/contracts/purchase/approve",
+              label: t("ვიზირება"),
+              icon: LuShieldCheck,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/purchase/archive",
+              label: t("არქივი"),
+              icon: LuArchive,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/purchase/my-requests",
+              label: t("გაგზავნილი"),
+              icon: LuFileText,
+              conditions: "",
+            },
+          ],
         },
         {
           key: "delivery",
-          to: "/legal/contracts/delivery",
           label: t("მიღება-ჩაბარების აქტი"),
-          submenu: createSubmenu(
-            "/legal/contracts/delivery",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          icon: LuFileCode,
+          conditions: "",
+          submenu: [
+            {
+              to: "/legal/contracts/delivery/approve",
+              label: t("ვიზირება"),
+              icon: LuShieldCheck,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/delivery/archive",
+              label: t("არქივი"),
+              icon: LuArchive,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/delivery/my-requests",
+              label: t("გაგზავნილი"),
+              icon: LuFileText,
+              conditions: "",
+            },
+          ],
         },
         {
           key: "marketing",
-          to: "/legal/contracts/marketing",
           label: t("მარკეტინგული მომსახურების ხელშეკრულება"),
-          submenu: createSubmenu(
-            "/legal/contracts/marketing",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          conditions: "",
+          icon: LuFileCode,
+          submenu: [
+            {
+              to: "/legal/contracts/marketing/approve",
+              label: t("ვიზირება"),
+              icon: LuShieldCheck,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/marketing/archive",
+              label: t("არქივი"),
+              icon: LuArchive,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/marketing/my-requests",
+              label: t("გაგზავნილი"),
+              icon: LuFileText,
+              conditions: "",
+            },
+          ],
         },
         {
           key: "service",
-          to: "/legal/contracts/service",
           label: t("მომსახურების ხელშეკრულება"),
-          submenu: createSubmenu(
-            "/legal/contracts/service",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          icon: LuFileCode,
+          conditions: "",
+          submenu: [
+            {
+              to: "/legal/contracts/service/approve",
+              label: t("ვიზირება"),
+              icon: LuShieldCheck,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/service/archive",
+              label: t("არქივი"),
+              icon: LuArchive,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/service/my-requests",
+              label: t("გაგზავნილი"),
+              icon: LuFileText,
+              conditions: "",
+            },
+          ],
         },
         {
-          to: "/legal/contracts/local",
           key: "local",
           label: t("ადგილობრივი შესყიდვის ხელშეკრულება"),
-          submenu: createSubmenu(
-            "/legal/contracts/local",
-            t,
-            isAdmin || isDepartmentHead
-          ),
+          conditions: "",
+          icon: LuFileCode,
+          submenu: [
+            {
+              to: "/legal/contracts/local/approve",
+              label: t("ვიზირება"),
+              icon: LuShieldCheck,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/local/archive",
+              label: t("არქივი"),
+              icon: LuArchive,
+              conditions: "role:admin|role:department_head",
+            },
+            {
+              to: "/legal/contracts/local/my-requests",
+              label: t("გაგზავნილი"),
+              icon: LuFileText,
+              conditions: "",
+            },
+          ],
         },
       ],
     },
     {
       to: "/support/it-tasks",
-      icon: BsHeadset,
+      icon: LuHeadset,
       label: t("IT მხარდაჭერა"),
+      conditions: "",
     },
     {
       to: "/support/farm-tasks",
-      icon: BsTools,
+      icon: LuPencilRuler,
       label: t("სამეურნეო Tasks"),
+      conditions: "",
     },
-    {
-      to: "/contacts-list",
-      icon: BsCreditCard2Front,
-      label: t("ლოიალობის ბარათი"),
-    },
-    { to: "/admin/visitors", icon: BsPeople, label: t("ვიზიტორები") },
     // {
-    //   to: "/admin/payment-monitoring",
-    //   icon: BsCashStack,
-    //   label: t("გადახდების მონიტორინგი"),
+    //   to: "/leads",
+    //   icon: LuUsers,
+    //   label: t("ლიდები"),
+    //   conditions: "",
+    //   submenu: [
+    //     {
+    //       to: "/leads/vip",
+    //       label: t("VIP ლიდები"),
+    //       icon: LuUsers,
+    //       conditions: "",
+    //     },
+    //     {
+    //       to: "/leads/corporate",
+    //       label: t("კორპორატიული ლიდები"),
+    //       icon: LuUsers,
+    //       conditions: "",
+    //     },
+    //   ],
+    // },
+    // {
+    //   to: "/tools/calendar",
+    //   icon: LuCalendar,
+    //   label: t("კალენდარი"),
+    //   conditions: "",
     // },
     {
-      key: "leads",
-      icon: BsTelephone,
-      label: t("ლიდები"),
-      submenu: [
-        { to: "/leads/vip", label: t("VIP") },
-        { to: "/leads/corporate", label: t("კორპორატიული") },
-      ],
-    },
-    {
-      to: "/tools/calendar",
-      icon: BsCalendar2DateFill,
-      label: t("კალენდარი"),
-    },
-    {
       to: "/tools/notes",
-      icon: BsJournalBookmarkFill,
+      icon: LuNotebook,
       label: t("ჩანაწერები"),
-    },
-    {
-      to: "/communication/chat",
-      icon: BsChatDots,
-      label: t("ჩათი"),
+      conditions: "",
     },
   ]
 
   const filterMenuItems = items => {
     return items
       .filter(item => {
-        if (item.visible === false) return false
-        if (!item.permission) return true
-        return hasPermission(item.permission, item.departmentId)
+        if (!item.conditions) return true
+        return checkAccess(user, item.conditions)
       })
       .map(item => {
         if (item.submenu) {
-          return {
-            ...item,
-            submenu: filterMenuItems(item.submenu),
+          const filteredSubmenu = filterMenuItems(item.submenu)
+          if (filteredSubmenu.length > 0) {
+            return { ...item, submenu: filteredSubmenu }
           }
+          return null
         }
         return item
       })
-      .filter(item => {
-        if (item.submenu) {
-          return item.submenu.length > 0
-        }
-        return true
-      })
+      .filter(item => item !== null)
   }
 
   return filterMenuItems(menuItems)

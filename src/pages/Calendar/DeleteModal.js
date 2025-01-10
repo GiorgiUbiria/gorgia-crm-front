@@ -1,44 +1,50 @@
-import PropTypes from 'prop-types'
+import PropTypes from "prop-types"
 import React from "react"
-import { Col, Modal, ModalBody, Row } from "reactstrap"
+import { Modal, ModalBody, ModalHeader, ModalFooter, Button } from "reactstrap"
 
-const DeleteModal = ({ show, onDeleteClick, onCloseClick }) => {
+const DeleteModal = ({
+  show,
+  onDeleteClick,
+  onCloseClick,
+  isRecurring,
+  onDeleteAllClick,
+}) => {
   return (
-    <Modal isOpen={show} toggle={onCloseClick} centered={true}>
-      <ModalBody className="py-3 px-5">
-        <Row>
-          <Col lg={12}>
-            <div className="text-center">
-              <i
-                className="mdi mdi-alert-circle-outline"
-                style={{ fontSize: "9em", color: "orange" }}
-              />
-              <h2>Are you sure?</h2>
-              <h4>{"You won't be able to revert this!"}</h4>
+    <Modal isOpen={show} toggle={onCloseClick}>
+      <ModalHeader toggle={onCloseClick}>წაშლის დადასტურება</ModalHeader>
+      <ModalBody>
+        <div className="text-center">
+          <div className="avatar-sm mb-4 mx-auto">
+            <div className="avatar-title bg-danger text-danger bg-opacity-10 font-size-20 rounded-3">
+              <i className="mdi mdi-trash-can-outline"></i>
             </div>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <div className="text-center mt-3">
-              <button
-                type="button"
-                className="btn btn-success btn-lg ms-2"
-                onClick={onDeleteClick}
-              >
-                Yes, delete it!
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger btn-lg ms-2"
-                onClick={onCloseClick}
-              >
-                Cancel
-              </button>
-            </div>
-          </Col>
-        </Row>
+          </div>
+          <p className="text-muted font-size-16">
+            დარწმუნებული ხართ რომ გსურთ შეხვედრის წაშლა?
+          </p>
+          {isRecurring && (
+            <p className="text-muted font-size-14 mt-2">
+              ეს არის განმეორებადი შეხვედრა. გსურთ მხოლოდ ამ შეხვედრის წაშლა თუ
+              ყველა მომავალი შეხვედრის?
+            </p>
+          )}
+        </div>
       </ModalBody>
+      <ModalFooter>
+        <Button color="danger" onClick={onDeleteClick}>
+          <i className="bx bx-trash me-1"></i>
+          {isRecurring ? "წაშალე მხოლოდ ეს" : "წაშლა"}
+        </Button>
+        {isRecurring && (
+          <Button color="warning" onClick={onDeleteAllClick}>
+            <i className="bx bx-trash-alt me-1"></i>
+            წაშალე ყველა
+          </Button>
+        )}
+        <Button color="secondary" onClick={onCloseClick}>
+          გაუქმება
+        </Button>
+      </ModalFooter>
     </Modal>
   )
 }
@@ -46,7 +52,9 @@ const DeleteModal = ({ show, onDeleteClick, onCloseClick }) => {
 DeleteModal.propTypes = {
   onCloseClick: PropTypes.func,
   onDeleteClick: PropTypes.func,
-  show: PropTypes.any
+  onDeleteAllClick: PropTypes.func,
+  show: PropTypes.bool,
+  isRecurring: PropTypes.bool,
 }
 
 export default DeleteModal

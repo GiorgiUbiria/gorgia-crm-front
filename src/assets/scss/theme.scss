@@ -8,21 +8,21 @@ body {
   }
 }
 
-#sidebar-menu {
-  background-color: #EDF3FD;
-  box-shadow: $box-shadow;
-  ul {
-    li {
-      a {
-        color: black;
-        i {
-          min-width: 2rem;
-          color: black;
-        }
-      }
-    }
-  }
-}
+// #sidebar-menu {
+//   background-color: #EDF3FD;
+//   box-shadow: $box-shadow;
+//   ul {
+//     li {
+//       a {
+//         color: black;
+//         i {
+//           min-width: 2rem;
+//           color: black;
+//         }
+//       }
+//     }
+//   }
+// }
 
 .leaflet-pane {
   z-index: 1;

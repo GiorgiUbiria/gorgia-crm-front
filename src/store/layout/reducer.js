@@ -10,33 +10,24 @@ import {
   CHANGE_PRELOADER,
   TOGGLE_LEFTMENU,
   SHOW_SIDEBAR,
-  CHANGE_LAYOUT_MODE
-} from "./actionTypes";
-
-//constants
-import {
-  layoutTypes,
-  layoutModeTypes,
-  layoutWidthTypes,
-  topBarThemeTypes,
-  leftBarThemeImageTypes,
-  leftSidebarTypes,
-  leftSideBarThemeTypes,
-} from "../../constants/layout";
+  CHANGE_LAYOUT_MODE,
+  TOGGLE_THEME,
+} from "./actionTypes"
 
 const INIT_STATE = {
-  layoutType: layoutTypes.VERTICAL,
-  layoutModeType: layoutModeTypes.LIGHT,
-  layoutWidth: layoutWidthTypes.FLUID,
-  leftSideBarTheme: leftSideBarThemeTypes.DARK,
-  leftSideBarThemeImage: leftBarThemeImageTypes.NONE,
-  leftSideBarType: leftSidebarTypes.DEFAULT,
-  topbarTheme: topBarThemeTypes.LIGHT,
+  layoutType: "vertical",
+  layoutWidth: "fluid",
+  leftSideBarTheme: "dark",
+  leftSideBarThemeImage: "none",
+  leftSideBarType: "default",
+  topbarTheme: "light",
   isPreloader: false,
   showRightSidebar: false,
   isMobile: false,
   showSidebar: true,
-  leftMenu:true,
+  leftMenu: false,
+  layoutModeType: "light",
+  isDarkMode: false,
 }
 const Layout = (state = INIT_STATE, action) => {
   switch (action.type) {
@@ -97,6 +88,13 @@ const Layout = (state = INIT_STATE, action) => {
         ...state,
         leftMenu: action.payload,
       }
+    case TOGGLE_THEME: {
+      const newState = {
+        ...state,
+        isDarkMode: !state.isDarkMode,
+      }
+      return newState
+    }
 
     default:
       return state

@@ -1,17 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react"
 import {
-  Row,
-  Col,
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Card,
-  CardBody,
   Spinner,
 } from "reactstrap"
 import Button from "@mui/material/Button"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import {
   getDepartmentAgreements as getDeliveryDepartmentAgreements,
   updateAgreementStatus as updateDeliveryAgreementStatus,
@@ -58,7 +53,6 @@ const DeliveryAgreementApprove = () => {
   const fetchAgreements = async () => {
     try {
       const response = await getDeliveryDepartmentAgreements()
-      console.log(response.data.data)
       setAgreements(response.data.data)
     } catch (err) {
       console.error("Error fetching agreements:", err)
@@ -74,16 +68,12 @@ const DeliveryAgreementApprove = () => {
       setIsProcessing(true)
     }
 
-    console.log(additionalData, status, agreementId)
-
     try {
       const response = await updateDeliveryAgreementStatus(
         agreementId,
         status,
         additionalData
       )
-
-      console.log(response)
 
       setAgreements(prevAgreements =>
         prevAgreements.map(agreement =>
@@ -297,40 +287,19 @@ const DeliveryAgreementApprove = () => {
   ]
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ხელშეკრულებების ვიზირება"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={[
-                      "jursdictional_unit.name",
-                      "requested_by",
-                    ]}
-                    filterOptions={filterOptions}
-                    renderRowDetails={expandedRows}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-          <ToastContainer />
-        </div>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["jursdictional_unit.name", "requested_by"]}
+          filterOptions={filterOptions}
+          renderRowDetails={expandedRows}
+        />
+        <ToastContainer />
       </div>
 
       <Modal isOpen={confirmModal.isOpen} toggle={handleModalClose}>
@@ -383,7 +352,7 @@ const DeliveryAgreementApprove = () => {
           </Button>
         </ModalFooter>
       </Modal>
-    </React.Fragment>
+    </>
   )
 }
 

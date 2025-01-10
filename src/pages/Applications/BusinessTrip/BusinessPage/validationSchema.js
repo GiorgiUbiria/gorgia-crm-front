@@ -1,4 +1,5 @@
 import * as Yup from "yup"
+import cities from "../common/distances"
 
 const today = new Date()
 today.setHours(0, 0, 0, 0)
@@ -30,7 +31,10 @@ export const businessSchema = Yup.object().shape({
     ),
   position: Yup.string()
     .required("თანამშრომლის პოზიციის მითითება სავალდებულოა.")
-    .min(2, "თანამშრომლის პოზიციის დასახელება უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს.")
+    .min(
+      2,
+      "თანამშრომლის პოზიციის დასახელება უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს."
+    )
     .max(
       100,
       "თანამშრომლის პოზიციის დასახელება არ უნდა აღემატებოდეს 100 სიმბოლოს."
@@ -76,12 +80,18 @@ export const businessSchema = Yup.object().shape({
     .max(253, "მიზანი არ უნდა აღემატებოდეს 253 სიმბოლოს."),
   departure_location: Yup.string()
     .required("გასვლის ადგილის მითითება სავალდებულოა.")
-    .min(2, "გასვლის ადგილის სახელი უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს.")
-    .max(100, "გასვლის ადგილის სახელი არ უნდა აღემატებოდეს 100 სიმბოლოს."),
+    .oneOf(Object.keys(cities), "გთხოვთ აირჩიოთ სწორი გასვლის ადგილი."),
   arrival_location: Yup.string()
     .required("დანიშნულების ადგილის მითითება სავალდებულოა.")
-    .min(2, "დანიშნულების ადგილის სახელი უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს.")
-    .max(100, "დანიშნულების ადგილის სახელი არ უნდა აღემატებოდეს 100 სიმბოლოს."),
+    .test(
+      "valid-destination",
+      "არასწორი დანიშნულების ადგილი",
+      function (value) {
+        const departure = this.parent.departure_location
+        if (!departure || !value) return true
+        return cities[departure] && value in cities[departure]
+      }
+    ),
   duration_days: Yup.number()
     .required("სამუშაო დღეების რაოდენობის მითითება სავალდებულოა.")
     .min(1, "სამუშაო დღეების რაოდენობა უნდა იყოს მინიმუმ 1 დღე.")
@@ -98,9 +108,29 @@ export const businessSchema = Yup.object().shape({
   vehicle_expense: Yup.boolean().required(
     "საკუთარი ავტომობილით მგზავრობის სტატუსის მითითება სავალდებულოა."
   ),
-  vehicle_model: Yup.string(),
-  vehicle_plate: Yup.string(),
-  fuel_cost: Yup.number(),
+  vehicle_model: Yup.string().when("vehicle_expense", {
+    is: true,
+    then: () => Yup.string().required("ავტომობილის მოდელის მითითება სავალდებულოა."),
+    otherwise: () => Yup.string().nullable(),
+  }),
+  vehicle_plate: Yup.string().when("vehicle_expense", {
+    is: true,
+    then: () => Yup.string().required("ავტომობილის ნომრის მითითება სავალდებულოა."),
+    otherwise: () => Yup.string().nullable(),
+  }),
+  fuel_type: Yup.string().when("vehicle_expense", {
+    is: true,
+    then: () => Yup.string().required("საწვავის ტიპის მითითება სავალდებულოა."),
+    otherwise: () => Yup.string().nullable(),
+  }),
+  fuel_consumption_per_100: Yup.number().when("vehicle_expense", {
+    is: true,
+    then: () => Yup.number()
+      .required("საწვავის ხარჯის მითითება სავალდებულოა.")
+      .min(0, "საწვავის ხარჯი უნდა იყოს მინიმუმ 0 ლიტრი/100კმ."),
+    otherwise: () => Yup.number().nullable(),
+  }),
+  total_fuel: Yup.number().nullable(),
   final_cost: Yup.number()
     .required("საბოლოო ღირებულების მითითება სავალდებულოა.")
     .min(0, "საბოლოო ღირებულება უნდა იყოს მინიმუმ 0 ლარი."),

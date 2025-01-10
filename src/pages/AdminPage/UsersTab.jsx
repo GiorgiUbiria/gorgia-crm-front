@@ -1,12 +1,6 @@
-import React, { useState, useMemo } from "react"
-import {
-  deleteUser,
-  approveDepartmentMember,
-  rejectDepartmentMember,
-} from "services/admin/department"
+import React, { useState, useMemo, useCallback } from "react"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
 import Dialog from "@mui/material/Dialog"
 import DialogActions from "@mui/material/DialogActions"
 import DialogContent from "@mui/material/DialogContent"
@@ -16,6 +10,24 @@ import * as XLSX from "xlsx"
 import { Row, Col } from "reactstrap"
 import AddUserModal from "./AddUserModal"
 import EditUserModal from "./EditUserModal"
+import { usePermissions } from "hooks/usePermissions"
+import {
+  useDeleteUser,
+  useApproveDepartmentMember,
+  useRejectDepartmentMember,
+} from "../../queries/admin"
+
+const roleNameMapping = {
+  admin: "ადმინისტრატორი",
+  hr: "HR მენეჯერი",
+  vip: "VIP მომხმარებელი",
+  user: "მომხმარებელი",
+  department_head: "დეპარტამენტის უფროსი",
+  department_head_assistant: "დეპარტამენტის უფროსის ასისტენტი",
+  manager: "მენეჯერი",
+  ceo: "გენერალური დირექტორი",
+  ceo_assistant: "გენერალური დირექტორის ასისტენტი",
+}
 
 const UsersTab = ({
   users = [],
@@ -23,7 +35,11 @@ const UsersTab = ({
   isDepartmentHead = false,
   currentUserDepartmentId,
 }) => {
-  const isAdmin = useIsAdmin()
+  const { isAdmin, isHrMember } = usePermissions()
+  const { mutateAsync: deleteUserMutation } = useDeleteUser()
+  const { mutateAsync: approveMemberMutation } = useApproveDepartmentMember()
+  const { mutateAsync: rejectMemberMutation } = useRejectDepartmentMember()
+
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     type: null,
@@ -55,17 +71,34 @@ const UsersTab = ({
     try {
       const { type, userId } = confirmModal
 
-      if (!currentUserDepartmentId && isDepartmentHead) {
-        console.error("Department ID is missing for department head")
-        return
+      if ((isDepartmentHead || isHrMember) && currentUserDepartmentId) {
+        if (type === "delete") {
+          await deleteUserMutation(userId)
+        } else if (type === "approve") {
+          await approveMemberMutation({
+            departmentId: currentUserDepartmentId,
+            userId,
+          })
+        } else if (type === "reject") {
+          await rejectMemberMutation({
+            departmentId: currentUserDepartmentId,
+            userId,
+          })
+        }
       }
 
       if (type === "delete") {
-        await deleteUser(userId)
+        await deleteUserMutation(userId)
       } else if (type === "approve") {
-        await approveDepartmentMember(currentUserDepartmentId, userId)
+        await approveMemberMutation({
+          departmentId: currentUserDepartmentId,
+          userId,
+        })
       } else if (type === "reject") {
-        await rejectDepartmentMember(currentUserDepartmentId, userId)
+        await rejectMemberMutation({
+          departmentId: currentUserDepartmentId,
+          userId,
+        })
       }
 
       onUserDeleted()
@@ -79,12 +112,16 @@ const UsersTab = ({
     setAddUserModal(true)
   }
 
-  const canManageUser = user => {
-    if (isAdmin) return true
-    if (isDepartmentHead && user.department_id === currentUserDepartmentId)
-      return true
-    return false
-  }
+  const canManageUser = useCallback(
+    user => {
+      if (isAdmin) return true
+      if (isDepartmentHead && user.department_id === currentUserDepartmentId)
+        return true
+      if (isHrMember) return true
+      return false
+    },
+    [isAdmin, isDepartmentHead, currentUserDepartmentId, isHrMember]
+  )
 
   const columns = useMemo(
     () => [
@@ -106,14 +143,22 @@ const UsersTab = ({
         disableSortBy: true,
       },
       {
+        Header: "მობილური ნომერი",
+        accessor: "mobile_number",
+        disableSortBy: true,
+      },
+      {
         Header: "დეპარტამენტი",
         accessor: "department",
         disableSortBy: true,
       },
       {
-        Header: "მობილური ნომერი",
-        accessor: "mobile_number",
-        disableSortBy: true,
+        Header: "პოზიცია",
+        accessor: "position",
+      },
+      {
+        Header: "როლი",
+        accessor: "role",
       },
       {
         Header: "დაწყების თარიღი",
@@ -178,30 +223,31 @@ const UsersTab = ({
 
           return (
             <div className="d-flex flex-column gap-2">
-              {(isDepartmentHead || isAdmin) && user.status === "pending" && (
-                <div className="d-flex gap-2 mb-2">
-                  <Button
-                    onClick={() => handleModalOpen("approve", user.id)}
-                    color="success"
-                    variant="contained"
-                    size="small"
-                    startIcon={<i className="bx bx-check" />}
-                    style={{ width: "100%" }}
-                  >
-                    დადასტურება
-                  </Button>
-                  <Button
-                    onClick={() => handleModalOpen("reject", user.id)}
-                    color="error"
-                    variant="contained"
-                    size="small"
-                    startIcon={<i className="bx bx-x" />}
-                    style={{ width: "100%" }}
-                  >
-                    უარყოფა
-                  </Button>
-                </div>
-              )}
+              {(isDepartmentHead || isAdmin || isHrMember) &&
+                user.status === "pending" && (
+                  <div className="d-flex gap-2 mb-2">
+                    <Button
+                      onClick={() => handleModalOpen("approve", user.id)}
+                      color="success"
+                      variant="contained"
+                      size="small"
+                      startIcon={<i className="bx bx-check" />}
+                      style={{ width: "100%" }}
+                    >
+                      დადასტურება
+                    </Button>
+                    <Button
+                      onClick={() => handleModalOpen("reject", user.id)}
+                      color="error"
+                      variant="contained"
+                      size="small"
+                      startIcon={<i className="bx bx-x" />}
+                      style={{ width: "100%" }}
+                    >
+                      უარყოფა
+                    </Button>
+                  </div>
+                )}
               <div className="d-flex gap-2">
                 <Button
                   onClick={() =>
@@ -215,7 +261,7 @@ const UsersTab = ({
                 >
                   რედაქტირება
                 </Button>
-                {isAdmin && (
+                {(isAdmin || isHrMember) && (
                   <Button
                     onClick={() => handleModalOpen("delete", user.id)}
                     color="error"
@@ -233,7 +279,7 @@ const UsersTab = ({
         },
       },
     ],
-    [isAdmin, isDepartmentHead, currentUserDepartmentId]
+    [canManageUser, isDepartmentHead, isAdmin, isHrMember]
   )
 
   const transformedUsers = useMemo(() => {
@@ -244,7 +290,11 @@ const UsersTab = ({
       id: user.id,
       role:
         user.roles?.length > 0
-          ? user.roles?.map(role => role.name).join(", ")
+          ? user.roles
+              ?.map(role => {
+                return roleNameMapping[role.slug] || role.name
+              })
+              .join(", ")
           : "არ აქვს როლი მინიჭებული",
       position: user.position || "-",
       name: {
@@ -278,7 +328,9 @@ const UsersTab = ({
         user.email,
         user.department,
         user.mobile_number,
-        user.working_start_date,
+        user.working_start_date
+          ? new Date(user.working_start_date).toLocaleDateString()
+          : "-",
         user.role,
       ]),
     ]
@@ -293,7 +345,7 @@ const UsersTab = ({
     <div>
       <Row className="mb-3">
         <Col className="d-flex justify-content-end gap-2">
-          {isAdmin && (
+          {(isAdmin || isDepartmentHead || isHrMember) && (
             <Button
               variant="contained"
               color="primary"
@@ -324,13 +376,7 @@ const UsersTab = ({
             },
           },
         ]}
-        searchableFields={[
-          "name.fullName",
-          "email",
-          "department",
-          "mobile_number",
-          "user_id",
-        ]}
+        searchableFields={["name.fullName", "email"]}
         enableSearch={true}
         initialPageSize={10}
         pageSizeOptions={[5, 10, 15, 20]}
