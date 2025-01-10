@@ -283,18 +283,12 @@ const HrPage = () => {
           component="div"
           className="text-danger mt-1"
         />
-        
       </div>
-
 
       {/* User Info */}
       <div className="row g-3 mb-4 mt-2">
-        {renderUserInfo(currentUser,'პირადი ნომერი', 'id_number', isAdmin)}
+        {renderUserInfo(currentUser, 'პირადი ნომერი', 'id_number', isAdmin)}
         {renderUserInfo(currentUser, 'პოზიცია', 'position', isAdmin)}
-      {/* User Info */}
-      <div className="row g-3 mb-4">
-        {renderUserInfo(currentUser, "პირადი ნომერი", "id_number", isAdmin)}
-        {renderUserInfo(currentUser, "პოზიცია", "position", isAdmin)}
       </div>
 
       {/* Purpose field for paid documents */}

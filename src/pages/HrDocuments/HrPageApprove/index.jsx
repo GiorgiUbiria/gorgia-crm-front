@@ -118,9 +118,6 @@ const HrPageApprove = () => {
       comment: "",
       salary: "",
       salary_text: "",
-      template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) + 1,
-      document_number: "",
-      started_date: documentData?.is_other_user !== 1 ? documentData?.user?.working_start_date : documentData?.started_working_day,
       region: documentData?.region,
       template_num:
         Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) +
