@@ -63,6 +63,7 @@ const getInitialValues = (activeTab, currentUser) => {
       purpose: "",
       template_num: "",
       started_date: "",
+      region: "",
     }
   } else if (activeTab === "2") {
     return {
@@ -75,6 +76,7 @@ const getInitialValues = (activeTab, currentUser) => {
       purpose: "",
       template_num: "",
       started_date: "",
+      region: "",
     }
   } else {
     return {
@@ -85,6 +87,7 @@ const getInitialValues = (activeTab, currentUser) => {
       purpose: "",
       template_num: "",
       started_date: "",
+      region: "",
     }
   }
 }
@@ -116,17 +119,19 @@ const HrPage = () => {
   const navigate = useNavigate()
   const reduxUser = JSON.parse(sessionStorage.getItem("authUser"))
   const [currentUser, setCurrentUser] = useState(reduxUser)
-  const { users } = useFetchUsers()
-  const [selectedUser, setSelectedUser] = useState(null)
   const [activeTab, setActiveTab] = useState("1")
   const { isAdmin } = usePermissions()
+  const isHrMember = currentUser?.department_id === 8
+  const isHrDepartmentHead = isHrMember && currentUser?.role === "department_head"
+  
+  const { users } = useFetchUsers({
+    enabled: activeTab === "2" && (isAdmin || isHrMember || isHrDepartmentHead)
+  })
+  
+  const [selectedUser, setSelectedUser] = useState(null)
   const [startedDate, setStartedDate] = useState({
     started_date: "",
   })
-
-  const isHrMember = currentUser?.department_id === 8
-  const isHrDepartmentHead =
-    isHrMember && currentUser?.role === "department_head"
 
   const canAccessOtherTab = isAdmin || isHrMember || isHrDepartmentHead
 
@@ -160,8 +165,13 @@ const HrPage = () => {
             d => d === values.documentType
           ) + 1,
         started_date: activeTab == "2" ? startedDate?.started_date : "",
-        region: values.region || '',
+        region: values.region,
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
+      }
+
+      if (!documentData.region) {
+        toast.error("გთხოვთ აირჩიოთ რეგიონი")
+        return
       }
 
       await createHrDocument(documentData)

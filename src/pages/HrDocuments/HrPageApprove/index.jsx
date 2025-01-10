@@ -12,6 +12,7 @@ import { TabContent, Label, Spinner } from "reactstrap"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import DatePicker from "components/DatePicker"
 import moment from "moment"
+import { toast } from "react-hot-toast"
 
 const statusMap = {
   in_progress: {
@@ -116,15 +117,13 @@ const HrPageApprove = () => {
       working_start_date: "",
       purpose: documentData?.purpose,
       comment: "",
-      salary: "",
-      salary_text: "",
-      region: documentData?.region,
+      salary: documentData?.salary || "",
+      salary_text: documentData?.salary_text || "",
+      region: documentData?.region || "",
       template_num:
         Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) +
         1,
-      document_number: documentData?.document_number
-        ? documentData?.document_number
-        : "No number",
+      document_number: documentData?.document_number || "No number",
       started_date:
         documentData?.is_other_user !== 1
           ? documentData?.user?.working_start_date
@@ -336,6 +335,11 @@ const HrPageApprove = () => {
   }
 
   const handleConfirm = () => {
+    if (!formData.region) {
+      toast.error("გთხოვთ აირჩიეთ რეგიონი")
+      return
+    }
+
     handleUpdateStatus(selectedDocumentId, selectedStatus, formData)
     handleModalClose()
   }
@@ -543,12 +547,12 @@ const HrPageApprove = () => {
 
                           <div className="mb-2">
                             <Label className="form-label">
-                              რეგიონი
+                              რეგიონი <span className="text-danger">*</span>
                             </Label>
                             <Field
                               as="select"
                               name="region"
-                              className="form-select"
+                              className={`form-select ${!formData.region && 'is-invalid'}`}
                               value={formData.region}
                               onChange={e =>
                                 setFormData(data => ({
@@ -556,24 +560,23 @@ const HrPageApprove = () => {
                                   region: e.target.value,
                                 }))
                               }
+                              required
                             >
                               <option value="">აირჩიეთ რეგიონი</option>
-                              {Object.entries(REGIONS).map(
-                                ([key, type]) => (
-                                  <option 
-                                  key={key} 
-                                  value={type}
-                                  >
-                                    {type}
-                                  </option>
-                                )
-                              )}
+                              {REGIONS.map((region, index) => (
+                                <option 
+                                  key={index} 
+                                  value={region}
+                                >
+                                  {region}
+                                </option>
+                              ))}
                             </Field>
-                            <ErrorMessage
-                              name="region"
-                              component="div"
-                              className="text-danger mt-1"
-                            />
+                            {!formData.region && (
+                              <div className="invalid-feedback">
+                                გთხოვთ აირჩიოთ რეგიონი
+                              </div>
+                            )}
                           </div>
 
                           {/* User Info */}

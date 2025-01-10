@@ -199,14 +199,14 @@ const hrRoutes = {
           path: "/hr/documents/approve",
           component: withAccessRoute(
             <HrPageApprove />,
-            "role:admin|role:department_head|department:8"
+            "role:admin|role:department_head,department:8|role:department_head_assistant,department:8"
           ),
         },
         archive: {
           path: "/hr/documents/archive",
           component: withAccessRoute(
             <HrPageArchive />,
-            "role:admin|role:department_head|department:8"
+            "role:admin|role:department_head,department:8|role:department_head_assistant,department:8"
           ),
         },
         myRequests: {
