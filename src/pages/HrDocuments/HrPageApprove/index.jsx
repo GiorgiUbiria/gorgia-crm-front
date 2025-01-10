@@ -37,6 +37,18 @@ const STATUS_MAPPING = {
   rejected: "rejected",
 }
 
+const REGIONS = [
+  'თბილისი',
+  'ბათუმი',
+  'ქუთაისი',
+  'ზუგდიდი',
+  'თელავი',
+  'მარნეული',
+  'რუსთავი',
+  'გორი',
+  'საჩხერე'
+];
+
 const DOCUMENT_TYPES = {
   PAID_EMPLOYMENT: "ხელფასიანი ცნობა",
   UNPAID_EMPLOYMENT: "უხელფასო ცნობა",
@@ -106,6 +118,10 @@ const HrPageApprove = () => {
       comment: "",
       salary: "",
       salary_text: "",
+      template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) + 1,
+      document_number: "",
+      started_date: documentData?.is_other_user !== 1 ? documentData?.user?.working_start_date : documentData?.started_working_day,
+      region: documentData?.region,
       template_num:
         Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) +
         1,
@@ -526,6 +542,41 @@ const HrPageApprove = () => {
                                 {getDocumentTypeHelpText(values.documentType)}
                               </div>
                             )}
+                          </div>
+
+                          <div className="mb-2">
+                            <Label className="form-label">
+                              რეგიონი
+                            </Label>
+                            <Field
+                              as="select"
+                              name="region"
+                              className="form-select"
+                              value={formData.region}
+                              onChange={e =>
+                                setFormData(data => ({
+                                  ...data,
+                                  region: e.target.value,
+                                }))
+                              }
+                            >
+                              <option value="">აირჩიეთ რეგიონი</option>
+                              {Object.entries(REGIONS).map(
+                                ([key, type]) => (
+                                  <option 
+                                  key={key} 
+                                  value={type}
+                                  >
+                                    {type}
+                                  </option>
+                                )
+                              )}
+                            </Field>
+                            <ErrorMessage
+                              name="region"
+                              component="div"
+                              className="text-danger mt-1"
+                            />
                           </div>
 
                           {/* User Info */}

@@ -21,6 +21,18 @@ const DOCUMENT_TYPES = {
   UNPAID_PROBATION: "გამოსაცდელი ვადით უხელფასო",
 }
 
+const REGIONS = [
+  'თბილისი',
+  'ბათუმი',
+  'ქუთაისი',
+  'ზუგდიდი',
+  'თელავი',
+  'მარნეული',
+  'რუსთავი',
+  'გორი',
+  'საჩხერე'
+];
+
 const isPaidDocument = type => {
   return (
     type === DOCUMENT_TYPES.PAID_EMPLOYMENT ||
@@ -81,6 +93,7 @@ const validationSchema = Yup.object().shape({
   documentType: Yup.string().required("დოკუმენტის ტიპი აუცილებელია"),
   id_number: Yup.string().required("პირადი ნომერი აუცილებელია"),
   position: Yup.string().required("პოზიცია აუცილებელია"),
+  region: Yup.string().required("რეგიონი აუცილებელია"),
   purpose: Yup.string().when("documentType", {
     is: type =>
       type === DOCUMENT_TYPES.PAID_EMPLOYMENT ||
@@ -147,6 +160,7 @@ const HrPage = () => {
             d => d === values.documentType
           ) + 1,
         started_date: activeTab == "2" ? startedDate?.started_date : "",
+        region: values.region || '',
         ...(isPaidDocument(values.documentType) && { purpose: values.purpose }),
       }
 
@@ -241,7 +255,42 @@ const HrPage = () => {
           )}
         </div>
       </div>
+      <div>
+        <Label className="form-label">
+          რეგიონი
+        </Label>
+        <Field
+          as="select"
+          name="region"
+          className="form-select"
+        >
+          <option value="">
+            აირჩიეთ რეგიონი
+          </option>
+          {Object.entries(REGIONS).map(
+            ([key, type]) => (
+              <option
+                key={key}
+                value={type}
+              >
+                {type}
+              </option>
+            )
+          )}
+        </Field>
+        <ErrorMessage
+          name="region"
+          component="div"
+          className="text-danger mt-1"
+        />
+        
+      </div>
 
+
+      {/* User Info */}
+      <div className="row g-3 mb-4 mt-2">
+        {renderUserInfo(currentUser,'პირადი ნომერი', 'id_number', isAdmin)}
+        {renderUserInfo(currentUser, 'პოზიცია', 'position', isAdmin)}
       {/* User Info */}
       <div className="row g-3 mb-4">
         {renderUserInfo(currentUser, "პირადი ნომერი", "id_number", isAdmin)}
