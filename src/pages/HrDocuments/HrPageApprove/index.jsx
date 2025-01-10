@@ -12,7 +12,8 @@ import { TabContent, Label, Spinner } from "reactstrap"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import DatePicker from "components/DatePicker"
 import moment from "moment"
-import { toast } from "react-hot-toast"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 const statusMap = {
   in_progress: {
@@ -742,6 +743,7 @@ const HrPageApprove = () => {
           </Dialog>
         </div>
       </div>
+      <ToastContainer />
     </>
   )
 }

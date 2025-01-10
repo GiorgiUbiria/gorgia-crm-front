@@ -11,6 +11,7 @@ import {
   Button,
 } from "reactstrap"
 import { useUpdateDepartment, useAssignHead } from "../../queries/admin"
+import Select from "react-select"
 
 const EditDepartmentModal = ({
   isOpen,
@@ -28,6 +29,12 @@ const EditDepartmentModal = ({
     department_head: "",
   })
 
+  // Convert users array to react-select format
+  const userOptions = users.map(user => ({
+    value: user.id,
+    label: `${user.name} ${user.sur_name}`,
+  }))
+
   useEffect(() => {
     if (department) {
       setFormData({
@@ -38,12 +45,22 @@ const EditDepartmentModal = ({
     }
   }, [department])
 
+  // Modified handleChange to work with react-select
   const handleChange = e => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }))
+    if (e?.target) {
+      // Handle regular input changes
+      const { name, value } = e.target
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }))
+    } else if (e?.value) {
+      // Handle react-select changes
+      setFormData(prev => ({
+        ...prev,
+        department_head: e.value,
+      }))
+    }
   }
 
   const handleSubmit = async e => {
@@ -98,20 +115,46 @@ const EditDepartmentModal = ({
           </FormGroup>
           <FormGroup>
             <Label for="department_head">დეპარტამენტის უფროსი</Label>
-            <Input
+            <Select
               id="department_head"
-              type="select"
               name="department_head"
-              value={formData.department_head}
+              value={userOptions.find(
+                option => option.value === formData.department_head
+              )}
               onChange={handleChange}
-            >
-              <option value="">აირჩიეთ დეპარტამენტის უფროსი</option>
-              {users.map(user => (
-                <option key={user.id} value={user.id}>
-                  {user.name} {user.sur_name}
-                </option>
-              ))}
-            </Input>
+              options={userOptions}
+              isClearable
+              placeholder="აირჩიეთ დეპარტამენტის უფროსი"
+              noOptionsMessage={() => "მომხმარებელი ვერ მოიძებნა"}
+              styles={{
+                menu: provided => ({
+                  ...provided,
+                  backgroundColor: "white",
+                }),
+                option: (provided, state) => ({
+                  ...provided,
+                  backgroundColor: state.isSelected
+                    ? "#0d6efd"
+                    : state.isFocused
+                    ? "#e9ecef"
+                    : "white",
+                  color: state.isSelected ? "white" : "black",
+                  "&:active": {
+                    backgroundColor: "#0d6efd",
+                  },
+                }),
+                control: (provided, state) => ({
+                  ...provided,
+                  borderColor: state.isFocused ? "#0d6efd" : "#ced4da",
+                  "&:hover": {
+                    borderColor: "#0d6efd",
+                  },
+                  boxShadow: state.isFocused
+                    ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)"
+                    : "none",
+                }),
+              }}
+            />
           </FormGroup>
         </ModalBody>
         <ModalFooter>
