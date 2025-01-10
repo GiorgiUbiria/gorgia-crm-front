@@ -2,7 +2,7 @@ import { useGetUsers } from "../queries/user"
 
 const useFetchUsers = () => {
   const { data: users = [], isLoading: loading, error, refetch } = useGetUsers()
-
+  console.log("users", users)
   return {
     users,
     loading,

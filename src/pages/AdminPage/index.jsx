@@ -7,9 +7,9 @@ import { usePermissions } from "hooks/usePermissions"
 import useFetchUser from "hooks/useFetchUser"
 import {
   useGetDepartments,
-  useGetAdminUsers,
   useGetDepartmentMembers,
 } from "../../queries/admin"
+import { useGetUsers } from "../../queries/user"
 
 const AdminPage = () => {
   document.title = "ადმინისტრირება | Gorgia LLC"
@@ -19,13 +19,11 @@ const AdminPage = () => {
   const { isAdmin, isDepartmentHead, userDepartmentId, isHrMember } =
     usePermissions()
 
-    
-
   const { data: departments = [] } = useGetDepartments({
     enabled: isAdmin,
   })
 
-  const { data: adminUsers = [], refetch: refetchUsers } = useGetAdminUsers({
+  const { data: adminUsers = [], refetch: refetchUsers } = useGetUsers({
     enabled: isAdmin || isHrMember,
   })
 

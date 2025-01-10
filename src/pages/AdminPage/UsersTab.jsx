@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useCallback } from "react"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
 import Dialog from "@mui/material/Dialog"
@@ -16,6 +16,18 @@ import {
   useApproveDepartmentMember,
   useRejectDepartmentMember,
 } from "../../queries/admin"
+
+const roleNameMapping = {
+  admin: "ადმინისტრატორი",
+  hr: "HR მენეჯერი",
+  vip: "VIP მომხმარებელი",
+  user: "მომხმარებელი",
+  department_head: "დეპარტამენტის უფროსი",
+  department_head_assistant: "დეპარტამენტის უფროსის ასისტენტი",
+  manager: "მენეჯერი",
+  ceo: "გენერალური დირექტორი",
+  ceo_assistant: "გენერალური დირექტორის ასისტენტი",
+}
 
 const UsersTab = ({
   users = [],
@@ -100,13 +112,16 @@ const UsersTab = ({
     setAddUserModal(true)
   }
 
-  const canManageUser = user => {
-    if (isAdmin) return true
-    if (isDepartmentHead && user.department_id === currentUserDepartmentId)
-      return true
-    if (isHrMember) return true
-    return false
-  }
+  const canManageUser = useCallback(
+    user => {
+      if (isAdmin) return true
+      if (isDepartmentHead && user.department_id === currentUserDepartmentId)
+        return true
+      if (isHrMember) return true
+      return false
+    },
+    [isAdmin, isDepartmentHead, currentUserDepartmentId, isHrMember]
+  )
 
   const columns = useMemo(
     () => [
@@ -128,14 +143,22 @@ const UsersTab = ({
         disableSortBy: true,
       },
       {
+        Header: "მობილური ნომერი",
+        accessor: "mobile_number",
+        disableSortBy: true,
+      },
+      {
         Header: "დეპარტამენტი",
         accessor: "department",
         disableSortBy: true,
       },
       {
-        Header: "მობილური ნომერი",
-        accessor: "mobile_number",
-        disableSortBy: true,
+        Header: "პოზიცია",
+        accessor: "position",
+      },
+      {
+        Header: "როლი",
+        accessor: "role",
       },
       {
         Header: "დაწყების თარიღი",
@@ -151,7 +174,7 @@ const UsersTab = ({
           ),
       },
       {
-        Header: "სპერაცია",
+        Header: "სტატუსი",
         accessor: "status",
         Cell: ({ value }) => (
           <span
@@ -267,7 +290,11 @@ const UsersTab = ({
       id: user.id,
       role:
         user.roles?.length > 0
-          ? user.roles?.map(role => role.name).join(", ")
+          ? user.roles
+              ?.map(role => {
+                return roleNameMapping[role.slug] || role.name
+              })
+              .join(", ")
           : "არ აქვს როლი მინიჭებული",
       position: user.position || "-",
       name: {
