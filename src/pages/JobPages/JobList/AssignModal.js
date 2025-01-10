@@ -4,15 +4,20 @@ import { toast } from "react-toastify"
 import Select from "react-select"
 import useCurrentUser from "../../../hooks/useCurrentUser"
 import useUserRoles from "../../../hooks/useUserRoles"
+import useFetchUsers from "../../../hooks/useFetchUsers"
 
-const AssignModal = ({ isOpen, toggle, onAssign, usersList }) => {
+const AssignModal = ({ isOpen, toggle, onAssign }) => {
   const [selectedUsers, setSelectedUsers] = useState([])
   const { currentUser } = useCurrentUser()
   const userRoles = useUserRoles()
+  const { users: allUsers, loading: usersLoading } = useFetchUsers()
 
   const isAdmin = userRoles.includes("admin")
-  const isDepartmentHead = userRoles.includes("department_head") && currentUser?.department_id === 5
+  const isDepartmentHead =
+    userRoles.includes("department_head") && currentUser?.department_id === 5
   const isITMember = currentUser?.department_id === 5
+
+  const usersList = allUsers?.filter(user => user.department_id === 5)
 
   const handleClose = () => {
     setSelectedUsers([])
@@ -22,11 +27,9 @@ const AssignModal = ({ isOpen, toggle, onAssign, usersList }) => {
   const handleSubmit = async e => {
     e.preventDefault()
     try {
-      // If regular IT member, just assign to self
       if (isITMember && !isAdmin && !isDepartmentHead) {
         await onAssign([currentUser.id])
       } else {
-        // For admin and department head, use selected users
         await onAssign(selectedUsers.map(user => user.value))
       }
       toast.success("დავალება მიღებულია")
@@ -39,11 +42,43 @@ const AssignModal = ({ isOpen, toggle, onAssign, usersList }) => {
     }
   }
 
-  const userOptions =
-    usersList?.map(user => ({
-      value: user.id,
-      label: `${user.name} ${user.sur_name}`,
-    })) || []
+  const userOptions = usersLoading
+    ? []
+    : usersList?.map(user => ({
+        value: user.id,
+        label: `${user.name} ${user.sur_name}`,
+      })) || []
+
+  const customSelectStyles = {
+    option: (provided, state) => ({
+      ...provided,
+      color: "#333", // Dark text color
+      backgroundColor: state.isSelected
+        ? "#007bff"
+        : state.isFocused
+        ? "#f8f9fa"
+        : "white",
+      "&:hover": {
+        backgroundColor: "#f8f9fa",
+      },
+    }),
+    control: provided => ({
+      ...provided,
+      backgroundColor: "white",
+    }),
+    singleValue: provided => ({
+      ...provided,
+      color: "#333", // Dark text color
+    }),
+    multiValue: provided => ({
+      ...provided,
+      backgroundColor: "#e9ecef",
+    }),
+    multiValueLabel: provided => ({
+      ...provided,
+      color: "#333", // Dark text color
+    }),
+  }
 
   return (
     <Modal
@@ -73,12 +108,14 @@ const AssignModal = ({ isOpen, toggle, onAssign, usersList }) => {
               <Label className="form-label">პასუხისმგებელი პირები</Label>
               <Select
                 isMulti
+                isLoading={usersLoading}
                 options={userOptions}
                 value={selectedUsers}
                 onChange={setSelectedUsers}
                 className="basic-multi-select"
                 classNamePrefix="select"
                 placeholder="აირჩიეთ პასუხისმგებელი პირები"
+                styles={customSelectStyles}
               />
             </div>
           )}

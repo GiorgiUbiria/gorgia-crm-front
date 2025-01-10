@@ -128,8 +128,6 @@ const TaskModal = ({
       label: `${user.name} ${user.sur_name}`,
     })) || []
 
-  console.log("User List", usersList)
-
   return (
     <Modal
       isOpen={isOpen}

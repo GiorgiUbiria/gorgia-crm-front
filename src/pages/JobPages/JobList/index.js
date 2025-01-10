@@ -63,13 +63,23 @@ const TaskList = () => {
   } = useTaskQueries(isITDepartment)
 
   const sortedTasks = useMemo(() => {
-    const tasksToSort = isITDepartment || hasEditPermission
-      ? activeTab === "all"
-        ? [...(tasksList?.data || [])]
-        : [...(assignedTasksList?.data || [])]
-      : [...(myTasksList?.data || [])]
+    const tasksToSort =
+      isITDepartment || hasEditPermission
+        ? activeTab === "all"
+          ? [...(tasksList?.data || [])]
+          : activeTab === "assigned"
+          ? [...(assignedTasksList?.data || [])]
+          : [...(tasksList?.data || [])]
+        : [...(myTasksList?.data || [])]
 
-    return tasksToSort.sort((a, b) => {
+    const filteredTasks = tasksToSort.filter(task => {
+      if (activeTab === "completed") {
+        return task.status === "Completed"
+      }
+      return task.status !== "Completed"
+    })
+
+    return filteredTasks.sort((a, b) => {
       const dateA = new Date(a.created_at).getTime()
       const dateB = new Date(b.created_at).getTime()
 
@@ -129,7 +139,7 @@ const TaskList = () => {
     try {
       await assignTaskMutation.mutateAsync({
         taskId: task.id,
-        userIds: selectedUsers
+        userIds: selectedUsers,
       })
       setAssignModal(false)
     } catch (error) {
@@ -207,7 +217,6 @@ const TaskList = () => {
         isOpen={assignModal}
         toggle={setAssignModal}
         onAssign={handleAssignTask}
-        usersList={usersList}
       />
 
       {isLoading ? (
@@ -228,7 +237,7 @@ const TaskList = () => {
                         onClick={() => setActiveTab("all")}
                         style={{ cursor: "pointer" }}
                       >
-                        ყველა ბილეთი
+                        ახალი და მიმდინარე
                       </NavLink>
                     </NavItem>
                     <NavItem>
@@ -238,6 +247,15 @@ const TaskList = () => {
                         style={{ cursor: "pointer" }}
                       >
                         ჩემზე მიმაგრებული
+                      </NavLink>
+                    </NavItem>
+                    <NavItem>
+                      <NavLink
+                        className={activeTab === "completed" ? "active" : ""}
+                        onClick={() => setActiveTab("completed")}
+                        style={{ cursor: "pointer" }}
+                      >
+                        დასრულებული
                       </NavLink>
                     </NavItem>
                   </Nav>
