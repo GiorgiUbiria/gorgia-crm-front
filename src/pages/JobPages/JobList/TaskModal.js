@@ -57,12 +57,22 @@ const TaskModal = ({
       status: Yup.string()
         .required("მიუთითეთ სტატუსი")
         .oneOf(["Pending", "In Progress", "Completed", "Cancelled"]),
-      ip_address: Yup.string()
-        .required("მიუთითეთ IP მისამართი")
-        .matches(
-          /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
-          "Invalid IP address format"
-        ),
+      ip_address: Yup.string().when("task_title", {
+        is: task_title =>
+          [
+            "პრინტერის პრობლემა",
+            "ელ-ფოსტის პრობლემა",
+            "ფაილების აღდგენა",
+          ].includes(task_title),
+        then: schema =>
+          schema
+            .required("მიუთითეთ IP მისამართი")
+            .matches(
+              /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
+              "Invalid IP address format"
+            ),
+        otherwise: schema => schema.nullable(),
+      }),
       phone_number: Yup.string()
         .required("მიუთითეთ ტელეფონის ნომერი")
         .matches(/^[0-9+\-\s()]*$/, "Invalid phone number format"),
@@ -170,6 +180,34 @@ const TaskModal = ({
                     <FormFeedback>{validation.errors.task_title}</FormFeedback>
                   )}
               </div>
+              {[
+                "პრინტერის პრობლემა",
+                "ელ-ფოსტის პრობლემა",
+                "ფაილების აღდგენა",
+              ].includes(validation.values.task_title) && (
+                <div className="mb-3">
+                  <Label className="form-label">IP მისამართი</Label>
+                  <Input
+                    name="ip_address"
+                    type="text"
+                    className="form-control"
+                    placeholder="ჩაწერეთ თქვენი იპ მისამართი"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.ip_address || ""}
+                    invalid={
+                      validation.touched.ip_address &&
+                      validation.errors.ip_address
+                    }
+                  />
+                  {validation.touched.ip_address &&
+                    validation.errors.ip_address && (
+                      <FormFeedback>
+                        {validation.errors.ip_address}
+                      </FormFeedback>
+                    )}
+                </div>
+              )}
               <div className="mb-3">
                 <Label className="form-label">აღწერა</Label>
                 <Input
@@ -211,26 +249,6 @@ const TaskModal = ({
                     <FormFeedback>
                       {validation.errors.phone_number}
                     </FormFeedback>
-                  )}
-              </div>
-              <div className="mb-3">
-                <Label className="form-label">IP მისამართი</Label>
-                <Input
-                  name="ip_address"
-                  type="text"
-                  className="form-control"
-                  placeholder="ჩაწერეთ თქვენი იპ მისამართი"
-                  onChange={validation.handleChange}
-                  onBlur={validation.handleBlur}
-                  value={validation.values.ip_address || ""}
-                  invalid={
-                    validation.touched.ip_address &&
-                    validation.errors.ip_address
-                  }
-                />
-                {validation.touched.ip_address &&
-                  validation.errors.ip_address && (
-                    <FormFeedback>{validation.errors.ip_address}</FormFeedback>
                   )}
               </div>
               <div className="mb-3">
