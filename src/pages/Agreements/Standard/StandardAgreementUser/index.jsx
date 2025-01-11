@@ -15,43 +15,27 @@ import {
 } from "react-icons/bs"
 import { toast, ToastContainer } from "react-toastify"
 
-const statusMap = {
-  pending: {
-    label: "განხილვაში",
-    icon: "bx-time",
-    color: "#FFA500",
-  },
-  approved: {
-    label: "დამტკიცებული",
-    icon: "bx-check-circle",
-    color: "#28a745",
-  },
-  rejected: {
-    label: "უარყოფილი",
-    icon: "bx-x-circle",
-    color: "#dc3545",
-  },
-}
-
-const STATUS_MAPPING = {
-  pending: "pending",
-  approved: "approved",
-  rejected: "rejected",
-}
-
-const handleDownload = async agreementId => {
-  try {
-    await downloadAgreementService(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
-  } catch (error) {
-    console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
-  }
-}
-
 const StandardAgreementUser = () => {
   document.title = "ჩემი ხელშეკრულებები | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
+
+  const statusMap = {
+    pending: {
+      label: "განხილვაში",
+      icon: "bx-time",
+      color: "#e65100",
+    },
+    rejected: {
+      label: "უარყოფილი",
+      icon: "bx-x-circle",
+      color: "#c62828",
+    },
+    approved: {
+      label: "დამტკიცებული",
+      icon: "bx-check-circle",
+      color: "#2e7d32",
+    },
+  }
 
   const fetchAgreements = async () => {
     try {
@@ -70,58 +54,20 @@ const StandardAgreementUser = () => {
   }, [])
 
   const transformedAgreements = useMemo(() => {
-    return agreements.map(agreement => {
-      return {
-        id: agreement.id,
-        status: STATUS_MAPPING[agreement.status] || agreement.status,
-        created_at: new Date(agreement.created_at).toLocaleDateString(),
-        updated_at: new Date(agreement.updated_at).toLocaleString(),
-        accepted_at: agreement.accepted_at
-          ? new Date(agreement.accepted_at).toLocaleString()
-          : "-",
-        rejected_at: agreement.rejected_at
-          ? new Date(agreement.rejected_at).toLocaleString()
-          : "-",
-        requested_by: agreement.user.name + " " + agreement.user.sur_name,
-        contract_initiator: agreement.contract_initiator_name,
-        contragent: {
-          name: agreement.contragent_name,
-          id: agreement.contragent_id,
-          address: agreement.contragent_address,
-          phone: agreement.contragent_phone_number,
-          email: agreement.contragent_email,
-        },
-        director: {
-          name: agreement.contragent_director_name,
-          phone: agreement.contragent_director_phone_number,
-        },
-        expanded: {
-          different_terms: agreement.payment_different_terms,
-          contract_initiator: agreement.contract_initiator_name,
-          conscription_term: agreement.conscription_term,
-          product_delivery_address: agreement.product_delivery_address,
-          product_payment_term: agreement.product_payment_term,
-          bank_account: agreement.bank_account,
-          rejection_reason: agreement.rejection_reason || null,
-          price: agreement.product_cost,
-          requested_by: agreement.user.name + " " + agreement.user.sur_name,
-          status: STATUS_MAPPING[agreement.status] || agreement.status,
-          created_at: new Date(agreement.created_at).toLocaleDateString(),
-          updated_at: new Date(agreement.updated_at).toLocaleString(),
-          contragent: {
-            name: agreement.contragent_name,
-            id: agreement.contragent_id,
-            address: agreement.contragent_address,
-            phone: agreement.contragent_phone_number,
-            email: agreement.contragent_email,
-          },
-          director: {
-            name: agreement.contragent_director_name,
-            phone: agreement.contragent_director_phone_number,
-          },
-        },
-      }
-    })
+    return agreements.map(agreement => ({
+      id: agreement.id,
+      contragent_name: agreement.contragent_name,
+      contract_initiator_name: agreement.contract_initiator_name,
+      created_at: agreement.created_at,
+      status: agreement.status,
+      accepted_at: agreement.accepted_at,
+      rejected_at: agreement.rejected_at,
+      expanded: {
+        ...agreement,
+        user: agreement.user,
+        products: agreement.products || [],
+      },
+    }))
   }, [agreements])
 
   const columns = useMemo(
@@ -132,12 +78,12 @@ const StandardAgreementUser = () => {
       },
       {
         Header: "კონტრაგენტის დასახელება",
-        accessor: "contragent.name",
+        accessor: "contragent_name",
         disableSortBy: true,
       },
       {
         Header: "ხელშეკრულების ინიციატორი",
-        accessor: "contract_initiator",
+        accessor: "contract_initiator_name",
         disableSortBy: true,
       },
       {
@@ -218,6 +164,16 @@ const StandardAgreementUser = () => {
     },
   ]
 
+  const handleDownload = async agreementId => {
+    try {
+      await downloadAgreementService(agreementId)
+      toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
+    } catch (error) {
+      console.error("Download failed:", error)
+      toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
+    }
+  }
+
   const renderRowDetails = useCallback(row => {
     if (!row) return null
 
@@ -237,12 +193,13 @@ const StandardAgreementUser = () => {
         <div className="d-flex align-items-center mb-4 gap-2 text-muted">
           <BsPerson className="fs-3 text-primary" />
           <strong>მოითხოვა:</strong>
-          <span className="ms-2">{row.expanded.requested_by}</span>
+          <span className="ms-2">{row.expanded.user?.name || "N/A"}</span>
         </div>
 
         {/* Details Grid */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
+            {/* Payment Terms Section */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -251,11 +208,39 @@ const StandardAgreementUser = () => {
                     გადახდის განსხვავებული პირობები
                   </div>
                   <div className="fw-medium">
-                    {row.expanded.different_terms ? "კი" : "არა"}
+                    {row.expanded.payment_different_terms ? "კი" : "არა"}
                   </div>
                 </div>
               </div>
             </Col>
+            {row.expanded.payment_different_terms && (
+              <>
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bx bx-dollar fs-7 text-primary"></i>
+                    <div>
+                      <div className="text-muted small">ავანსის პროცენტი</div>
+                      <div className="fw-medium">
+                        {row.expanded.advance_payment_percentage}%
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bx bx-dollar fs-7 text-primary"></i>
+                    <div>
+                      <div className="text-muted small">დარჩენილი თანხის პროცენტი</div>
+                      <div className="fw-medium">
+                        {row.expanded.remaining_payment_percentage}%
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+              </>
+            )}
+
+            {/* Contract Details */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsVoicemail className="fs-7 text-primary" />
@@ -264,7 +249,7 @@ const StandardAgreementUser = () => {
                     ხელშეკრულების ინიციატორი
                   </div>
                   <div className="fw-medium">
-                    {row.expanded.contract_initiator}
+                    {row.expanded.contract_initiator_name}
                   </div>
                 </div>
               </div>
@@ -273,9 +258,9 @@ const StandardAgreementUser = () => {
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
-                  <div className="text-muted small">ხელშეკრულების ვადა</div>
+                  <div className="text-muted small">კონსიგნაციის ვადა</div>
                   <div className="fw-medium">
-                    {row.expanded.conscription_term}
+                    {row.expanded.conscription_term} დღე
                   </div>
                 </div>
               </div>
@@ -297,7 +282,7 @@ const StandardAgreementUser = () => {
                 <div>
                   <div className="text-muted small">გადახდის ვადა</div>
                   <div className="fw-medium">
-                    {row.expanded.product_payment_term}
+                    {row.expanded.product_payment_term} დღე
                   </div>
                 </div>
               </div>
@@ -311,23 +296,49 @@ const StandardAgreementUser = () => {
                 </div>
               </div>
             </Col>
-            {/* Additional Fields */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <i className="bx bx-dollar fs-7 text-primary"></i>
                 <div>
-                  <div className="text-muted small">ფასი</div>
-                  <div className="fw-medium">{row.expanded.price} ₾</div>
+                  <div className="text-muted small">პროდუქციის ღირებულება</div>
+                  <div className="fw-medium">{row.expanded.product_cost} ₾</div>
                 </div>
               </div>
             </Col>
+
+            {/* Products Section */}
+            <Col md={12}>
+              <div className="mt-4">
+                <h6 className="mb-3">პროდუქტები</h6>
+                <div className="table-responsive">
+                  <table className="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>დასახელება</th>
+                        <th>ფასი</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {row.expanded.products?.map((product, index) => (
+                        <tr key={index}>
+                          <td>{product.product_name}</td>
+                          <td>{product.product_price} ₾</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </Col>
+
+            {/* Contragent Details */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <i className="bx bx-building fs-7 text-primary"></i>
                 <div>
                   <div className="text-muted small">კონტრაგენტის მისამართი</div>
                   <div className="fw-medium">
-                    {row.expanded.contragent.address}
+                    {row.expanded.contragent_address}
                   </div>
                 </div>
               </div>
@@ -338,7 +349,7 @@ const StandardAgreementUser = () => {
                 <div>
                   <div className="text-muted small">კონტრაგენტის ტელეფონი</div>
                   <div className="fw-medium">
-                    {row.expanded.contragent.phone}
+                    {row.expanded.contragent_phone_number}
                   </div>
                 </div>
               </div>
@@ -349,7 +360,7 @@ const StandardAgreementUser = () => {
                 <div>
                   <div className="text-muted small">კონტრაგენტის ელფოსტა</div>
                   <div className="fw-medium">
-                    {row.expanded.contragent.email}
+                    {row.expanded.contragent_email}
                   </div>
                 </div>
               </div>
@@ -359,7 +370,7 @@ const StandardAgreementUser = () => {
                 <i className="bx bx-user fs-7 text-primary"></i>
                 <div>
                   <div className="text-muted small">დირექტორის სახელი</div>
-                  <div className="fw-medium">{row.expanded.director.name}</div>
+                  <div className="fw-medium">{row.expanded.contragent_director_name}</div>
                 </div>
               </div>
             </Col>
@@ -368,28 +379,28 @@ const StandardAgreementUser = () => {
                 <i className="bx bx-phone-call fs-7 text-primary"></i>
                 <div>
                   <div className="text-muted small">დირექტორის ტელეფონი</div>
-                  <div className="fw-medium">{row.expanded.director.phone}</div>
+                  <div className="fw-medium">{row.expanded.contragent_director_phone_number}</div>
                 </div>
               </div>
             </Col>
           </Row>
-          <Row className="mt-4">
-            <Col md={12}>
-              {row.status === "approved" && (
+          {row.expanded.status === "approved" && (
+            <Row className="mt-4">
+              <Col md={12}>
                 <button
                   className="btn btn-primary"
-                  onClick={() => handleDownload(row.id)}
+                  onClick={() => handleDownload(row.expanded.id)}
                 >
                   <i className="bx bx-download me-2"></i>
                   ხელშეკრულების ჩამოტვირთვა
                 </button>
-              )}
-            </Col>
-          </Row>
+              </Col>
+            </Row>
+          )}
         </div>
       </div>
     )
-  }, [])
+  }, [handleDownload])
 
   return (
     <>
