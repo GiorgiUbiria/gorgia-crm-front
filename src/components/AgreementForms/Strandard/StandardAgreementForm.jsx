@@ -361,7 +361,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                     id="contragent_id"
                     value={formData.contragent_id}
                     onChange={handleInputChange}
-                    placeholder="ჩაწერეთ საი���ენტიფიკაციო კოდი..."
+                    placeholder="ჩაწერეთ საიდენტიფიკაციო კოდი..."
                   />
                   {errors.contragent_id && (
                     <div className="form-error">
@@ -451,7 +451,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                     id="bank_account"
                     value={formData.bank_account}
                     onChange={handleInputChange}
-                    placeholder="ჩაწერეთ ს���ბანკო რეკვიზიტები..."
+                    placeholder="ჩაწერეთ საბანკო რეკვიზიტები..."
                   />
                   {errors.bank_account && (
                     <div className="form-error">

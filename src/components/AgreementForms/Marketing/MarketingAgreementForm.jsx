@@ -22,7 +22,8 @@ const MarketingAgreementForm = ({ onSuccess }) => {
     director_full_name: "",
     director_id_number: "",
     marketing_service_type: "",
-    marketing_service_term: "",
+    marketing_service_start_date: "",
+    marketing_service_end_date: "",
     service_cost: "",
     service_payment_details: "",
     service_active_term: "",
@@ -87,27 +88,45 @@ const MarketingAgreementForm = ({ onSuccess }) => {
         break
       case "executor_id_number":
         if (!value) errorMsg = "ველი აუცილებელია"
-        else if (value.length !== 11) errorMsg = "საიდენტიფიკაციო ნომერი არასწორია"
+        else if (value.length !== 11)
+          errorMsg = "საიდენტიფიკაციო ნომერი არასწორია"
         break
       case "director_id_number":
         if (!value) errorMsg = "ველი აუცილებელია"
-        else if (value.length !== 11) errorMsg = "საიდენტიფიკაციო ნომერი არასწორია"
+        else if (value.length !== 11)
+          errorMsg = "საიდენტიფიკაციო ნომერი არასწორია"
         break
       case "executor_bank_swift":
         if (!value) errorMsg = "ველი აუცილებელია"
         else if (value.length !== 8) errorMsg = "სვიტის ნომერი არასწორია"
         break
-      case "marketing_service_term":
+      case "marketing_service_start_date":
         if (!value) errorMsg = "ველი აუცილებელია"
-        else if (isNaN(value) || Number(value) < 1)
-          errorMsg = "მნიშვნელობა უნდა იყოს დადებითი მთელი რიცხვი"
+        else {
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          const selectedDate = new Date(value)
+          if (selectedDate < today) {
+            errorMsg = "თარიღი უნდა იყოს დღევანდელი ან მომავალი"
+          }
+        }
+        break
+      case "marketing_service_end_date":
+        if (!value) errorMsg = "ველი აუცილებელია"
+        else if (
+          formData.marketing_service_start_date &&
+          value <= formData.marketing_service_start_date
+        ) {
+          errorMsg = "დასრულების თარიღი უნდა იყოს დაწყების თარიღის შემდეგ"
+        }
         break
       case "service_cost":
         if (!value) errorMsg = "ველი აუცილებელია"
         else if (isNaN(value) || Number(value) < 0)
           errorMsg = "მნიშვნელობა უნდა იყოს დადებითი რიცხვი"
         else if (!/^\d+(\.\d{0,2})?$/.test(value))
-          errorMsg = "მნიშვნელობა უნდა იყოს დადებითი რიცხვი და მაქსიმალური სამი სახის ნულები"
+          errorMsg =
+            "მნიშვნელობა უნდა იყოს დადებითი რიცხვი და მაქსიმალური სამი სახის ნულები"
         break
       case "service_active_term":
         if (!value) errorMsg = "ველი აუცილებელია"
@@ -184,7 +203,8 @@ const MarketingAgreementForm = ({ onSuccess }) => {
           director_full_name: "",
           director_id_number: "",
           marketing_service_type: "",
-          marketing_service_term: "",
+          marketing_service_start_date: "",
+          marketing_service_end_date: "",
           service_cost: "",
           service_payment_details: "",
           service_active_term: "",
@@ -263,7 +283,8 @@ const MarketingAgreementForm = ({ onSuccess }) => {
       ],
       3: [
         "marketing_service_type",
-        "marketing_service_term",
+        "marketing_service_start_date",
+        "marketing_service_end_date",
         "service_cost",
         "service_payment_details",
         "service_active_term",
@@ -292,7 +313,8 @@ const MarketingAgreementForm = ({ onSuccess }) => {
       ],
       3: [
         "marketing_service_type",
-        "marketing_service_term",
+        "marketing_service_start_date",
+        "marketing_service_end_date",
         "service_cost",
         "service_payment_details",
         "service_active_term",
@@ -361,7 +383,9 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               </Col>
               <Col lg="6">
                 <div className="mb-3">
-                  <Label for="executor_id_number">საიდენტიფიკაციო კოდი/პირადი ნომერი</Label>
+                  <Label for="executor_id_number">
+                    საიდენტიფიკაციო კოდი/პირადი ნომერი
+                  </Label>
                   <Input
                     type="text"
                     className={classnames("form-control", {
@@ -385,7 +409,9 @@ const MarketingAgreementForm = ({ onSuccess }) => {
             <Row>
               <Col lg="6">
                 <div className="mb-3">
-                  <Label for="executor_home_address">იურიდიული/საცხოვრებელი მისამართი</Label>
+                  <Label for="executor_home_address">
+                    იურიდიული/საცხოვრებელი მისამართი
+                  </Label>
                   <Input
                     type="text"
                     className={classnames("form-control", {
@@ -484,9 +510,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
             <Row>
               <Col lg="6">
                 <div className="mb-3">
-                  <Label for="executor_bank_account">
-                    ანგარიშის ნომერი
-                  </Label>
+                  <Label for="executor_bank_account">ანგარიშის ნომერი</Label>
                   <Input
                     type="text"
                     className={classnames("form-control", {
@@ -629,29 +653,60 @@ const MarketingAgreementForm = ({ onSuccess }) => {
                   )}
                 </div>
               </Col>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="marketing_service_term">
-                    მარკეტინგული მომსახურების პერიოდი (დღეებში)
-                  </Label>
-                  <Input
-                    type="number"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.marketing_service_term,
-                    })}
-                    id="marketing_service_term"
-                    value={formData.marketing_service_term}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ მომსახურების ვადა..."
-                    min="1"
-                  />
-                  {errors.marketing_service_term && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.marketing_service_term}
+            </Row>
+            <Row>
+              <Col lg="12">
+                <Row>
+                  <Col lg="6">
+                    <div className="mb-3">
+                      <Label for="marketing_service_start_date">
+                        მარკეტინგული მომსახურების დაწყების თარიღი
+                      </Label>
+                      <Input
+                        type="date"
+                        className={classnames("form-control", {
+                          "is-invalid": errors.marketing_service_start_date,
+                        })}
+                        id="marketing_service_start_date"
+                        value={formData.marketing_service_start_date}
+                        onChange={handleInputChange}
+                        min={new Date().toISOString().split("T")[0]}
+                      />
+                      {errors.marketing_service_start_date && (
+                        <div className="form-error">
+                          <i className="bx bx-error-circle"></i>
+                          {errors.marketing_service_start_date}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </Col>
+                  <Col lg="6">
+                    <div className="mb-3">
+                      <Label for="marketing_service_end_date">
+                        მარკეტინგული მომსახურების დასრულების თარიღი
+                      </Label>
+                      <Input
+                        type="date"
+                        className={classnames("form-control", {
+                          "is-invalid": errors.marketing_service_end_date,
+                        })}
+                        id="marketing_service_end_date"
+                        value={formData.marketing_service_end_date}
+                        onChange={handleInputChange}
+                        min={
+                          formData.marketing_service_start_date ||
+                          new Date().toISOString().split("T")[0]
+                        }
+                      />
+                      {errors.marketing_service_end_date && (
+                        <div className="form-error">
+                          <i className="bx bx-error-circle"></i>
+                          {errors.marketing_service_end_date}
+                        </div>
+                      )}
+                    </div>
+                  </Col>
+                </Row>
               </Col>
             </Row>
             <Row>

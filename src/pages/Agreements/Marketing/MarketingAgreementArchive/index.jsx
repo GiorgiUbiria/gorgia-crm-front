@@ -84,7 +84,8 @@ const MarketingAgreementArchive = () => {
         expanded: {
           executor_firm_name: agreement.executor_firm_name,
           marketing_service_type: agreement.marketing_service_type,
-          marketing_service_term: agreement.marketing_service_term,
+          marketing_service_start_date: agreement.marketing_service_start_date,
+          marketing_service_end_date: agreement.marketing_service_end_date,
           service_cost: agreement.service_cost,
           executor_id_number: agreement.executor_id_number,
           executor_home_address: agreement.executor_home_address,
@@ -257,7 +258,7 @@ const MarketingAgreementArchive = () => {
                 <div>
                   <div className="text-muted small">სერვისის ვადა</div>
                   <div className="fw-medium">
-                    {row.expanded.marketing_service_term}
+                    {new Date(row.expanded.marketing_service_start_date).toLocaleDateString()} - {new Date(row.expanded.marketing_service_end_date).toLocaleDateString()}
                   </div>
                 </div>
               </div>

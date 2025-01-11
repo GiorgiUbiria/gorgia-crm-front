@@ -43,7 +43,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
       case "director_full_name":
         if (!value) errorMsg = "ველი არ შეიძლება იყოს ცარიელი"
         else if (value.length > 255)
-          errorMsg = "მაქსიმალური სიგრძეა 255 სი���ბოლო"
+          errorMsg = "მაქსიმალური სიგრძეა 255 სიმბოლო"
         break
       case "jursdictional_id_number":
       case "director_id_number":

@@ -664,7 +664,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
                       id="exclusive_placement"
                       value={formData.exclusive_placement}
                       onChange={handleInputChange}
-                      placeholder="���აწერეთ ექსკლუზიური განთავსების დეტალები..."
+                      placeholder="ჩაწერეთ ექსკლუზიური განთავსების დეტალები..."
                     />
                     {errors.exclusive_placement && (
                       <div className="form-error">

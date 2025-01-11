@@ -38,7 +38,7 @@ const STATUS_MAPPING = {
 const handleDownload = async agreementId => {
   try {
     await downloadAgreement(agreementId)
-    toast.success("ხელშეკრულება წარმა��ებით ჩამოიტვირთა")
+    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
   } catch (error) {
     console.error("Download failed:", error)
     toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
