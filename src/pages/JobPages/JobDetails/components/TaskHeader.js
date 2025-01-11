@@ -3,27 +3,35 @@ import { Clock, Calendar, User2 } from "lucide-react"
 import { formatDate } from "../../../../utils/dateUtils"
 
 const TaskHeader = ({ task }) => {
-  console.log("Task in header", task)
+  if (!task?.data) {
+    return null
+  }
+
   return (
     <div className="border-b border-gray-200 p-6">
       <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">
             {task.data.task_title}
-            <span className="text-sm ml-2 text-gray-500">
-              {task.data.user.name + " " + task.data.user.sur_name}
-            </span>
-            <span className="text-sm ml-2 text-gray-500">
-              {task.data.phone_number}
-            </span>
+            {task.data.user && (
+              <span className="text-sm ml-2 text-gray-500">
+                {task.data.user.name + " " + task.data.user.sur_name}
+              </span>
+            )}
+            {task.data.phone_number && (
+              <span className="text-sm ml-2 text-gray-500">
+                {task.data.phone_number}
+              </span>
+            )}
           </h1>
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-1">
               <User2 size={16} className="text-[#105D8D]" />
               <span>
                 {task.data.assigned_users
-                  .map(user => user.name + " " + user.sur_name)
-                  .join(", ")}
+                  ?.map(user => user?.name + " " + user?.sur_name)
+                  .filter(Boolean)
+                  .join(", ") || "არ არის მითითებული"}
               </span>
             </div>
             <div className="flex items-center gap-1">
@@ -37,7 +45,9 @@ const TaskHeader = ({ task }) => {
           </div>
         </div>
       </div>
-      <p className="text-gray-700 mt-4">აღწერა: {task.data.description}</p>
+      <p className="text-gray-700 mt-4">
+        აღწერა: {task.data.description || "აღწერა არ არის"}
+      </p>
     </div>
   )
 }

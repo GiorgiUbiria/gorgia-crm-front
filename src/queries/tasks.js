@@ -113,7 +113,7 @@ export const useUpdateTask = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }) => updateTask(id, data),
+    mutationFn: updateTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all })
     },

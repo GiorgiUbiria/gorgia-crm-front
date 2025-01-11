@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { MdEdit, MdDelete, Md1kPlus } from "react-icons/md"
 import { formatDate } from "../../../utils/dateUtils"
 import useCurrentUser from "../../../hooks/useCurrentUser"
+import useUserRoles from "../../../hooks/useUserRoles"
 
 const TaskTable = ({
   tasks,
@@ -18,6 +19,7 @@ const TaskTable = ({
 }) => {
   const navigate = useNavigate()
   const { currentUser, isLoading } = useCurrentUser()
+  const userRoles = useUserRoles()
 
   if (isLoading) {
     return (
@@ -59,11 +61,23 @@ const TaskTable = ({
   }
 
   const canShowAssignButton = task => {
+    // Check if user is in IT department
     if (!currentUser?.department_id === 5) return false
+
+    // Don't show for completed or cancelled tasks
     if (task.status === "Completed" || task.status === "Cancelled") return false
-    if (task.assigned_users?.some(user => user.id === currentUser?.id)) return false
+
+    // Don't show in assigned tab
     if (activeTab === "assigned") return false
-    return true
+
+    const isAdmin = userRoles.includes("admin")
+    const isITSupport = userRoles.includes("it_support")
+
+    // Always show for admin and IT support, regardless of assignment
+    if (isAdmin || isITSupport) return true
+
+    // For regular IT members, only show if they're not already assigned
+    return !task.assigned_users?.some(user => user.id === currentUser?.id)
   }
 
   const columns = [

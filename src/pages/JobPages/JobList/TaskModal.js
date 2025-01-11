@@ -15,7 +15,7 @@ import {
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import useCurrentUser from "../../../hooks/useCurrentUser"
-import Select from "react-select"
+import { SearchableSelect } from "../../../components/Select"
 
 const TaskModal = ({
   isOpen,
@@ -30,23 +30,25 @@ const TaskModal = ({
 }) => {
   const { currentUser, isLoading: userLoading } = useCurrentUser()
 
+  const initialValues = {
+    user_id: currentUser?.id || "",
+    task_title: task?.task_title || "",
+    description: task?.description || "",
+    priority: task?.priority || "Low",
+    status: task?.status || "Pending",
+    ip_address: task?.ip_address || "",
+    phone_number: task?.phone_number || "",
+    assigned_users:
+      task?.assigned_users?.map(user => ({
+        value: user.id,
+        label: `${user.name} ${user.sur_name}`,
+      })) || [],
+    due_date: task?.due_date || null,
+  }
+
   const validation = useFormik({
     enableReinitialize: true,
-    initialValues: {
-      user_id: task?.user_id || currentUser?.id,
-      task_title: task?.task_title || "",
-      description: task?.description || "",
-      priority: task?.priority || "Medium",
-      status: task?.status || "Pending",
-      ip_address: task?.ip_address || "",
-      phone_number: task?.phone_number || "",
-      assigned_users:
-        task?.assigned_users?.map(user => ({
-          value: user.id,
-          label: `${user.name} ${user.sur_name}`,
-        })) || [],
-      due_date: task?.due_date || new Date().toISOString().split("T")[0],
-    },
+    initialValues,
     validationSchema: Yup.object({
       user_id: Yup.number().required("User ID is required"),
       task_title: Yup.string().required("მიუთითეთ პრობლემის ტიპი"),
@@ -86,13 +88,28 @@ const TaskModal = ({
     }),
     onSubmit: async values => {
       try {
+        const isAdmin = userRoles.includes("admin")
+        const isITSupport = userRoles.includes("it_support")
+        const isDepartmentHead =
+          userRoles.includes("department_head") &&
+          currentUser?.department_id === 5
+
         const formData = {
           ...values,
-          assigned_users: values.assigned_users.map(user => user.value),
+          assigned_users:
+            isAdmin || isITSupport || isDepartmentHead
+              ? values.assigned_users.map(user => user.value)
+              : [currentUser.id],
         }
 
-        if (isEdit) {
-          await updateTaskMutation.mutateAsync({ id: task.id, data: formData })
+        if (isEdit && task?.id) {
+          await updateTaskMutation.mutateAsync({
+            id: task.id,
+            data: formData,
+          })
+        } else if (isEdit) {
+          console.error("Cannot update task: missing task ID")
+          return
         } else {
           await createTaskMutation.mutateAsync(formData)
         }
@@ -100,7 +117,7 @@ const TaskModal = ({
         validation.resetForm()
         toggle(false)
       } catch (error) {
-        console.error("Error submitting form:", error)
+        console.error("TaskModal - Submission Error:", error)
       }
     },
   })
@@ -122,11 +139,12 @@ const TaskModal = ({
     return null
   }
 
-  const userOptions =
-    usersList?.map(user => ({
-      value: user.id,
-      label: `${user.name} ${user.sur_name}`,
-    })) || []
+  const userOptions = usersLoading
+    ? []
+    : usersList?.map(user => ({
+        value: user.id,
+        label: `${user.name} ${user.sur_name}`,
+      })) || []
 
   return (
     <Modal
@@ -134,6 +152,26 @@ const TaskModal = ({
       toggle={() => toggle(false)}
       className="modal-dialog-centered"
     >
+      <style>
+        {`
+          .select__menu {
+            background-color: white !important;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          .select__option {
+            background-color: white;
+            color: #374151;
+          }
+          .select__option--is-focused {
+            background-color: #f3f4f6 !important;
+          }
+          .select__option--is-selected {
+            background-color: #e5e7eb !important;
+            color: #111827;
+          }
+        `}
+      </style>
       <ModalHeader toggle={() => toggle(false)} tag="h4">
         {isEdit ? "რედაქტირება" : "ახალი თილეთის გახსნა"}
       </ModalHeader>
@@ -270,15 +308,14 @@ const TaskModal = ({
                   <FormFeedback>{validation.errors.priority}</FormFeedback>
                 )}
               </div>
-              {userRoles.includes("admin") && (
+              {(userRoles.includes("admin") ||
+                userRoles.includes("it_support")) && (
                 <div className="mb-3">
                   <Label className="form-label">პასუხისმგებელი პირები</Label>
-                  <Select
+                  <SearchableSelect
                     isMulti
                     name="assigned_users"
                     options={userOptions}
-                    className="basic-multi-select"
-                    classNamePrefix="select"
                     value={validation.values.assigned_users}
                     onChange={selectedOptions => {
                       validation.setFieldValue(
@@ -290,13 +327,10 @@ const TaskModal = ({
                       validation.setFieldTouched("assigned_users", true)
                     }
                     isLoading={usersLoading}
+                    error={validation.errors.assigned_users}
+                    touched={validation.touched.assigned_users}
+                    placeholder="აირჩიეთ პასუხისმგებელი პირები"
                   />
-                  {validation.touched.assigned_users &&
-                    validation.errors.assigned_users && (
-                      <div className="text-danger mt-1">
-                        {validation.errors.assigned_users}
-                      </div>
-                    )}
                 </div>
               )}
               <div className="mb-3">

@@ -47,21 +47,32 @@ export const getTask = async id => {
 }
 
 export const createTask = async data => {
+  console.log("Task Service - Creating Task:", data)
   try {
     const response = await defaultInstance.post("/api/tasks", data)
+    console.log("Task Service - Creation Response:", response.data)
     return response.data
   } catch (error) {
-    console.error("Error creating task:", error)
+    console.error("Task Service - Creation Error:", error)
     throw error
   }
 }
 
-export const updateTask = async (id, data) => {
+export const updateTask = async ({ id, data }) => {
+  if (!id) {
+    throw new Error("Task ID is required for update operation")
+  }
+
+  console.log("Task Service - Updating Task:", { id, data })
   try {
     const response = await defaultInstance.put(`/api/tasks/${id}`, data)
+    console.log("Task Service - Update Response:", response.data)
     return response.data
   } catch (error) {
-    console.error("Error updating task:", error)
+    console.error("Task Service - Update Error:", error)
+    if (error.response?.status === 404) {
+      throw new Error(`Task with ID ${id} not found`)
+    }
     throw error
   }
 }
@@ -77,13 +88,15 @@ export const deleteTask = async id => {
 }
 
 export const assignTask = async ({ taskId, userIds }) => {
+  console.log("Task Service - Assigning Task:", { taskId, userIds })
   try {
     const response = await defaultInstance.post(`/api/tasks/${taskId}/assign`, {
-      user_ids: userIds
+      user_ids: userIds || [],
     })
+    console.log("Task Service - Assignment Response:", response.data)
     return response.data
   } catch (error) {
-    console.error("Error assigning task:", error)
+    console.error("Task Service - Assignment Error:", error)
     throw error
   }
 }
@@ -120,7 +133,10 @@ export const getTaskComments = async taskId => {
 
 export const createTaskComment = async (taskId, data) => {
   try {
-    const response = await defaultInstance.post(`/api/tasks/${taskId}/comments`, data)
+    const response = await defaultInstance.post(
+      `/api/tasks/${taskId}/comments`,
+      data
+    )
     return response.data
   } catch (error) {
     console.error("Error creating task comment:", error)
@@ -130,7 +146,10 @@ export const createTaskComment = async (taskId, data) => {
 
 export const updateTaskComment = async (taskId, commentId, data) => {
   try {
-    const response = await defaultInstance.put(`/api/tasks/${taskId}/comments/${commentId}`, data)
+    const response = await defaultInstance.put(
+      `/api/tasks/${taskId}/comments/${commentId}`,
+      data
+    )
     return response.data
   } catch (error) {
     console.error("Error updating task comment:", error)
@@ -140,7 +159,9 @@ export const updateTaskComment = async (taskId, commentId, data) => {
 
 export const deleteTaskComment = async (taskId, commentId) => {
   try {
-    const response = await defaultInstance.delete(`/api/tasks/${taskId}/comments/${commentId}`)
+    const response = await defaultInstance.delete(
+      `/api/tasks/${taskId}/comments/${commentId}`
+    )
     return response.data
   } catch (error) {
     console.error("Error deleting task comment:", error)

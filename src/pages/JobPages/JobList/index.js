@@ -217,6 +217,7 @@ const TaskList = () => {
         isOpen={assignModal}
         toggle={setAssignModal}
         onAssign={handleAssignTask}
+        task={task}
       />
 
       {isLoading ? (
