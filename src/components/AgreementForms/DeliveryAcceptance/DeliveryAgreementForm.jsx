@@ -48,8 +48,8 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
       case "jursdictional_id_number":
       case "director_id_number":
         if (!value) errorMsg = "ველი არ შეიძლება იყოს ცარიელი"
-        else if (value.length !== 11)
-          errorMsg = "უნდა შედგებოდეს 11 სიმბოლოსგან"
+        else if (value.length < 9 || value.length > 11)
+          errorMsg = "უნდა შედგებოდეს 9-დან 11 სიმბოლომდე"
         break
       case "agreement_date_of_issue":
         if (!value) errorMsg = "ველი არ შეიძლება იყოს ცარიელი"

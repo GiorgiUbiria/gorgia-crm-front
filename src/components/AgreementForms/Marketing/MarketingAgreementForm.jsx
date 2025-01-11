@@ -87,14 +87,14 @@ const MarketingAgreementForm = ({ onSuccess }) => {
           errorMsg = "მაქსიმალური სიგრძეა 255 სიმბოლო"
         break
       case "executor_id_number":
-        if (!value) errorMsg = "ველი აუცილებელია"
-        else if (value.length !== 11)
-          errorMsg = "საიდენტიფიკაციო ნომერი არასწორია"
+        if (!value) errorMsg = "ველი აუ შეიძლება იყოს ცარიელი"
+        else if (value.length < 9 || value.length > 11)
+          errorMsg = "უნდა შედგებოდეს 9-დან 11 სიმბოლომდე"
         break
       case "director_id_number":
-        if (!value) errorMsg = "ველი აუცილებელია"
-        else if (value.length !== 11)
-          errorMsg = "საიდენტიფიკაციო ნომერი არასწორია"
+        if (!value) errorMsg = "ველი არ შეიძლება იყოს ცარიელი"
+        else if (value.length < 9 || value.length > 11)
+          errorMsg = "უნდა შედგებოდეს 9-დან 11 სიმბოლომდე"
         break
       case "executor_bank_swift":
         if (!value) errorMsg = "ველი აუცილებელია"

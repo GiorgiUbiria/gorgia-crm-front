@@ -50,29 +50,30 @@ const LocalAgreementForm = ({ onSuccess }) => {
       case "executor_bank_account":
       case "executor_bank_name":
       case "director_full_name":
-        if (!value?.trim()) errorMsg = "This field is required"
+        if (!value?.trim()) errorMsg = "ველი აუცილებელია"
         else if (value.length > 255)
-          errorMsg = "Maximum length is 255 characters"
+          errorMsg = "მაქსიმალური სიგრძეა 255 სიმბოლო"
         break
       case "exclusive_placement":
         if (formData.exclusivity && !value?.trim())
-          errorMsg = "This field is required"
+          errorMsg = "ველი აუცილებელია"
         else if (value?.length > 255)
-          errorMsg = "Maximum length is 255 characters"
+          errorMsg = "მაქსიმალური სიგრძეა 255 სიმბოლო"
         break
       case "executor_id_number":
       case "director_id_number":
-        if (!value) errorMsg = "This field is required"
-        else if (value.length !== 11) errorMsg = "Must be exactly 11 characters"
+        if (!value) errorMsg = "ველი აუცილებელია"
+        else if (value.length < 9 || value.length > 11)
+          errorMsg = "უნდა შედგებოდეს 9-დან 11 სიმბოლომდე"
         break
       case "executor_bank_swift":
-        if (!value) errorMsg = "This field is required"
-        else if (value.length !== 8) errorMsg = "Must be exactly 8 characters"
+        if (!value) errorMsg = "ველი აუცილებელია"
+        else if (value.length !== 8) errorMsg = "უნდა შედგებოდეს 8 სიმბოლოსგან"
         break
       case "agreement_active_term":
-        if (!value) errorMsg = "This field is required"
+        if (!value) errorMsg = "ველი აუცილებელია"
         else if (new Date(value) <= new Date())
-          errorMsg = "Must be a future date"
+          errorMsg = "თარიღი უნდა იყოს მომავალში"
         break
       default:
         console.warn(`No validation rule for field: ${field}`)

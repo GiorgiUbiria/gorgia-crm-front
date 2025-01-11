@@ -42,52 +42,54 @@ const StandardAgreementForm = ({ onSuccess }) => {
 
     switch (field) {
       case "contragent_name":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
         break
       case "contragent_address":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
         break
       case "contragent_email":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
         break
       case "contragent_director_name":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
         break
       case "product_delivery_address":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
         break
       case "bank_account":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
         break
       case "contragent_id":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
+        else if (value.length < 9 || value.length > 11)
+          errorMsg = "უნდა შედგებოდეს 9-დან 11 სიმბოლომდე"
         break
       case "contract_initiator_name":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
         break
       case "contragent_phone_number":
-        if (!value && value !== 0) errorMsg = "This field is required"
-        else if (value.length > 20) errorMsg = "Maximum length is 20 characters"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
+        else if (value.length > 20) errorMsg = "მაქსიმალური სიგრძეა 20 სიმბოლო"
         break
       case "contragent_director_phone_number":
-        if (!value && value !== 0) errorMsg = "This field is required"
-        else if (value.length > 20) errorMsg = "Maximum length is 20 characters"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
+        else if (value.length > 20) errorMsg = "მაქსიმალური სიგრძეა 20 სიმბოლო"
         break
       case "conscription_term":
       case "product_payment_term":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
         else if (isNaN(value) || Number(value) < 1)
-          errorMsg = "Must be a positive integer"
+          errorMsg = "უნდა იყოს დადებითი მთელი რიცხვი"
         break
       case "product_cost":
-        if (!value && value !== 0) errorMsg = "This field is required"
+        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
         else if (isNaN(value) || Number(value) < 0)
-          errorMsg = "Must be a non-negative number"
+          errorMsg = "უნდა იყოს არაუარყოფითი რიცხვი"
         break
       case "payment_different_terms":
         break
       default:
-        console.warn(`No validation rule for field: ${field}`)
+        console.warn(`ველს არ გააჩნია ვალიდაციის წესი: ${field}`)
     }
 
     setErrors(prevErrors => ({
@@ -200,7 +202,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
 
   const handleError = error => {
     const validationErrors = error.response?.data?.errors
-    
+
     if (error.response) {
       switch (error.response.status) {
         case 400:

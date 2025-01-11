@@ -62,37 +62,39 @@ const ServiceAgreementForm = ({ onSuccess }) => {
       case "service_place":
       case "service_payment_details":
       case "director_full_name":
-        if (!value) errorMsg = "This field is required"
-        else if (value.length > 255) errorMsg = "Maximum length is 255 characters"
+        if (!value) errorMsg = "ველი აუცილებელია"
+        else if (value.length > 255)
+          errorMsg = "მაქსიმალური სიგრძეა 255 სიმბოლო"
         break
       case "executor_id_number":
       case "director_id_number":
-        if (!value) errorMsg = "This field is required"
-        else if (value.length !== 11) errorMsg = "Must be exactly 11 characters"
+        if (!value) errorMsg = "ველი არ შეიძლება იყოს ცარიელი"
+        else if (value.length < 9 || value.length > 11)
+          errorMsg = "უნდა შედგებოდეს 9-დან 11 სიმბოლომდე"
         break
       case "executor_bank_swift":
-        if (!value) errorMsg = "This field is required"
-        else if (value.length !== 8) errorMsg = "Must be exactly 8 characters"
+        if (!value) errorMsg = "ველი აუცილებელია"
+        else if (value.length !== 8) errorMsg = "უნდა შედგებოდეს 8 სიმბოლოსგან"
         break
       case "service_term":
-        if (!value) errorMsg = "This field is required"
+        if (!value) errorMsg = "ველი აუცილებელია"
         else if (isNaN(value) || Number(value) < 1)
-          errorMsg = "Must be a positive integer"
+          errorMsg = "უნდა იყოს დადებითი მთელი რიცხვი"
         break
       case "service_cost":
-        if (!value) errorMsg = "This field is required"
+        if (!value) errorMsg = "ველი აუცილებელია"
         else if (isNaN(value) || Number(value) < 0)
-          errorMsg = "Must be a non-negative number"
+          errorMsg = "უნდა იყოს არაუარყოფითი რიცხვი"
         else if (!/^\d+(\.\d{0,2})?$/.test(value))
-          errorMsg = "Cannot have more than 2 decimal places"
+          errorMsg = "არ უნდა ჰქონდეს 2-ზე მეტი ათობითი ადგილი"
         break
       case "service_active_term":
-        if (!value) errorMsg = "This field is required"
+        if (!value) errorMsg = "ველი აუცილებელია"
         else if (new Date(value) <= new Date())
-          errorMsg = "Must be a future date"
+          errorMsg = "თარიღი უნდა იყოს მომავალში"
         break
       default:
-        console.warn(`No validation rule for field: ${field}`)
+        console.warn(`ველს არ გააჩნია ვალიდაციის წესი: ${field}`)
     }
 
     setErrors(prevErrors => ({
