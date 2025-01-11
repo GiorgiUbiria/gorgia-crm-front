@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import { useGetUser, useChangePassword, useUpdateUser } from "../../queries/user"
+import {
+  useGetUser,
+  useChangePassword,
+  useUpdateUser,
+} from "../../queries/user"
 
 import ProfileHeader from "./components/ProfileHeader"
 import GeneralInfo from "./components/GeneralInfo"
@@ -37,8 +41,6 @@ const ProfilePage = () => {
     email: userData?.email || "",
     mobile_number: userData?.mobile_number || "",
     id_number: userData?.id_number || "",
-    password: "",
-    profile_image: "",
     roles: userData?.roles || "",
   })
 
@@ -53,8 +55,6 @@ const ProfilePage = () => {
     email: "",
     mobile_number: "",
     id_number: "",
-    password: "",
-    profile_image: "",
     roles: "",
   })
 
@@ -71,8 +71,6 @@ const ProfilePage = () => {
         email: userData.email || "",
         mobile_number: userData.mobile_number || "",
         id_number: userData.id_number || "",
-        password: "",
-        profile_image: "",
         roles: userData.roles || "",
       })
     }
@@ -128,8 +126,19 @@ const ProfilePage = () => {
 
     const formData = new FormData()
 
-    Object.keys(profileForm).forEach(key => {
-      formData.append(key, profileForm[key])
+    const fieldsToUpdate = [
+      "name",
+      "sur_name",
+      "working_start_date",
+      "mobile_number",
+      "id_number",
+      "date_of_birth",
+    ]
+
+    fieldsToUpdate.forEach(key => {
+      if (profileForm[key]) {
+        formData.append(key, profileForm[key])
+      }
     })
 
     if (profileForm.profile_image) {
@@ -141,6 +150,21 @@ const ProfilePage = () => {
       if (res.data.status === 401) {
         setPassError({ old_password: res.data.message })
       } else {
+        const authUser = JSON.parse(sessionStorage.getItem("authUser"))
+        if (authUser) {
+          const updatedUser = {
+            ...authUser,
+            name: profileForm.name,
+            sur_name: profileForm.sur_name,
+            working_start_date: profileForm.working_start_date,
+            mobile_number: profileForm.mobile_number,
+            id_number: profileForm.id_number,
+            date_of_birth: profileForm.date_of_birth,
+            updated_at: new Date().toISOString(),
+          }
+          sessionStorage.setItem("authUser", JSON.stringify(updatedUser))
+        }
+
         toast.success(t("პროფილი წარმატებით განახლდა"))
         setProfileError({
           name: "",
@@ -179,10 +203,7 @@ const ProfilePage = () => {
 
   return (
     <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <ProfileHeader 
-        userData={userData} 
-        onImageChange={handleImageChange} 
-      />
+      <ProfileHeader userData={userData} onImageChange={handleImageChange} />
 
       <div className="space-y-6">
         <GeneralInfo userData={userData} />

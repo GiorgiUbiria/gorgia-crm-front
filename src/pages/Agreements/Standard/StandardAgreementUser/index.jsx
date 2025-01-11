@@ -58,13 +58,13 @@ const StandardAgreementUser = () => {
       id: agreement.id,
       contragent_name: agreement.contragent_name,
       contract_initiator_name: agreement.contract_initiator_name,
-      created_at: agreement.created_at,
+      created_at: new Date(agreement.created_at).toLocaleDateString(),
       status: agreement.status,
-      accepted_at: agreement.accepted_at,
-      rejected_at: agreement.rejected_at,
+      status_date: agreement.status === 'approved' ? 
+        (agreement.accepted_at ? new Date(agreement.accepted_at).toLocaleString() : '-') :
+        (agreement.rejected_at ? new Date(agreement.rejected_at).toLocaleString() : '-'),
       expanded: {
         ...agreement,
-        user: agreement.user,
         products: agreement.products || [],
       },
     }))
@@ -92,17 +92,7 @@ const StandardAgreementUser = () => {
       },
       {
         Header: "სტატუსის ცვლილების თარიღი",
-        accessor: row => {
-          switch (row.status) {
-            case "approved":
-              return row.accepted_at
-            case "rejected":
-              return row.rejected_at
-            default:
-              return "-"
-          }
-        },
-        id: "status_date",
+        accessor: "status_date",
       },
       {
         Header: "სტატუსი",
@@ -190,11 +180,13 @@ const StandardAgreementUser = () => {
         )}
 
         {/* Requester Info */}
-        <div className="d-flex align-items-center mb-4 gap-2 text-muted">
-          <BsPerson className="fs-3 text-primary" />
-          <strong>მოითხოვა:</strong>
-          <span className="ms-2">{row.expanded.user?.name || "N/A"}</span>
-        </div>
+        {row.expanded.user && (
+          <div className="d-flex align-items-center mb-4 gap-2 text-muted">
+            <BsPerson className="fs-3 text-primary" />
+            <strong>მოითხოვა:</strong>
+            <span className="ms-2">{`${row.expanded.user.name} ${row.expanded.user.sur_name || ''}`}</span>
+          </div>
+        )}
 
         {/* Details Grid */}
         <div className="border rounded p-4 bg-white mb-4">
@@ -315,6 +307,8 @@ const StandardAgreementUser = () => {
                     <thead>
                       <tr>
                         <th>დასახელება</th>
+                        <th>სპეციფიკაცია</th>
+                        <th>რაოდენობა</th>
                         <th>ფასი</th>
                       </tr>
                     </thead>
@@ -322,6 +316,8 @@ const StandardAgreementUser = () => {
                       {row.expanded.products?.map((product, index) => (
                         <tr key={index}>
                           <td>{product.product_name}</td>
+                          <td>{product.specification}</td>
+                          <td>{product.product_quantity}</td>
                           <td>{product.product_price} ₾</td>
                         </tr>
                       ))}
@@ -411,7 +407,7 @@ const StandardAgreementUser = () => {
           initialPageSize={10}
           pageSizeOptions={[5, 10, 15, 20]}
           enableSearch={true}
-          searchableFields={["contragent.name"]}
+          searchableFields={["contragent_name", "contract_initiator_name"]}
           filterOptions={filterOptions}
           renderRowDetails={renderRowDetails}
         />

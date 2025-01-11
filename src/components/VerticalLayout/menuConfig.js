@@ -201,7 +201,7 @@ export const getMenuConfig = (t, user) => {
           to: "/hr/documents/archive",
           icon: LuArchive,
           label: t("არქივი"),
-          conditions: "role:admin|role:department_head,department:8|role:department_head_assistant,department:8",
+          conditions: "role:admin|department:8",
         },
         {
           to: "/hr/documents/my-requests",
