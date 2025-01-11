@@ -2,13 +2,15 @@ import React, { useEffect, useCallback, useMemo } from "react"
 import { Form, Button, Alert, Label, Input } from "reactstrap"
 import { useFormik } from "formik"
 import { employeeVacationSchema } from "./validationSchema"
-import { createVacationForEmployee } from "../../../../services/admin/vacation"
 import { toast } from "react-toastify"
 import InputWithError from "./InputWithError"
 import RestDaysCheckbox from "./RestDaysCheckbox"
 import VacationBalance from "../../../../components/Vacation/VacationBalance"
+import { useCreateVacationForEmployee } from "../../../../queries/vacation"
 
 const EmployeeVacationForm = ({ departments, navigate }) => {
+  const { mutate: createVacationMutation, isLoading: isSubmitting } = useCreateVacationForEmployee()
+
   const formik = useFormik({
     initialValues: {
       vacation_type: "",
@@ -40,7 +42,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
           toast.error(
             "ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღის გრძელებას."
           )
-          setSubmitting(false)
           return
         }
 
@@ -67,36 +68,33 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
           duration_days: values.duration_days,
         }
 
-        const response = await createVacationForEmployee(submitData)
+        await createVacationMutation(submitData, {
+          onSuccess: () => {
+            toast.success("შვებულება წარმატებით გაიგზავნა!", {
+              position: "top-right",
+              autoClose: 3000,
+            })
 
-        if (response && (response.status === 200 || response.status === 201)) {
-          toast.success("შვებულება წარმატებით გაიგზავნა!", {
-            position: "top-right",
-            autoClose: 3000,
-          })
-
-          setTimeout(() => {
-            resetForm()
-            navigate("/applications/vacation/my-requests")
-          }, 1000)
-        } else {
-          throw new Error("Unexpected response status")
-        }
+            setTimeout(() => {
+              resetForm()
+              navigate("/applications/vacation/my-requests")
+            }, 1000)
+          },
+          onError: (error) => {
+            console.error("Submission error:", error)
+            toast.error(
+              error?.response?.data?.message ||
+                "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.",
+              {
+                position: "top-right",
+                autoClose: 5000,
+              }
+            )
+          },
+        })
       } catch (err) {
-        console.error("Submission error:", err)
-        toast.error(
-          err?.response?.data?.message ||
-            "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.",
-          {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-          }
-        )
+        console.error("Error submitting vacation:", err)
+        toast.error("შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.")
       } finally {
         setSubmitting(false)
       }
@@ -339,7 +337,7 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
 
         <div className="d-flex flex-column align-items-end">
           <div className="mb-3">
-            {formik.isSubmitting && (
+            {isSubmitting && (
               <div className="text-danger">ფორმა იგზავნება...</div>
             )}
             {formik.dirty && !formik.isValid ? (
@@ -371,14 +369,14 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
             type="submit"
             color="primary"
             disabled={
-              formik.isSubmitting ||
+              isSubmitting ||
               !formik.dirty ||
               !formik.isValid ||
               (formik.values.vacation_type === "administrative_leave" &&
                 formik.values.duration_days > 7)
             }
           >
-            {formik.isSubmitting ? "იგზავნება..." : "გაგზავნა"}
+            {isSubmitting ? "იგზავნება..." : "გაგზავნა"}
           </Button>
         </div>
       </Form>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useState, useMemo } from "react"
 import {
   Row,
   Col,
@@ -10,8 +10,9 @@ import {
   ModalHeader,
   ModalBody,
   Badge,
+  Spinner,
 } from "reactstrap"
-import { getVacations, updateVacationStatus } from "../../../../services/admin/vacation"
+import { toast } from "react-toastify"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
 import {
@@ -21,7 +22,7 @@ import {
   BiXCircle,
   BiArrowBack,
 } from "react-icons/bi"
-import { toast } from "react-toastify"
+import { useVacations, useUpdateVacationStatus } from "../../../../queries/vacation"
 import AutoApprovalCountdown from "../../../../components/Vacation/AutoApprovalCountdown"
 import CancellationModal from "../../../../components/Vacation/CancellationModal"
 import { Tooltip } from "@mui/material"
@@ -216,27 +217,15 @@ const ExpandedRowContent = ({ rowData }) => {
 const VacationPageApprove = () => {
   document.title = "შვებულების ვიზირება | Gorgia LLC"
 
-  const [vacations, setVacations] = useState([])
+  const { data: vacationsData, isLoading: vacationsLoading } = useVacations()
+  const { mutate: updateStatus } = useUpdateVacationStatus()
+
   const [rejectionModal, setRejectionModal] = useState(false)
   const [selectedVacation, setSelectedVacation] = useState(null)
   const [rejectionComment, setRejectionComment] = useState("")
   const [confirmModal, setConfirmModal] = useState(false)
   const [actionType, setActionType] = useState(null)
   const [cancellationModal, setCancellationModal] = useState(false)
-
-  const fetchVacations = async () => {
-    try {
-      const response = await getVacations()
-      setVacations(response.data.data)
-    } catch (err) {
-      console.error("Error fetching vacation requests:", err)
-      toast.error("შვებულებების სიის მიღება ვერ მოხერხდა")
-    }
-  }
-
-  useEffect(() => {
-    fetchVacations()
-  }, [])
 
   const handleModalOpen = (action, vacationId) => {
     setSelectedVacation(vacationId)
@@ -250,51 +239,53 @@ const VacationPageApprove = () => {
 
   const handleConfirmAction = async () => {
     try {
-      const response = await updateVacationStatus(selectedVacation, actionType)
-      if (response.status === 200) {
-        toast.success(
-          actionType === "approved"
-            ? "შვებულება დამტკიცდა"
-            : "შვებულება უარყოფილია"
-        )
-        setVacations(prevVacations =>
-          prevVacations.map(vacation =>
-            vacation.id === selectedVacation
-              ? { ...vacation, status: actionType }
-              : vacation
-          )
-        )
-        setConfirmModal(false)
-        setSelectedVacation(null)
-        setActionType(null)
-      }
+      await updateStatus(
+        { id: selectedVacation, status: actionType },
+        {
+          onSuccess: () => {
+            toast.success(
+              actionType === "approved"
+                ? "შვებულება დამტკიცდა"
+                : "შვებულება უარყოფილია"
+            )
+            setConfirmModal(false)
+            setSelectedVacation(null)
+            setActionType(null)
+          },
+          onError: () => {
+            toast.error("მოქმედების შესრულება ვერ მოხერხდა")
+          },
+        }
+      )
     } catch (err) {
-      toast.error("მოქმედების შესრულება ვერ მოხერხდა")
       console.error("Error updating vacation status:", err)
+      toast.error("მოქმედების შესრულება ვერ მოხერხდა")
     }
   }
 
   const handleRejectionSubmit = async () => {
     try {
-      const response = await approveVacation(selectedVacation, "rejected", {
-        rejection_reason: rejectionComment,
-      })
-      if (response.status === 200) {
-        toast.success("შვებულება უარყოფილია")
-        setVacations(prevVacations =>
-          prevVacations.map(vacation =>
-            vacation.id === selectedVacation
-              ? { ...vacation, status: "rejected" }
-              : vacation
-          )
-        )
-        setRejectionModal(false)
-        setRejectionComment("")
-        setSelectedVacation(null)
-      }
+      await updateStatus(
+        { 
+          id: selectedVacation, 
+          status: "rejected",
+          rejection_reason: rejectionComment 
+        },
+        {
+          onSuccess: () => {
+            toast.success("შვებულება უარყოფილია")
+            setRejectionModal(false)
+            setRejectionComment("")
+            setSelectedVacation(null)
+          },
+          onError: () => {
+            toast.error("შვებულების უარყოფა ვერ მოხერხდა")
+          },
+        }
+      )
     } catch (err) {
-      toast.error("შვებულების უარყოფა ვერ მოხერხდა")
       console.error("Error rejecting vacation:", err)
+      toast.error("შვებულების უარყოფა ვერ მოხერხდა")
     }
   }
 
@@ -427,43 +418,47 @@ const VacationPageApprove = () => {
     []
   )
 
-  const transformedVacations = vacations.map(vacation => ({
-    id: vacation.id,
-    status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
-    start_date: vacation.start_date ? new Date(vacation.start_date).toLocaleDateString("ka-GE") : "-",
-    end_date: vacation.end_date ? new Date(vacation.end_date).toLocaleDateString("ka-GE") : "-",
-    duration: (vacation.duration_days ?? 0).toString() + " დღე",
-    type: vacation.type ? TYPE_MAPPING[vacation.type] || vacation.type : "უცნობი",
-    requested_by: vacation.user ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`.trim() || "უცნობი" : "უცნობი",
-    requested_at: vacation.created_at ? new Date(vacation.created_at).toLocaleDateString("ka-GE") : "-",
-    requested_for: `${vacation.employee_name || ""} | ${vacation.position || ""} | ${vacation.department || ""}`,
-    isAutoApproved: vacation.is_auto_approved || false,
-    created_at: vacation.created_at,
-    expanded: {
-      holiday_days: {
-        is_monday: vacation.is_monday || null,
-        is_tuesday: vacation.is_tuesday || null,
-        is_wednesday: vacation.is_wednesday || null,
-        is_thursday: vacation.is_thursday || null,
-        is_friday: vacation.is_friday || null,
-        is_saturday: vacation.is_saturday || null,
-        is_sunday: vacation.is_sunday || null,
+  const transformedVacations = useMemo(() => {
+    if (!vacationsData?.data?.data) return []
+    
+    return vacationsData.data.data.map(vacation => ({
+      id: vacation.id,
+      status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+      start_date: vacation.start_date ? new Date(vacation.start_date).toLocaleDateString("ka-GE") : "-",
+      end_date: vacation.end_date ? new Date(vacation.end_date).toLocaleDateString("ka-GE") : "-",
+      duration: (vacation.duration_days ?? 0).toString() + " დღე",
+      type: vacation.type ? TYPE_MAPPING[vacation.type] || vacation.type : "უცნობი",
+      requested_by: vacation.user ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`.trim() || "უცნობი" : "უცნობი",
+      requested_at: vacation.created_at ? new Date(vacation.created_at).toLocaleDateString("ka-GE") : "-",
+      requested_for: `${vacation.employee_name || ""} | ${vacation.position || ""} | ${vacation.department || ""}`,
+      isAutoApproved: vacation.is_auto_approved || false,
+      created_at: vacation.created_at,
+      expanded: {
+        holiday_days: {
+          is_monday: vacation.is_monday || null,
+          is_tuesday: vacation.is_tuesday || null,
+          is_wednesday: vacation.is_wednesday || null,
+          is_thursday: vacation.is_thursday || null,
+          is_friday: vacation.is_friday || null,
+          is_saturday: vacation.is_saturday || null,
+          is_sunday: vacation.is_sunday || null,
+        },
+        substitute: {
+          substitute_name: vacation.substitute_name || "უცნობია",
+          substitute_position: vacation.substitute_position || "უცნობია",
+        },
+        review: {
+          reviewed_by: vacation.reviewed_by ? `${vacation.reviewed_by?.name || ""} ${vacation.reviewed_by?.sur_name || ""}` : "ჯერ არ არის განხილული",
+          reviewed_at: vacation?.reviewed_at ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE") : "-",
+          rejection_reason: vacation.rejection_reason || "",
+        },
+        cancellation: {
+          cancellation_reason: vacation.cancellation_reason || "",
+          cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : "",
+        },
       },
-      substitute: {
-        substitute_name: vacation.substitute_name || "უცნობია",
-        substitute_position: vacation.substitute_position || "უცნობია",
-      },
-      review: {
-        reviewed_by: vacation.reviewed_by ? `${vacation.reviewed_by?.name || ""} ${vacation.reviewed_by?.sur_name || ""}` : "ჯერ არ არის განხილული",
-        reviewed_at: vacation?.reviewed_at ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE") : "-",
-        rejection_reason: vacation.rejection_reason || "",
-      },
-      cancellation: {
-        cancellation_reason: vacation.cancellation_reason || "",
-        cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : "",
-      },
-    },
-  }))
+    }))
+  }, [vacationsData])
 
   const filterOptions = [
     {
@@ -490,6 +485,14 @@ const VacationPageApprove = () => {
   ]
 
   const expandedRow = row => <ExpandedRowContent rowData={row} />
+
+  if (vacationsLoading) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner color="primary" />
+      </div>
+    )
+  }
 
   return (
     <>

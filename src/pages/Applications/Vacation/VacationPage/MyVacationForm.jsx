@@ -1,11 +1,8 @@
 import React, { useEffect, useCallback, useMemo } from "react"
-import { Form, Button, Alert } from "reactstrap"
+import { Form, Button, Alert, Spinner } from "reactstrap"
 import { useFormik } from "formik"
 import { myVacationSchema } from "./validationSchema"
-import {
-  createVacation,
-  getVacationBalance,
-} from "../../../../services/admin/vacation"
+import { useCreateVacation, useVacationBalance } from "../../../../queries/vacation"
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
 import VacationBalance from "../../../../components/Vacation/VacationBalance"
@@ -13,8 +10,13 @@ import InputWithError from "./InputWithError"
 import RestDaysCheckbox from "./RestDaysCheckbox"
 import { Tooltip } from "@mui/material"
 
-const MyVacationForm = ({ user, vacationBalance, setVacationBalance }) => {
+const MyVacationForm = ({ user }) => {
   const navigate = useNavigate()
+  
+  const { data: vacationBalanceResponse, isLoading: balanceLoading } = useVacationBalance()
+  const vacationBalance = vacationBalanceResponse?.data
+  
+  const { mutate: createVacationMutation } = useCreateVacation()
 
   const calculateDuration = useCallback((startDate, endDate, restDays) => {
     if (!startDate || !endDate) return 0
@@ -69,25 +71,25 @@ const MyVacationForm = ({ user, vacationBalance, setVacationBalance }) => {
     validationSchema: myVacationSchema,
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      if (
-        values.vacation_type === "paid_leave" &&
-        values.duration_days > vacationBalance?.remaining_days
-      ) {
-        toast.error(
-          "მოთხოვნილი დღეების რაოდენობა აღემატება დარჩენილ ანაზღაურებად შვებულებას"
-        )
-        return
-      }
-
-      if (
-        values.vacation_type === "administrative_leave" &&
-        values.duration_days > 7
-      ) {
-        toast.error("ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღეს")
-        return
-      }
-
       try {
+        if (
+          values.vacation_type === "paid_leave" &&
+          values.duration_days > vacationBalance?.remaining_days
+        ) {
+          toast.error(
+            "მოთხოვნილი დღეების რაოდენობა აღემატება დარჩენილ ანაზღაურებად შვებულებას"
+          )
+          return
+        }
+
+        if (
+          values.vacation_type === "administrative_leave" &&
+          values.duration_days > 7
+        ) {
+          toast.error("ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღეს")
+          return
+        }
+
         const submitData = {
           vacation_type: values.vacation_type,
           employee_name: values.employee_name,
@@ -111,55 +113,33 @@ const MyVacationForm = ({ user, vacationBalance, setVacationBalance }) => {
           duration_days: values.duration_days,
         }
 
-        const response = await createVacation(submitData)
-
-        if (response && (response.status === 200 || response.status === 201)) {
-          toast.success("შვებულება წარმატებით გაიგზავნა", {
-            position: "top-right",
-            autoClose: 3000,
-          })
-
-          // Refresh vacation balance after successful submission
-          const balanceResponse = await getVacationBalance()
-          setVacationBalance(balanceResponse.data)
-
-          setTimeout(() => {
-            resetForm({
-              values: {
-                vacation_type: "",
-                employee_name: `${user.name} ${user.sur_name}`,
-                department: user.department?.name || "",
-                position: user.position || "",
-                substitute_name: "",
-                substitute_position: "",
-                start_date: "",
-                end_date: "",
-                is_monday: null,
-                is_tuesday: null,
-                is_wednesday: null,
-                is_thursday: null,
-                is_friday: null,
-                is_saturday: null,
-                is_sunday: null,
-                duration_days: 0,
-                remaining_days: balanceResponse.data.remaining_days,
-              },
+        await createVacationMutation(submitData, {
+          onSuccess: () => {
+            toast.success("შვებულება წარმატებით გაიგზავნა", {
+              position: "top-right",
+              autoClose: 3000,
             })
-            navigate("/applications/vacation/my-requests")
-          }, 1000)
-        } else {
-          throw new Error("Unexpected response status")
-        }
+            
+            setTimeout(() => {
+              resetForm()
+              navigate("/applications/vacation/my-requests")
+            }, 1000)
+          },
+          onError: (error) => {
+            console.error("Submission error:", error)
+            toast.error(
+              error?.response?.data?.message ||
+                "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.",
+              {
+                position: "top-right",
+                autoClose: 5000,
+              }
+            )
+          },
+        })
       } catch (err) {
-        console.error("Submission error:", err)
-        toast.error(
-          err?.response?.data?.message ||
-            "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.",
-          {
-            position: "top-right",
-            autoClose: 5000,
-          }
-        )
+        console.error("Error submitting vacation:", err)
+        toast.error("შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.")
       } finally {
         setSubmitting(false)
       }
@@ -211,9 +191,17 @@ const MyVacationForm = ({ user, vacationBalance, setVacationBalance }) => {
     return formik.values.vacation_type === "paid_leave"
   }, [formik.values.vacation_type])
 
+  if (balanceLoading) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner color="primary" />
+      </div>
+    )
+  }
+
   return (
     <>
-      {shouldShowVacationBalance && (
+      {shouldShowVacationBalance && vacationBalance && (
         <>
           <VacationBalance balance={vacationBalance} />
           {vacationBalance.pending_requests > 0 && (

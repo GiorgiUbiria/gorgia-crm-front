@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useMemo } from "react"
-import { Row, Col, Button } from "reactstrap"
-import { getCurrentUserVocations } from "services/vacation"
-import { getVacationBalance } from "services/admin/vacation"
+import React, { useState, useMemo } from "react"
+import { Row, Col, Button, Spinner } from "reactstrap"
 import MuiTable from "components/Mui/MuiTable"
 import VacationBalance from "components/Vacation/VacationBalance"
 import CancellationModal from "components/Vacation/CancellationModal"
 import { toast } from "react-toastify"
 import { Tooltip } from "@mui/material"
+import { useUserVacations, useVacationBalance, useCancelVacation } from "../../../../queries/vacation"
 
 const statusMap = {
   pending: {
@@ -189,35 +188,12 @@ const ExpandedRowContent = ({ rowData }) => {
 const UserVocation = () => {
   document.title = "შვებულებები | Gorgia LLC"
 
-  const [vacations, setVacations] = useState([])
-  const [vacationBalance, setVacationBalance] = useState(null)
+  const { data: vacationsData, isLoading: vacationsLoading } = useUserVacations()
+  const { data: vacationBalance, isLoading: balanceLoading } = useVacationBalance()
+  const { mutate: cancelVacationMutation } = useCancelVacation()
+
   const [selectedVacation, setSelectedVacation] = useState(null)
   const [showCancellationModal, setShowCancellationModal] = useState(false)
-
-  const fetchVacationBalance = async () => {
-    try {
-      const response = await getVacationBalance()
-      setVacationBalance(response.data)
-    } catch (error) {
-      console.error("Error fetching vacation balance:", error)
-      toast.error("შვებულების ბალანსის მიღება ვერ მოხერხდა")
-    }
-  }
-
-  const fetchVacations = async () => {
-    try {
-      const response = await getCurrentUserVocations()
-      setVacations(response.data.data)
-    } catch (err) {
-      console.error("Error fetching vocations:", err)
-      toast.error("შვებულებების მიღება ვერ მოხერხდა")
-    }
-  }
-
-  useEffect(() => {
-    fetchVacations()
-    fetchVacationBalance()
-  }, [])
 
   const handleCancelRequest = vacation => {
     setSelectedVacation(vacation)
@@ -225,11 +201,22 @@ const UserVocation = () => {
   }
 
   const onCancellationSuccess = () => {
-    setShowCancellationModal(false)
-    setSelectedVacation(null)
-    fetchVacations()
-    fetchVacationBalance()
-    toast.success("შვებულება წარმატებით გაუქმდა")
+    cancelVacationMutation(
+      { id: selectedVacation.id },
+      {
+        onSuccess: () => {
+          setShowCancellationModal(false)
+          setSelectedVacation(null)
+          toast.success("შვებულება წარმატებით გაუქმდა")
+        },
+        onError: (error) => {
+          toast.error(
+            error?.response?.data?.message ||
+              "შვებულების გაუქმება ვერ მოხერხდა"
+          )
+        },
+      }
+    )
   }
 
   const columns = useMemo(
@@ -349,39 +336,43 @@ const UserVocation = () => {
     []
   )
 
-  const transformedVacations = vacations.map(vacation => ({
-    ...vacation,
-    id: vacation.id,
-    status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
-    start_date: vacation.start_date ? new Date(vacation.start_date).toLocaleDateString("ka-GE") : "-",
-    end_date: vacation.end_date ? new Date(vacation.end_date).toLocaleDateString("ka-GE") : "-",
-    duration: (vacation.duration_days ?? 0).toString() + " დღე",
-    type: vacation.type ? TYPE_MAPPING[vacation.type] || vacation.type : "უცნობი",
-    requested_by: vacation.user ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`.trim() || "უცნობი" : "უცნობი",
-    requested_at: vacation.created_at ? new Date(vacation.created_at).toLocaleDateString("ka-GE") : "-",
-    auto_approved: vacation.is_auto_approved,
-    auto_approved_at: vacation.auto_approved_at ? new Date(vacation.auto_approved_at).toLocaleDateString("ka-GE") : null,
-    time_until_auto_approval: vacation.time_until_auto_approval,
-    cancellation_reason: vacation.cancellation_reason,
-    cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : null,
-    requested_for: `${vacation.employee_name || ""} | ${vacation.position || ""} | ${vacation.department || ""}`,
-    expanded: {
-      holiday_days: vacation.holiday_days || {},
-      substitute: {
-        substitute_name: vacation.substitute_name || "-",
-        substitute_position: vacation.substitute_position || "-",
+  const transformedVacations = useMemo(() => {
+    if (!vacationsData?.data?.data) return []
+    
+    return vacationsData.data.data.map(vacation => ({
+      ...vacation,
+      id: vacation.id,
+      status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+      start_date: vacation.start_date ? new Date(vacation.start_date).toLocaleDateString("ka-GE") : "-",
+      end_date: vacation.end_date ? new Date(vacation.end_date).toLocaleDateString("ka-GE") : "-",
+      duration: (vacation.duration_days ?? 0).toString() + " დღე",
+      type: vacation.type ? TYPE_MAPPING[vacation.type] || vacation.type : "უცნობი",
+      requested_by: vacation.user ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`.trim() || "უცნობი" : "უცნობი",
+      requested_at: vacation.created_at ? new Date(vacation.created_at).toLocaleDateString("ka-GE") : "-",
+      auto_approved: vacation.is_auto_approved,
+      auto_approved_at: vacation.auto_approved_at ? new Date(vacation.auto_approved_at).toLocaleDateString("ka-GE") : null,
+      time_until_auto_approval: vacation.time_until_auto_approval,
+      cancellation_reason: vacation.cancellation_reason,
+      cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : null,
+      requested_for: `${vacation.employee_name || ""} | ${vacation.position || ""} | ${vacation.department || ""}`,
+      expanded: {
+        holiday_days: vacation.holiday_days || {},
+        substitute: {
+          substitute_name: vacation.substitute_name || "-",
+          substitute_position: vacation.substitute_position || "-",
+        },
+        review: {
+          reviewed_by: vacation.reviewed_by || "-",
+          reviewed_at: vacation.reviewed_at ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE") : "-",
+          rejection_reason: vacation.rejection_reason || "-",
+        },
+        cancellation: {
+          cancellation_reason: vacation.cancellation_reason || "",
+          cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : "",
+        },
       },
-      review: {
-        reviewed_by: vacation.reviewed_by || "-",
-        reviewed_at: vacation.reviewed_at ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE") : "-",
-        rejection_reason: vacation.rejection_reason || "-",
-      },
-      cancellation: {
-        cancellation_reason: vacation.cancellation_reason || "",
-        cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : "",
-      },
-    },
-  }))
+    }))
+  }, [vacationsData])
 
   const filterOptions = [
     {
@@ -407,11 +398,19 @@ const UserVocation = () => {
     },
   ]
 
+  if (vacationsLoading || balanceLoading) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner color="primary" />
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
-          {vacationBalance && <VacationBalance balance={vacationBalance} />}
+          {vacationBalance && <VacationBalance balance={vacationBalance.data} />}
 
           <MuiTable
             data={transformedVacations}
