@@ -1,19 +1,16 @@
-import React, { useState, useMemo, useEffect } from "react"
+import React, { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { getRegularDailies, getMyRegularDailies } from "services/daily"
-import { getDepartments } from "services/auth"
 import Button from "@mui/material/Button"
 import MuiTable from "components/Mui/MuiTable"
 import { usePermissions } from "hooks/usePermissions"
 import AddDailyModal from "./AddDailyModal"
 import * as XLSX from "xlsx"
+import { useGetRegularDailies, useGetMyRegularDailies } from "queries/daily"
+import useUserRoles from "hooks/useUserRoles"
 
 const INITIAL_STATE = {
   currentPage: 1,
   pageSize: 10,
-  dailiesData: { data: [], total: 0 },
-  departments: [],
-  isLoading: false,
   addDailyModal: false,
 }
 
@@ -21,77 +18,58 @@ const PAGE_SIZE_OPTIONS = [5, 10, 15, 20]
 
 const DailiesInner = () => {
   const navigate = useNavigate()
-  const { isAdmin, isDepartmentHead } = usePermissions()
+  const { isAdmin } = usePermissions()
+  const roles = useUserRoles()
   const user = JSON.parse(sessionStorage.getItem("authUser"))
 
   const [state, setState] = useState(INITIAL_STATE)
-  const {
-    currentPage,
-    pageSize,
-    dailiesData,
-    departments,
-    isLoading,
-    addDailyModal,
-  } = state
+  const { currentPage, pageSize, addDailyModal } = state
 
   const updateState = newState => {
     setState(prev => ({ ...prev, ...newState }))
   }
 
-  const fetchDailies = async () => {
-    try {
-      updateState({ isLoading: true })
-      const params = { page: currentPage, limit: pageSize }
+  const isAdminOrDepartmentHead =
+    roles.includes("admin") || roles.includes("department_head")
 
-      let dailiesResponse
-
-      if (isAdmin || isDepartmentHead) {
-        dailiesResponse = await getRegularDailies(params)
-      } else {
-        dailiesResponse = await getMyRegularDailies(params)
-      }
-
-      updateState({
-        dailiesData: {
-          data: dailiesResponse.dailies,
-          total: dailiesResponse.dailies.length,
-        },
-      })
-    } catch (error) {
-      console.error("Error fetching department head dailies:", error)
-    } finally {
-      updateState({ isLoading: false })
-    }
+  const params = {
+    page: currentPage,
+    limit: pageSize,
   }
 
-  const fetchDepartments = async () => {
-    try {
-      const response = await getDepartments()
-      updateState({ departments: response.data.data })
-    } catch (error) {
-      console.error("Error fetching departments:", error)
-    }
-  }
+  const {
+    data: adminDailiesData,
+    isLoading: adminIsLoading,
+    refetch: adminRefetch,
+  } = useGetRegularDailies(params, {
+    enabled: isAdminOrDepartmentHead,
+  })
 
-  useEffect(() => {
-    fetchDailies()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize])
+  const {
+    data: userDailiesData,
+    isLoading: userIsLoading,
+    refetch: userRefetch,
+  } = useGetMyRegularDailies(params, {
+    enabled: !isAdminOrDepartmentHead,
+  })
 
-  useEffect(() => {
-    fetchDepartments()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const dailiesData = isAdminOrDepartmentHead
+    ? adminDailiesData
+    : userDailiesData
+  const isLoading = isAdminOrDepartmentHead ? adminIsLoading : userIsLoading
+  const refetch = isAdminOrDepartmentHead ? adminRefetch : userRefetch
 
   const handleRowClick = row => {
     navigate(`/tools/inner-daily-results/${row.id}`)
   }
 
   const transformedDailies = useMemo(() => {
-    return dailiesData.data.map(daily => ({
-      ...daily,
-      user_full_name: `${daily.user.name} ${daily.user.sur_name}`,
-    }))
+    return (
+      dailiesData?.dailies?.map(daily => ({
+        ...daily,
+        user_full_name: `${daily.user.name} ${daily.user.sur_name}`,
+      })) || []
+    )
   }, [dailiesData])
 
   const columns = useMemo(
@@ -130,21 +108,29 @@ const DailiesInner = () => {
   )
 
   const filterOptions = useMemo(() => {
-    const departmentOptions = departments
-      .map(department => ({
-        value: department.name,
-        label: department.name,
-      }))
+    const uniqueDepartments = [
+      ...new Set(dailiesData?.dailies?.map(daily => daily.department?.id)),
+    ]
+      .filter(Boolean)
+      .map(deptId => {
+        const daily = dailiesData?.dailies?.find(
+          d => d.department?.id === deptId
+        )
+        return {
+          value: deptId,
+          label: daily?.department?.name || "",
+        }
+      })
       .sort((a, b) => a.label.localeCompare(b.label))
 
     return [
       {
-        field: "department.name",
+        field: "department.id",
         label: "დეპარტამენტი",
-        options: [{ value: "", label: "ყველა" }, ...departmentOptions],
+        options: [{ value: "", label: "ყველა" }, ...uniqueDepartments],
       },
     ]
-  }, [departments])
+  }, [dailiesData])
 
   const exportToExcel = () => {
     const headers = [
@@ -167,8 +153,8 @@ const DailiesInner = () => {
 
     const ws = XLSX.utils.aoa_to_sheet(data)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Department Head Dailies")
-    XLSX.writeFile(wb, "Department_Head_Dailies.xlsx")
+    XLSX.utils.book_append_sheet(wb, ws, "Regular Dailies")
+    XLSX.writeFile(wb, "Regular_Dailies.xlsx")
   }
 
   const renderExpandedRow = row => (
@@ -193,7 +179,6 @@ const DailiesInner = () => {
     <>
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
-          {/* Action Buttons */}
           <div className="mb-4">
             <div className="flex gap-3">
               {isAdmin && (
@@ -217,17 +202,16 @@ const DailiesInner = () => {
             </div>
           </div>
 
-          {/* Table */}
           <MuiTable
             columns={columns}
             data={transformedDailies}
             filterOptions={filterOptions}
-            searchableFields={["name", "department.name"]}
+            searchableFields={["name", "department.name", "user_full_name"]}
             enableSearch={true}
             initialPageSize={pageSize}
             pageSizeOptions={PAGE_SIZE_OPTIONS}
             currentPage={currentPage}
-            totalItems={dailiesData.total}
+            totalItems={dailiesData?.total || 0}
             onPageChange={page => updateState({ currentPage: page })}
             onPageSizeChange={size => updateState({ pageSize: size })}
             isLoading={isLoading}
@@ -241,9 +225,9 @@ const DailiesInner = () => {
       <AddDailyModal
         isOpen={addDailyModal}
         toggle={() => updateState({ addDailyModal: false })}
-        onDailyAdded={fetchDailies}
+        onDailyAdded={refetch}
         departmentId={user.department_id}
-        type="department_head"
+        type="regular"
       />
     </>
   )

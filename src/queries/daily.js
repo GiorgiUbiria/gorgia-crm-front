@@ -1,51 +1,69 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getDepartmentHeadDailies,
+  getMyDepartmentHeadDailies,
   getDepartmentHeadDaily,
   createDepartmentHeadDaily,
   updateDepartmentHeadDaily,
   deleteDepartmentHeadDaily,
   getRegularDailies,
-  getRegularDaily,
+  getMyRegularDailies,
   createRegularDaily,
   updateRegularDaily,
   deleteRegularDaily,
-  getMyRegularDailies,
-  getDailies,
-  createDaily,
+  getAllDailies,
 } from "../services/daily"
 
-// Query keys
 export const dailyKeys = {
   all: ["dailies"],
-  departmentHeadDailies: (page, limit) => [
-    ...dailyKeys.all,
-    "department-head",
-    page,
-    limit,
-  ],
-  departmentHeadDaily: id => [...dailyKeys.all, "department-head", "detail", id],
-  regularDailies: params => [...dailyKeys.all, "regular", params],
-  regularDaily: id => [...dailyKeys.all, "regular", "detail", id],
-  myRegularDailies: params => [...dailyKeys.all, "regular", "my", params],
-  dailies: (type, params) => [...dailyKeys.all, type, params],
+  lists: () => [...dailyKeys.all, "list"],
+  list: filters => [...dailyKeys.lists(), { ...filters }],
+  details: () => [...dailyKeys.all, "detail"],
+  detail: id => [...dailyKeys.details(), id],
+  departmentHead: {
+    all: () => [...dailyKeys.all, "department-head"],
+    lists: () => [...dailyKeys.departmentHead.all(), "list"],
+    list: filters => [...dailyKeys.departmentHead.lists(), { ...filters }],
+    my: filters => [...dailyKeys.departmentHead.lists(), "my", { ...filters }],
+    detail: id => [...dailyKeys.departmentHead.all(), "detail", id],
+  },
+  regular: {
+    all: () => [...dailyKeys.all, "regular"],
+    lists: () => [...dailyKeys.regular.all(), "list"],
+    list: filters => [...dailyKeys.regular.lists(), { ...filters }],
+    my: filters => [...dailyKeys.regular.lists(), "my", { ...filters }],
+    detail: id => [...dailyKeys.regular.all(), "detail", id],
+  },
 }
 
-// Queries
-export const useGetDepartmentHeadDailies = (page = 1, limit = 10, options = {}) => {
+export const useGetAllDailies = (params = {}, options = {}) => {
   return useQuery({
-    queryKey: dailyKeys.departmentHeadDailies(page, limit),
-    queryFn: () => getDepartmentHeadDailies(page, limit),
-    select: response => response,
+    queryKey: dailyKeys.list(params),
+    queryFn: () => getAllDailies(params),
+    ...options,
+  })
+}
+
+export const useGetDepartmentHeadDailies = (params = {}, options = {}) => {
+  return useQuery({
+    queryKey: dailyKeys.departmentHead.list(params),
+    queryFn: () => getDepartmentHeadDailies(params),
+    ...options,
+  })
+}
+
+export const useGetMyDepartmentHeadDailies = (params = {}, options = {}) => {
+  return useQuery({
+    queryKey: dailyKeys.departmentHead.my(params),
+    queryFn: () => getMyDepartmentHeadDailies(params),
     ...options,
   })
 }
 
 export const useGetDepartmentHeadDaily = (id, options = {}) => {
   return useQuery({
-    queryKey: dailyKeys.departmentHeadDaily(id),
+    queryKey: dailyKeys.departmentHead.detail(id),
     queryFn: () => getDepartmentHeadDaily(id),
-    select: response => response,
     ...options,
     enabled: !!id,
   })
@@ -53,77 +71,48 @@ export const useGetDepartmentHeadDaily = (id, options = {}) => {
 
 export const useGetRegularDailies = (params = {}, options = {}) => {
   return useQuery({
-    queryKey: dailyKeys.regularDailies(params),
+    queryKey: dailyKeys.regular.list(params),
     queryFn: () => getRegularDailies(params),
-    select: response => response,
     ...options,
-  })
-}
-
-export const useGetRegularDaily = (id, options = {}) => {
-  return useQuery({
-    queryKey: dailyKeys.regularDaily(id),
-    queryFn: () => getRegularDaily(id),
-    select: response => response,
-    ...options,
-    enabled: !!id,
   })
 }
 
 export const useGetMyRegularDailies = (params = {}, options = {}) => {
   return useQuery({
-    queryKey: dailyKeys.myRegularDailies(params),
+    queryKey: dailyKeys.regular.my(params),
     queryFn: () => getMyRegularDailies(params),
-    select: response => response,
     ...options,
   })
 }
 
-export const useGetDailies = (type, params = {}, options = {}) => {
-  return useQuery({
-    queryKey: dailyKeys.dailies(type, params),
-    queryFn: () => getDailies(type, params),
-    select: response => response,
-    ...options,
-  })
-}
-
-// Mutations
 export const useCreateDepartmentHeadDaily = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: createDepartmentHeadDaily,
-    onSuccess: () => {
+    onSuccess: data => {
       queryClient.invalidateQueries({
-        queryKey: dailyKeys.departmentHeadDailies(),
+        queryKey: dailyKeys.departmentHead.lists(),
       })
-    },
-  })
-}
 
-export const useUpdateDepartmentHeadDaily = () => {
-  const queryClient = useQueryClient()
+      queryClient.setQueryData(
+        dailyKeys.departmentHead.detail(data.daily.id),
+        data
+      )
 
-  return useMutation({
-    mutationFn: ({ id, data }) => updateDepartmentHeadDaily(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: dailyKeys.departmentHeadDailies(),
-      })
-    },
-  })
-}
+      const updateList = oldData => {
+        if (!oldData?.dailies) return oldData
+        return {
+          ...oldData,
+          dailies: [data.daily, ...oldData.dailies],
+          total: (oldData.total || 0) + 1,
+        }
+      }
 
-export const useDeleteDepartmentHeadDaily = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: deleteDepartmentHeadDaily,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: dailyKeys.departmentHeadDailies(),
-      })
+      queryClient.setQueriesData(
+        { queryKey: dailyKeys.departmentHead.lists() },
+        updateList
+      )
     },
   })
 }
@@ -133,8 +122,52 @@ export const useCreateRegularDaily = () => {
 
   return useMutation({
     mutationFn: createRegularDaily,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dailyKeys.regularDailies() })
+    onSuccess: data => {
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.regular.lists(),
+      })
+
+      queryClient.setQueryData(dailyKeys.regular.detail(data.daily.id), data)
+
+      const updateList = oldData => {
+        if (!oldData?.dailies) return oldData
+        return {
+          ...oldData,
+          dailies: [data.daily, ...oldData.dailies],
+          total: (oldData.total || 0) + 1,
+        }
+      }
+
+      queryClient.setQueriesData(
+        { queryKey: dailyKeys.regular.lists() },
+        updateList
+      )
+    },
+  })
+}
+
+export const useUpdateDepartmentHeadDaily = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }) => updateDepartmentHeadDaily(id, data),
+    onSuccess: (data, { id }) => {
+      queryClient.setQueryData(dailyKeys.departmentHead.detail(id), data)
+
+      const updateList = oldData => {
+        if (!oldData?.dailies) return oldData
+        return {
+          ...oldData,
+          dailies: oldData.dailies.map(daily =>
+            daily.id === id ? data.daily : daily
+          ),
+        }
+      }
+
+      queryClient.setQueriesData(
+        { queryKey: dailyKeys.departmentHead.lists() },
+        updateList
+      )
     },
   })
 }
@@ -144,8 +177,50 @@ export const useUpdateRegularDaily = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => updateRegularDaily(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dailyKeys.regularDailies() })
+    onSuccess: (data, { id }) => {
+      queryClient.setQueryData(dailyKeys.regular.detail(id), data)
+
+      const updateList = oldData => {
+        if (!oldData?.dailies) return oldData
+        return {
+          ...oldData,
+          dailies: oldData.dailies.map(daily =>
+            daily.id === id ? data.daily : daily
+          ),
+        }
+      }
+
+      queryClient.setQueriesData(
+        { queryKey: dailyKeys.regular.lists() },
+        updateList
+      )
+    },
+  })
+}
+
+export const useDeleteDepartmentHeadDaily = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteDepartmentHeadDaily,
+    onSuccess: (_, id) => {
+      queryClient.removeQueries({
+        queryKey: dailyKeys.departmentHead.detail(id),
+      })
+
+      const updateList = oldData => {
+        if (!oldData?.dailies) return oldData
+        return {
+          ...oldData,
+          dailies: oldData.dailies.filter(daily => daily.id !== id),
+          total: Math.max(0, (oldData.total || 0) - 1),
+        }
+      }
+
+      queryClient.setQueriesData(
+        { queryKey: dailyKeys.departmentHead.lists() },
+        updateList
+      )
     },
   })
 }
@@ -155,19 +230,24 @@ export const useDeleteRegularDaily = () => {
 
   return useMutation({
     mutationFn: deleteRegularDaily,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dailyKeys.regularDailies() })
+    onSuccess: (_, id) => {
+      queryClient.removeQueries({
+        queryKey: dailyKeys.regular.detail(id),
+      })
+
+      const updateList = oldData => {
+        if (!oldData?.dailies) return oldData
+        return {
+          ...oldData,
+          dailies: oldData.dailies.filter(daily => daily.id !== id),
+          total: Math.max(0, (oldData.total || 0) - 1),
+        }
+      }
+
+      queryClient.setQueriesData(
+        { queryKey: dailyKeys.regular.lists() },
+        updateList
+      )
     },
   })
 }
-
-export const useCreateDaily = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ type, data }) => createDaily(type, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: dailyKeys.all })
-    },
-  })
-} 

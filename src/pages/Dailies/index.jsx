@@ -5,7 +5,8 @@ import MuiTable from "components/Mui/MuiTable"
 import { usePermissions } from "hooks/usePermissions"
 import AddDailyModal from "./AddDailyModal"
 import * as XLSX from "xlsx"
-import { useGetDailies } from "queries/daily"
+import { useGetDepartmentHeadDailies, useGetMyDepartmentHeadDailies } from "queries/daily"
+import useUserRoles from "hooks/useUserRoles"
 
 const INITIAL_STATE = {
   currentPage: 1,
@@ -18,6 +19,7 @@ const PAGE_SIZE_OPTIONS = [5, 10, 15, 20]
 const Dailies = () => {
   const navigate = useNavigate()
   const { isAdmin } = usePermissions()
+  const roles = useUserRoles()
   const user = JSON.parse(sessionStorage.getItem("authUser"))
 
   const [state, setState] = useState(INITIAL_STATE)
@@ -27,14 +29,33 @@ const Dailies = () => {
     setState(prev => ({ ...prev, ...newState }))
   }
 
-  const {
-    data: dailiesData,
-    isLoading,
-    refetch,
-  } = useGetDailies("department_head", {
+  const isAdminOrDepartmentHead =
+    roles.includes("admin") || roles.includes("department_head")
+
+  const params = {
     page: currentPage,
     limit: pageSize,
+  }
+
+  const {
+    data: adminDailiesData,
+    isLoading: adminIsLoading,
+    refetch: adminRefetch,
+  } = useGetDepartmentHeadDailies(params, {
+    enabled: isAdminOrDepartmentHead,
   })
+
+  const {
+    data: userDailiesData,
+    isLoading: userIsLoading,
+    refetch: userRefetch,
+  } = useGetMyDepartmentHeadDailies(params, {
+    enabled: !isAdminOrDepartmentHead,
+  })
+
+  const dailiesData = isAdminOrDepartmentHead ? adminDailiesData : userDailiesData
+  const isLoading = isAdminOrDepartmentHead ? adminIsLoading : userIsLoading
+  const refetch = isAdminOrDepartmentHead ? adminRefetch : userRefetch
 
   const handleRowClick = row => {
     navigate(`/tools/daily-results/${row.id}`)
@@ -130,8 +151,8 @@ const Dailies = () => {
 
     const ws = XLSX.utils.aoa_to_sheet(data)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Regular Dailies")
-    XLSX.writeFile(wb, "Regular_Dailies.xlsx")
+    XLSX.utils.book_append_sheet(wb, ws, "Department Head Dailies")
+    XLSX.writeFile(wb, "Department_Head_Dailies.xlsx")
   }
 
   const renderExpandedRow = row => (
@@ -152,6 +173,9 @@ const Dailies = () => {
     </div>
   )
 
+  const canAddDaily =
+    roles.includes("admin") || roles.includes("department_head")
+
   return (
     <>
       <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -168,14 +192,16 @@ const Dailies = () => {
                   Excel გადმოწერა
                 </Button>
               )}
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => updateState({ addDailyModal: true })}
-              >
-                <i className="bx bx-plus me-1"></i>
-                შეფასების დამატება
-              </Button>
+              {canAddDaily && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => updateState({ addDailyModal: true })}
+                >
+                  <i className="bx bx-plus me-1"></i>
+                  შეფასების დამატება
+                </Button>
+              )}
             </div>
           </div>
 
@@ -183,7 +209,7 @@ const Dailies = () => {
             columns={columns}
             data={transformedDailies}
             filterOptions={filterOptions}
-            searchableFields={["name", "department.name"]}
+            searchableFields={["name", "department.name", "user_full_name"]}
             enableSearch={true}
             initialPageSize={pageSize}
             pageSizeOptions={PAGE_SIZE_OPTIONS}

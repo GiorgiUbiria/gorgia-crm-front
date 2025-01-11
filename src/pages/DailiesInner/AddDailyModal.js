@@ -5,11 +5,9 @@ import DialogContent from "@mui/material/DialogContent"
 import DialogTitle from "@mui/material/DialogTitle"
 import Button from "@mui/material/Button"
 import TextField from "@mui/material/TextField"
-import { createDaily } from "services/daily"
-import useUserRoles from "hooks/useUserRoles"
+import { useCreateRegularDaily } from "queries/daily"
 
 const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
-  const roles = useUserRoles()
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     name: "",
@@ -17,6 +15,8 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
     department_id: departmentId,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { mutate: createDaily, isLoading: createLoading } =
+    useCreateRegularDaily()
 
   const handleInputChange = e => {
     const { name, value } = e.target
@@ -25,13 +25,9 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
 
   const handleSubmit = async e => {
     e.preventDefault()
-    if (!roles.includes("user") && !roles.includes("admin")) {
-      console.error("User does not have the necessary role.")
-      return
-    }
     try {
       setIsSubmitting(true)
-      await createDaily("regular", formData)
+      await createDaily(formData)
       onDailyAdded()
       toggle()
       setFormData({
@@ -92,7 +88,7 @@ const AddDailyModal = ({ isOpen, toggle, onDailyAdded, departmentId }) => {
             type="submit"
             variant="contained"
             color="primary"
-            disabled={isSubmitting}
+            disabled={isSubmitting || createLoading}
           >
             დამატება
           </Button>
