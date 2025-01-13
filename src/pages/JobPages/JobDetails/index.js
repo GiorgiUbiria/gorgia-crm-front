@@ -2,7 +2,7 @@ import React, { useMemo } from "react"
 import { Container } from "reactstrap"
 import { useParams, useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
-import { useGetTask } from "../../../queries/tasks"
+import { useTask } from "../../../queries/tasks"
 import TaskHeader from "./components/TaskHeader"
 import TaskStatus from "./components/TaskStatus"
 import TaskActions from "./components/TaskActions"
@@ -25,7 +25,7 @@ const JobDetails = () => {
     data: task,
     isLoading: taskLoading,
     error,
-  } = useGetTask(id, {
+  } = useTask(id, {
     onError: error => {
       if (error.response?.status === 403) {
         toast.error("შენ არ გაქვს უფლება იხილო ეს დავალება")

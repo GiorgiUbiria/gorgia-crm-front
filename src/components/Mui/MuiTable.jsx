@@ -34,6 +34,7 @@ import LastPageIcon from "@mui/icons-material/LastPage"
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft"
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight"
 import TableSortLabel from "@mui/material/TableSortLabel"
+import { alpha } from "@mui/material/styles"
 
 const CustomPaginationActions = React.memo(function CustomPaginationActions(
   props
@@ -273,13 +274,14 @@ const MuiTable = ({
         overflow: "hidden",
         backgroundColor: "background.paper",
         color: "text.primary",
+        border: theme => `1px solid ${theme.palette.divider}`,
       }}
     >
       {(enableSearch || filterOptions.length > 0) && (
         <Box
           sx={{
             p: 2,
-            borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
+            borderBottom: theme => `1px solid ${theme.palette.divider}`,
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             gap: 2,
@@ -435,24 +437,27 @@ const MuiTable = ({
             backgroundColor: "background.paper",
             borderCollapse: "collapse",
             "& .MuiTableCell-head": {
-              backgroundColor: "#105d8d",
+              backgroundColor: theme => theme.palette.mode === 'dark' ? 'primary.dark' : '#105d8d',
               color: "primary.contrastText",
               fontWeight: 700,
-              borderRight: "1px solid rgba(224, 224, 224, 0.4)",
-              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              borderRight: theme => `1px solid ${theme.palette.divider}`,
+              borderBottom: theme => `1px solid ${theme.palette.divider}`,
               "&:last-child": {
                 borderRight: "none",
               },
             },
             "& .MuiTableCell-body": {
-              borderRight: "1px solid rgba(224, 224, 224, 0.4)",
-              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              borderRight: theme => `1px solid ${theme.palette.divider}`,
+              borderBottom: theme => `1px solid ${theme.palette.divider}`,
               "&:last-child": {
                 borderRight: "none",
               },
             },
             "& .MuiTableRow-root:nth-of-type(even)": {
-              backgroundColor: "action.hover",
+              backgroundColor: theme => 
+                theme.palette.mode === 'dark' 
+                  ? alpha(theme.palette.primary.main, 0.05)
+                  : 'action.hover',
             },
             "& .MuiTableRow-hover:hover": {
               backgroundColor: "action.selected",
@@ -561,7 +566,16 @@ const MuiTable = ({
                         colSpan={columns.length + 1}
                       >
                         <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                          <Box sx={{ py: 2, px: 3 }}>
+                          <Box 
+                            sx={{ 
+                              py: 2, 
+                              px: 3,
+                              backgroundColor: theme => 
+                                theme.palette.mode === 'dark' 
+                                  ? 'background.paper' 
+                                  : 'inherit'
+                            }}
+                          >
                             {renderRowDetails(row.original)}
                           </Box>
                         </Collapse>

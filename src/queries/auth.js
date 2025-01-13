@@ -1,60 +1,52 @@
-import { useQuery, useMutation } from "@tanstack/react-query"
-import {
-  getDepartments,
-  getPurchaseDepartments,
-  registerUser,
-  loginUser,
-  forgotPassword,
-  logoutUser,
-} from "../services/auth"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import * as authService from "../services/auth"
+import { queryKeys } from "./keys"
 
-// Query keys
-export const authKeys = {
-  all: ["auth"],
-  departments: () => [...authKeys.all, "departments"],
-  purchaseDepartments: () => [...authKeys.all, "purchase-departments"],
-}
-
-// Queries
-export const useGetDepartments = (options = {}) => {
+export const useCurrentUser = () => {
   return useQuery({
-    queryKey: authKeys.departments(),
-    queryFn: getDepartments,
-    select: response => response.data,
-    ...options,
-  })
-}
-
-export const useGetPurchaseDepartments = (options = {}) => {
-  return useQuery({
-    queryKey: authKeys.purchaseDepartments(),
-    queryFn: getPurchaseDepartments,
-    select: response => response.data,
-    ...options,
-  })
-}
-
-// Mutations
-export const useRegister = () => {
-  return useMutation({
-    mutationFn: data => registerUser(data),
+    queryKey: queryKeys.auth.user(),
+    queryFn: () => authService.getCurrentUser(),
+    staleTime: 5 * 60 * 1000,
   })
 }
 
 export const useLogin = () => {
+  const queryClient = useQueryClient()
+
   return useMutation({
-    mutationFn: data => loginUser(data),
+    mutationFn: (credentials) => authService.login(credentials),
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.auth.user(), data.user)
+    },
+  })
+}
+
+export const useLogout = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => authService.logout(),
+    onSuccess: () => {
+      queryClient.setQueryData(queryKeys.auth.user(), null)
+      queryClient.clear() // Clear all queries when logging out
+    },
+  })
+}
+
+export const useUpdatePassword = () => {
+  return useMutation({
+    mutationFn: (data) => authService.updatePassword(data),
+  })
+}
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: (data) => authService.resetPassword(data),
   })
 }
 
 export const useForgotPassword = () => {
   return useMutation({
-    mutationFn: data => forgotPassword(data),
-  })
-}
-
-export const useLogout = () => {
-  return useMutation({
-    mutationFn: logoutUser,
+    mutationFn: (data) => authService.forgotPassword(data),
   })
 } 

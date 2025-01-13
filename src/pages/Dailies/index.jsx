@@ -1,12 +1,16 @@
 import React, { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import Button from "@mui/material/Button"
-import MuiTable from "components/Mui/MuiTable"
+import CrmTable from "components/CrmTable"
 import { usePermissions } from "hooks/usePermissions"
 import AddDailyModal from "./AddDailyModal"
 import * as XLSX from "xlsx"
-import { useGetDepartmentHeadDailies, useGetMyDepartmentHeadDailies } from "queries/daily"
+import {
+  useGetDepartmentHeadDailies,
+  useGetMyDepartmentHeadDailies,
+} from "queries/daily"
 import useUserRoles from "hooks/useUserRoles"
+import { useTheme } from "hooks/useTheme"
 
 const INITIAL_STATE = {
   currentPage: 1,
@@ -53,12 +57,18 @@ const Dailies = () => {
     enabled: !isAdminOrDepartmentHead,
   })
 
-  const dailiesData = isAdminOrDepartmentHead ? adminDailiesData : userDailiesData
+  const dailiesData = isAdminOrDepartmentHead
+    ? adminDailiesData
+    : userDailiesData
   const isLoading = isAdminOrDepartmentHead ? adminIsLoading : userIsLoading
   const refetch = isAdminOrDepartmentHead ? adminRefetch : userRefetch
 
   const handleRowClick = row => {
     navigate(`/tools/daily-results/${row.id}`)
+  }
+
+  const handleExpandClick = e => {
+    e.stopPropagation()
   }
 
   const transformedDailies = useMemo(() => {
@@ -70,41 +80,6 @@ const Dailies = () => {
     )
   }, [dailiesData])
 
-  const columns = useMemo(
-    () => [
-      {
-        Header: "საკითხის ნომერი",
-        accessor: "id",
-      },
-      {
-        Header: "თარიღი",
-        accessor: "date",
-        Cell: ({ value }) => (
-          <div className="date-wrapper">
-            <i className="bx bx-calendar me-2"></i>
-            {new Date(value).toLocaleDateString()}
-          </div>
-        ),
-      },
-      {
-        Header: "საკითხი",
-        accessor: "name",
-        disableSortBy: true,
-      },
-      {
-        Header: "დეპარტამენტი",
-        accessor: "department.name",
-        disableSortBy: true,
-      },
-      {
-        Header: "სახელი/გვარი",
-        accessor: "user_full_name",
-        disableSortBy: true,
-      },
-    ],
-    []
-  )
-
   const filterOptions = useMemo(() => {
     const uniqueDepartments = [
       ...new Set(dailiesData?.dailies?.map(daily => daily.department?.id)),
@@ -115,20 +90,80 @@ const Dailies = () => {
           d => d.department?.id === deptId
         )
         return {
-          value: deptId,
+          value: deptId.toString(),
           label: daily?.department?.name || "",
         }
       })
       .sort((a, b) => a.label.localeCompare(b.label))
 
-    return [
-      {
-        field: "department.id",
-        label: "დეპარტამენტი",
-        options: [{ value: "", label: "ყველა" }, ...uniqueDepartments],
-      },
-    ]
+    return uniqueDepartments
   }, [dailiesData])
+
+  const filteredData = useMemo(() => {
+    return [...transformedDailies]
+  }, [transformedDailies])
+
+  const columns = useMemo(
+    () => [
+      {
+        header: "საკითხის ნომერი",
+        accessorKey: "id",
+        enableSorting: true,
+        sortingFn: "number",
+        enableColumnFilter: false,
+      },
+      {
+        header: "თარიღი",
+        accessorKey: "date",
+        cell: ({ getValue }) => (
+          <div className="date-wrapper">
+            <i className="bx bx-calendar me-2"></i>
+            {new Date(getValue()).toLocaleDateString()}
+          </div>
+        ),
+        enableSorting: true,
+        sortingFn: "datetime",
+        enableColumnFilter: false,
+      },
+      {
+        header: "საკითხი",
+        accessorKey: "name",
+        enableSorting: false,
+        enableColumnFilter: true,
+        filterFn: "includes",
+        meta: { isSearchable: true },
+      },
+      {
+        header: "დეპარტამენტი",
+        accessorKey: "department.name",
+        accessorFn: row => row.department?.name,
+        enableSorting: false,
+        enableColumnFilter: true,
+        filterFn: "includes",
+        filterOptions: filterOptions.map(opt => ({
+          value: opt.label,
+          label: opt.label,
+        })),
+        meta: { isSearchable: true },
+      },
+      {
+        header: "სახელი/გვარი",
+        accessorKey: "user_full_name",
+        enableSorting: false,
+        enableColumnFilter: true,
+        filterFn: "includes",
+        filterPlaceholder: "სახელი/გვარი...",
+        meta: { isSearchable: true },
+      },
+    ],
+    [filterOptions]
+  )
+
+  const searchableFields = [
+    { value: "name", label: "საკითხი" },
+    { value: "department.name", label: "დეპარტამენტი" },
+    { value: "user_full_name", label: "სახელი/გვარი" },
+  ]
 
   const exportToExcel = () => {
     const headers = [
@@ -155,72 +190,97 @@ const Dailies = () => {
     XLSX.writeFile(wb, "Department_Head_Dailies.xlsx")
   }
 
-  const renderExpandedRow = row => (
-    <div className="p-4 bg-white rounded shadow-sm">
+  const renderSubComponent = ({ row }) => (
+    <div className="p-4 bg-white dark:!bg-gray-900 rounded shadow-sm">
       <div className="d-flex flex-column">
-        <h5 className="mb-2 text-primary">საკითხის დეტალები</h5>
+        <h5 className="mb-2 text-primary dark:!text-gray-100">
+          საკითხის დეტალები
+        </h5>
         <div className="d-flex justify-content-between align-items-center mb-2">
-          <span className="fw-bold text-secondary">საკითხი:</span>
-          <span className="text-dark">{row.description}</span>
+          <span className="fw-bold text-secondary dark:!text-gray-100">
+            საკითხი:
+          </span>
+          <span className="text-dark dark:!text-gray-100">
+            {row.original.description}
+          </span>
         </div>
         <div className="d-flex justify-content-between align-items-center">
-          <span className="fw-bold text-secondary">თარიღი:</span>
-          <span className="text-dark">
-            {new Date(row.date).toLocaleDateString()}
+          <span className="fw-bold text-secondary dark:!text-gray-100">
+            თარიღი:
+          </span>
+          <span className="text-dark dark:!text-gray-100">
+            {new Date(row.original.date).toLocaleDateString()}
           </span>
         </div>
       </div>
     </div>
   )
 
-  const canAddDaily =
-    roles.includes("admin") || roles.includes("department_head")
+  const renderTopToolbar = () => (
+    <div className="flex justify-between items-center p-4">
+      <div className="flex gap-3">
+        {isAdmin && (
+          <Button variant="outlined" color="primary" onClick={exportToExcel}>
+            <i className="bx bx-export me-1"></i>
+            Excel გადმოწერა
+          </Button>
+        )}
+        {(roles.includes("admin") || roles.includes("department_head")) && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => updateState({ addDailyModal: true })}
+          >
+            <i className="bx bx-plus me-1"></i>
+            შეფასების დამატება
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+
+  const { isDarkMode } = useTheme()
+
+  const handlePageChange = newPage => {
+    updateState({ currentPage: newPage + 1 })
+  }
+
+  const handlePageSizeChange = newSize => {
+    updateState({ pageSize: newSize, currentPage: 1 })
+  }
 
   return (
     <>
       <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
-          <div className="mb-4">
-            <div className="flex gap-3">
-              {isAdmin && (
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={exportToExcel}
-                >
-                  <i className="bx bx-export me-1"></i>
-                  Excel გადმოწერა
-                </Button>
-              )}
-              {canAddDaily && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => updateState({ addDailyModal: true })}
-                >
-                  <i className="bx bx-plus me-1"></i>
-                  შეფასების დამატება
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <MuiTable
+          <CrmTable
             columns={columns}
-            data={transformedDailies}
-            filterOptions={filterOptions}
-            searchableFields={["name", "department.name", "user_full_name"]}
-            enableSearch={true}
-            initialPageSize={pageSize}
+            data={filteredData}
+            searchableFields={searchableFields}
+            enableGlobalFilter={true}
+            enableFilters={true}
+            enableSorting={true}
+            enableExpanding={true}
+            pageSize={pageSize}
             pageSizeOptions={PAGE_SIZE_OPTIONS}
-            currentPage={currentPage}
-            totalItems={dailiesData?.total || 0}
-            onPageChange={page => updateState({ currentPage: page })}
-            onPageSizeChange={size => updateState({ pageSize: size })}
-            isLoading={isLoading}
+            initialState={{
+              pagination: {
+                pageIndex: currentPage - 1,
+                pageSize: pageSize,
+              },
+            }}
             onRowClick={handleRowClick}
-            renderRowDetails={renderExpandedRow}
-            rowClassName="cursor-pointer hover:bg-gray-50"
+            renderSubComponent={renderSubComponent}
+            renderTopToolbar={renderTopToolbar}
+            manualPagination={true}
+            manualSorting={false}
+            manualFiltering={false}
+            size="md"
+            theme={isDarkMode ? "dark" : "light"}
+            isLoading={isLoading}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            expandClickHandler={handleExpandClick}
           />
         </div>
       </div>

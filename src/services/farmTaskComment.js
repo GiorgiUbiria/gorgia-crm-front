@@ -1,51 +1,18 @@
 import defaultInstance from "../plugins/axios"
 
-// Get list of comments for a specific task
-export const getTaskComments = async (
-  taskId,
-  page = 1,
-  limit = 10,
-  sortBy = "created_at",
-  order = "desc"
-) => {
+export const getFarmTaskComments = async taskId => {
   try {
     const response = await defaultInstance.get(
-      `/api/farm-tasks/${taskId}/comments`,
-      {
-        params: {
-          page,
-          limit,
-          sortBy,
-          order,
-        },
-      }
+      `/api/farm-tasks/${taskId}/comments`
     )
-    return response.data // Ensure you're returning the actual data
+    return response.data
   } catch (error) {
-    console.error(
-      "Error fetching task comments:",
-      error?.response?.data || error.message
-    )
+    console.error("Error fetching farm task comments:", error)
     throw error
   }
 }
 
-// Get a specific comment
-export const getTaskComment = async commentId => {
-  try {
-    const response = await defaultInstance.get(`/api/comments/${commentId}`)
-    return response.data // Ensure you're returning the actual data
-  } catch (error) {
-    console.error(
-      "Error fetching task comment:",
-      error?.response?.data || error.message
-    )
-    throw error
-  }
-}
-
-// Create a new comment for a specific task
-export const createTaskComment = async (taskId, data) => {
+export const createFarmTaskComment = async ({ taskId, data }) => {
   try {
     const response = await defaultInstance.post(
       `/api/farm-tasks/${taskId}/comments`,
@@ -53,24 +20,38 @@ export const createTaskComment = async (taskId, data) => {
     )
     return response.data
   } catch (error) {
-    console.error(
-      "Error creating task comment:",
-      error?.response?.data || error.message
-    )
+    console.error("Error creating farm task comment:", error)
     throw error
   }
 }
 
-// Delete a comment
-export const deleteTaskComment = async commentId => {
+export const updateFarmTaskComment = async ({ taskId, commentId, data }) => {
   try {
-    const response = await defaultInstance.delete(`/api/comments/${commentId}`)
+    const response = await defaultInstance.put(
+      `/api/farm-tasks/${taskId}/comments/${commentId}`,
+      data
+    )
     return response.data
   } catch (error) {
-    console.error(
-      "Error deleting task comment:",
-      error?.response?.data || error.message
-    )
+    console.error("Error updating farm task comment:", error)
     throw error
   }
 }
+
+export const deleteFarmTaskComment = async ({ taskId, commentId }) => {
+  try {
+    const response = await defaultInstance.delete(
+      `/api/farm-tasks/${taskId}/comments/${commentId}`
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error deleting farm task comment:", error)
+    throw error
+  }
+}
+
+// Backward compatibility exports
+export const getTaskComments = getFarmTaskComments
+export const createTaskComment = async (taskId, data) => createFarmTaskComment({ taskId, data })
+export const updateTaskComment = async (taskId, commentId, data) => updateFarmTaskComment({ taskId, commentId, data })
+export const deleteTaskComment = async (taskId, commentId) => deleteFarmTaskComment({ taskId, commentId })

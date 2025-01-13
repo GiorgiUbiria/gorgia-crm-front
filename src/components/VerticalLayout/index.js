@@ -158,7 +158,7 @@ const Layout = props => {
               <Breadcrumbs />
             </div>
             <main className="flex-1 px-4 py-6">
-              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm dark:shadow-gray-800/30 p-6 mb-8 transition-colors duration-200">
+              <div className="!bg-white dark:!bg-gray-900 rounded-lg !shadow-sm dark:!shadow-gray-800/30 p-6 mb-8 transition-colors duration-200">
                 {props.children}
               </div>
             </main>

@@ -33,3 +33,6 @@ debug.log
 .env.local
 .env.development
 .env.production
+
+ServiceToQuery.md
+CrmTable.md

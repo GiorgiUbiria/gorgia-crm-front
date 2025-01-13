@@ -218,6 +218,7 @@ const DailiesInner = () => {
             onRowClick={handleRowClick}
             renderRowDetails={renderExpandedRow}
             rowClassName="cursor-pointer hover:bg-gray-50"
+            
           />
         </div>
       </div>

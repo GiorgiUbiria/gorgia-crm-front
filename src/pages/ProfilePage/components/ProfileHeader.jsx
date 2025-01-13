@@ -1,5 +1,6 @@
 import React from "react"
-import { FiCamera } from "react-icons/fi"
+import PropTypes from "prop-types"
+import { useTranslation } from "react-i18next"
 import NoAvatarIcon from "../../../assets/images/no-avatar.jpg"
 
 const roleNameMapping = {
@@ -15,6 +16,7 @@ const roleNameMapping = {
 }
 
 const ProfileHeader = ({ userData, onImageChange }) => {
+  const { t } = useTranslation()
   const profileImageSrc = userData?.profile_image
     ? `${process.env.REACT_APP_BASE_URL}/${userData.profile_image}`
     : NoAvatarIcon
@@ -33,7 +35,7 @@ const ProfileHeader = ({ userData, onImageChange }) => {
               htmlFor="profile-image-upload"
               className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
             >
-              <FiCamera size={16} className="text-white" />
+              <span className="text-white text-sm">{t("შეცვლა")}</span>
             </label>
             <input
               id="profile-image-upload"
@@ -66,6 +68,11 @@ const ProfileHeader = ({ userData, onImageChange }) => {
       </div>
     </header>
   )
+}
+
+ProfileHeader.propTypes = {
+  userData: PropTypes.object,
+  onImageChange: PropTypes.func.isRequired,
 }
 
 export default ProfileHeader

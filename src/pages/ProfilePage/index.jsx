@@ -208,7 +208,7 @@ const ProfilePage = () => {
       <div className="space-y-6">
         <GeneralInfo userData={userData} />
 
-        <div className="h-px bg-gray-200" />
+        <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
         <UpdateProfile
           profileForm={profileForm}
@@ -218,7 +218,7 @@ const ProfilePage = () => {
           isFormChanged={isProfileFormChanged()}
         />
 
-        <div className="h-px bg-gray-200" />
+        <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
         <ChangePassword
           passForm={passForm}
@@ -227,7 +227,7 @@ const ProfilePage = () => {
           onSubmit={submitPassForm}
         />
       </div>
-      <ToastContainer />
+      <ToastContainer theme="colored" />
     </div>
   )
 }

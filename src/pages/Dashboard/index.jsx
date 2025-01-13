@@ -148,7 +148,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="flex-1 px-4 py-6 overflow-auto">
+    <div className="flex-1 px-4 py-6 overflow-auto dark:bg-gray-900">
       <div className="max-w-full mx-auto">
         {/* Welcome Card */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-sm overflow-hidden mb-6">
@@ -171,8 +171,10 @@ function Dashboard() {
                 <div
                   key={widget.id}
                   className={`${
-                    widget.disabled ? "bg-gray-300" : "bg-gray-50"
-                  } rounded-lg border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200 overflow-hidden`}
+                    widget.disabled
+                      ? "bg-gray-300 dark:bg-gray-700"
+                      : "bg-gray-50 dark:bg-gray-800"
+                  } rounded-lg border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-sm transition-all duration-200 overflow-hidden`}
                 >
                   <div className="p-4">
                     <div
@@ -182,17 +184,17 @@ function Dashboard() {
                     >
                       <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                       {widget.title}
                     </h3>
-                    <p className="text-gray-600 text-xs sm:text-sm mb-3">
+                    <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-3">
                       {widget.description}
                     </p>
                     {widget.disabled ? (
-                      <button className="inline-block text-xs sm:text-sm font-medium bg-gray-200 text-gray-600 px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200">
+                      <button className="inline-block text-xs sm:text-sm font-medium bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-400 px-3 py-2 rounded-md w-full text-left hover:shadow-sm transition-all duration-200">
                         {widget.buttonText}
                       </button>
-                    ) : widget.link.startsWith('http') ? (
+                    ) : widget.link.startsWith("http") ? (
                       <a
                         href={widget.link}
                         target="_blank"

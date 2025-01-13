@@ -2,8 +2,8 @@ import React, { useState } from "react"
 import { MessageSquare } from "lucide-react"
 import { Spinner } from "reactstrap"
 import {
-  useGetTaskComments,
-  useCreateTaskComment,
+  useFarmTaskComments,
+  useCreateFarmTaskComment,
 } from "../../../../queries/farmTasks"
 import useCurrentUser from "../../../../hooks/useCurrentUser"
 import CommentThread from "./CommentThread"
@@ -14,13 +14,12 @@ const CommentSection = ({ task, canComment }) => {
   const { currentUser, isLoading: userLoading } = useCurrentUser()
 
   const {
-    data: comments = [],
+    data: comments,
     isLoading: commentsLoading,
     error,
-  } = useGetTaskComments(task.data.id)
+  } = useFarmTaskComments(task.data.id)
 
-  console.log(comments)
-  const createCommentMutation = useCreateTaskComment()
+  const createCommentMutation = useCreateFarmTaskComment()
 
   const handleSubmitComment = async e => {
     e.preventDefault()
@@ -97,7 +96,7 @@ const CommentSection = ({ task, canComment }) => {
         )}
 
         <div className="space-y-6">
-          {comments?.data.length > 0 ? (
+          {comments?.data?.length > 0 ? (
             comments.data.map(comment => (
               <CommentThread
                 key={comment.id}

@@ -1,83 +1,90 @@
 import React from "react"
-import { FiLock } from "react-icons/fi"
+import PropTypes from "prop-types"
 import { useTranslation } from "react-i18next"
 
-const ChangePassword = ({ passError, handleChangePass, onSubmit }) => {
+const ChangePassword = ({ passForm, passError, handleChangePass, onSubmit }) => {
   const { t } = useTranslation()
 
   return (
-    <section className="bg-white rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
-      <h2 className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
-        <FiLock className="text-blue-600" size={20} />
-        <span>{t("პაროლის შეცვლა")}</span>
+    <div>
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        {t("პაროლის შეცვლა")}
       </h2>
-      <p className="text-gray-600 text-xs sm:text-sm mb-6">
-        {t("უსაფრთხოების მიზნით, შეცვალეთ თქვენი პაროლი პერიოდულად")}
-      </p>
-
-      <form onSubmit={onSubmit}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t("ძველი პაროლი")}
             </label>
             <input
               type="password"
               name="old_password"
+              value={passForm.old_password}
               onChange={handleChangePass}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
             />
-            {passError?.old_password && (
-              <p className="text-sm text-red-600">
+            {passError.old_password && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                 {passError.old_password}
               </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t("ახალი პაროლი")}
             </label>
             <input
               type="password"
               name="password"
+              value={passForm.password}
               onChange={handleChangePass}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
             />
-            {passError?.password && (
-              <p className="text-sm text-red-600">{passError.password}</p>
+            {passError.password && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {passError.password}
+              </p>
             )}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">
-              {t("გაიმეორე პაროლი")}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t("გაიმეორეთ პაროლი")}
             </label>
             <input
               type="password"
               name="confirm_password"
+              value={passForm.confirm_password}
               onChange={handleChangePass}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
             />
-            {passError?.confirm_password && (
-              <p className="text-sm text-red-600">
+            {passError.confirm_password && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                 {passError.confirm_password}
               </p>
             )}
           </div>
         </div>
 
-        <div className="mt-4">
+        <div className="flex justify-end">
           <button
             type="submit"
-            className="w-full flex items-center justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
           >
             {t("შეცვლა")}
           </button>
         </div>
       </form>
-    </section>
+    </div>
   )
 }
 
-export default ChangePassword 
+ChangePassword.propTypes = {
+  passForm: PropTypes.object.isRequired,
+  passError: PropTypes.object.isRequired,
+  handleChangePass: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+}
+
+export default ChangePassword
