@@ -311,6 +311,14 @@ const UsersTab = ({
     }))
   }, [users])
 
+  const departments = useMemo(() => {
+    const uniqueDepartments = [...new Set(transformedUsers.map(user => user.department))]
+    return uniqueDepartments.reduce((acc, dept) => {
+      if (dept) acc[dept] = dept
+      return acc
+    }, {})
+  }, [transformedUsers])
+
   const exportToExcel = () => {
     const data = [
       [
@@ -374,6 +382,11 @@ const UsersTab = ({
               pending: "მოლოდინში",
               rejected: "უარყოფილი",
             },
+          },
+          {
+            field: "department",
+            label: "დეპარტამენტი",
+            valueLabels: departments,
           },
         ]}
         searchableFields={["name.fullName", "email"]}
