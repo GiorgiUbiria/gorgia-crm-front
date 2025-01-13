@@ -253,8 +253,8 @@ const TripPageApprove = () => {
 
   const handleModalOpen = (action, tripId) => {
     setSelectedTrip(tripId)
-    setActionType(action)
-    if (action === "rejected") {
+    setActionType(action === "approve" ? "approved" : "rejected")
+    if (action === "reject") {
       setRejectionModal(true)
     } else {
       setConfirmModal(true)
@@ -263,21 +263,15 @@ const TripPageApprove = () => {
 
   const handleConfirmAction = async () => {
     try {
-      const response = await updateTripStatus(selectedTrip, actionType, {
-        approval_status: actionType,
-      })
-      if (response.status === 200) {
-        setTrips(prevTrips =>
-          prevTrips.map(trip =>
-            trip.id === selectedTrip
-              ? { ...trip, approval_status: actionType }
-              : trip
-          )
+      await updateTripStatus(selectedTrip, actionType)
+      setTrips(prevTrips =>
+        prevTrips.map(trip =>
+          trip.id === selectedTrip ? { ...trip, status: actionType } : trip
         )
-        setConfirmModal(false)
-        setSelectedTrip(null)
-        setActionType(null)
-      }
+      )
+      setConfirmModal(false)
+      setSelectedTrip(null)
+      setActionType(null)
     } catch (err) {
       console.error("Error updating trip status:", err)
     }
@@ -285,26 +279,22 @@ const TripPageApprove = () => {
 
   const handleRejectionSubmit = async () => {
     try {
-      const response = await updateTripStatus(selectedTrip, "rejected", {
-        approval_status: "rejected",
-        rejection_reason: rejectionComment,
-      })
-      if (response.status === 200) {
-        setTrips(prevTrips =>
-          prevTrips.map(trip =>
-            trip.id === selectedTrip
-              ? {
-                  ...trip,
-                  approval_status: "rejected",
-                  rejection_reason: rejectionComment,
-                }
-              : trip
-          )
+      await updateTripStatus(selectedTrip, "rejected", rejectionComment.trim())
+      setTrips(prevTrips =>
+        prevTrips.map(trip =>
+          trip.id === selectedTrip
+            ? {
+                ...trip,
+                status: "rejected",
+                rejection_reason: rejectionComment.trim(),
+              }
+            : trip
         )
-        setRejectionModal(false)
-        setRejectionComment("")
-        setSelectedTrip(null)
-      }
+      )
+      setRejectionModal(false)
+      setRejectionComment("")
+      setSelectedTrip(null)
+      setActionType(null)
     } catch (err) {
       console.error("Error rejecting trip:", err)
     }
@@ -412,7 +402,7 @@ const TripPageApprove = () => {
             <div className="d-flex gap-2">
               <div className="d-flex align-items-center">
                 <Button
-                  onClick={() => handleModalOpen("approved", row.original.id)}
+                  onClick={() => handleModalOpen("approve", row.original.id)}
                   color="success"
                   variant="contained"
                 >
@@ -421,7 +411,7 @@ const TripPageApprove = () => {
               </div>
               <div className="d-flex align-items-center">
                 <Button
-                  onClick={() => handleModalOpen("rejected", row.original.id)}
+                  onClick={() => handleModalOpen("reject", row.original.id)}
                   color="error"
                   variant="contained"
                 >

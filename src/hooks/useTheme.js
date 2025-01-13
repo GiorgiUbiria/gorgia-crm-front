@@ -11,8 +11,10 @@ export const useTheme = () => {
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
     if (savedTheme === "dark" && !isDarkMode) {
       dispatch({ type: "TOGGLE_THEME" })
+    } else if (savedTheme === "light" && isDarkMode) {
+      dispatch({ type: "TOGGLE_THEME" })
     }
-  }, [dispatch, isDarkMode])
+  }, [])
 
   useEffect(() => {
     if (isDarkMode) {

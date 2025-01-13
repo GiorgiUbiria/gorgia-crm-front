@@ -2,6 +2,18 @@ import React from "react"
 import { FiCamera } from "react-icons/fi"
 import NoAvatarIcon from "../../../assets/images/no-avatar.jpg"
 
+const roleNameMapping = {
+  admin: "ადმინისტრატორი",
+  hr: "HR მენეჯერი",
+  vip: "VIP მომხმარებელი",
+  user: "მომხმარებელი",
+  department_head: "დეპარტამენტის უფროსი",
+  department_head_assistant: "დეპარტამენტის უფროსის ასისტენტი",
+  manager: "მენეჯერი",
+  ceo: "გენერალური დირექტორი",
+  ceo_assistant: "გენერალური დირექტორის ასისტენტი",
+}
+
 const ProfileHeader = ({ userData, onImageChange }) => {
   const profileImageSrc = userData?.profile_image
     ? `${process.env.REACT_APP_BASE_URL}/${userData.profile_image}`
@@ -46,7 +58,7 @@ const ProfileHeader = ({ userData, onImageChange }) => {
                 key={role.id}
                 className="px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-green-500 text-white hover:-translate-y-0.5 transition-transform"
               >
-                {role.name}
+                {roleNameMapping[role.slug] || role.name}
               </span>
             ))}
           </div>
