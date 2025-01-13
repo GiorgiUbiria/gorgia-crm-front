@@ -37,7 +37,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       >
         <div className="flex flex-col h-full">
           <div 
-            className="flex-1 overflow-y-auto"
+            className="flex-1 overflow-y-auto scrollbar-none"
             style={{
               msOverflowStyle: 'none',
               scrollbarWidth: 'none',

@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Col, Form, Input, Label, Row, Button, FormGroup } from "reactstrap"
+import { Col, Form, Input, Label, Row, Button, FormGroup, Alert } from "reactstrap"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useNavigate } from "react-router-dom"
@@ -51,39 +51,51 @@ const InputWithError = ({
   type = "text",
   children,
   ...props
-}) => (
-  <div className="mb-3">
-    <Label for={name}>{label}</Label>
-    {type === "select" ? (
-      <Input
-        type={type}
-        id={name}
-        name={name}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        value={formik.values[name]}
-        invalid={formik.touched[name] && Boolean(formik.errors[name])}
-        {...props}
-      >
-        {children}
-      </Input>
-    ) : (
-      <Input
-        type={type}
-        id={name}
-        name={name}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        value={formik.values[name]}
-        invalid={formik.touched[name] && Boolean(formik.errors[name])}
-        {...props}
-      />
-    )}
-    {formik.touched[name] && formik.errors[name] && (
-      <div className="text-danger mt-1">{formik.errors[name]}</div>
-    )}
-  </div>
-)
+}) => {
+  // Get nested field error
+  const getNestedError = (obj, path) => {
+    return path.split('.').reduce((acc, part) => {
+      return acc && acc[part];
+    }, obj);
+  };
+
+  const error = getNestedError(formik.errors, name);
+  const touched = getNestedError(formik.touched, name);
+
+  return (
+    <div className="mb-3">
+      <Label for={name}>{label}</Label>
+      {type === "select" ? (
+        <Input
+          type={type}
+          id={name}
+          name={name}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values[name]}
+          invalid={touched && Boolean(error)}
+          {...props}
+        >
+          {children}
+        </Input>
+      ) : (
+        <Input
+          type={type}
+          id={name}
+          name={name}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values[name]}
+          invalid={touched && Boolean(error)}
+          {...props}
+        />
+      )}
+      {touched && error && (
+        <div className="text-danger mt-1">{error}</div>
+      )}
+    </div>
+  );
+};
 
 const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
   <div className="border rounded p-2 mb-2">
@@ -205,6 +217,7 @@ const ProcurementPage = () => {
   document.title = "შიდა შესყიდვების დამატება | Gorgia LLC"
   const navigate = useNavigate()
   const [expandedProducts, setExpandedProducts] = useState([0])
+  const [generalError, setGeneralError] = useState(null)
 
   const { mutate: createPurchase, isLoading } = useCreatePurchase()
 
@@ -220,10 +233,10 @@ const ProcurementPage = () => {
       category: "",
       purchase_purpose: "",
       requested_arrival_date: "",
-      short_date_notice_explanation: "",
+      short_date_notice_explanation: null,
       exceeds_needs_reason: "",
       creates_stock: false,
-      stock_purpose: "",
+      stock_purpose: null,
       delivery_address: "",
       products: [
         {
@@ -233,29 +246,37 @@ const ProcurementPage = () => {
           description: "",
           search_variant: "",
           similar_purchase_planned: "",
-          in_stock_explanation: "",
+          in_stock_explanation: null,
           payer: "",
         },
       ],
     },
     validationSchema: procurementSchema,
+    validateOnMount: true,
+    validateOnChange: true,
+    validateOnBlur: true,
     onSubmit: async values => {
       try {
-        // Validate all fields first
-        await procurementSchema.validate(values, { abortEarly: false })
-
-        // Add category to each product before submission
-        const productsWithCategory = values.products.map(product => ({
-          ...product,
-          category: values.category,
-        }))
-
-        const dataToSubmit = {
+        setGeneralError(null)
+        
+        // Format the data before submission
+        const formattedValues = {
           ...values,
-          products: productsWithCategory,
+          // Ensure creates_stock is boolean
+          creates_stock: Boolean(values.creates_stock),
+          // Ensure stock_purpose is null when creates_stock is false
+          stock_purpose: values.creates_stock ? values.stock_purpose : null,
+          // Add category to products and handle in_stock_explanation
+          products: values.products.map(product => ({
+            ...product,
+            quantity: parseInt(product.quantity, 10),
+            in_stock_explanation: values.category === 'IT' || values.category === 'Marketing' 
+              ? null 
+              : product.in_stock_explanation,
+          }))
         }
 
-        createPurchase(dataToSubmit, {
+        createPurchase(formattedValues, {
           onSuccess: () => {
             toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
               position: "top-right",
@@ -272,57 +293,84 @@ const ProcurementPage = () => {
             }, 1000)
           },
           onError: err => {
-            // Combine backend validation errors into a single message
             if (err?.response?.data?.errors) {
               const errorMessages = Object.entries(err.response.data.errors)
-                .map(([field, messages]) => `${field}: ${messages[0]}`)
-                .join("\n")
+                .map(([field, messages]) => {
+                  // Handle nested product errors
+                  if (field.startsWith('products.')) {
+                    const [, index, subField] = field.match(/products\.(\d+)\.(.+)/) || []
+                    if (index !== undefined && subField) {
+                      return `პროდუქტი ${parseInt(index) + 1} - ${subField}: ${messages[0]}`
+                    }
+                  }
+                  return `${field}: ${messages[0]}`
+                })
+                .join('\n')
 
-              toast.error(errorMessages, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-              })
+              setGeneralError(errorMessages)
             } else {
-              // Handle general error
               const errorMessage =
                 err?.response?.data?.message ||
                 err?.response?.data?.data?.message ||
                 "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით"
 
-              toast.error(errorMessage, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-              })
+              setGeneralError(errorMessage)
             }
           },
         })
       } catch (err) {
-        // Combine Yup validation errors into a single message
         if (err.inner) {
           const errorMessages = err.inner
-            .map(error => `${error.path}: ${error.message}`)
-            .join("\n")
+            .map(error => {
+              // Handle nested product errors
+              if (error.path.startsWith('products.')) {
+                const [, index, subField] = error.path.match(/products\.(\d+)\.(.+)/) || []
+                if (index !== undefined && subField) {
+                  return `პროდუქტი ${parseInt(index) + 1} - ${subField}: ${error.message}`
+                }
+              }
+              return `${error.path}: ${error.message}`
+            })
+            .join('\n')
 
-          toast.error(errorMessages, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          })
+          setGeneralError(errorMessages)
         }
       }
     },
   })
+
+  // Function to show all current validation errors with better formatting
+  const showCurrentValidationErrors = () => {
+    const errors = formik.errors;
+    if (Object.keys(errors).length > 0) {
+      const errorMessages = Object.entries(errors)
+        .map(([field, error]) => {
+          if (field === 'products' && typeof error === 'object') {
+            // Handle product array errors
+            if (Array.isArray(error)) {
+              return error.map((productError, index) => {
+                if (typeof productError === 'object') {
+                  return Object.entries(productError)
+                    .map(([key, value]) => `პროდუქტი ${index + 1} - ${key}: ${value}`)
+                    .join('\n')
+                }
+                return `პროდუქტი ${index + 1}: ${productError}`
+              }).join('\n')
+            }
+            return `products: ${error}`
+          }
+          if (typeof error === 'string') {
+            return `${field}: ${error}`
+          }
+          return null
+        })
+        .filter(Boolean)
+        .join('\n')
+      setGeneralError(errorMessages)
+    } else {
+      setGeneralError(null)
+    }
+  }
 
   const addProduct = () => {
     const newProductIndex = formik.values.products.length
@@ -356,6 +404,12 @@ const ProcurementPage = () => {
           <div className="p-4 sm:p-6">
             <Form onSubmit={formik.handleSubmit}>
               <div className="space-y-6">
+                {generalError && (
+                  <Alert color="danger" className="mb-4">
+                    <pre className="mb-0 whitespace-pre-wrap">{generalError}</pre>
+                  </Alert>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <InputWithError
                     formik={formik}
@@ -410,39 +464,63 @@ const ProcurementPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>იქმნება მარაგი?</Label>
-                    <div className="flex gap-4">
-                      <FormGroup check inline>
-                        <Input
-                          type="radio"
-                          name="creates_stock"
-                          onChange={() =>
-                            formik.setFieldValue("creates_stock", true)
-                          }
-                          checked={formik.values.creates_stock === true}
-                        />
-                        <Label check>დიახ</Label>
-                      </FormGroup>
-                      <FormGroup check inline>
-                        <Input
-                          type="radio"
-                          name="creates_stock"
-                          onChange={() =>
-                            formik.setFieldValue("creates_stock", false)
-                          }
-                          checked={formik.values.creates_stock === false}
-                        />
-                        <Label check>არა</Label>
-                      </FormGroup>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>იქმნება მარაგი?</Label>
+                      <div className="flex gap-4">
+                        <FormGroup check inline>
+                          <Input
+                            type="radio"
+                            name="creates_stock"
+                            onChange={() =>
+                              formik.setFieldValue("creates_stock", true)
+                            }
+                            checked={formik.values.creates_stock === true}
+                          />
+                          <Label check>დიახ</Label>
+                        </FormGroup>
+                        <FormGroup check inline>
+                          <Input
+                            type="radio"
+                            name="creates_stock"
+                            onChange={() =>
+                              formik.setFieldValue("creates_stock", false)
+                            }
+                            checked={formik.values.creates_stock === false}
+                          />
+                          <Label check>არა</Label>
+                        </FormGroup>
+                      </div>
                     </div>
+                    {formik.values.creates_stock && (
+                      <InputWithError
+                        formik={formik}
+                        name="stock_purpose"
+                        label="მარაგის მიზანი"
+                        type="textarea"
+                        rows="2"
+                      />
+                    )}
                   </div>
-                  <InputWithError
-                    formik={formik}
-                    name="requested_arrival_date"
-                    label="მოთხოვნის მიღების თარიღი"
-                    type="date"
-                  />
+
+                  <div className="space-y-4">
+                    <InputWithError
+                      formik={formik}
+                      name="requested_arrival_date"
+                      label="მოთხოვნის მიღების თარიღი"
+                      type="date"
+                    />
+                    {formik.values.requested_arrival_date && 
+                      (new Date(formik.values.requested_arrival_date) - new Date()) / (1000 * 60 * 60 * 24) < 14 && (
+                      <InputWithError
+                        formik={formik}
+                        name="short_date_notice_explanation"
+                        label="მცირე ვადის მიზეზი"
+                        type="textarea"
+                        rows="2"
+                      />
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -464,8 +542,24 @@ const ProcurementPage = () => {
                   </Button>
                 </div>
 
-                <div className="flex justify-end">
-                  <Button type="submit" color="primary" disabled={isLoading}>
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    type="button" 
+                    color="secondary"
+                    onClick={showCurrentValidationErrors}
+                  >
+                    შეამოწმე ვალიდაცია
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    color="primary" 
+                    disabled={isLoading}
+                    onClick={() => {
+                      if (Object.keys(formik.errors).length > 0) {
+                        showCurrentValidationErrors();
+                      }
+                    }}
+                  >
                     {isLoading ? "იგზავნება..." : "გაგზავნა"}
                   </Button>
                 </div>

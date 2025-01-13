@@ -34,7 +34,9 @@ const productSchema = Yup.object().shape({
     .max(255, "მაქსიმუმ 255 სიმბოლო"),
 
   quantity: Yup.number()
+    .transform((value) => (isNaN(value) ? undefined : value))
     .required("რაოდენობა სავალდებულოა")
+    .integer("რაოდენობა უნდა იყოს მთელი რიცხვი")
     .min(1, "მინიმალური რაოდენობა არის 1"),
 
   dimensions: Yup.string()
@@ -50,22 +52,18 @@ const productSchema = Yup.object().shape({
     .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
   similar_purchase_planned: Yup.string()
-    .required("მოძავალი შესყიდვების ინფორმაცია სავალდებულოა")
+    .required("მომავალი შესყიდვების ინფორმაცია სავალდებულოა")
     .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
   in_stock_explanation: Yup.string()
-    .test('category-dependent', 'ასორტიმენტში არსებობის ინფორმაცია სავალდებულოა', function(value) {
-      const { category } = this.parent;
-      
-      // If category is IT or Marketing, field is optional
-      if (category === 'IT' || category === 'Marketing') {
-        return true;
-      }
-      
-      // For other categories, field is required
-      return Boolean(value);
-    })
-    .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
+    .nullable()
+    .when(['$category'], {
+      is: (category) => category && !['IT', 'Marketing'].includes(category),
+      then: (schema) => schema
+        .required("ასორტიმენტში არსებობის ინფორმაცია სავალდებულოა")
+        .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
+      otherwise: (schema) => schema.nullable(),
+    }),
 
   payer: Yup.string()
     .required("გადამხდელის მითითება სავალდებულოა")
@@ -90,43 +88,43 @@ export const procurementSchema = Yup.object().shape({
     .min(new Date(), "თარიღი არ შეიძლება იყოს წარსულში"),
 
   short_date_notice_explanation: Yup.string()
-    .when("requested_arrival_date", {
-      is: date => {
-        const daysDiff = (new Date(date) - new Date()) / (1000 * 60 * 60 * 24)
-        return daysDiff < 14
+    .nullable()
+    .when('requested_arrival_date', {
+      is: (date) => {
+        if (!date) return false;
+        const daysDiff = (new Date(date) - new Date()) / (1000 * 60 * 60 * 24);
+        return daysDiff < 14;
       },
-      then: () =>
-        Yup.string().required("მცირე ვადის მიზეზის მითითება სავალდებულოა"),
-      otherwise: () => Yup.string().nullable(),
-    })
-    .max(500, "მაქსიმუმ 500 სიმბოლო"),
+      then: (schema) => schema
+        .required("მცირე ვადის მიზეზის მითითება სავალდებულოა")
+        .max(500, "მაქსიმუმ 500 სიმბოლო"),
+      otherwise: (schema) => schema.nullable(),
+    }),
 
   exceeds_needs_reason: Yup.string()
-    .required("საჭიროების გითითება სავალდებულოა")
+    .required("საჭიროების მითითება სავალდებულოა")
     .max(500, "მაქსიმუმ 500 სიმბოლო"),
 
-  creates_stock: Yup.boolean().required(
-    "მარაგის შექმნის მითითება სავალდებულოა"
-  ),
+  creates_stock: Yup.boolean()
+    .required("მარაგის შექმნის მითითება სავალდებულოა"),
 
   stock_purpose: Yup.string()
-    .when("creates_stock", {
+    .nullable()
+    .when('creates_stock', {
       is: true,
-      then: () => Yup.string().required("მარაგის მიზნის მითითება სავალდებულოა"),
-      otherwise: () => Yup.string().nullable(),
-    })
-    .max(500, "მაქსიმუმ 500 სიმბოლო"),
+      then: (schema) => schema
+        .required("მარაგის მიზნის მითითება სავალდებულოა")
+        .max(500, "მაქსიმუმ 500 სიმბოლო"),
+      otherwise: (schema) => schema.nullable(),
+    }),
 
   delivery_address: Yup.string()
     .required("მიწოდების მისამართი სავალდებულოა")
     .max(255, "მაქსიმუმ 255 სიმბოლო"),
 
   products: Yup.array()
-    .of(
-      productSchema.shape({
-        category: Yup.string(),
-      })
-    )
+    .of(productSchema)
     .min(1, "მინიმუმ ერთი პროდუქტი სავალდებულოა")
     .required("პროდუქტების მითითება სავალდებულოა"),
 })
+.from('category', 'category');

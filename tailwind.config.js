@@ -1,10 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
+    "./public/index.html"
   ],
-  darkMode: 'class',
+  darkMode: ["selector", "[data-theme*='dark']"],
   theme: {
     extend: {
       spacing: {
@@ -16,9 +16,14 @@ module.exports = {
       maxHeight: {
         '96': '24rem',
       },
+      backgroundColor: {
+        'app': {
+          light: '#f8fafc', // gray-50
+          dark: '#111827', // gray-900
+        }
+      }
     },
   },
-  variants: {},
   plugins: [],
 }
 

@@ -131,7 +131,7 @@ const Layout = props => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-app-light dark:bg-app-dark transition-colors duration-200">
       <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <Sidebar
         theme={leftSideBarTheme}
@@ -141,7 +141,7 @@ const Layout = props => {
         setIsOpen={setIsSidebarOpen}
       />
       <div
-        className={`flex-1 transition-all duration-300 ${
+        className={`flex-1 transition-all duration-200 ${
           isSidebarOpen ? "md:ml-72" : ""
         }`}
       >
@@ -150,7 +150,7 @@ const Layout = props => {
             <div className="mx-4 mt-4 flex justify-between items-center">
               <button
                 onClick={handleGoBack}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
               >
                 <IoArrowBack className="text-lg" />
                 <span>უკან</span>
@@ -158,7 +158,7 @@ const Layout = props => {
               <Breadcrumbs />
             </div>
             <main className="flex-1 px-4 py-6">
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm dark:shadow-gray-800/30 p-6 mb-8 transition-colors duration-200">
                 {props.children}
               </div>
             </main>
