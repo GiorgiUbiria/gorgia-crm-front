@@ -55,6 +55,7 @@ const CrmTable = ({
   customStyles = {},
   onPageChange,
   onPageSizeChange,
+  onSortingChange,
   expandClickHandler,
 }) => {
   const [globalFilter, setGlobalFilter] = useState("")
@@ -80,8 +81,7 @@ const CrmTable = ({
   const themeStyles = getThemeStyles(theme, styles)
 
   const handleGlobalFilterChange = value => {
-    console.log("Global filter changed:", { value })
-    setGlobalFilter(value)
+    setGlobalFilter(value || undefined)
     if (manualFiltering && typeof onGlobalFilterChange === "function") {
       onGlobalFilterChange(value)
     }
@@ -90,24 +90,24 @@ const CrmTable = ({
   const handleColumnFiltersChange = updater => {
     const newFilters =
       typeof updater === "function" ? updater(columnFilters) : updater
-    console.log("Column filters changed:", {
-      previousFilters: columnFilters,
-      newFilters,
-      isFunction: typeof updater === "function",
-    })
-    setColumnFilters(newFilters)
+    const cleanedFilters = newFilters
+      .map(filter => ({
+        ...filter,
+        value: filter.value === "" ? undefined : filter.value,
+      }))
+      .filter(filter => filter.value !== undefined)
+    setColumnFilters(cleanedFilters)
     if (manualFiltering && typeof onColumnFiltersChange === "function") {
-      onColumnFiltersChange(newFilters)
+      onColumnFiltersChange(cleanedFilters)
     }
   }
 
   const handleSortingChange = updater => {
-    const newSorting =
-      typeof updater === "function" ? updater(sorting) : updater
+    const newSorting = typeof updater === 'function' ? updater(sorting) : updater
     setSorting(newSorting)
-
+    
     // If manual sorting is enabled, we expect the parent to handle the sorting
-    if (manualSorting && typeof onSortingChange === "function") {
+    if (manualSorting && typeof onSortingChange === 'function') {
       onSortingChange(newSorting)
     }
   }
@@ -149,17 +149,13 @@ const CrmTable = ({
     getPaginationRowModel: getPaginationRowModel(),
     sortingFns: {
       alphanumeric: (rowA, rowB, columnId) => {
-        const a = String(rowA.getValue(columnId) || "").toLowerCase()
-        const b = String(rowB.getValue(columnId) || "").toLowerCase()
+        const a = String(rowA.getValue(columnId) || '').toLowerCase()
+        const b = String(rowB.getValue(columnId) || '').toLowerCase()
         return a < b ? -1 : a > b ? 1 : 0
       },
       datetime: (rowA, rowB, columnId) => {
-        const a = rowA.getValue(columnId)
-          ? new Date(rowA.getValue(columnId)).getTime()
-          : 0
-        const b = rowB.getValue(columnId)
-          ? new Date(rowB.getValue(columnId)).getTime()
-          : 0
+        const a = rowA.getValue(columnId) ? new Date(rowA.getValue(columnId)).getTime() : 0
+        const b = rowB.getValue(columnId) ? new Date(rowB.getValue(columnId)).getTime() : 0
         return a < b ? -1 : a > b ? 1 : 0
       },
       number: (rowA, rowB, columnId) => {
@@ -167,77 +163,56 @@ const CrmTable = ({
         const b = Number(rowB.getValue(columnId))
         return a < b ? -1 : a > b ? 1 : 0
       },
+      text: (rowA, rowB, columnId) => {
+        const a = String(rowA.getValue(columnId) || "").toLowerCase()
+        const b = String(rowB.getValue(columnId) || "").toLowerCase()
+        return a.localeCompare(b)
+      },
+      basic: (rowA, rowB, columnId) => {
+        const a = rowA.getValue(columnId)
+        const b = rowB.getValue(columnId)
+        return a === b ? 0 : a > b ? 1 : -1
+      },
     },
     filterFns: {
       startsWith: (row, columnId, filterValue) => {
+        if (!filterValue) return true
         const value = row.getValue(columnId)
-        const result =
-          value != null
-            ? String(value)
-                .toLowerCase()
-                .startsWith(String(filterValue).toLowerCase())
-            : false
-        console.log("startsWith filter:", {
-          columnId,
-          value,
-          filterValue,
-          result,
-        })
-        return result
+        if (value == null) return false
+        return String(value)
+          .toLowerCase()
+          .startsWith(String(filterValue).toLowerCase())
       },
       endsWith: (row, columnId, filterValue) => {
+        if (!filterValue) return true
         const value = row.getValue(columnId)
-        const result =
-          value != null
-            ? String(value)
-                .toLowerCase()
-                .endsWith(String(filterValue).toLowerCase())
-            : false
-        console.log("endsWith filter:", {
-          columnId,
-          value,
-          filterValue,
-          result,
-        })
-        return result
+        if (value == null) return false
+        return String(value)
+          .toLowerCase()
+          .endsWith(String(filterValue).toLowerCase())
       },
       includes: (row, columnId, filterValue) => {
         if (!filterValue) return true
         const value = row.getValue(columnId)
-        const result =
-          value != null
-            ? String(value)
-                .toLowerCase()
-                .includes(String(filterValue).toLowerCase())
-            : false
-        console.log("includes filter:", {
-          columnId,
-          value,
-          filterValue,
-          result,
-        })
-        return result
+        if (value == null) return false
+        return String(value)
+          .toLowerCase()
+          .includes(String(filterValue).toLowerCase())
       },
       equals: (row, columnId, filterValue) => {
         if (!filterValue) return true
         const value = row.getValue(columnId)
-        const result =
-          value != null ? String(value) === String(filterValue) : false
-        console.log("equals filter:", { columnId, value, filterValue, result })
-        return result
+        if (value == null) return false
+        return String(value) === String(filterValue)
       },
     },
     globalFilterFn: (row, columnId, filterValue) => {
       if (!filterValue) return true
       const value = row.getValue(columnId)
-      const result =
-        value != null
-          ? String(value)
-              .toLowerCase()
-              .includes(String(filterValue).toLowerCase())
-          : false
-      console.log("global filter:", { columnId, value, filterValue, result })
-      return result
+      if (value == null) return false
+      return String(value)
+        .toLowerCase()
+        .includes(String(filterValue).toLowerCase())
     },
     initialState: {
       pagination: {
@@ -247,7 +222,6 @@ const CrmTable = ({
     },
   })
 
-  // Add debug logging for table state changes
   React.useEffect(() => {
     console.log("Table state updated:", {
       globalFilter: table.getState().globalFilter,
@@ -336,7 +310,6 @@ const CrmTable = ({
       const newSet = new Set(prev)
       if (newSet.has(columnId)) {
         newSet.delete(columnId)
-        // Clear the filter value when deactivating
         const column = table.getColumn(columnId)
         if (column) {
           column.setFilterValue(undefined)
@@ -350,7 +323,6 @@ const CrmTable = ({
 
   return (
     <div className={getTableStyle(styles.container, themeStyles.background)}>
-      {/* Toolbar */}
       {renderTopToolbar ? (
         renderTopToolbar({ table })
       ) : (
@@ -364,7 +336,6 @@ const CrmTable = ({
         />
       )}
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className={`${styles.table} border-collapse`}>
           <thead className={styles.thead}>
@@ -396,7 +367,7 @@ const CrmTable = ({
                         >
                           <div className="flex items-center gap-2">
                             <span
-                              className="text-base font-semibold"
+                              className="text-base font-semibold text-white"
                               onClick={
                                 header.column.getCanSort()
                                   ? header.column.getToggleSortingHandler()
@@ -413,10 +384,10 @@ const CrmTable = ({
                                 onClick={() =>
                                   toggleColumnFilter(header.column.id)
                                 }
-                                className={`p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                                className={`p-1 rounded-md hover:bg-white/10 transition-colors ${
                                   activeFilters.has(header.column.id)
-                                    ? "text-blue-500"
-                                    : "text-gray-400"
+                                    ? "text-white"
+                                    : "text-white/70"
                                 }`}
                               >
                                 <Search size={16} />
@@ -431,16 +402,16 @@ const CrmTable = ({
                                 size={16}
                                 className={
                                   header.column.getIsSorted() === "asc"
-                                    ? "text-blue-500"
-                                    : "text-gray-400"
+                                    ? "text-white"
+                                    : "text-white/70"
                                 }
                               />
                               <ChevronDown
                                 size={16}
                                 className={
                                   header.column.getIsSorted() === "desc"
-                                    ? "text-blue-500"
-                                    : "text-gray-400"
+                                    ? "text-white"
+                                    : "text-white/70"
                                 }
                               />
                             </span>
@@ -521,7 +492,6 @@ const CrmTable = ({
         </table>
       </div>
 
-      {/* Bottom Toolbar */}
       {renderBottomToolbar
         ? renderBottomToolbar({ table })
         : enablePagination && <Pagination />}
@@ -542,7 +512,6 @@ CrmTable.propTypes = {
   enablePagination: PropTypes.bool,
   enableExpanding: PropTypes.bool,
   manualPagination: PropTypes.bool,
-  manualSorting: PropTypes.bool,
   manualFiltering: PropTypes.bool,
   pageSize: PropTypes.number,
   pageSizeOptions: PropTypes.arrayOf(PropTypes.number),
@@ -557,6 +526,7 @@ CrmTable.propTypes = {
   customStyles: PropTypes.object,
   onPageChange: PropTypes.func,
   onPageSizeChange: PropTypes.func,
+  onSortingChange: PropTypes.func,
   expandClickHandler: PropTypes.func,
 }
 

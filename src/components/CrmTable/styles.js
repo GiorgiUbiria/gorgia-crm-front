@@ -3,8 +3,8 @@ export const tableStyles = {
   table: "w-full border-collapse border-x border-gray-200 dark:border-gray-700",
   
   // Header styles
-  thead: "bg-gradient-to-r from-primary-600 to-primary-700",
-  th: "first:rounded-tl-lg last:rounded-tr-lg px-6 py-4 text-left text-sm font-medium tracking-wider transition-colors duration-200 border-r border-primary-500 last:border-r-0",
+  thead: "bg-blue-600 dark:bg-black",
+  th: "first:rounded-tl-lg last:rounded-tr-lg px-6 py-4 text-left text-sm font-medium tracking-wider transition-colors duration-200 border-r border-blue-500 dark:border-gray-700 last:border-r-0",
   thContent: "flex items-center gap-3",
   sortIcon: "flex flex-col",
   
@@ -49,7 +49,7 @@ export const tableStyles = {
       border: "border-gray-200",
       header: {
         text: "text-white",
-        background: "bg-primary-600",
+        background: "bg-blue-600",
       }
     },
     dark: {
@@ -58,7 +58,7 @@ export const tableStyles = {
       border: "border-gray-700",
       header: {
         text: "text-white",
-        background: "bg-primary-700",
+        background: "bg-black",
       }
     },
   },

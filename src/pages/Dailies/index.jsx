@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Button from "@mui/material/Button"
 import CrmTable from "components/CrmTable"
@@ -16,9 +16,13 @@ const INITIAL_STATE = {
   currentPage: 1,
   pageSize: 10,
   addDailyModal: false,
+  sortBy: "id",
+  sortOrder: "desc",
+  searchField: "",
+  searchValue: "",
 }
 
-const PAGE_SIZE_OPTIONS = [5, 10, 15, 20]
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 
 const Dailies = () => {
   const navigate = useNavigate()
@@ -39,6 +43,8 @@ const Dailies = () => {
   const params = {
     page: currentPage,
     limit: pageSize,
+    sortBy: state.sortBy,
+    sortOrder: state.sortOrder,
   }
 
   const {
@@ -80,24 +86,18 @@ const Dailies = () => {
     )
   }, [dailiesData])
 
-  const filterOptions = useMemo(() => {
+  const departmentFilterOptions = useMemo(() => {
     const uniqueDepartments = [
-      ...new Set(dailiesData?.dailies?.map(daily => daily.department?.id)),
+      ...new Set(transformedDailies.map(daily => daily.department?.name)),
     ]
       .filter(Boolean)
-      .map(deptId => {
-        const daily = dailiesData?.dailies?.find(
-          d => d.department?.id === deptId
-        )
-        return {
-          value: deptId.toString(),
-          label: daily?.department?.name || "",
-        }
-      })
-      .sort((a, b) => a.label.localeCompare(b.label))
-
+      .sort((a, b) => a.localeCompare(b))
+      .map(name => ({
+        value: name,
+        label: name,
+      }))
     return uniqueDepartments
-  }, [dailiesData])
+  }, [transformedDailies])
 
   const filteredData = useMemo(() => {
     return [...transformedDailies]
@@ -109,7 +109,7 @@ const Dailies = () => {
         header: "საკითხის ნომერი",
         accessorKey: "id",
         enableSorting: true,
-        sortingFn: "number",
+        sortingFn: "basic",
         enableColumnFilter: false,
       },
       {
@@ -126,37 +126,36 @@ const Dailies = () => {
         enableColumnFilter: false,
       },
       {
-        header: "საკითხი",
         accessorKey: "name",
+        header: "საკითხი",
         enableSorting: false,
+        sortingFn: "text",
         enableColumnFilter: true,
         filterFn: "includes",
         meta: { isSearchable: true },
       },
       {
-        header: "დეპარტამენტი",
         accessorKey: "department.name",
-        accessorFn: row => row.department?.name,
+        header: "დეპარტამენტი",
         enableSorting: false,
+        sortingFn: "text",
         enableColumnFilter: true,
-        filterFn: "includes",
-        filterOptions: filterOptions.map(opt => ({
-          value: opt.label,
-          label: opt.label,
-        })),
+        filterFn: "equals",
+        filterOptions: departmentFilterOptions,
         meta: { isSearchable: true },
       },
       {
         header: "სახელი/გვარი",
         accessorKey: "user_full_name",
         enableSorting: false,
+        sortingFn: "text",
         enableColumnFilter: true,
         filterFn: "includes",
         filterPlaceholder: "სახელი/გვარი...",
         meta: { isSearchable: true },
       },
     ],
-    [filterOptions]
+    [departmentFilterOptions]
   )
 
   const searchableFields = [
@@ -249,6 +248,10 @@ const Dailies = () => {
     updateState({ pageSize: newSize, currentPage: 1 })
   }
 
+  useEffect(() => {
+    console.log("Sorting state:", state.sortBy, state.sortOrder)
+  }, [state.sortBy, state.sortOrder])
+
   return (
     <>
       <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -274,7 +277,7 @@ const Dailies = () => {
             renderTopToolbar={renderTopToolbar}
             manualPagination={true}
             manualSorting={false}
-            manualFiltering={false}
+            manualFiltering={true}
             size="md"
             theme={isDarkMode ? "dark" : "light"}
             isLoading={isLoading}
