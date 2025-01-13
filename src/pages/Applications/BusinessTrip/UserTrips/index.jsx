@@ -342,12 +342,12 @@ const UserTrip = () => {
         rejection_reason: trip.rejection_reason || "",
       },
       vehicle: {
-        vehicle_model: trip.vehicle_model,
-        vehicle_plate: trip.vehicle_plate,
-        fuel_type: trip.fuel_type,
-        fuel_cost: trip.fuel_consumption_per_100,
+        vehicle_model: trip.vehicle_model || "",
+        vehicle_plate: trip.vehicle_plate || "",
+        fuel_type: trip.fuel_type || "",
+        fuel_cost: trip.fuel_consumption_per_100 || "",
         vehicle_expense: trip.vehicle_expense === 1,
-        total_fuel: trip.total_fuel,
+        total_fuel: trip.total_fuel || "",
       },
       costs: {
         food_cost: trip.food_cost,

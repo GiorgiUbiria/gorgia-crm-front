@@ -343,7 +343,6 @@ const BusinessPage = () => {
       const destinations = cities[formikMyTrip.values.departure_location] || {}
       setAvailableDestinations(Object.keys(destinations))
 
-      // Reset arrival location if it's not valid for the new departure location
       if (
         formikMyTrip.values.arrival_location &&
         !destinations[formikMyTrip.values.arrival_location]
@@ -790,7 +789,22 @@ const BusinessPage = () => {
           </div>
         </div>
 
-        <div className="d-flex justify-content-end mt-4">
+        <div className="d-flex justify-content-between align-items-start mt-4">
+          {/* Error List */}
+          {!formik.isValid && Object.keys(formik.errors).length > 0 && (
+            <div className="text-danger">
+              <p className="mb-2 fw-bold">გთხოვთ შეავსოთ შემდეგი ველები:</p>
+              <ul className="list-unstyled">
+                {Object.entries(formik.errors).map(([field, error]) => (
+                  <li key={field} className="mb-1">
+                    • {error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Submit Button */}
           <Button
             type="submit"
             color="primary"
