@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col } from "reactstrap"
-import { getAllTripsList } from "../../../../services/trip"
+import { getAllTripsList, getDepartmentTripList } from "../../../../services/trip"
 import MuiTable from "../../../../components/Mui/MuiTable"
+import { usePermissions } from "hooks/usePermissions"
 
 const statusMap = {
   pending: {
@@ -214,10 +215,14 @@ const TripPageArchive = () => {
   document.title = "მივლინებების არქივი | Gorgia LLC"
 
   const [trips, setTrips] = useState([])
+  const { isAdmin } = usePermissions()
 
   const fetchTrips = async () => {
     try {
-      const response = await getAllTripsList()
+      let response
+      isAdmin
+        ? (response = await getAllTripsList())
+        : (response = await getDepartmentTripList())
       setTrips(response.data.business_trips)
     } catch (err) {
       console.error("Error fetching trip requests:", err)

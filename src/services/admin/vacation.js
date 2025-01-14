@@ -11,6 +11,10 @@ export const getApprovalVacations = async data => {
   )
 }
 
+export const getDepartmentVacations = async () => {
+  return defaultInstance.get("/api/vacation/listDepartment")
+}
+
 export const createVacation = async data => {
   return defaultInstance.post("/api/vacation/create", data)
 }

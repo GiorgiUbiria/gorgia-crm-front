@@ -40,16 +40,16 @@ const STATUS_MAPPING = {
 }
 
 const REGIONS = [
-  'თბილისი',
-  'ბათუმი',
-  'ქუთაისი',
-  'ზუგდიდი',
-  'თელავი',
-  'მარნეული',
-  'რუსთავი',
-  'გორი',
-  'საჩხერე'
-];
+  "თბილისი",
+  "ბათუმი",
+  "ქუთაისი",
+  "ზუგდიდი",
+  "თელავი",
+  "მარნეული",
+  "რუსთავი",
+  "გორი",
+  "საჩხერე",
+]
 
 const DOCUMENT_TYPES = {
   PAID_EMPLOYMENT: "ხელფასიანი ცნობა",
@@ -553,7 +553,9 @@ const HrPageApprove = () => {
                             <Field
                               as="select"
                               name="region"
-                              className={`form-select ${!formData.region && 'is-invalid'}`}
+                              className={`form-select ${
+                                !formData.region && "is-invalid"
+                              }`}
                               value={formData.region}
                               onChange={e =>
                                 setFormData(data => ({
@@ -565,10 +567,7 @@ const HrPageApprove = () => {
                             >
                               <option value="">აირჩიეთ რეგიონი</option>
                               {REGIONS.map((region, index) => (
-                                <option 
-                                  key={index} 
-                                  value={region}
-                                >
+                                <option key={index} value={region}>
                                   {region}
                                 </option>
                               ))}

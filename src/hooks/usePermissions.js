@@ -16,5 +16,6 @@ export const usePermissions = () => {
     isDepartmentHead,
     isHrMember,
     userDepartmentId: user?.department_id,
+    userDepartment: user?.department.name,
   }
 }

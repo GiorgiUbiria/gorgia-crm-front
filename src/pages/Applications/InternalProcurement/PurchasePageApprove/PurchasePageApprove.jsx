@@ -112,8 +112,6 @@ const PurchasePageApprove = () => {
   const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
     useUpdateProductStatus()
 
-  console.log(purchaseData, departmentPurchaseData)
-
   const canManageProducts = useCallback(
     purchase => {
       return (

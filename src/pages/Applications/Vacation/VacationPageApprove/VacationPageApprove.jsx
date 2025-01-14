@@ -22,10 +22,15 @@ import {
   BiXCircle,
   BiArrowBack,
 } from "react-icons/bi"
-import { useVacations, useUpdateVacationStatus } from "../../../../queries/vacation"
+import {
+  useVacations,
+  useUpdateVacationStatus,
+  useDepartmentVacations,
+} from "../../../../queries/vacation"
 import AutoApprovalCountdown from "../../../../components/Vacation/AutoApprovalCountdown"
 import CancellationModal from "../../../../components/Vacation/CancellationModal"
 import { Tooltip } from "@mui/material"
+import { usePermissions } from "hooks/usePermissions"
 
 const statusMap = {
   pending: {
@@ -217,7 +222,14 @@ const ExpandedRowContent = ({ rowData }) => {
 const VacationPageApprove = () => {
   document.title = "შვებულების ვიზირება | Gorgia LLC"
 
-  const { data: vacationsData, isLoading: vacationsLoading } = useVacations()
+  const { isAdmin} = usePermissions()
+  const {
+    data: departmentVacationData,
+    isLoading: departmentVacationsLoading,
+  } = useDepartmentVacations()
+  const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
+    enabled: !!isAdmin,
+  })
   const { mutate: updateStatus } = useUpdateVacationStatus()
 
   const [rejectionModal, setRejectionModal] = useState(false)
@@ -239,7 +251,7 @@ const VacationPageApprove = () => {
 
   const handleConfirmAction = async () => {
     try {
-      await updateStatus(
+      updateStatus(
         { id: selectedVacation, status: actionType },
         {
           onSuccess: () => {
@@ -265,11 +277,11 @@ const VacationPageApprove = () => {
 
   const handleRejectionSubmit = async () => {
     try {
-      await updateStatus(
-        { 
-          id: selectedVacation, 
+      updateStatus(
+        {
+          id: selectedVacation,
           status: "rejected",
-          rejection_reason: rejectionComment 
+          rejection_reason: rejectionComment,
         },
         {
           onSuccess: () => {
@@ -287,10 +299,6 @@ const VacationPageApprove = () => {
       console.error("Error rejecting vacation:", err)
       toast.error("შვებულების უარყოფა ვერ მოხერხდა")
     }
-  }
-
-  const handleCancellation = () => {
-    fetchVacations() // Refresh the list after cancellation
   }
 
   const columns = useMemo(
@@ -367,7 +375,9 @@ const VacationPageApprove = () => {
                     : "#757575",
               }}
             >
-              <i className={`bx ${statusMap[row.original.status].icon} me-2`}></i>
+              <i
+                className={`bx ${statusMap[row.original.status].icon} me-2`}
+              ></i>
               {statusMap[row.original.status].label}
             </span>
             {row.original.isAutoApproved && (
@@ -419,18 +429,40 @@ const VacationPageApprove = () => {
   )
 
   const transformedVacations = useMemo(() => {
-    if (!vacationsData?.data?.data) return []
-    
-    return vacationsData.data.data.map(vacation => ({
+    if (!departmentVacationData?.data?.data && !vacationsData?.data?.data)
+      return []
+    const vacations = isAdmin
+      ? vacationsData?.data?.data
+      : departmentVacationData?.data?.data
+
+    console.log(vacationsData, departmentVacationData, vacations)
+
+    if (!vacations) return []
+
+    return vacations.map(vacation => ({
       id: vacation.id,
       status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
-      start_date: vacation.start_date ? new Date(vacation.start_date).toLocaleDateString("ka-GE") : "-",
-      end_date: vacation.end_date ? new Date(vacation.end_date).toLocaleDateString("ka-GE") : "-",
+      start_date: vacation.start_date
+        ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
+        : "-",
+      end_date: vacation.end_date
+        ? new Date(vacation.end_date).toLocaleDateString("ka-GE")
+        : "-",
       duration: (vacation.duration_days ?? 0).toString() + " დღე",
-      type: vacation.type ? TYPE_MAPPING[vacation.type] || vacation.type : "უცნობი",
-      requested_by: vacation.user ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`.trim() || "უცნობი" : "უცნობი",
-      requested_at: vacation.created_at ? new Date(vacation.created_at).toLocaleDateString("ka-GE") : "-",
-      requested_for: `${vacation.employee_name || ""} | ${vacation.position || ""} | ${vacation.department || ""}`,
+      type: vacation.type
+        ? TYPE_MAPPING[vacation.type] || vacation.type
+        : "უცნობი",
+      requested_by: vacation.user
+        ? `${vacation.user?.name || ""} ${
+            vacation.user?.sur_name || ""
+          }`.trim() || "უცნობი"
+        : "უცნობი",
+      requested_at: vacation.created_at
+        ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
+        : "-",
+      requested_for: `${vacation.employee_name || ""} | ${
+        vacation.position || ""
+      } | ${vacation.department || ""}`,
       isAutoApproved: vacation.is_auto_approved || false,
       created_at: vacation.created_at,
       expanded: {
@@ -448,13 +480,21 @@ const VacationPageApprove = () => {
           substitute_position: vacation.substitute_position || "უცნობია",
         },
         review: {
-          reviewed_by: vacation.reviewed_by ? `${vacation.reviewed_by?.name || ""} ${vacation.reviewed_by?.sur_name || ""}` : "ჯერ არ არის განხილული",
-          reviewed_at: vacation?.reviewed_at ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE") : "-",
+          reviewed_by: vacation.reviewed_by
+            ? `${vacation.reviewed_by?.name || ""} ${
+                vacation.reviewed_by?.sur_name || ""
+              }`
+            : "ჯერ არ არის განხილული",
+          reviewed_at: vacation?.reviewed_at
+            ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+            : "-",
           rejection_reason: vacation.rejection_reason || "",
         },
         cancellation: {
           cancellation_reason: vacation.cancellation_reason || "",
-          cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : "",
+          cancelled_at: vacation.cancelled_at
+            ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+            : "",
         },
       },
     }))
@@ -486,7 +526,7 @@ const VacationPageApprove = () => {
 
   const expandedRow = row => <ExpandedRowContent rowData={row} />
 
-  if (vacationsLoading) {
+  if (vacationsLoading && departmentVacationsLoading) {
     return (
       <div className="text-center mt-5">
         <Spinner color="primary" />
@@ -594,7 +634,7 @@ const VacationPageApprove = () => {
         isOpen={cancellationModal}
         toggle={() => setCancellationModal(false)}
         vacationId={selectedVacation}
-        onSuccess={handleCancellation}
+        onSuccess={() => {}}
       />
     </>
   )

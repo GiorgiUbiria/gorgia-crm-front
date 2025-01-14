@@ -7,14 +7,15 @@ import {
   updateVacationStatus,
   cancelVacation,
   getVacationDetails,
+  getDepartmentVacations,
 } from "../services/admin/vacation"
 import { getCurrentUserVocations } from "../services/vacation"
 
 // Query keys
 export const vacationKeys = {
   all: ["vacations"],
-  lists: () => [...vacationKeys.all, "list"],
-  list: filters => [...vacationKeys.lists(), { filters }],
+  lists: filters => [...vacationKeys.all, "list", filters],
+  listDepartment: () => [...vacationKeys.all, "department"],
   details: id => [...vacationKeys.all, "detail", id],
   balance: () => [...vacationKeys.all, "balance"],
   userVacations: () => [...vacationKeys.all, "user"],
@@ -25,17 +26,26 @@ export const useVacationBalance = () => {
   return useQuery({
     queryKey: vacationKeys.balance(),
     queryFn: getVacationBalance,
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    cacheTime: 1000 * 60 * 30, // Cache for 30 minutes
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 30,
   })
 }
 
 export const useVacations = (filters = {}) => {
   return useQuery({
-    queryKey: vacationKeys.list(filters),
+    queryKey: vacationKeys.lists(filters),
     queryFn: () => getVacations(filters),
-    staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes
-    cacheTime: 1000 * 60 * 15, // Cache for 15 minutes
+    staleTime: 1000 * 60 * 2,
+    cacheTime: 1000 * 60 * 15,
+  })
+}
+
+export const useDepartmentVacations = () => {
+  return useQuery({
+    queryKey: vacationKeys.listDepartment(),
+    queryFn: () => getDepartmentVacations(),
+    staleTime: 1000 * 60 * 2,
+    cacheTime: 1000 * 60 * 15,
   })
 }
 
@@ -43,17 +53,17 @@ export const useUserVacations = () => {
   return useQuery({
     queryKey: vacationKeys.userVacations(),
     queryFn: getCurrentUserVocations,
-    staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes
-    cacheTime: 1000 * 60 * 15, // Cache for 15 minutes
+    staleTime: 1000 * 60 * 2,
+    cacheTime: 1000 * 60 * 15,
   })
 }
 
-export const useVacationDetails = (id) => {
+export const useVacationDetails = id => {
   return useQuery({
     queryKey: vacationKeys.details(id),
     queryFn: () => getVacationDetails(id),
-    enabled: !!id, // Only run if id is provided
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5,
   })
 }
 
@@ -64,9 +74,7 @@ export const useCreateVacation = () => {
   return useMutation({
     mutationFn: createVacation,
     onSuccess: () => {
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: vacationKeys.userVacations() })
-      queryClient.invalidateQueries({ queryKey: vacationKeys.balance() })
+      queryClient.invalidateQueries({ queryKey: vacationKeys.all })
     },
   })
 }
@@ -77,9 +85,7 @@ export const useCreateVacationForEmployee = () => {
   return useMutation({
     mutationFn: createVacationForEmployee,
     onSuccess: () => {
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: vacationKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: vacationKeys.balance() })
+      queryClient.invalidateQueries({ queryKey: vacationKeys.all })
     },
   })
 }
@@ -89,11 +95,8 @@ export const useUpdateVacationStatus = () => {
 
   return useMutation({
     mutationFn: ({ id, status }) => updateVacationStatus(id, status),
-    onSuccess: (_, variables) => {
-      // Invalidate specific vacation and lists
-      queryClient.invalidateQueries({ queryKey: vacationKeys.details(variables.id) })
-      queryClient.invalidateQueries({ queryKey: vacationKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: vacationKeys.userVacations() })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: vacationKeys.all })
     },
   })
 }
@@ -103,12 +106,8 @@ export const useCancelVacation = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => cancelVacation(id, data),
-    onSuccess: (_, variables) => {
-      // Invalidate specific vacation and lists
-      queryClient.invalidateQueries({ queryKey: vacationKeys.details(variables.id) })
-      queryClient.invalidateQueries({ queryKey: vacationKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: vacationKeys.userVacations() })
-      queryClient.invalidateQueries({ queryKey: vacationKeys.balance() })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: vacationKeys.all })
     },
   })
 }
@@ -116,7 +115,7 @@ export const useCancelVacation = () => {
 // Optimistic updates helper
 export const getOptimisticVacation = (newData, queryClient, queryKey) => {
   const previousVacations = queryClient.getQueryData(queryKey)
-  
+
   if (!previousVacations) return undefined
 
   return {
@@ -126,4 +125,4 @@ export const getOptimisticVacation = (newData, queryClient, queryKey) => {
       data: [newData, ...previousVacations.data.data],
     },
   }
-} 
+}

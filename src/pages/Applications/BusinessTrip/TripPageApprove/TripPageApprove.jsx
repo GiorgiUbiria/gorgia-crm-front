@@ -10,7 +10,7 @@ import {
   FormGroup,
   Label,
 } from "reactstrap"
-import { getAllTripsList, updateTripStatus } from "../../../../services/trip"
+import { getAllTripsList, getDepartmentTripList, updateTripStatus } from "../../../../services/trip"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
 import {
@@ -20,6 +20,7 @@ import {
   BiXCircle,
   BiArrowBack,
 } from "react-icons/bi"
+import { usePermissions } from "hooks/usePermissions"
 
 const statusMap = {
   pending: {
@@ -237,10 +238,12 @@ const TripPageApprove = () => {
   const [rejectionComment, setRejectionComment] = useState("")
   const [confirmModal, setConfirmModal] = useState(false)
   const [actionType, setActionType] = useState(null)
+  const { isAdmin } = usePermissions()
 
   const fetchTrips = async () => {
     try {
-      const response = await getAllTripsList()
+      let response
+      isAdmin ? response = await getAllTripsList() : response = await getDepartmentTripList()
       setTrips(response.data.business_trips)
     } catch (err) {
       console.error("Error fetching trip requests:", err)
