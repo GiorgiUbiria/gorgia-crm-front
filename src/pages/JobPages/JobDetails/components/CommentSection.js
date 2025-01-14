@@ -19,8 +19,6 @@ const CommentSection = ({ task, canComment }) => {
     error,
   } = useGetTaskComments(task.data.id)
 
-  console.log("Comments", comments)
-
   const createCommentMutation = useCreateTaskComment()
 
   const handleSubmitComment = async e => {

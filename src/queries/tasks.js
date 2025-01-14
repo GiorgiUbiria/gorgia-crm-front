@@ -1,22 +1,100 @@
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query"
-import * as taskService from "../services/tasks"
-import * as taskCommentService from "../services/taskComment"
-import { queryKeys } from "./keys"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  getTaskList,
+  getMyTasks,
+  getTask,
+  createTask,
+  updateTask,
+  deleteTask,
+  assignTask,
+  startTask,
+  finishTask,
+  getTasksAssignedToMe,
+  getTaskComments,
+  createTaskComment,
+  updateTaskComment,
+  deleteTaskComment,
+} from "../services/tasks"
 
-// Tasks
-export const useTasks = (filters = {}) => {
+export const taskKeys = {
+  all: ["tasks"],
+  list: () => [...taskKeys.all, "list"],
+  myTasks: () => [...taskKeys.all, "my"],
+  detail: id => [...taskKeys.all, "detail", id],
+  assignedToMe: () => [...taskKeys.all, "assigned-to-me"],
+  comments: taskId => [...taskKeys.all, taskId, "comments"],
+}
+
+export const useGetTaskList = (options = {}) => {
   return useQuery({
-    queryKey: queryKeys.tasks.list(filters),
-    queryFn: () => taskService.getTasks(filters),
-    staleTime: 5 * 60 * 1000,
+    queryKey: taskKeys.list(),
+    queryFn: getTaskList,
+    ...options,
   })
 }
 
-export const useTask = (id) => {
+export const useGetMyTasks = (options = {}) => {
   return useQuery({
-    queryKey: queryKeys.tasks.detail(id),
-    queryFn: () => taskService.getTask(id),
-    enabled: Boolean(id),
+    queryKey: taskKeys.myTasks(),
+    queryFn: getMyTasks,
+    ...options,
+  })
+}
+
+export const useGetTasksAssignedToMe = (options = {}) => {
+  return useQuery({
+    queryKey: taskKeys.assignedToMe(),
+    queryFn: getTasksAssignedToMe,
+    ...options,
+  })
+}
+
+export const useGetTask = (id, options = {}) => {
+  return useQuery({
+    queryKey: taskKeys.detail(id),
+    queryFn: () => getTask(id),
+    ...options,
+  })
+}
+
+export const useGetTaskComments = (taskId, options = {}) => {
+  return useQuery({
+    queryKey: taskKeys.comments(taskId),
+    queryFn: () => getTaskComments(taskId),
+    ...options,
+  })
+}
+
+export const useAssignTask = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: assignTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
+    },
+  })
+}
+
+export const useStartTask = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: startTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
+    },
+  })
+}
+
+export const useFinishTask = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: finishTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
+    },
   })
 }
 
@@ -24,9 +102,9 @@ export const useCreateTask = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data) => taskService.createTask(data),
+    mutationFn: createTask,
     onSuccess: () => {
-      queryClient.invalidateQueries(queryKeys.tasks.lists())
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
     },
   })
 }
@@ -35,28 +113,9 @@ export const useUpdateTask = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }) => taskService.updateTask(id, data),
-    onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries(queryKeys.tasks.detail(id))
-
-      const previousTask = queryClient.getQueryData(queryKeys.tasks.detail(id))
-
-      queryClient.setQueryData(
-        queryKeys.tasks.detail(id),
-        old => ({ ...old, ...data })
-      )
-
-      return { previousTask }
-    },
-    onError: (err, { id }, context) => {
-      queryClient.setQueryData(
-        queryKeys.tasks.detail(id),
-        context?.previousTask
-      )
-    },
-    onSettled: (_, __, { id }) => {
-      queryClient.invalidateQueries(queryKeys.tasks.detail(id))
-      queryClient.invalidateQueries(queryKeys.tasks.lists())
+    mutationFn: updateTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
     },
   })
 }
@@ -65,29 +124,10 @@ export const useDeleteTask = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => taskService.deleteTask(id),
+    mutationFn: deleteTask,
     onSuccess: () => {
-      queryClient.invalidateQueries(queryKeys.tasks.lists())
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
     },
-  })
-}
-
-// Task Comments
-export const useTaskComments = (taskId, filters = {}) => {
-  return useQuery({
-    queryKey: queryKeys.tasks.comments.byTask(taskId),
-    queryFn: () => taskCommentService.getTaskComments(taskId, filters),
-    enabled: Boolean(taskId),
-  })
-}
-
-export const useInfiniteTaskComments = (taskId, filters = {}) => {
-  return useInfiniteQuery({
-    queryKey: queryKeys.tasks.comments.byTask(taskId),
-    queryFn: ({ pageParam = 1 }) => 
-      taskCommentService.getTaskComments(taskId, { ...filters, page: pageParam }),
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    enabled: Boolean(taskId),
   })
 }
 
@@ -95,9 +135,11 @@ export const useCreateTaskComment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ taskId, data }) => taskCommentService.createTaskComment(taskId, data),
-    onSuccess: (_, { taskId }) => {
-      queryClient.invalidateQueries(queryKeys.tasks.comments.byTask(taskId))
+    mutationFn: ({ taskId, data }) => createTaskComment(taskId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.comments(variables.taskId),
+      })
     },
   })
 }
@@ -106,10 +148,12 @@ export const useUpdateTaskComment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ taskId, commentId, data }) => 
-      taskCommentService.updateTaskComment(taskId, commentId, data),
-    onSuccess: (_, { taskId }) => {
-      queryClient.invalidateQueries(queryKeys.tasks.comments.byTask(taskId))
+    mutationFn: ({ taskId, commentId, data }) =>
+      updateTaskComment(taskId, commentId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.comments(variables.taskId),
+      })
     },
   })
 }
@@ -118,10 +162,35 @@ export const useDeleteTaskComment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ taskId, commentId }) => 
-      taskCommentService.deleteTaskComment(taskId, commentId),
-    onSuccess: (_, { taskId }) => {
-      queryClient.invalidateQueries(queryKeys.tasks.comments.byTask(taskId))
+    mutationFn: ({ taskId, commentId }) => deleteTaskComment(taskId, commentId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.comments(variables.taskId),
+      })
     },
   })
+}
+
+export const useTaskQueries = isITDepartment => {
+  const { data: tasksList = [], isLoading: isTasksListLoading } =
+    useGetTaskList({
+      enabled: isITDepartment,
+    })
+
+  const { data: myTasksList = [], isLoading: isMyTasksLoading } =
+    useGetMyTasks()
+
+  const { data: assignedTasksList = [], isLoading: isAssignedTasksLoading } =
+    useGetTasksAssignedToMe({
+      enabled: isITDepartment,
+    })
+
+  return {
+    tasksList,
+    myTasksList,
+    assignedTasksList,
+    isTasksListLoading,
+    isMyTasksLoading,
+    isAssignedTasksLoading,
+  }
 }

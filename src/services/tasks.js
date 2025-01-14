@@ -1,11 +1,32 @@
 import defaultInstance from "../plugins/axios"
 
-export const getTasks = async (filters = {}) => {
+// Task List Operations
+export const getTaskList = async () => {
   try {
-    const response = await defaultInstance.get("/api/tasks", { params: filters })
+    const response = await defaultInstance.get("/api/tasks")
     return response.data
   } catch (error) {
-    console.error("Error fetching tasks:", error)
+    console.error("Error fetching task list:", error)
+    throw error
+  }
+}
+
+export const getMyTasks = async () => {
+  try {
+    const response = await defaultInstance.get("/api/tasks/my")
+    return response.data
+  } catch (error) {
+    console.error("Error fetching my tasks:", error)
+    throw error
+  }
+}
+
+export const getTasksAssignedToMe = async () => {
+  try {
+    const response = await defaultInstance.get("/api/tasks/assigned-to-me")
+    return response.data
+  } catch (error) {
+    console.error("Error fetching assigned tasks:", error)
     throw error
   }
 }
@@ -26,21 +47,32 @@ export const getTask = async id => {
 }
 
 export const createTask = async data => {
+  console.log("Task Service - Creating Task:", data)
   try {
     const response = await defaultInstance.post("/api/tasks", data)
+    console.log("Task Service - Creation Response:", response.data)
     return response.data
   } catch (error) {
-    console.error("Error creating task:", error)
+    console.error("Task Service - Creation Error:", error)
     throw error
   }
 }
 
 export const updateTask = async ({ id, data }) => {
+  if (!id) {
+    throw new Error("Task ID is required for update operation")
+  }
+
+  console.log("Task Service - Updating Task:", { id, data })
   try {
     const response = await defaultInstance.put(`/api/tasks/${id}`, data)
+    console.log("Task Service - Update Response:", response.data)
     return response.data
   } catch (error) {
-    console.error("Error updating task:", error)
+    console.error("Task Service - Update Error:", error)
+    if (error.response?.status === 404) {
+      throw new Error(`Task with ID ${id} not found`)
+    }
     throw error
   }
 }
@@ -55,36 +87,84 @@ export const deleteTask = async id => {
   }
 }
 
-// These functions are kept for backward compatibility
-export const getTaskList = getTasks
-export const getMyTasks = async () => getTasks({ assigned_user_id: JSON.parse(sessionStorage.getItem("authUser"))?.id })
-export const getTasksAssignedToMe = async () => getTasks({ assigned_to_me: true })
-
-// These functions are now handled through updateTask
 export const assignTask = async ({ taskId, userIds }) => {
-  return updateTask({
-    id: taskId,
-    data: { assigned_users: userIds }
-  })
+  console.log("Task Service - Assigning Task:", { taskId, userIds })
+  try {
+    const response = await defaultInstance.post(`/api/tasks/${taskId}/assign`, {
+      user_ids: userIds || [],
+    })
+    console.log("Task Service - Assignment Response:", response.data)
+    return response.data
+  } catch (error) {
+    console.error("Task Service - Assignment Error:", error)
+    throw error
+  }
 }
 
 export const startTask = async id => {
-  return updateTask({
-    id,
-    data: { status: "In Progress" }
-  })
+  try {
+    const response = await defaultInstance.patch(`/api/tasks/${id}/start`)
+    return response.data
+  } catch (error) {
+    console.error("Error starting task:", error)
+    throw error
+  }
 }
 
 export const finishTask = async id => {
-  return updateTask({
-    id,
-    data: { status: "Completed" }
-  })
+  try {
+    const response = await defaultInstance.patch(`/api/tasks/${id}/finish`)
+    return response.data
+  } catch (error) {
+    console.error("Error finishing task:", error)
+    throw error
+  }
 }
 
-export const updateTaskStatus = async (id, status) => {
-  return updateTask({
-    id,
-    data: { status }
-  })
+export const getTaskComments = async taskId => {
+  try {
+    const response = await defaultInstance.get(`/api/tasks/${taskId}/comments`)
+    return response.data
+  } catch (error) {
+    console.error("Error fetching task comments:", error)
+    throw error
+  }
+}
+
+export const createTaskComment = async (taskId, data) => {
+  try {
+    const response = await defaultInstance.post(
+      `/api/tasks/${taskId}/comments`,
+      data
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error creating task comment:", error)
+    throw error
+  }
+}
+
+export const updateTaskComment = async (taskId, commentId, data) => {
+  try {
+    const response = await defaultInstance.put(
+      `/api/tasks/${taskId}/comments/${commentId}`,
+      data
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error updating task comment:", error)
+    throw error
+  }
+}
+
+export const deleteTaskComment = async (taskId, commentId) => {
+  try {
+    const response = await defaultInstance.delete(
+      `/api/tasks/${taskId}/comments/${commentId}`
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error deleting task comment:", error)
+    throw error
+  }
 }

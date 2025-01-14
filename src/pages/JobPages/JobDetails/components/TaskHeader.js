@@ -1,55 +1,74 @@
 import React from "react"
-import { Clock, Calendar, User2 } from "lucide-react"
-import { formatDate } from "../../../../utils/dateUtils"
+import { Play, CheckCircle } from "lucide-react"
+import { useStartTask, useFinishTask } from "../../../../queries/tasks"
+import { toast } from "react-toastify"
 
-const TaskHeader = ({ task }) => {
-  if (!task?.data) {
-    return null
+const TaskActions = ({ task, canEdit }) => {
+  const startTaskMutation = useStartTask()
+  const finishTaskMutation = useFinishTask()
+
+  if (!task) return null
+  if (!canEdit) return null
+
+  const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
+
+  const canUpdateStatus =
+    currentUser.department_id === 5 &&
+    task.data.assigned_users?.some(user => user.id === currentUser.id)
+
+  const handleStartTask = async () => {
+    try {
+      await startTaskMutation.mutateAsync(task.data.id)
+      toast.success("დავალება დაწყებულია")
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "დავალების დაწყების დროს დაფიქსირდა შეცდომა"
+      )
+    }
+  }
+
+  const handleFinishTask = async () => {
+    try {
+      await finishTaskMutation.mutateAsync(task.data.id)
+      toast.success("დავალება დასრულებულია")
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "დავალების დასრულების დროს დაფიქსირდა შეცდომა"
+      )
+    }
+  }
+
+  const statusColors = {
+    in_progress: "bg-[#105D8D] hover:bg-[#0D4D75]",
+    completed: "bg-emerald-600 hover:bg-emerald-700",
+    cancelled: "bg-red-600 hover:bg-red-700",
   }
 
   return (
-    <div className="border-b border-gray-200 p-6">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-            {task.data.task_title}
-            {task.data.user && (
-              <span className="text-sm ml-2 text-gray-500">
-                {task.data.user.name + " " + task.data.user.sur_name}
-              </span>
-            )}
-            {task.data.phone_number && (
-              <span className="text-sm ml-2 text-gray-500">
-                {task.data.phone_number}
-              </span>
-            )}
-          </h1>
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <User2 size={16} className="text-[#105D8D]" />
-              <span>
-                {task.data.assigned_users
-                  ?.map(user => user?.name + " " + user?.sur_name)
-                  .filter(Boolean)
-                  .join(", ") || "არ არის მითითებული"}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Calendar size={16} className="text-[#105D8D]" />
-              <span>ვადა: {formatDate(task.data.due_date)}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock size={16} className="text-[#105D8D]" />
-              <span>შეიქმნა: {formatDate(task.data.created_at)}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p className="text-gray-700 mt-4">
-        აღწერა: {task.data.description || "აღწერა არ არის"}
-      </p>
+    <div className="flex gap-3">
+      {canUpdateStatus && task.data.status === "Pending" && (
+        <button
+          onClick={handleStartTask}
+          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.in_progress}`}
+        >
+          <Play size={16} />
+          დაწყება
+        </button>
+      )}
+
+      {canUpdateStatus && task.data.status === "In Progress" && (
+        <button
+          onClick={handleFinishTask}
+          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.completed}`}
+        >
+          <CheckCircle size={16} />
+          დასრულება
+        </button>
+      )}
     </div>
   )
 }
 
-export default TaskHeader
+export default TaskActions
