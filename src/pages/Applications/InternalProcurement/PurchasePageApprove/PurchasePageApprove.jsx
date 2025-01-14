@@ -42,6 +42,7 @@ import {
   useGetPurchaseList,
   useUpdatePurchaseStatus,
   useUpdateProductStatus,
+  useGetDepartmentPurchases,
 } from "../../../../queries/purchase"
 
 const statusMap = {
@@ -103,8 +104,15 @@ const PurchasePageApprove = () => {
   const { mutate: updatePurchaseStatus, isLoading: isStatusUpdateLoading } =
     useUpdatePurchaseStatus()
 
+  const {
+    data: departmentPurchaseData,
+    isLoading: isDepartmentPurchaseLoading,
+  } = useGetDepartmentPurchases()
+
   const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
     useUpdateProductStatus()
+
+  console.log(purchaseData, departmentPurchaseData)
 
   const canManageProducts = useCallback(
     purchase => {
@@ -119,20 +127,23 @@ const PurchasePageApprove = () => {
 
   const canApproveRequest = useCallback(
     purchase => {
+      // Completed or Rejected can't
       if (purchase.status === "completed" || purchase.status === "rejected")
         return false
+
+      // Admin can always
       if (isAdmin) return true
+
+      // Department head only
       if (!isDepartmentHead) return false
 
       const purchaseCategory = purchase.category
       const requesterDepartmentId = purchase.requester?.department_id
       const categoryDepartmentId = categoryDepartmentMap[purchaseCategory]
 
-      const skipFirstStep = requesterDepartmentId === categoryDepartmentId
-
       switch (purchase.status) {
         case "pending department head":
-          return userDepartmentId === requesterDepartmentId && !skipFirstStep
+          return userDepartmentId === requesterDepartmentId
         case "pending requested department":
           return userDepartmentId === categoryDepartmentId
         default:
@@ -143,9 +154,7 @@ const PurchasePageApprove = () => {
   )
 
   const getNextStatus = purchase => {
-    const requesterDepartmentId = purchase.requester?.department_id
-    const categoryDepartmentId = categoryDepartmentMap[purchase.category]
-    const skipFirstStep = requesterDepartmentId === categoryDepartmentId
+    const skipFirstStep = false
 
     switch (purchase.status) {
       case "pending department head":
@@ -769,10 +778,16 @@ const PurchasePageApprove = () => {
         <div className="p-4 sm:p-6">
           <MuiTable
             columns={columns}
-            data={purchaseData?.data || []}
+            data={
+              isAdmin
+                ? purchaseData?.data || []
+                : departmentPurchaseData?.data || []
+            }
             filterOptions={filterOptions}
             enableSearch={true}
-            isLoading={isPurchasesLoading}
+            isLoading={
+              isAdmin ? isPurchasesLoading : isDepartmentPurchaseLoading
+            }
             renderRowDetails={ExpandedRowContent}
             rowClassName="cursor-pointer hover:bg-gray-50"
           />

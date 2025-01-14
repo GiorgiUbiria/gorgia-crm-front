@@ -1,5 +1,14 @@
 import React, { useState } from "react"
-import { Col, Form, Input, Label, Row, Button, FormGroup, Alert } from "reactstrap"
+import {
+  Col,
+  Form,
+  Input,
+  Label,
+  Row,
+  Button,
+  FormGroup,
+  Alert,
+} from "reactstrap"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useNavigate } from "react-router-dom"
@@ -54,13 +63,13 @@ const InputWithError = ({
 }) => {
   // Get nested field error
   const getNestedError = (obj, path) => {
-    return path.split('.').reduce((acc, part) => {
-      return acc && acc[part];
-    }, obj);
-  };
+    return path.split(".").reduce((acc, part) => {
+      return acc && acc[part]
+    }, obj)
+  }
 
-  const error = getNestedError(formik.errors, name);
-  const touched = getNestedError(formik.touched, name);
+  const error = getNestedError(formik.errors, name)
+  const touched = getNestedError(formik.touched, name)
 
   return (
     <div className="mb-3">
@@ -90,12 +99,10 @@ const InputWithError = ({
           {...props}
         />
       )}
-      {touched && error && (
-        <div className="text-danger mt-1">{error}</div>
-      )}
+      {touched && error && <div className="text-danger mt-1">{error}</div>}
     </div>
-  );
-};
+  )
+}
 
 const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
   <div className="border rounded p-2 mb-2">
@@ -258,22 +265,19 @@ const ProcurementPage = () => {
     onSubmit: async values => {
       try {
         setGeneralError(null)
-        
-        // Format the data before submission
+
         const formattedValues = {
           ...values,
-          // Ensure creates_stock is boolean
           creates_stock: Boolean(values.creates_stock),
-          // Ensure stock_purpose is null when creates_stock is false
           stock_purpose: values.creates_stock ? values.stock_purpose : null,
-          // Add category to products and handle in_stock_explanation
           products: values.products.map(product => ({
             ...product,
             quantity: parseInt(product.quantity, 10),
-            in_stock_explanation: values.category === 'IT' || values.category === 'Marketing' 
-              ? null 
-              : product.in_stock_explanation,
-          }))
+            in_stock_explanation:
+              values.category === "IT" || values.category === "Marketing"
+                ? null
+                : product.in_stock_explanation,
+          })),
         }
 
         createPurchase(formattedValues, {
@@ -297,15 +301,18 @@ const ProcurementPage = () => {
               const errorMessages = Object.entries(err.response.data.errors)
                 .map(([field, messages]) => {
                   // Handle nested product errors
-                  if (field.startsWith('products.')) {
-                    const [, index, subField] = field.match(/products\.(\d+)\.(.+)/) || []
+                  if (field.startsWith("products.")) {
+                    const [, index, subField] =
+                      field.match(/products\.(\d+)\.(.+)/) || []
                     if (index !== undefined && subField) {
-                      return `პროდუქტი ${parseInt(index) + 1} - ${subField}: ${messages[0]}`
+                      return `პროდუქტი ${parseInt(index) + 1} - ${subField}: ${
+                        messages[0]
+                      }`
                     }
                   }
                   return `${field}: ${messages[0]}`
                 })
-                .join('\n')
+                .join("\n")
 
               setGeneralError(errorMessages)
             } else {
@@ -323,15 +330,18 @@ const ProcurementPage = () => {
           const errorMessages = err.inner
             .map(error => {
               // Handle nested product errors
-              if (error.path.startsWith('products.')) {
-                const [, index, subField] = error.path.match(/products\.(\d+)\.(.+)/) || []
+              if (error.path.startsWith("products.")) {
+                const [, index, subField] =
+                  error.path.match(/products\.(\d+)\.(.+)/) || []
                 if (index !== undefined && subField) {
-                  return `პროდუქტი ${parseInt(index) + 1} - ${subField}: ${error.message}`
+                  return `პროდუქტი ${parseInt(index) + 1} - ${subField}: ${
+                    error.message
+                  }`
                 }
               }
               return `${error.path}: ${error.message}`
             })
-            .join('\n')
+            .join("\n")
 
           setGeneralError(errorMessages)
         }
@@ -341,31 +351,36 @@ const ProcurementPage = () => {
 
   // Function to show all current validation errors with better formatting
   const showCurrentValidationErrors = () => {
-    const errors = formik.errors;
+    const errors = formik.errors
     if (Object.keys(errors).length > 0) {
       const errorMessages = Object.entries(errors)
         .map(([field, error]) => {
-          if (field === 'products' && typeof error === 'object') {
+          if (field === "products" && typeof error === "object") {
             // Handle product array errors
             if (Array.isArray(error)) {
-              return error.map((productError, index) => {
-                if (typeof productError === 'object') {
-                  return Object.entries(productError)
-                    .map(([key, value]) => `პროდუქტი ${index + 1} - ${key}: ${value}`)
-                    .join('\n')
-                }
-                return `პროდუქტი ${index + 1}: ${productError}`
-              }).join('\n')
+              return error
+                .map((productError, index) => {
+                  if (typeof productError === "object") {
+                    return Object.entries(productError)
+                      .map(
+                        ([key, value]) =>
+                          `პროდუქტი ${index + 1} - ${key}: ${value}`
+                      )
+                      .join("\n")
+                  }
+                  return `პროდუქტი ${index + 1}: ${productError}`
+                })
+                .join("\n")
             }
             return `products: ${error}`
           }
-          if (typeof error === 'string') {
+          if (typeof error === "string") {
             return `${field}: ${error}`
           }
           return null
         })
         .filter(Boolean)
-        .join('\n')
+        .join("\n")
       setGeneralError(errorMessages)
     } else {
       setGeneralError(null)
@@ -406,7 +421,9 @@ const ProcurementPage = () => {
               <div className="space-y-6">
                 {generalError && (
                   <Alert color="danger" className="mb-4">
-                    <pre className="mb-0 whitespace-pre-wrap">{generalError}</pre>
+                    <pre className="mb-0 whitespace-pre-wrap">
+                      {generalError}
+                    </pre>
                   </Alert>
                 )}
 
@@ -510,16 +527,19 @@ const ProcurementPage = () => {
                       label="მოთხოვნის მიღების თარიღი"
                       type="date"
                     />
-                    {formik.values.requested_arrival_date && 
-                      (new Date(formik.values.requested_arrival_date) - new Date()) / (1000 * 60 * 60 * 24) < 14 && (
-                      <InputWithError
-                        formik={formik}
-                        name="short_date_notice_explanation"
-                        label="მცირე ვადის მიზეზი"
-                        type="textarea"
-                        rows="2"
-                      />
-                    )}
+                    {formik.values.requested_arrival_date &&
+                      (new Date(formik.values.requested_arrival_date) -
+                        new Date()) /
+                        (1000 * 60 * 60 * 24) <
+                        14 && (
+                        <InputWithError
+                          formik={formik}
+                          name="short_date_notice_explanation"
+                          label="მცირე ვადის მიზეზი"
+                          type="textarea"
+                          rows="2"
+                        />
+                      )}
                   </div>
                 </div>
 
@@ -543,20 +563,20 @@ const ProcurementPage = () => {
                 </div>
 
                 <div className="flex justify-end gap-2">
-                  <Button 
-                    type="button" 
+                  <Button
+                    type="button"
                     color="secondary"
                     onClick={showCurrentValidationErrors}
                   >
                     შეამოწმე ვალიდაცია
                   </Button>
-                  <Button 
-                    type="submit" 
-                    color="primary" 
+                  <Button
+                    type="submit"
+                    color="primary"
                     disabled={isLoading}
                     onClick={() => {
                       if (Object.keys(formik.errors).length > 0) {
-                        showCurrentValidationErrors();
+                        showCurrentValidationErrors()
                       }
                     }}
                   >
