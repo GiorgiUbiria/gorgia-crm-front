@@ -84,7 +84,12 @@ const categoryDepartmentMap = {
 
 const PurchasePageApprove = () => {
   document.title = "შიდა შესყიდვების ვიზირება | Gorgia LLC"
-  const { isDepartmentHead, userDepartmentId, isAdmin } = usePermissions()
+  const {
+    isDepartmentHead,
+    isDepartmentHeadAssistant,
+    userDepartmentId,
+    isAdmin,
+  } = usePermissions()
 
   const [rejectionModal, setRejectionModal] = useState(false)
   const [selectedPurchase, setSelectedPurchase] = useState(null)
@@ -95,8 +100,13 @@ const PurchasePageApprove = () => {
   const [productComment, setProductComment] = useState("")
 
   const canViewTable = useMemo(() => {
-    return isAdmin || isDepartmentHead || userDepartmentId === 17
-  }, [isAdmin, isDepartmentHead, userDepartmentId])
+    return (
+      isAdmin ||
+      isDepartmentHead ||
+      isDepartmentHeadAssistant ||
+      userDepartmentId === 17
+    )
+  }, [isAdmin, isDepartmentHead, isDepartmentHeadAssistant, userDepartmentId])
 
   const { data: purchaseData, isLoading: isPurchasesLoading } =
     useGetPurchaseList(true)
@@ -735,7 +745,6 @@ const PurchasePageApprove = () => {
     return (
       <div className="p-4">
         <StatusTimeline />
-
         {rowData?.comment && (
           <Card className="mb-4 shadow-sm">
             <CardBody>

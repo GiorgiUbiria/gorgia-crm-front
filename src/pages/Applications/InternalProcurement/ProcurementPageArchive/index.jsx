@@ -23,10 +23,15 @@ import {
   BiStore,
   BiFlag,
   BiComment,
+  BiXCircle,
   BiMessageAltX,
 } from "react-icons/bi"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { useGetPurchaseList } from "../../../../queries/purchase"
+import {
+  useGetPurchaseList,
+  useGetDepartmentPurchases,
+} from "../../../../queries/purchase"
+import { usePermissions } from "hooks/usePermissions"
 
 const statusMap = {
   "pending department head": {
@@ -58,7 +63,27 @@ const statusMap = {
 
 const ProcurementPageArchive = () => {
   document.title = "შესყიდვების არქივი | Gorgia LLC"
+  const {
+    isAdmin,
+    isDepartmentHead,
+    isDepartmentHeadAssistant,
+    userDepartmentId,
+  } = usePermissions()
   const { data: purchaseData, isLoading } = useGetPurchaseList()
+
+  const {
+    data: departmentPurchaseData,
+    isLoading: isDepartmentPurchaseLoading,
+  } = useGetDepartmentPurchases()
+
+  const canViewTable = useMemo(() => {
+    return (
+      isAdmin ||
+      isDepartmentHead ||
+      isDepartmentHeadAssistant ||
+      userDepartmentId === 17
+    )
+  }, [isAdmin, isDepartmentHead, isDepartmentHeadAssistant, userDepartmentId])
 
   const columns = useMemo(
     () => [
@@ -510,17 +535,37 @@ const ProcurementPageArchive = () => {
     )
   }
 
+  if (!canViewTable) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center max-w-lg w-full">
+          <BiXCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
+          <h2 className="text-xl font-medium text-gray-900 mb-2">
+            წვდომა შეზღუდულია
+          </h2>
+          <p className="text-gray-600">
+            თქვენ არ გაქვთ ამ გვერდის ნახვის უფლება
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
           <MuiTable
             columns={columns}
-            data={purchaseData?.data || []}
+            data={
+              isAdmin
+                ? purchaseData?.data || []
+                : departmentPurchaseData?.data || []
+            }
             filterOptions={filterOptions}
             customSearchFunction={customSearchFunction}
             enableSearch={true}
-            isLoading={isLoading}
+            isLoading={isAdmin ? isLoading : isDepartmentPurchaseLoading}
             renderRowDetails={ExpandedRowContent}
             rowClassName="cursor-pointer hover:bg-gray-50"
           />

@@ -435,8 +435,6 @@ const VacationPageApprove = () => {
       ? vacationsData?.data?.data
       : departmentVacationData?.data?.data
 
-    console.log(vacationsData, departmentVacationData, vacations)
-
     if (!vacations) return []
 
     return vacations.map(vacation => ({

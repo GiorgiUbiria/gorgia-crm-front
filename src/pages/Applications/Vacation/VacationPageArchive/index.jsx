@@ -1,7 +1,11 @@
-import React, { useEffect, useState, useMemo } from "react"
-import { Row, Col } from "reactstrap"
-import { getVacations } from "services/admin/vacation"
+import React, { useMemo } from "react"
+import { Row, Col, Spinner } from "reactstrap"
 import MuiTable from "components/Mui/MuiTable"
+import {
+  useVacations,
+  useDepartmentVacations,
+} from "../../../../queries/vacation"
+import { usePermissions } from "hooks/usePermissions"
 
 const statusMap = {
   pending: {
@@ -28,7 +32,7 @@ const statusMap = {
     label: "გაუქმებული",
     icon: "bx-x",
     color: "#dc3545",
-  }
+  },
 }
 
 const typeMap = {
@@ -178,20 +182,14 @@ const ExpandedRowContent = ({ rowData }) => {
 const VacationPageArchive = () => {
   document.title = "შვებულებების არქივი | Gorgia LLC"
 
-  const [vacations, setVacations] = useState([])
-
-  const fetchVacations = async () => {
-    try {
-      const response = await getVacations()
-      setVacations(response.data.data)
-    } catch (err) {
-      console.error("Error fetching vocations:", err)
-    }
-  }
-
-  useEffect(() => {
-    fetchVacations()
-  }, [])
+  const { isAdmin } = usePermissions()
+  const {
+    data: departmentVacationData,
+    isLoading: departmentVacationsLoading,
+  } = useDepartmentVacations()
+  const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
+    enabled: !!isAdmin,
+  })
 
   const columns = useMemo(
     () => [
@@ -239,9 +237,9 @@ const VacationPageArchive = () => {
           const statusInfo = statusMap[value] || {
             label: "უცნობი",
             icon: "bx-question-mark",
-            color: "#757575"
+            color: "#757575",
           }
-          
+
           return (
             <span
               style={{
@@ -271,44 +269,77 @@ const VacationPageArchive = () => {
     ],
     []
   )
-  const transformedVacations = vacations.map(vacation => ({
-    id: vacation.id,
-    status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
-    start_date: vacation.start_date ? new Date(vacation.start_date).toLocaleDateString("ka-GE") : "-",
-    end_date: vacation.end_date ? new Date(vacation.end_date).toLocaleDateString("ka-GE") : "-",
-    duration: (vacation.duration_days ?? 0).toString() + " დღე",
-    type: vacation.type ? TYPE_MAPPING[vacation.type] || vacation.type : "უცნობი",
-    requested_by: vacation.user ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`.trim() || "უცნობი" : "უცნობი",
-    requested_at: vacation.created_at ? new Date(vacation.created_at).toLocaleDateString("ka-GE") : "-",
-    requested_for: `${vacation.employee_name || ""} | ${vacation.position || ""} | ${vacation.department || ""}`,
-    auto_approved: vacation.is_auto_approved || false,
-    auto_approved_at: vacation.auto_approved_at ? new Date(vacation.auto_approved_at).toLocaleDateString("ka-GE") : null,
-    time_until_auto_approval: vacation.time_until_auto_approval,
-    expanded: {
-      holiday_days: {
-        is_monday: vacation.is_monday || null,
-        is_tuesday: vacation.is_tuesday || null,
-        is_wednesday: vacation.is_wednesday || null,
-        is_thursday: vacation.is_thursday || null,
-        is_friday: vacation.is_friday || null,
-        is_saturday: vacation.is_saturday || null,
-        is_sunday: vacation.is_sunday || null,
+  const transformedVacations = useMemo(() => {
+    if (!departmentVacationData?.data?.data && !vacationsData?.data?.data)
+      return []
+    const vacations = isAdmin
+      ? vacationsData?.data?.data
+      : departmentVacationData?.data?.data
+
+    if (!vacations) return []
+    return vacations.map(vacation => ({
+      id: vacation.id,
+      status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+      start_date: vacation.start_date
+        ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
+        : "-",
+      end_date: vacation.end_date
+        ? new Date(vacation.end_date).toLocaleDateString("ka-GE")
+        : "-",
+      duration: (vacation.duration_days ?? 0).toString() + " დღე",
+      type: vacation.type
+        ? TYPE_MAPPING[vacation.type] || vacation.type
+        : "უცნობი",
+      requested_by: vacation.user
+        ? `${vacation.user?.name || ""} ${
+            vacation.user?.sur_name || ""
+          }`.trim() || "უცნობი"
+        : "უცნობი",
+      requested_at: vacation.created_at
+        ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
+        : "-",
+      requested_for: `${vacation.employee_name || ""} | ${
+        vacation.position || ""
+      } | ${vacation.department || ""}`,
+      auto_approved: vacation.is_auto_approved || false,
+      auto_approved_at: vacation.auto_approved_at
+        ? new Date(vacation.auto_approved_at).toLocaleDateString("ka-GE")
+        : null,
+      time_until_auto_approval: vacation.time_until_auto_approval,
+      expanded: {
+        holiday_days: {
+          is_monday: vacation.is_monday || null,
+          is_tuesday: vacation.is_tuesday || null,
+          is_wednesday: vacation.is_wednesday || null,
+          is_thursday: vacation.is_thursday || null,
+          is_friday: vacation.is_friday || null,
+          is_saturday: vacation.is_saturday || null,
+          is_sunday: vacation.is_sunday || null,
+        },
+        substitute: {
+          substitute_name: vacation.substitute_name || "უცნობია",
+          substitute_position: vacation.substitute_position || "უცნობია",
+        },
+        review: {
+          reviewed_by: vacation.reviewed_by
+            ? `${vacation.reviewed_by?.name || ""} ${
+                vacation.reviewed_by?.sur_name || ""
+              }`
+            : "ჯერ არ არის განხილული",
+          reviewed_at: vacation?.reviewed_at
+            ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+            : "-",
+          rejection_reason: vacation.rejection_reason || "",
+        },
+        cancellation: {
+          cancellation_reason: vacation.cancellation_reason || "",
+          cancelled_at: vacation.cancelled_at
+            ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+            : "",
+        },
       },
-      substitute: {
-        substitute_name: vacation.substitute_name || "უცნობია",
-        substitute_position: vacation.substitute_position || "უცნობია",
-      },
-      review: {
-        reviewed_by: vacation.reviewed_by ? `${vacation.reviewed_by?.name || ""} ${vacation.reviewed_by?.sur_name || ""}` : "ჯერ არ არის განხილული",
-        reviewed_at: vacation?.reviewed_at ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE") : "-",
-        rejection_reason: vacation.rejection_reason || "",
-      },
-      cancellation: {
-        cancellation_reason: vacation.cancellation_reason || "",
-        cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : "",
-      },
-    },
-  }))
+    }))
+  })
 
   const filterOptions = [
     {
@@ -333,6 +364,14 @@ const VacationPageArchive = () => {
   ]
 
   const expandedRow = row => <ExpandedRowContent rowData={row} />
+
+  if (vacationsLoading && departmentVacationsLoading) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner color="primary" />
+      </div>
+    )
+  }
 
   return (
     <>

@@ -95,13 +95,14 @@ export const getMenuConfig = (t, user) => {
               to: "/applications/purchases/approve",
               label: t("ვიზირება"),
               icon: LuShieldCheck,
-              conditions: "role:admin|role:department_head|department:17",
+              conditions: "role:admin|role:department_head|department:7",
             },
             {
               to: "/applications/purchases/archive",
               label: t("არქივი"),
               icon: LuArchive,
-              conditions: "role:admin|role:department_head|department:17",
+              conditions:
+                "role:admin|role:department_head|role:department_head_assistant|department:7",
             },
             {
               to: "/applications/purchases/my-requests",
@@ -134,7 +135,8 @@ export const getMenuConfig = (t, user) => {
               to: "/applications/business-trip/archive",
               label: t("არქივი"),
               icon: LuArchive,
-              conditions: "role:admin|role:department_head",
+              conditions:
+                "role:admin|role:department_head|role:department_head_assistant",
             },
             {
               to: "/applications/business-trip/my-requests",
@@ -167,7 +169,8 @@ export const getMenuConfig = (t, user) => {
               to: "/applications/vacation/archive",
               label: t("არქივი"),
               icon: LuArchive,
-              conditions: "role:admin|role:department_head|department:8",
+              conditions:
+                "role:admin|role:department_head|role:department_head_assistant|department:8",
             },
             {
               to: "/applications/vacation/my-requests",
@@ -241,7 +244,8 @@ export const getMenuConfig = (t, user) => {
               to: "/legal/contracts/purchase/archive",
               label: t("არქივი"),
               icon: LuArchive,
-              conditions: "role:admin|role:department_head",
+              conditions:
+                "role:admin|role:department_head|role:department_head_assistant",
             },
             {
               to: "/legal/contracts/purchase/my-requests",
@@ -267,7 +271,8 @@ export const getMenuConfig = (t, user) => {
               to: "/legal/contracts/delivery/archive",
               label: t("არქივი"),
               icon: LuArchive,
-              conditions: "role:admin|role:department_head",
+              conditions:
+                "role:admin|role:department_head|role:department_head_assistant",
             },
             {
               to: "/legal/contracts/delivery/my-requests",
@@ -293,7 +298,8 @@ export const getMenuConfig = (t, user) => {
               to: "/legal/contracts/marketing/archive",
               label: t("არქივი"),
               icon: LuArchive,
-              conditions: "role:admin|role:department_head",
+              conditions:
+                "role:admin|role:department_head|role:department_head_assistant",
             },
             {
               to: "/legal/contracts/marketing/my-requests",
@@ -319,7 +325,8 @@ export const getMenuConfig = (t, user) => {
               to: "/legal/contracts/service/archive",
               label: t("არქივი"),
               icon: LuArchive,
-              conditions: "role:admin|role:department_head",
+              conditions:
+                "role:admin|role:department_head|role:department_head_assistant",
             },
             {
               to: "/legal/contracts/service/my-requests",
@@ -345,7 +352,8 @@ export const getMenuConfig = (t, user) => {
               to: "/legal/contracts/local/archive",
               label: t("არქივი"),
               icon: LuArchive,
-              conditions: "role:admin|role:department_head",
+              conditions:
+                "role:admin|role:department_head|role:department_head_assistant",
             },
             {
               to: "/legal/contracts/local/my-requests",
