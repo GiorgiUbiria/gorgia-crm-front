@@ -1,16 +1,36 @@
 import defaultInstance from "../plugins/axios"
 
-export const getFarmTasks = async (filters = {}) => {
+export const getTaskList = async () => {
   try {
-    const response = await defaultInstance.get("/api/farm-tasks", { params: filters })
+    const response = await defaultInstance.get("/api/farm-tasks")
     return response.data
   } catch (error) {
-    console.error("Error fetching farm tasks:", error)
+    console.error("Error fetching task list:", error)
     throw error
   }
 }
 
-export const getFarmTask = async id => {
+export const getMyTasks = async () => {
+  try {
+    const response = await defaultInstance.get("/api/farm-tasks/my")
+    return response.data
+  } catch (error) {
+    console.error("Error fetching my tasks:", error)
+    throw error
+  }
+}
+
+export const getTasksAssignedToMe = async () => {
+  try {
+    const response = await defaultInstance.get("/api/farm-tasks/assigned-to-me")
+    return response.data
+  } catch (error) {
+    console.error("Error fetching assigned tasks:", error)
+    throw error
+  }
+}
+
+export const getTask = async id => {
   try {
     const response = await defaultInstance.get(`/api/farm-tasks/${id}`)
     return response.data
@@ -25,70 +45,130 @@ export const getFarmTask = async id => {
   }
 }
 
-export const createFarmTask = async data => {
+export const createTask = async data => {
   try {
     const response = await defaultInstance.post("/api/farm-tasks", data)
     return response.data
   } catch (error) {
-    console.error("Error creating farm task:", error)
+    console.error("Error creating task:", error)
     throw error
   }
 }
 
-export const updateFarmTask = async ({ id, data }) => {
+export const updateTask = async (id, data) => {
   try {
     const response = await defaultInstance.put(`/api/farm-tasks/${id}`, data)
     return response.data
   } catch (error) {
-    console.error("Error updating farm task:", error)
+    console.error("Error updating task:", error)
     throw error
   }
 }
 
-export const deleteFarmTask = async id => {
+export const deleteTask = async id => {
   try {
     const response = await defaultInstance.delete(`/api/farm-tasks/${id}`)
     return response.data
   } catch (error) {
-    console.error("Error deleting farm task:", error)
+    console.error("Error deleting task:", error)
     throw error
   }
 }
 
-// These functions are kept for backward compatibility
-export const getTaskList = getFarmTasks
-export const getMyTasks = async () => getFarmTasks({ assigned_user_id: JSON.parse(sessionStorage.getItem("authUser"))?.id })
-export const getTasksAssignedToMe = async () => getFarmTasks({ assigned_to_me: true })
-export const getTask = getFarmTask
-export const createTask = createFarmTask
-export const updateTask = async (id, data) => updateFarmTask({ id, data })
-export const deleteTask = deleteFarmTask
-
-// These functions are now handled through updateFarmTask
 export const assignTask = async ({ taskId, userIds }) => {
-  return updateFarmTask({
-    id: taskId,
-    data: { assigned_users: userIds }
-  })
+  try {
+    const response = await defaultInstance.post(
+      `/api/farm-tasks/${taskId}/assign`,
+      {
+        user_ids: userIds,
+      }
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error assigning task:", error)
+    throw error
+  }
 }
 
 export const startTask = async id => {
-  return updateFarmTask({
-    id,
-    data: { status: "In Progress" }
-  })
+  try {
+    const response = await defaultInstance.patch(`/api/farm-tasks/${id}/start`)
+    return response.data
+  } catch (error) {
+    console.error("Error starting task:", error)
+    throw error
+  }
 }
 
 export const finishTask = async id => {
-  return updateFarmTask({
-    id,
-    data: { status: "Completed" }
-  })
+  try {
+    const response = await defaultInstance.patch(`/api/farm-tasks/${id}/finish`)
+    return response.data
+  } catch (error) {
+    console.error("Error finishing task:", error)
+    throw error
+  }
+}
+
+export const getTaskComments = async taskId => {
+  try {
+    const response = await defaultInstance.get(
+      `/api/farm-tasks/${taskId}/comments`
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error fetching task comments:", error)
+    throw error
+  }
+}
+
+export const createTaskComment = async (taskId, data) => {
+  try {
+    const response = await defaultInstance.post(
+      `/api/farm-tasks/${taskId}/comments`,
+      data
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error creating task comment:", error)
+    throw error
+  }
+}
+
+export const updateTaskComment = async (taskId, commentId, data) => {
+  try {
+    const response = await defaultInstance.put(
+      `/api/farm-tasks/${taskId}/comments/${commentId}`,
+      data
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error updating task comment:", error)
+    throw error
+  }
+}
+
+export const deleteTaskComment = async (taskId, commentId) => {
+  try {
+    const response = await defaultInstance.delete(
+      `/api/farm-tasks/${taskId}/comments/${commentId}`
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error deleting task comment:", error)
+    throw error
+  }
 }
 
 export const updateTaskStatus = async (id, status) => {
-  return updateFarmTask({
-    id,
-    data: { status }
-  })
+  try {
+    const response = await defaultInstance.patch(
+      `/api/farm-tasks/${id}/status`,
+      { status }
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error updating task status:", error)
+    throw error
+  }
 }

@@ -1,7 +1,7 @@
 import React, { Fragment, useMemo, useState } from "react"
 import "bootstrap/dist/css/bootstrap.min.css"
 import { Row, Col, Nav, NavItem, NavLink } from "reactstrap"
-import { ToastContainer, toast } from "react-toastify"
+import { ToastContainer } from "react-toastify"
 import { Link } from "react-router-dom"
 
 import DeleteModal from "./DeleteModal"
@@ -12,10 +12,13 @@ import TaskTable from "./TaskTable"
 import Spinners from "../../../components/Common/Spinner"
 
 import {
-  useFarmTasks,
-  useCreateFarmTask,
-  useUpdateFarmTask,
-  useDeleteFarmTask,
+  useTaskQueries,
+  useCreateTask,
+  useUpdateTask,
+  useDeleteTask,
+  useAssignTask,
+  useStartTask,
+  useFinishTask,
 } from "../../../queries/farmTasks"
 
 import useFetchUsers from "../../../hooks/useFetchUsers"
@@ -53,30 +56,21 @@ const TaskList = () => {
     [isFarmDepartment]
   )
 
-  // Query for all tasks
-  const { data: allTasksData, isLoading: isAllTasksLoading } = useFarmTasks({})
-
-  // Query for my tasks
-  const { data: myTasksData, isLoading: isMyTasksLoading } = useFarmTasks({
-    assigned_user_id: currentUser?.id,
-  })
-
-  // Query for assigned tasks
-  const { data: assignedTasksData, isLoading: isAssignedTasksLoading } = useFarmTasks({
-    department_id: 38,
-    assigned_user_id: currentUser?.id,
-  })
-
-  const tasksList = allTasksData?.data || []
-  const myTasksList = myTasksData?.data || []
-  const assignedTasksList = assignedTasksData?.data || []
+  const {
+    tasksList,
+    myTasksList,
+    assignedTasksList,
+    isTasksListLoading,
+    isMyTasksLoading,
+    isAssignedTasksLoading,
+  } = useTaskQueries(isFarmDepartment, hasEditPermission)
 
   const sortedTasks = useMemo(() => {
     const tasksToSort = isFarmDepartment || hasEditPermission
       ? activeTab === "all"
-        ? [...tasksList]
-        : [...assignedTasksList]
-      : [...myTasksList]
+        ? [...(tasksList?.data || [])]
+        : [...(assignedTasksList?.data || [])]
+      : [...(myTasksList?.data || [])]
 
     return tasksToSort.sort((a, b) => {
       const dateA = new Date(a.created_at).getTime()
@@ -87,22 +81,25 @@ const TaskList = () => {
   }, [
     isFarmDepartment,
     activeTab,
-    tasksList,
-    assignedTasksList,
-    myTasksList,
+    tasksList?.data,
+    assignedTasksList?.data,
+    myTasksList?.data,
     sortConfig,
     hasEditPermission,
   ])
 
   const isLoading = isFarmDepartment
     ? activeTab === "all"
-      ? isAllTasksLoading
+      ? isTasksListLoading
       : isAssignedTasksLoading
     : isMyTasksLoading
 
-  const createTaskMutation = useCreateFarmTask()
-  const updateTaskMutation = useUpdateFarmTask()
-  const deleteTaskMutation = useDeleteFarmTask()
+  const createTaskMutation = useCreateTask()
+  const updateTaskMutation = useUpdateTask()
+  const deleteTaskMutation = useDeleteTask()
+  const assignTaskMutation = useAssignTask()
+  const startTaskMutation = useStartTask()
+  const finishTaskMutation = useFinishTask()
 
   const handleTaskClick = task => {
     setTask(task)
@@ -128,61 +125,38 @@ const TaskList = () => {
       setDeleteModal(false)
     } catch (error) {
       console.error("Error deleting task:", error)
-      toast.error(
-        error.response?.data?.message ||
-          "დავალების წაშლის დროს დაფიქსირდა შეცდომა"
-      )
     }
   }
 
   const handleAssignTask = async selectedUsers => {
     try {
-      await updateTaskMutation.mutateAsync({
-        id: task.id,
-        data: {
-          assigned_users: selectedUsers,
-        },
+      await assignTaskMutation.mutateAsync({
+        taskId: task.id,
+        userIds: selectedUsers,
       })
       setAssignModal(false)
-      toast.success("დავალება წარმატებით მიენიჭა")
     } catch (error) {
       console.error("Error assigning task:", error)
       toast.error(
         error.response?.data?.message ||
-          "დავალების მინიჭების დროს დაფიქსირდა შეცდომა"
+          "დავალების მიღების დროს დაფიქსირდა შეცდომა"
       )
     }
   }
 
   const handleStartTask = async taskId => {
     try {
-      await updateTaskMutation.mutateAsync({
-        id: taskId,
-        data: { status: "In Progress" },
-      })
-      toast.success("დავალება დაწყებულია")
+      await startTaskMutation.mutateAsync(taskId)
     } catch (error) {
       console.error("Error starting task:", error)
-      toast.error(
-        error.response?.data?.message ||
-          "დავალების დაწყების დროს დაფიქსირდა შეცდომა"
-      )
     }
   }
 
   const handleFinishTask = async taskId => {
     try {
-      await updateTaskMutation.mutateAsync({
-        id: taskId,
-        data: { status: "Completed" },
-      })
-      toast.success("დავალება დასრულებულია")
+      await finishTaskMutation.mutateAsync(taskId)
     } catch (error) {
       console.error("Error finishing task:", error)
-      toast.error(
-        error.response?.data?.message ||
-          "დავალების დასრულების დროს დაფიქსირდა შეცდომა"
-      )
     }
   }
 

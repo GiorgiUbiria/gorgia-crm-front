@@ -195,7 +195,8 @@ export const getMenuConfig = (t, user) => {
           to: "/hr/documents/approve",
           icon: LuShieldCheck,
           label: t("ვიზირება"),
-          conditions: "role:admin|role:department_head,department:8|role:department_head_assistant,department:8",
+          conditions:
+            "role:admin|role:department_head,department:8|role:department_head_assistant,department:8",
         },
         {
           to: "/hr/documents/archive",

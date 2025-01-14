@@ -1,8 +1,8 @@
 import React, { useState } from "react"
 import { toast } from "react-toastify"
 import {
-  useCreateFarmTaskComment,
-  useDeleteFarmTaskComment,
+  useCreateTaskComment,
+  useDeleteTaskComment,
 } from "../../../../queries/farmTasks"
 
 const formatTimeAgo = date => {
@@ -47,8 +47,8 @@ const CommentThread = ({ comment, currentUser, taskId, depth = 0 }) => {
   const [isReplying, setIsReplying] = useState(false)
   const [replyContent, setReplyContent] = useState("")
 
-  const createCommentMutation = useCreateFarmTaskComment()
-  const deleteCommentMutation = useDeleteFarmTaskComment()
+  const createCommentMutation = useCreateTaskComment()
+  const deleteCommentMutation = useDeleteTaskComment()
 
   const handleSubmitReply = async e => {
     e.preventDefault()

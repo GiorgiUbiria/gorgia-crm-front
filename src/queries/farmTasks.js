@@ -1,127 +1,199 @@
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query"
-import * as farmTaskService from "../services/farmTasks"
-import * as farmTaskCommentService from "../services/farmTaskComment"
-import { queryKeys } from "./keys"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  getTaskList,
+  getMyTasks,
+  getTask,
+  createTask,
+  updateTask,
+  deleteTask,
+  assignTask,
+  startTask,
+  finishTask,
+  getTasksAssignedToMe,
+  getTaskComments,
+  createTaskComment,
+  updateTaskComment,
+  deleteTaskComment,
+} from "../services/farmTasks"
 
-// Farm Tasks
-export const useFarmTasks = (filters = {}) => {
+export const taskKeys = {
+  all: ["farm-tasks"],
+  list: () => [...taskKeys.all, "list"],
+  myTasks: () => [...taskKeys.all, "my"],
+  detail: id => [...taskKeys.all, "detail", id],
+  assignedToMe: () => [...taskKeys.all, "assigned-to-me"],
+  comments: taskId => [...taskKeys.all, taskId, "comments"],
+}
+
+export const useGetTaskList = (options = {}) => {
   return useQuery({
-    queryKey: queryKeys.farmTasks.list(filters),
-    queryFn: () => farmTaskService.getFarmTasks(filters),
-    staleTime: 5 * 60 * 1000,
+    queryKey: taskKeys.list(),
+    queryFn: getTaskList,
+    ...options,
   })
 }
 
-export const useFarmTask = (id) => {
+export const useGetMyTasks = (options = {}) => {
   return useQuery({
-    queryKey: queryKeys.farmTasks.detail(id),
-    queryFn: () => farmTaskService.getFarmTask(id),
-    enabled: Boolean(id),
+    queryKey: taskKeys.myTasks(),
+    queryFn: getMyTasks,
+    ...options,
   })
 }
 
-export const useCreateFarmTask = () => {
+export const useGetTasksAssignedToMe = (options = {}) => {
+  return useQuery({
+    queryKey: taskKeys.assignedToMe(),
+    queryFn: getTasksAssignedToMe,
+    ...options,
+  })
+}
+
+export const useGetTask = (id, options = {}) => {
+  return useQuery({
+    queryKey: taskKeys.detail(id),
+    queryFn: () => getTask(id),
+    ...options,
+  })
+}
+
+export const useGetTaskComments = (taskId, options = {}) => {
+  return useQuery({
+    queryKey: taskKeys.comments(taskId),
+    queryFn: () => getTaskComments(taskId),
+    ...options,
+  })
+}
+
+export const useAssignTask = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data) => farmTaskService.createFarmTask(data),
+    mutationFn: assignTask,
     onSuccess: () => {
-      queryClient.invalidateQueries(queryKeys.farmTasks.lists())
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
     },
   })
 }
 
-export const useUpdateFarmTask = () => {
+export const useStartTask = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }) => farmTaskService.updateFarmTask(id, data),
-    onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries(queryKeys.farmTasks.detail(id))
-
-      const previousTask = queryClient.getQueryData(queryKeys.farmTasks.detail(id))
-
-      queryClient.setQueryData(
-        queryKeys.farmTasks.detail(id),
-        old => ({ ...old, ...data })
-      )
-
-      return { previousTask }
-    },
-    onError: (err, { id }, context) => {
-      queryClient.setQueryData(
-        queryKeys.farmTasks.detail(id),
-        context?.previousTask
-      )
-    },
-    onSettled: (_, __, { id }) => {
-      queryClient.invalidateQueries(queryKeys.farmTasks.detail(id))
-      queryClient.invalidateQueries(queryKeys.farmTasks.lists())
-    },
-  })
-}
-
-export const useDeleteFarmTask = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (id) => farmTaskService.deleteFarmTask(id),
+    mutationFn: startTask,
     onSuccess: () => {
-      queryClient.invalidateQueries(queryKeys.farmTasks.lists())
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
     },
   })
 }
 
-// Farm Task Comments
-export const useFarmTaskComments = (taskId, filters = {}) => {
-  return useQuery({
-    queryKey: queryKeys.farmTasks.comments.byTask(taskId),
-    queryFn: () => farmTaskCommentService.getFarmTaskComments(taskId, filters),
-    enabled: Boolean(taskId),
-  })
-}
-
-export const useInfiniteFarmTaskComments = (taskId, filters = {}) => {
-  return useInfiniteQuery({
-    queryKey: queryKeys.farmTasks.comments.byTask(taskId),
-    queryFn: ({ pageParam = 1 }) => 
-      farmTaskCommentService.getFarmTaskComments(taskId, { ...filters, page: pageParam }),
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    enabled: Boolean(taskId),
-  })
-}
-
-export const useCreateFarmTaskComment = () => {
+export const useFinishTask = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ taskId, data }) => farmTaskCommentService.createFarmTaskComment(taskId, data),
-    onSuccess: (_, { taskId }) => {
-      queryClient.invalidateQueries(queryKeys.farmTasks.comments.byTask(taskId))
+    mutationFn: finishTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
     },
   })
 }
 
-export const useUpdateFarmTaskComment = () => {
+export const useCreateTask = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ taskId, commentId, data }) => 
-      farmTaskCommentService.updateFarmTaskComment(taskId, commentId, data),
-    onSuccess: (_, { taskId }) => {
-      queryClient.invalidateQueries(queryKeys.farmTasks.comments.byTask(taskId))
+    mutationFn: createTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
     },
   })
 }
 
-export const useDeleteFarmTaskComment = () => {
+export const useUpdateTask = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ taskId, commentId }) => 
-      farmTaskCommentService.deleteFarmTaskComment(taskId, commentId),
-    onSuccess: (_, { taskId }) => {
-      queryClient.invalidateQueries(queryKeys.farmTasks.comments.byTask(taskId))
+    mutationFn: ({ id, data }) => updateTask(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
     },
   })
+}
+
+export const useDeleteTask = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all })
+    },
+  })
+}
+
+export const useCreateTaskComment = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ taskId, data }) => createTaskComment(taskId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.comments(variables.taskId),
+      })
+    },
+  })
+}
+
+export const useUpdateTaskComment = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ taskId, commentId, data }) =>
+      updateTaskComment(taskId, commentId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.comments(variables.taskId),
+      })
+    },
+  })
+}
+
+export const useDeleteTaskComment = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ taskId, commentId }) => deleteTaskComment(taskId, commentId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.comments(variables.taskId),
+      })
+    },
+  })
+}
+
+export const useTaskQueries = (isFarmDepartment, hasEditPermission) => {
+  const { data: tasksList = [], isLoading: isTasksListLoading } =
+    useGetTaskList({
+      enabled: isFarmDepartment || hasEditPermission,
+    })
+
+  const { data: myTasksList = [], isLoading: isMyTasksLoading } = useGetMyTasks(
+    {
+      enabled: !isFarmDepartment && !hasEditPermission,
+    }
+  )
+
+  const { data: assignedTasksList = [], isLoading: isAssignedTasksLoading } =
+    useGetTasksAssignedToMe({
+      enabled: isFarmDepartment || hasEditPermission,
+    })
+
+  return {
+    tasksList,
+    myTasksList,
+    assignedTasksList,
+    isTasksListLoading,
+    isMyTasksLoading,
+    isAssignedTasksLoading,
+  }
 }

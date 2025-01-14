@@ -1,10 +1,11 @@
 import React from "react"
 import { Play, CheckCircle } from "lucide-react"
-import { useUpdateFarmTask } from "../../../../queries/farmTasks"
+import { useStartTask, useFinishTask } from "../../../../queries/farmTasks"
 import { toast } from "react-toastify"
 
 const TaskActions = ({ task, canEdit }) => {
-  const updateTaskMutation = useUpdateFarmTask()
+  const startTaskMutation = useStartTask()
+  const finishTaskMutation = useFinishTask()
 
   if (!task) return null
   if (!canEdit) return null
@@ -18,10 +19,7 @@ const TaskActions = ({ task, canEdit }) => {
 
   const handleStartTask = async () => {
     try {
-      await updateTaskMutation.mutateAsync({
-        id: task.data.id,
-        data: { status: "In Progress" }
-      })
+      await startTaskMutation.mutateAsync(task.data.id)
       toast.success("დავალება დაწყებულია")
     } catch (error) {
       toast.error(
@@ -33,10 +31,7 @@ const TaskActions = ({ task, canEdit }) => {
 
   const handleFinishTask = async () => {
     try {
-      await updateTaskMutation.mutateAsync({
-        id: task.data.id,
-        data: { status: "Completed" }
-      })
+      await finishTaskMutation.mutateAsync(task.data.id)
       toast.success("დავალება დასრულებულია")
     } catch (error) {
       toast.error(
@@ -57,22 +52,20 @@ const TaskActions = ({ task, canEdit }) => {
       {canUpdateStatus && task.data.status === "Pending" && (
         <button
           onClick={handleStartTask}
-          disabled={updateTaskMutation.isPending}
-          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.in_progress} disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.in_progress}`}
         >
           <Play size={16} />
-          {updateTaskMutation.isPending ? "მიმდინარეობს..." : "დაწყება"}
+          დაწყება
         </button>
       )}
 
       {canUpdateStatus && task.data.status === "In Progress" && (
         <button
           onClick={handleFinishTask}
-          disabled={updateTaskMutation.isPending}
-          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.completed} disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.completed}`}
         >
           <CheckCircle size={16} />
-          {updateTaskMutation.isPending ? "მიმდინარეობს..." : "დასრულება"}
+          დასრულება
         </button>
       )}
     </div>
