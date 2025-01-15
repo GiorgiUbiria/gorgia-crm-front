@@ -106,7 +106,11 @@ export function CrmTable({ columns, data, renderSubComponent, onRowClick }) {
               return (
                 <Fragment key={row.id}>
                   <tr
-                    className={`hover:bg-gray-50 dark:!hover:bg-gray-700/50 ${
+                    className={`${
+                      row.index % 2 === 0
+                        ? "bg-white dark:!bg-gray-800"
+                        : "bg-gray-50 dark:!bg-gray-700"
+                    } hover:bg-gray-100 dark:!hover:bg-gray-600/50 ${
                       onRowClick ? "cursor-pointer" : ""
                     }`}
                     onClick={() => onRowClick?.(row)}
@@ -115,7 +119,7 @@ export function CrmTable({ columns, data, renderSubComponent, onRowClick }) {
                       return (
                         <td
                           key={cell.id}
-                          className="px-5 py-4 text-sm text-gray-700 dark:!text-gray-200 bg-white dark:!bg-gray-800"
+                          className="px-5 py-4 text-sm text-gray-700 dark:!text-gray-200 border-r border-gray-200 dark:!border-gray-700 last:border-r-0"
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
