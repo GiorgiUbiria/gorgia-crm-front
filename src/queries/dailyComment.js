@@ -5,34 +5,73 @@ import {
   updateDailyComment,
   deleteDailyComment,
 } from "../services/dailyComment"
-import { dailyKeys } from "./daily"
 
 export const dailyCommentKeys = {
   all: ["daily-comments"],
-  byDaily: (dailyId) => [...dailyCommentKeys.all, "daily", dailyId],
+  byDaily: dailyId => [...dailyCommentKeys.all, "daily", dailyId],
 }
 
-// Query for fetching comments
 export const useGetDailyComments = (dailyId, options = {}) => {
   return useQuery({
     queryKey: dailyCommentKeys.byDaily(dailyId),
-    queryFn: () => getDailyComments(dailyId),
+    queryFn: async () => {
+      const response = await getDailyComments(dailyId)
+      return response
+    },
     enabled: !!dailyId,
     ...options,
   })
 }
 
-// Mutation for creating a comment
 export const useCreateDailyComment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ dailyId, data }) => createDailyComment(dailyId, data),
-    onSuccess: (_, { dailyId }) => {
-      // Invalidate both the daily detail and comments queries
-      queryClient.invalidateQueries({
-        queryKey: dailyKeys.departmentHeadDaily(dailyId),
+    mutationFn: async ({ dailyId, data }) => {
+      const response = await createDailyComment(dailyId, data)
+      return response
+    },
+    onMutate: async ({ dailyId, data }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: dailyCommentKeys.byDaily(dailyId),
       })
+
+      // Snapshot the previous value
+      const previousComments = queryClient.getQueryData(
+        dailyCommentKeys.byDaily(dailyId)
+      )
+
+      // Optimistically update the cache
+      const optimisticComment = {
+        id: Date.now(), // Temporary ID
+        comment: data.comment,
+        parent_id: data.parent_id,
+        created_at: new Date().toISOString(),
+        user: queryClient.getQueryData(["currentUser"]) || {},
+        replies: [],
+      }
+
+      queryClient.setQueryData(dailyCommentKeys.byDaily(dailyId), old => {
+        const comments = old?.data || []
+        const newData = { data: [...comments, optimisticComment] }
+
+        return newData
+      })
+
+      return { previousComments }
+    },
+    onError: (err, { dailyId }, context) => {
+      console.error("❌ Error creating comment:", err)
+      if (context?.previousComments) {
+        queryClient.setQueryData(
+          dailyCommentKeys.byDaily(dailyId),
+          context.previousComments
+        )
+      }
+    },
+    onSettled: (data, error, { dailyId }) => {
+      // Always refetch after error or success to sync with server
       queryClient.invalidateQueries({
         queryKey: dailyCommentKeys.byDaily(dailyId),
       })
@@ -40,17 +79,13 @@ export const useCreateDailyComment = () => {
   })
 }
 
-// Mutation for updating a comment
 export const useUpdateDailyComment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ dailyId, commentId, data }) => 
+    mutationFn: ({ dailyId, commentId, data }) =>
       updateDailyComment(dailyId, commentId, data),
     onSuccess: (_, { dailyId }) => {
-      queryClient.invalidateQueries({
-        queryKey: dailyKeys.departmentHeadDaily(dailyId),
-      })
       queryClient.invalidateQueries({
         queryKey: dailyCommentKeys.byDaily(dailyId),
       })
@@ -58,21 +93,42 @@ export const useUpdateDailyComment = () => {
   })
 }
 
-// Mutation for deleting a comment
 export const useDeleteDailyComment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ dailyId, commentId }) => 
+    mutationFn: ({ dailyId, commentId }) =>
       deleteDailyComment(dailyId, commentId),
-    onSuccess: (_, { dailyId }) => {
-      queryClient.invalidateQueries({
-        queryKey: dailyKeys.departmentHeadDaily(dailyId),
+    onMutate: async ({ dailyId, commentId }) => {
+      await queryClient.cancelQueries({
+        queryKey: dailyCommentKeys.byDaily(dailyId),
       })
+
+      const previousComments = queryClient.getQueryData(
+        dailyCommentKeys.byDaily(dailyId)
+      )
+
+      // Optimistically remove the comment
+      queryClient.setQueryData(dailyCommentKeys.byDaily(dailyId), old => {
+        const comments = old?.data || []
+        return { data: comments.filter(comment => comment.id !== commentId) }
+      })
+
+      return { previousComments }
+    },
+    onError: (err, { dailyId }, context) => {
+      console.error("❌ Error deleting comment:", err)
+      if (context?.previousComments) {
+        queryClient.setQueryData(
+          dailyCommentKeys.byDaily(dailyId),
+          context.previousComments
+        )
+      }
+    },
+    onSettled: (_, __, { dailyId }) => {
       queryClient.invalidateQueries({
         queryKey: dailyCommentKeys.byDaily(dailyId),
       })
     },
   })
 }
-

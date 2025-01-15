@@ -22,7 +22,11 @@ const CommentSection = ({ daily, canComment }) => {
     isLoading: isLoadingComments,
     isError: isErrorComments,
     error: commentsError,
-  } = useGetDailyComments(daily?.id)
+    refetch: refetchComments,
+  } = useGetDailyComments(daily?.id, {
+    staleTime: 30000,
+    refetchOnWindowFocus: true,
+  })
 
   const rootComments = React.useMemo(() => {
     const comments = commentsData?.data || daily?.comments || []
@@ -31,7 +35,8 @@ const CommentSection = ({ daily, canComment }) => {
       comments.flatMap(comment => comment.replies || []).map(reply => reply.id)
     )
 
-    return comments.filter(comment => !replyIds.has(comment.id))
+    const roots = comments.filter(comment => !replyIds.has(comment.id))
+    return roots
   }, [commentsData?.data, daily?.comments])
 
   const handleSubmitComment = async e => {
@@ -47,8 +52,9 @@ const CommentSection = ({ daily, canComment }) => {
       })
       setNewComment("")
       setShowCommentForm(false)
-      toast.success("კომენტარი წარმატებით დაემატა")
+      await refetchComments()
     } catch (error) {
+      console.error("❌ Comment submission failed:", error)
       toast.error(
         error.response?.data?.message ||
           "კომენტარის დამატების დროს დაფიქსირდა შეცდომა"
@@ -56,7 +62,7 @@ const CommentSection = ({ daily, canComment }) => {
     }
   }
 
-  if (isLoadingComments || createCommentMutation.isPending) {
+  if (isLoadingComments) {
     return (
       <div className="bg-white shadow rounded-lg">
         <div className="p-6 flex justify-center">
@@ -67,6 +73,7 @@ const CommentSection = ({ daily, canComment }) => {
   }
 
   if (isErrorComments) {
+    console.error("❌ Error loading comments:", commentsError)
     return (
       <div className="bg-white shadow rounded-lg">
         <div className="p-6 text-center text-red-500">
@@ -83,7 +90,9 @@ const CommentSection = ({ daily, canComment }) => {
           <CommentHeader count={rootComments.length} />
           {canComment && !showCommentForm && (
             <button
-              onClick={() => setShowCommentForm(true)}
+              onClick={() => {
+                setShowCommentForm(true)
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] text-white rounded-lg transition-colors"
             >
               <Plus size={16} />

@@ -14,7 +14,10 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
   const createCommentMutation = useCreateDailyComment()
   const deleteCommentMutation = useDeleteDailyComment()
 
-  if (!comment) return null
+  if (!comment) {
+    console.warn("⚠️ Received null/undefined comment")
+    return null
+  }
 
   const handleSubmitReply = async e => {
     e.preventDefault()
@@ -30,8 +33,8 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
       })
       setReplyContent("")
       setIsReplying(false)
-      toast.success("პასუხი წარმატებით დაემატა")
     } catch (error) {
+      console.error("❌ Reply submission failed:", error)
       toast.error(
         error.response?.data?.message ||
           "პასუხის დამატების დროს დაფიქსირდა შეცდომა"
@@ -47,8 +50,8 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
         dailyId,
         commentId: comment.id,
       })
-      toast.success("კომენტარი წაიშალა")
     } catch (error) {
+      console.error("❌ Comment deletion failed:", error)
       toast.error(
         error.response?.data?.message ||
           "კომენტარის წაშლის დროს დაფიქსირდა შეცდომა"
@@ -78,7 +81,9 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
             <p className="mt-2 text-gray-700">{comment.comment}</p>
             <div className="mt-2 flex items-center gap-4">
               <button
-                onClick={() => setIsReplying(!isReplying)}
+                onClick={() => {
+                  setIsReplying(!isReplying)
+                }}
                 className="text-sm text-[#105D8D] hover:text-[#0D4D75] font-medium"
               >
                 პასუხის გაცემა
@@ -101,7 +106,10 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
             value={replyContent}
             onChange={e => setReplyContent(e.target.value)}
             onSubmit={handleSubmitReply}
-            onCancel={() => setIsReplying(false)}
+            onCancel={() => {
+              setIsReplying(false)
+              setReplyContent("")
+            }}
             isLoading={createCommentMutation.isPending}
             placeholder="დაწერე პასუხი..."
             submitText="პასუხის გაგზავნა"
