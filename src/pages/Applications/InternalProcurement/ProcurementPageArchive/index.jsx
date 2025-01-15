@@ -81,7 +81,7 @@ const ProcurementPageArchive = () => {
       isAdmin ||
       isDepartmentHead ||
       isDepartmentHeadAssistant ||
-      userDepartmentId === 17
+      userDepartmentId === 7
     )
   }, [isAdmin, isDepartmentHead, isDepartmentHeadAssistant, userDepartmentId])
 

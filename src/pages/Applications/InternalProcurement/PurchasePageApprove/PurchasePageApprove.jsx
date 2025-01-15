@@ -104,7 +104,7 @@ const PurchasePageApprove = () => {
       isAdmin ||
       isDepartmentHead ||
       isDepartmentHeadAssistant ||
-      userDepartmentId === 17
+      userDepartmentId === 7
     )
   }, [isAdmin, isDepartmentHead, isDepartmentHeadAssistant, userDepartmentId])
 
@@ -119,6 +119,8 @@ const PurchasePageApprove = () => {
     isLoading: isDepartmentPurchaseLoading,
   } = useGetDepartmentPurchases()
 
+  console.log(purchaseData, departmentPurchaseData)
+
   const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
     useUpdateProductStatus()
 
@@ -126,7 +128,7 @@ const PurchasePageApprove = () => {
     purchase => {
       return (
         isAdmin ||
-        (userDepartmentId === 17 &&
+        (userDepartmentId === 7 &&
           purchase.status === "pending products completion")
       )
     },
@@ -786,7 +788,7 @@ const PurchasePageApprove = () => {
           <MuiTable
             columns={columns}
             data={
-              isAdmin
+              (isAdmin || userDepartmentId === 7)
                 ? purchaseData?.data || []
                 : departmentPurchaseData?.data || []
             }
