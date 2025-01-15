@@ -73,10 +73,13 @@ const TaskList = () => {
         : [...(myTasksList?.data || [])]
 
     const filteredTasks = tasksToSort.filter(task => {
-      if (activeTab === "completed") {
-        return task.status === "Completed"
+      if (isITDepartment || hasEditPermission) {
+        if (activeTab === "completed") {
+          return task.status === "Completed"
+        }
+        return task.status !== "Completed"
       }
-      return task.status !== "Completed"
+      return true // Regular users see all their tasks
     })
 
     return filteredTasks.sort((a, b) => {
