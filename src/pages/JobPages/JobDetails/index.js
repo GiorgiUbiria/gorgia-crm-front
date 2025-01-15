@@ -37,29 +37,29 @@ const JobDetails = () => {
     },
   })
 
-  console.log("Task", task)
+  const taskData = task?.data
 
   const hasEditPermission = useMemo(() => {
-    if (!task) return false
+    if (!taskData) return false
 
     return (
       userRoles.includes("admin") ||
       (currentUser?.department_id === 5 &&
-        task.data.assigned_users?.some(user => user.id === currentUser?.id))
+        taskData.assigned_users?.some(user => user.id === currentUser?.id))
     )
-  }, [userRoles, currentUser, task])
+  }, [userRoles, currentUser, taskData])
 
   const isITDepartment = currentUser?.department_id === 5
 
   const canAccessTask = useMemo(() => {
-    if (!task || !currentUser) return false
+    if (!taskData || !currentUser) return false
     return (
       hasEditPermission ||
       isITDepartment ||
-      task.data.user.id === currentUser.id ||
-      task.data.assigned_users?.some(user => user.id === currentUser.id)
+      taskData.user.id === currentUser.id ||
+      taskData.assigned_users?.some(user => user.id === currentUser.id)
     )
-  }, [task, hasEditPermission, isITDepartment, currentUser])
+  }, [taskData, hasEditPermission, isITDepartment, currentUser])
 
   if (userLoading || taskLoading) {
     return (
@@ -73,24 +73,26 @@ const JobDetails = () => {
     )
   }
 
-  if (error || !task || !canAccessTask) {
+  if (error || !taskData || !canAccessTask) {
     navigate("/support/it-tasks")
     return null
   }
 
+  console.log("Rendering with taskData:", taskData)
+
   return (
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white shadow rounded-lg mb-6">
-        <TaskHeader task={task} />
+        <TaskHeader taskData={taskData} />
         <div className="p-6 flex justify-between items-center border-b border-gray-200">
-          <TaskStatus status={task.data.status} />
-          <TaskActions task={task} canEdit={hasEditPermission} />
+          <TaskStatus status={taskData.status} />
+          <TaskActions taskData={taskData} canEdit={hasEditPermission} />
         </div>
         <div className="p-6">
-          <TaskTimeline task={task} />
+          <TaskTimeline taskData={taskData} />
         </div>
       </div>
-      <CommentSection task={task} canComment={canAccessTask} />
+      <CommentSection taskData={taskData} canComment={canAccessTask} />
       <ToastContainer />
     </div>
   )

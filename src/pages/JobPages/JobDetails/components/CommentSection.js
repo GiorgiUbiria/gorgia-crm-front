@@ -9,7 +9,7 @@ import useCurrentUser from "../../../../hooks/useCurrentUser"
 import CommentThread from "./CommentThread"
 import { toast } from "react-toastify"
 
-const CommentSection = ({ task, canComment }) => {
+const CommentSection = ({ taskData, canComment }) => {
   const [newComment, setNewComment] = useState("")
   const { currentUser, isLoading: userLoading } = useCurrentUser()
 
@@ -17,7 +17,7 @@ const CommentSection = ({ task, canComment }) => {
     data: comments = [],
     isLoading: commentsLoading,
     error,
-  } = useGetTaskComments(task.data.id)
+  } = useGetTaskComments(taskData.id)
 
   const createCommentMutation = useCreateTaskComment()
 
@@ -27,9 +27,9 @@ const CommentSection = ({ task, canComment }) => {
 
     try {
       await createCommentMutation.mutateAsync({
-        taskId: task.data.id,
+        taskId: taskData.id,
         data: {
-          task_id: task.data.id,
+          task_id: taskData.id,
           comment_text: newComment,
         },
       })
@@ -102,7 +102,7 @@ const CommentSection = ({ task, canComment }) => {
                 key={comment.id}
                 comment={comment}
                 currentUser={currentUser}
-                taskId={task.data.id}
+                taskId={taskData.id}
                 canEdit={false}
               />
             ))

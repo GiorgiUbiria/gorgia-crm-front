@@ -3,22 +3,22 @@ import { Play, CheckCircle } from "lucide-react"
 import { useStartTask, useFinishTask } from "../../../../queries/tasks"
 import { toast } from "react-toastify"
 
-const TaskActions = ({ task, canEdit }) => {
+const TaskActions = ({ taskData, canEdit }) => {
   const startTaskMutation = useStartTask()
   const finishTaskMutation = useFinishTask()
 
-  if (!task) return null
+  if (!taskData) return null
   if (!canEdit) return null
 
   const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
 
   const canUpdateStatus =
     currentUser.department_id === 5 &&
-    task.data.assigned_users?.some(user => user.id === currentUser.id)
+    taskData.assigned_users?.some(user => user.id === currentUser.id)
 
   const handleStartTask = async () => {
     try {
-      await startTaskMutation.mutateAsync(task.data.id)
+      await startTaskMutation.mutateAsync(taskData.id)
       toast.success("დავალება დაწყებულია")
     } catch (error) {
       toast.error(
@@ -30,7 +30,7 @@ const TaskActions = ({ task, canEdit }) => {
 
   const handleFinishTask = async () => {
     try {
-      await finishTaskMutation.mutateAsync(task.data.id)
+      await finishTaskMutation.mutateAsync(taskData.id)
       toast.success("დავალება დასრულებულია")
     } catch (error) {
       toast.error(
@@ -48,7 +48,7 @@ const TaskActions = ({ task, canEdit }) => {
 
   return (
     <div className="flex gap-3">
-      {canUpdateStatus && task.data.status === "Pending" && (
+      {canUpdateStatus && taskData.status === "Pending" && (
         <button
           onClick={handleStartTask}
           className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.in_progress}`}
@@ -58,7 +58,7 @@ const TaskActions = ({ task, canEdit }) => {
         </button>
       )}
 
-      {canUpdateStatus && task.data.status === "In Progress" && (
+      {canUpdateStatus && taskData.status === "In Progress" && (
         <button
           onClick={handleFinishTask}
           className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.completed}`}

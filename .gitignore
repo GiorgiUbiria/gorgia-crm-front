@@ -34,5 +34,5 @@ debug.log
 .env.development
 .env.production
 
-ServiceToQuery.md
-CrmTable.md
+QueryStructure.md
+CrmUtilities.md

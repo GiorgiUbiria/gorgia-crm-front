@@ -2,7 +2,9 @@ import React from "react"
 import { Clock, CheckCircle, XCircle } from "lucide-react"
 import { formatDate, getTimeElapsed } from "../../../../utils/dateUtils"
 
-const TaskTimeline = ({ task }) => {
+const TaskTimeline = ({ taskData }) => {
+  if (!taskData) return null
+
   const getTimelineIcon = status => {
     switch (status) {
       case "Completed":
@@ -23,36 +25,36 @@ const TaskTimeline = ({ task }) => {
           <div>
             <p className="text-sm font-medium text-gray-900">შეიქმნა</p>
             <p className="text-sm text-gray-500">
-              {formatDate(task.data.created_at)}
+              {formatDate(taskData.created_at)}
             </p>
           </div>
         </div>
 
-        {task.data.status === "In Progress" && (
+        {taskData.status === "In Progress" && (
           <div className="flex items-center gap-3">
             <Clock size={20} className="text-[#105D8D]" />
             <div>
               <p className="text-sm font-medium text-gray-900">დაიწყო</p>
               <p className="text-sm text-gray-500">
-                {formatDate(task.data.updated_at)}
+                {formatDate(taskData.updated_at)}
               </p>
             </div>
           </div>
         )}
 
-        {(task.data.status === "Completed" ||
-          task.data.status === "Cancelled") && (
+        {(taskData.status === "Completed" ||
+          taskData.status === "Cancelled") && (
           <div className="flex items-center gap-3">
-            {getTimelineIcon(task.data.status)}
+            {getTimelineIcon(taskData.status)}
             <div>
               <p className="text-sm font-medium text-gray-900">
-                {task.data.status === "Completed" ? "დასრულდა" : "გაუქმდა"}
+                {taskData.status === "Completed" ? "დასრულდა" : "გაუქმდა"}
               </p>
               <p className="text-sm text-gray-500">
-                {formatDate(task.data.updated_at)}
+                {formatDate(taskData.updated_at)}
                 <span className="ml-2 text-[#105D8D]">
                   (დრო:{" "}
-                  {getTimeElapsed(task.data.created_at, task.data.updated_at)})
+                  {getTimeElapsed(taskData.created_at, taskData.updated_at)})
                 </span>
               </p>
             </div>
