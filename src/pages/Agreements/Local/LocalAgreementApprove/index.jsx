@@ -137,9 +137,8 @@ const LocalAgreementApprove = () => {
           executor_position: agreement.executor_position,
           executor_bank_account: agreement.executor_bank_account,
           executor_bank_name: agreement.executor_bank_name,
-          agreement_automatic_renewal:
-            agreement.agreement_automatic_renewal === 1 ? "კი" : "არა",
-          exclusivity: agreement.exclusivity === 1 ? "კი" : "არა",
+          agreement_automatic_renewal: agreement.agreement_automatic_renewal ? "კი" : "არა",
+          exclusivity: agreement.exclusivity ? "კი" : "არა",
           agreement_active_term: agreement.agreement_active_term,
           exclusive_placement: agreement.exclusive_placement,
           executor_bank_swift: agreement.executor_bank_swift,

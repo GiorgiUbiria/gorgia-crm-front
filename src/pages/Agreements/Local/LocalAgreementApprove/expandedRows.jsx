@@ -4,7 +4,6 @@ import { BsBank, BsCalendar, BsMap, BsPerson } from "react-icons/bs"
 
 export const expandedRows = row => {
   if (!row) return null
-
   return (
     <div className="p-4 bg-light rounded">
       {row.expanded.rejection_reason && (
