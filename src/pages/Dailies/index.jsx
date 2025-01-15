@@ -1,12 +1,21 @@
-import React from "react"
-import { CrmTableTest } from "components/CrmTableTest"
+import React, { useState } from "react"
+import { CrmTable } from "components/CrmTable"
 import {
   useGetMyDepartmentHeadDailies,
   useGetDepartmentHeadDailies,
 } from "queries/daily"
 import useUserRoles from "hooks/useUserRoles"
+import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
+import { AddDailyForm } from "./components/form"
+import { renderSubComponent } from "./components/subComponent"
+import { PlusCircledIcon } from "@radix-ui/react-icons"
+import CrmSpinner from "components/CrmSpinner"
+import { useNavigate } from "react-router-dom"
 
 const Dailies = () => {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const navigate = useNavigate()
+
   const roles = useUserRoles()
   const isAdminOrDepartmentHead =
     roles.includes("admin") || roles.includes("department_head")
@@ -22,6 +31,13 @@ const Dailies = () => {
     : userDailiesData
   const isLoading = isAdminOrDepartmentHead ? adminIsLoading : userIsLoading
 
+  const handleRowClick = React.useCallback(
+    row => {
+      navigate(`/tools/daily-results/${row.original.id}`)
+    },
+    [navigate]
+  )
+
   const transformedDailies = React.useMemo(() => {
     return (
       dailiesData?.dailies?.map(daily => ({
@@ -31,69 +47,124 @@ const Dailies = () => {
     )
   }, [dailiesData])
 
-  console.log(transformedDailies)
-
   const columns = React.useMemo(
     () => [
+      {
+        id: "expander",
+        header: () => null,
+        cell: ({ row }) => {
+          return row.getCanExpand() ? (
+            <button
+              {...{
+                onClick: e => {
+                  e.stopPropagation()
+                  row.getToggleExpandedHandler()(e)
+                },
+                style: { cursor: "pointer" },
+              }}
+            >
+              {row.getIsExpanded() ? "👇" : "👉"}
+            </button>
+          ) : (
+            "🔵"
+          )
+        },
+        enableColumnFilter: false,
+        enableSorting: false,
+      },
       {
         accessorFn: row => row.id,
         id: "id",
         cell: info => info.getValue(),
         header: () => <span>#</span>,
+        enableColumnFilter: false,
+        sortingFn: "basic",
+        sortDescFirst: true,
       },
       {
         accessorFn: row => row.user_full_name,
         id: "user_full_name",
         cell: info => info.getValue(),
         header: () => <span>სახელი/გვარი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
       },
       {
         accessorKey: "date",
         header: () => "თარიღი",
+        cell: info => new Date(info.getValue()).toLocaleDateString(),
+        enableColumnFilter: false,
+        sortingFn: "datetime",
+        sortDescFirst: true,
       },
       {
         accessorKey: "description",
         header: () => <span>აღწერა</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
       },
       {
         accessorFn: row => row.department.name,
+        id: "department",
         header: "დეპარტამენტი",
         meta: {
           filterVariant: "select",
         },
+        enableSorting: false,
       },
     ],
     []
   )
 
   if (isLoading) {
-    return "..."
+    return <CrmSpinner />
   }
 
-  return <CrmTableTest columns={columns} data={transformedDailies} />
+  return (
+    <>
+      <div className="mb-4">
+        <DialogButton onClick={() => setIsAddModalOpen(true)}>
+          <div className="flex gap-x-2 items-center">
+            <span>დღის შედეგის დამატება</span> <PlusCircledIcon />
+          </div>
+        </DialogButton>
+      </div>
+
+      <CrmDialog
+        isOpen={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+        title="დღის შედეგის დამატება"
+        description="შეავსეთ ფორმა დღის შედეგის დასამატებლად"
+        footer={
+          <>
+            <DialogButton
+              variant="secondary"
+              onClick={() => setIsAddModalOpen(false)}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton type="submit" form="dailyForm">
+              დამატება
+            </DialogButton>
+          </>
+        }
+      >
+        <AddDailyForm onSuccess={() => setIsAddModalOpen(false)} />
+      </CrmDialog>
+
+      <CrmTable
+        columns={columns}
+        data={transformedDailies}
+        renderSubComponent={renderSubComponent}
+        getRowCanExpand={() => true}
+        onRowClick={handleRowClick}
+      />
+    </>
+  )
 }
 
 export default Dailies
-
-export function IndeterminateCheckbox({
-  indeterminate,
-  className = "",
-  ...rest
-}) {
-  const ref = React.useRef(null)
-
-  React.useEffect(() => {
-    if (typeof indeterminate === "boolean") {
-      ref.current.indeterminate = !rest.checked && indeterminate
-    }
-  }, [ref, indeterminate])
-
-  return (
-    <input
-      type="checkbox"
-      ref={ref}
-      className={className + " cursor-pointer"}
-      {...rest}
-    />
-  )
-}
