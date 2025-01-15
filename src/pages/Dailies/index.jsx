@@ -1,10 +1,6 @@
 import React, { useState } from "react"
 import { CrmTable } from "components/CrmTable"
-import {
-  useGetMyDepartmentHeadDailies,
-  useGetDepartmentHeadDailies,
-} from "queries/daily"
-import useUserRoles from "hooks/useUserRoles"
+import { useGetDepartmentHeadDailies } from "queries/daily"
 import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
 import { AddDailyForm } from "./components/form"
 import { renderSubComponent } from "./components/subComponent"
@@ -15,21 +11,8 @@ import { useNavigate } from "react-router-dom"
 const Dailies = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const navigate = useNavigate()
-
-  const roles = useUserRoles()
-  const isAdminOrDepartmentHead =
-    roles.includes("admin") || roles.includes("department_head")
-
-  const { data: adminDailiesData, isLoading: adminIsLoading } =
+  const { data: dailiesData, isLoading: isLoading } =
     useGetDepartmentHeadDailies()
-
-  const { data: userDailiesData, isLoading: userIsLoading } =
-    useGetMyDepartmentHeadDailies()
-
-  const dailiesData = isAdminOrDepartmentHead
-    ? adminDailiesData
-    : userDailiesData
-  const isLoading = isAdminOrDepartmentHead ? adminIsLoading : userIsLoading
 
   const handleRowClick = React.useCallback(
     row => {
