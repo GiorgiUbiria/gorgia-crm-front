@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { createHrDocument } from "services/hrDocument"
 import * as Yup from "yup"
-import moment from "moment"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import useFetchUsers from "hooks/useFetchUsers"
@@ -13,6 +12,7 @@ import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
 import { Button } from "reactstrap"
 import { useNavigate } from "react-router-dom"
 import DatePicker from "components/DatePicker"
+import { subMonths, isBefore } from "date-fns"
 
 const DOCUMENT_TYPES = {
   PAID_EMPLOYMENT: "ხელფასიანი ცნობა",
@@ -22,16 +22,16 @@ const DOCUMENT_TYPES = {
 }
 
 const REGIONS = [
-  'თბილისი',
-  'ბათუმი',
-  'ქუთაისი',
-  'ზუგდიდი',
-  'თელავი',
-  'მარნეული',
-  'რუსთავი',
-  'გორი',
-  'საჩხერე'
-];
+  "თბილისი",
+  "ბათუმი",
+  "ქუთაისი",
+  "ზუგდიდი",
+  "თელავი",
+  "მარნეული",
+  "რუსთავი",
+  "გორი",
+  "საჩხერე",
+]
 
 const isPaidDocument = type => {
   return (
@@ -49,8 +49,8 @@ const isEmploymentDocument = type => {
 
 const hasWorkedSixMonths = startDate => {
   if (!startDate) return false
-  const sixMonthsAgo = moment().subtract(6, "months")
-  return moment(startDate).isBefore(sixMonthsAgo)
+  const sixMonthsAgo = subMonths(new Date(), 6)
+  return isBefore(new Date(startDate), sixMonthsAgo)
 }
 
 const getInitialValues = (activeTab, currentUser) => {
@@ -122,12 +122,13 @@ const HrPage = () => {
   const [activeTab, setActiveTab] = useState("1")
   const { isAdmin } = usePermissions()
   const isHrMember = currentUser?.department_id === 8
-  const isHrDepartmentHead = isHrMember && currentUser?.role === "department_head"
-  
+  const isHrDepartmentHead =
+    isHrMember && currentUser?.role === "department_head"
+
   const { users } = useFetchUsers({
-    enabled: activeTab === "2" && (isAdmin || isHrMember || isHrDepartmentHead)
+    enabled: activeTab === "2" && (isAdmin || isHrMember || isHrDepartmentHead),
   })
-  
+
   const [selectedUser, setSelectedUser] = useState(null)
   const [startedDate, setStartedDate] = useState({
     started_date: "",
@@ -266,27 +267,14 @@ const HrPage = () => {
         </div>
       </div>
       <div>
-        <Label className="form-label">
-          რეგიონი
-        </Label>
-        <Field
-          as="select"
-          name="region"
-          className="form-select"
-        >
-          <option value="">
-            აირჩიეთ რეგიონი
-          </option>
-          {Object.entries(REGIONS).map(
-            ([key, type]) => (
-              <option
-                key={key}
-                value={type}
-              >
-                {type}
-              </option>
-            )
-          )}
+        <Label className="form-label">რეგიონი</Label>
+        <Field as="select" name="region" className="form-select">
+          <option value="">აირჩიეთ რეგიონი</option>
+          {Object.entries(REGIONS).map(([key, type]) => (
+            <option key={key} value={type}>
+              {type}
+            </option>
+          ))}
         </Field>
         <ErrorMessage
           name="region"
@@ -297,8 +285,8 @@ const HrPage = () => {
 
       {/* User Info */}
       <div className="row g-3 mb-4 mt-2">
-        {renderUserInfo(currentUser, 'პირადი ნომერი', 'id_number', isAdmin)}
-        {renderUserInfo(currentUser, 'პოზიცია', 'position', isAdmin)}
+        {renderUserInfo(currentUser, "პირადი ნომერი", "id_number", isAdmin)}
+        {renderUserInfo(currentUser, "პოზიცია", "position", isAdmin)}
       </div>
 
       {/* Purpose field for paid documents */}

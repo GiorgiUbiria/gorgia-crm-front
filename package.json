@@ -5,7 +5,6 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
-    "@faker-js/faker": "^9.3.0",
     "@fullcalendar/core": "^6.1.8",
     "@fullcalendar/daygrid": "^6.1.8",
     "@fullcalendar/interaction": "^6.1.8",
@@ -22,18 +21,18 @@
     "@tanstack/react-form": "^0.41.2",
     "@tanstack/react-query": "^5.62.10",
     "@tanstack/react-table": "^8.20.6",
+    "ajv": "^6.12.6",
+    "ajv-keywords": "^3.5.2",
     "autoprefixer": "^10.4.20",
     "axios": "^1.4.0",
     "bootstrap": "5.3.2",
     "boxicons": "^2.1.4",
     "classnames": "^2.3.2",
-    "eslint": "^8.46.0",
+    "date-fns": "^4.1.0",
     "formik": "^2.4.2",
     "laravel-echo": "^1.17.1",
     "lodash": "^4.17.21",
     "lucide-react": "^0.462.0",
-    "moment": "^2.29.4",
-    "moment-timezone": "^0.5.46",
     "postcss": "^8.4.49",
     "prop-types": "^15.8.1",
     "pusher-js": "^8.4.0-rc2",
@@ -66,13 +65,15 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build --max_old_space_size=8000 build",
+    "build": "set GENERATE_SOURCEMAP=false && react-scripts --max_old_space_size=12288 build",
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "clean": "rm -rf node_modules package-lock.json && npm cache clean --force && npm install",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write \"**/*.{js,jsx,json,md,html,css,less,scss}\"",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "knip": "knip"
+    "check-deps": "npx depcheck"
   },
   "eslintConfig": {
     "extends": [
@@ -125,19 +126,21 @@
     ]
   },
   "resolutions": {
-    "moment": "2.29.1",
-    "autoprefixer": "10.4.5"
+    "autoprefixer": "10.4.5",
+    "typescript": "4.9.5",
+    "ajv": "6.12.6",
+    "ajv-keywords": "3.5.2"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.62.9",
     "@types/node": "^22.10.5",
+    "eslint": "^8.46.0",
     "eslint-config-standard-react": "^9.2.0",
     "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-react-hooks": "^5.1.0",
-    "knip": "^5.42.0",
     "prettier": "^2.1.1",
     "source-map-explorer": "^2.5.3",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.3"
+    "typescript": "4.9.5"
   }
 }

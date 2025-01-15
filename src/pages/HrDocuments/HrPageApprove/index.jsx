@@ -11,9 +11,9 @@ import {
 import { TabContent, Label, Spinner } from "reactstrap"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import DatePicker from "components/DatePicker"
-import moment from "moment"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import { subMonths, isBefore } from "date-fns"
 
 const statusMap = {
   in_progress: {
@@ -347,8 +347,8 @@ const HrPageApprove = () => {
 
   const hasWorkedSixMonths = startDate => {
     if (!startDate) return false
-    const sixMonthsAgo = moment().subtract(6, "months")
-    return moment(startDate).isBefore(sixMonthsAgo)
+    const sixMonthsAgo = subMonths(new Date(), 6)
+    return isBefore(new Date(startDate), sixMonthsAgo)
   }
 
   const isDocumentTypeDisabled = (type, started) => {

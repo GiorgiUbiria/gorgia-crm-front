@@ -15,7 +15,6 @@ import {
   Button,
   Spinner,
 } from "reactstrap"
-import { useTable, usePagination, useSortBy } from "react-table"
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa"
 import DeleteModal from "components/Common/DeleteModal"
 import {
@@ -25,7 +24,6 @@ import {
   deleteVisitor,
 } from "../../services/visitorsTrafficService"
 import Breadcrumbs from "components/Common/Breadcrumb"
-import moment from "moment"
 import * as XLSX from "xlsx"
 
 const VisitorsTraffic = () => {
