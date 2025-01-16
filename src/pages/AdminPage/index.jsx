@@ -1,14 +1,10 @@
 import React, { useState } from "react"
-import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap"
-import classnames from "classnames"
+import { TabContent, TabPane } from "reactstrap"
 import UsersTab from "./UsersTab"
 import DepartmentsTab from "./DepartmentsTab"
 import { usePermissions } from "hooks/usePermissions"
 import useFetchUser from "hooks/useFetchUser"
-import {
-  useGetDepartments,
-  useGetDepartmentMembers,
-} from "../../queries/admin"
+import { useGetDepartments, useGetDepartmentMembers } from "../../queries/admin"
 import { useGetUsers } from "../../queries/user"
 
 const AdminPage = () => {
@@ -64,40 +60,32 @@ const AdminPage = () => {
         <div className="p-2 sm:p-4 md:p-6">
           {isAdmin ? (
             <>
-              <Nav
-                tabs
-                className="nav-tabs-custom nav-justified flex flex-wrap"
-              >
-                <NavItem className="w-1/2">
-                  <NavLink
-                    className={classnames(
-                      "text-sm sm:text-base py-2 px-1 sm:px-4",
-                      { active: activeTab === "1" }
-                    )}
-                    onClick={() => toggle("1")}
-                  >
-                    <span>დეპარტამენტები</span>
-                  </NavLink>
-                </NavItem>
-                <NavItem className="w-1/2">
-                  <NavLink
-                    className={classnames(
-                      "text-sm sm:text-base py-2 px-1 sm:px-4",
-                      { active: activeTab === "2" }
-                    )}
-                    onClick={() => toggle("2")}
-                  >
-                    <span>მომხმარებლები</span>
-                  </NavLink>
-                </NavItem>
-              </Nav>
+              <div className="flex w-full border-b border-gray-200 dark:border-gray-700 mb-4">
+                <button
+                  className={`w-1/2 text-sm sm:text-base py-2 px-1 sm:px-4 ${
+                    activeTab === "1"
+                      ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  }`}
+                  onClick={() => toggle("1")}
+                >
+                  დეპარტამენტები
+                </button>
+                <button
+                  className={`w-1/2 text-sm sm:text-base py-2 px-1 sm:px-4 ${
+                    activeTab === "2"
+                      ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  }`}
+                  onClick={() => toggle("2")}
+                >
+                  მომხმარებლები
+                </button>
+              </div>
 
               <TabContent activeTab={activeTab} className="p-2 sm:p-3">
                 <TabPane tabId="1">
-                  <DepartmentsTab
-                    departments={departments}
-                    users={users}
-                  />
+                  <DepartmentsTab departments={departments} users={users} />
                 </TabPane>
 
                 <TabPane tabId="2">
@@ -128,7 +116,7 @@ const AdminPage = () => {
             />
           ) : (
             <div className="alert alert-warning w-full mx-auto">
-              Unauthorized access. Please contact administrator.
+              თქვენ არ გაქვთ წვდომა!
             </div>
           )}
         </div>

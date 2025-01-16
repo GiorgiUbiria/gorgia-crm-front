@@ -4,12 +4,14 @@ import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
 import {
   AddButton,
   DeleteButton,
+  DownloadExcelButton,
   EditButton,
 } from "components/CrmActionButtons"
 import { AssignDepartmentHeadForm } from "./components/assign"
 import { AddDepartmentForm } from "./components/add"
 import { EditDepartmentForm } from "./components/edit"
 import { DeleteDepartmentForm } from "./components/delete"
+import * as XLSX from "xlsx"
 
 const DepartmentsTab = ({ departments = [], users }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -87,9 +89,10 @@ const DepartmentsTab = ({ departments = [], users }) => {
         header: "მოქმედებები",
         cell: ({ row }) => {
           return (
-            <div className="flex items-center gap-x-2">
+            <div className="flex items-center gap-x-1 max-w-full">
               <DialogButton
                 variant="info"
+                size="sm"
                 onClick={() =>
                   setIsAssignHeadModalOpen({
                     isOpen: true,
@@ -98,10 +101,11 @@ const DepartmentsTab = ({ departments = [], users }) => {
                   })
                 }
               >
-                <EditButton label="მიბმა" />
+                <EditButton label="მიბმა" size="sm" />
               </DialogButton>
               <DialogButton
                 variant="info"
+                size="sm"
                 onClick={() =>
                   setIsEditModalOpen({
                     isOpen: true,
@@ -109,10 +113,11 @@ const DepartmentsTab = ({ departments = [], users }) => {
                   })
                 }
               >
-                <EditButton />
+                <EditButton size="sm" />
               </DialogButton>
               <DialogButton
                 variant="danger"
+                size="sm"
                 onClick={() =>
                   setIsDeleteModalOpen({
                     isOpen: true,
@@ -120,7 +125,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
                   })
                 }
               >
-                <DeleteButton />
+                <DeleteButton size="sm" />
               </DialogButton>
             </div>
           )
@@ -130,12 +135,28 @@ const DepartmentsTab = ({ departments = [], users }) => {
     []
   )
 
+  const exportToExcel = () => {
+    const data = [
+      ["სახელი", "დეპარტამენტის უფროსი"],
+      ...transformedDepartments.map(department => [
+        department.name,
+        department.department_head,
+      ]),
+    ]
+
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Departments")
+    XLSX.writeFile(wb, "დეპარტამენტები.xlsx")
+  }
+
   return (
     <>
-      <div className="mb-4">
-        <DialogButton onClick={() => setIsAddModalOpen(true)}>
-          <AddButton />
+      <div className="mb-4 flex gap-x-2">
+        <DialogButton size="sm" onClick={() => setIsAddModalOpen(true)}>
+          <AddButton size="sm" />
         </DialogButton>
+        <DownloadExcelButton onClick={exportToExcel} />
       </div>
       <CrmDialog
         isOpen={isAddModalOpen}
