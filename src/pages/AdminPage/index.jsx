@@ -46,12 +46,6 @@ const AdminPage = () => {
     }
   }
 
-  const handleDepartmentDeleted = () => {
-    if (isAdmin) {
-      refetchUsers()
-    }
-  }
-
   if (!currentUser) {
     return (
       <div className="bg-gray-50 min-h-screen w-full">
@@ -102,7 +96,6 @@ const AdminPage = () => {
                 <TabPane tabId="1">
                   <DepartmentsTab
                     departments={departments}
-                    onDepartmentDeleted={handleDepartmentDeleted}
                     users={users}
                   />
                 </TabPane>

@@ -19,6 +19,7 @@ import {
 export const adminKeys = {
   all: ["admin"],
   departments: () => [...adminKeys.all, "departments"],
+  department: id => [...adminKeys.departments(), "department", id],
   users: () => [...adminKeys.all, "users"],
   departmentMembers: departmentId => [
     ...adminKeys.all,
@@ -33,16 +34,17 @@ export const useGetDepartments = (options = {}) => {
     queryKey: adminKeys.departments(),
     queryFn: getDepartments,
     select: response => response.data.data,
+    refetchOnWindowFocus: true,
+    keepPreviousData: true,
     ...options,
   })
 }
 
-export const useGetAdminUsers = (options = {}) => {
+export const useGetAdminUsers = () => {
   return useQuery({
     queryKey: adminKeys.users(),
     queryFn: getUsers,
     select: response => response.data.users,
-    ...options,
   })
 }
 
@@ -73,8 +75,11 @@ export const useUpdateDepartment = () => {
 
   return useMutation({
     mutationFn: data => updateDepartment(data),
-    onSuccess: () => {
+    onSuccess: (_, { departmentId }) => {
       queryClient.invalidateQueries({ queryKey: adminKeys.departments() })
+      queryClient.invalidateQueries({
+        queryKey: adminKeys.department(departmentId),
+      })
     },
   })
 }
@@ -87,6 +92,9 @@ export const useAssignHead = () => {
     onSuccess: (_, { departmentId }) => {
       queryClient.invalidateQueries({ queryKey: adminKeys.departments() })
       queryClient.invalidateQueries({
+        queryKey: adminKeys.department(departmentId),
+      })
+      queryClient.invalidateQueries({
         queryKey: adminKeys.departmentMembers(departmentId),
       })
     },
@@ -97,9 +105,12 @@ export const useDeleteDepartment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: id => deleteDepartment(id),
+    mutationFn: id => deleteDepartment(id.department_id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.departments() })
+    },
+    onError: (error, id) => {
+      console.log(error, id)
     },
   })
 }
@@ -180,4 +191,4 @@ export const useUpdateDepartmentMember = () => {
       })
     },
   })
-} 
+}

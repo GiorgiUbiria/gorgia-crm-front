@@ -18,10 +18,11 @@ export const createDepartment = async data => {
 }
 
 export const updateDepartment = async departmentData => {
-  const { id, name, description } = departmentData
-  return defaultInstance.put(`/api/admin/department/${id}/update`, {
+  const { departmentId, name, description } = departmentData
+  return defaultInstance.put(`/api/admin/department/${departmentId}/update`, {
     name,
     description,
+    department_id: departmentId,
   })
 }
 

@@ -204,6 +204,8 @@ const EditUserModal = ({
           "position",
           "mobile_number",
           "working_start_date",
+          "password",
+          "confirm_password",
         ]
         Object.keys(updateData).forEach(key => {
           if (!allowedFields.includes(key)) {
