@@ -49,9 +49,10 @@ export const cancelVacation = async (id, data) => {
   return defaultInstance.post(`/api/vacation/${id}/cancel`, data)
 }
 
-export const updateVacationStatus = async (id, status) => {
+export const updateVacationStatus = async (id, status, rejection_reason) => {
   return defaultInstance.put(`/api/vacation/${id}/status`, {
     approval_status: status,
+    rejection_reason: rejection_reason,
   })
 }
 

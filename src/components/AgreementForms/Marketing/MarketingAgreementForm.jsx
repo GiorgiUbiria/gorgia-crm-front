@@ -102,14 +102,6 @@ const MarketingAgreementForm = ({ onSuccess }) => {
         break
       case "marketing_service_start_date":
         if (!value) errorMsg = "ველი აუცილებელია"
-        else {
-          const today = new Date()
-          today.setHours(0, 0, 0, 0)
-          const selectedDate = new Date(value)
-          if (selectedDate < today) {
-            errorMsg = "თარიღი უნდა იყოს დღევანდელი ან მომავალი"
-          }
-        }
         break
       case "marketing_service_end_date":
         if (!value) errorMsg = "ველი აუცილებელია"

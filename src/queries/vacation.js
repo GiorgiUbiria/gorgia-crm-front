@@ -94,7 +94,8 @@ export const useUpdateVacationStatus = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, status }) => updateVacationStatus(id, status),
+    mutationFn: ({ id, status, rejection_reason }) =>
+      updateVacationStatus(id, status, rejection_reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vacationKeys.all })
     },
