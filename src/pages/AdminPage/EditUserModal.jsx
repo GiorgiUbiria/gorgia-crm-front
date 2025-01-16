@@ -25,7 +25,7 @@ const initialFormData = {
   sur_name: "",
   email: "",
   password: "",
-  confirm_password: "",
+  password_confirmation: "",
   mobile_number: "",
   position: "",
   department_id: "",
@@ -97,11 +97,11 @@ const EditUserModal = ({
         department_id: user.department_id || "",
         position: user.position || "",
         location: user.location || "",
-        working_start_date: user.working_start_date || "",
+        working_start_date: user.working_start_date || null,
         date_of_birth: user.date_of_birth || "",
         id_number: user.id_number || "",
         password: "",
-        confirm_password: "",
+        password_confirmation: "",
       }))
     }
   }, [user])
@@ -151,8 +151,8 @@ const EditUserModal = ({
       if (formData.password.length < 6) {
         newErrors.password = "პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო."
       }
-      if (formData.password !== formData.confirm_password) {
-        newErrors.confirm_password = "პაროლები არ ემთხვევა."
+      if (formData.password !== formData.password_confirmation) {
+        newErrors.password_confirmation = "პაროლები არ ემთხვევა."
       }
     }
 
@@ -196,7 +196,7 @@ const EditUserModal = ({
 
       if (!formData.password) {
         delete updateData.password
-        delete updateData.confirm_password
+        delete updateData.password_confirmation
       }
 
       if (isDepartmentHead) {
@@ -205,19 +205,21 @@ const EditUserModal = ({
           "mobile_number",
           "working_start_date",
           "password",
-          "confirm_password",
+          "password_confirmation",
         ]
         Object.keys(updateData).forEach(key => {
           if (!allowedFields.includes(key)) {
             delete updateData[key]
           }
         })
+        console.log("Updating department member", updateData)
         await updateDepartmentMemberMutation({
           departmentId: currentUserDepartmentId,
           userId: user.id,
           data: updateData,
         })
       } else {
+        console.log("Updating user", updateData)
         await updateUserMutation({
           id: user.id,
           data: updateData,
@@ -326,15 +328,15 @@ const EditUserModal = ({
             <div className="row">
               <div className="col-md-6">
                 <FormGroup>
-                  <Label for="confirm_password">გაიმეორეთ პაროლი</Label>
+                  <Label for="password_confirmation">გაიმეორეთ პაროლი</Label>
                   <div className="position-relative">
                     <Input
-                      id="confirm_password"
-                      name="confirm_password"
+                      id="password_confirmation"
+                      name="password_confirmation"
                       type={showPassword ? "text" : "password"}
-                      value={formData.confirm_password}
+                      value={formData.password_confirmation}
                       onChange={handleChange}
-                      invalid={!!errors.confirm_password}
+                      invalid={!!errors.password_confirmation}
                     />
                     <IconButton
                       onClick={togglePasswordVisibility}
@@ -348,8 +350,10 @@ const EditUserModal = ({
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
-                    {errors.confirm_password && (
-                      <FormFeedback>{errors.confirm_password}</FormFeedback>
+                    {errors.password_confirmation && (
+                      <FormFeedback>
+                        {errors.password_confirmation}
+                      </FormFeedback>
                     )}
                   </div>
                 </FormGroup>
