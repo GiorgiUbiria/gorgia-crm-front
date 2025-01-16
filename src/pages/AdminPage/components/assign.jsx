@@ -23,12 +23,13 @@ export const AssignDepartmentHeadForm = ({
   onSuccess,
   users,
   department_id,
+  currentHeadId,
 }) => {
   const assignHeadMutation = useAssignHead()
-
+  console.log(currentHeadId)
   const form = useForm({
     defaultValues: {
-      userId: "",
+      userId: currentHeadId || null,
     },
     onSubmit: async ({ value }) => {
       const payload = { ...value, departmentId: department_id }

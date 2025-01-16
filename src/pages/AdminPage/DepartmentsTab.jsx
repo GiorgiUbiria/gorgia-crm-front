@@ -16,6 +16,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
   const [isAssignHeadModalOpen, setIsAssignHeadModalOpen] = useState({
     isOpen: false,
     departmentId: null,
+    currentHeadId: null,
   })
   const [isEditModalOpen, setIsEditModalOpen] = useState({
     isOpen: false,
@@ -38,6 +39,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
           "" + department.department_head?.sur_name ||
           ""
         : "არ არის მითითებული",
+      department_head_id: department.department_head_id,
     }))
   }, [departments])
 
@@ -92,6 +94,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
                   setIsAssignHeadModalOpen({
                     isOpen: true,
                     departmentId: row.original.id,
+                    currentHeadId: row.original.department_head_id,
                   })
                 }
               >
@@ -165,7 +168,11 @@ const DepartmentsTab = ({ departments = [], users }) => {
             <DialogButton
               variant="secondary"
               onClick={() =>
-                setIsAssignHeadModalOpen({ isOpen: false, departmentId: null })
+                setIsAssignHeadModalOpen({
+                  isOpen: false,
+                  departmentId: null,
+                  currentHeadId: null,
+                })
               }
             >
               გაუქმება
@@ -178,10 +185,15 @@ const DepartmentsTab = ({ departments = [], users }) => {
       >
         <AssignDepartmentHeadForm
           onSuccess={() =>
-            setIsAssignHeadModalOpen({ isOpen: false, departmentId: null })
+            setIsAssignHeadModalOpen({
+              isOpen: false,
+              departmentId: null,
+              currentHeadId: null,
+            })
           }
           users={users}
           department_id={isAssignHeadModalOpen.departmentId}
+          currentHeadId={isAssignHeadModalOpen.currentHeadId}
         />
       </CrmDialog>
       <CrmDialog

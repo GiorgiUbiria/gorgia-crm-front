@@ -24,8 +24,8 @@ export const EditDepartmentForm = ({ onSuccess, department }) => {
 
   const form = useForm({
     defaultValues: {
-      name: department.name,
-      description: department.description,
+      name: department?.name,
+      description: department?.description,
     },
     onSubmit: async ({ value }) => {
       await updateDepartmentMutation.mutateAsync({
