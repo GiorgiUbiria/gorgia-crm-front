@@ -73,7 +73,7 @@ export const AssignDepartmentHeadForm = ({
               >
                 {users.map(user => (
                   <option key={user.id} value={user.id}>
-                    <span> {user.name + user.sur_name}</span>
+                    <span> {user.name + " " + user.sur_name}</span>
                   </option>
                 ))}
               </select>

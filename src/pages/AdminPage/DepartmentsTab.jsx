@@ -36,7 +36,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
       description: department.description || "არ არის მითითებული",
       department_head: department.department_head
         ? department.department_head?.name ||
-          "" + department.department_head?.sur_name ||
+          "" + " " + department.department_head?.sur_name ||
           ""
         : "არ არის მითითებული",
       department_head_id: department.department_head_id,
