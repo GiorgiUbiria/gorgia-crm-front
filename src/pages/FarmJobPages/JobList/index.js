@@ -1,296 +1,293 @@
-import React, { Fragment, useMemo, useState } from "react"
-import "bootstrap/dist/css/bootstrap.min.css"
-import { Row, Col, Nav, NavItem, NavLink } from "reactstrap"
-import { ToastContainer } from "react-toastify"
-import { Link } from "react-router-dom"
-
-import DeleteModal from "./DeleteModal"
-import TaskModal from "./TaskModal"
-import AssignModal from "./AssignModal"
-import PaginationControls from "./PaginationControls"
-import TaskTable from "./TaskTable"
+/* eslint-disable no-unused-vars */
+import React, { useMemo, useState } from "react"
 import Spinners from "../../../components/Common/Spinner"
-
+import * as Tooltip from "@radix-ui/react-tooltip"
 import {
-  useTaskQueries,
-  useCreateTask,
-  useUpdateTask,
-  useDeleteTask,
-  useAssignTask,
-  useStartTask,
-  useFinishTask,
+  useGetMyTasks,
+  useGetTaskList,
+  useGetTasksAssignedToMe,
 } from "../../../queries/farmTasks"
-
 import useFetchUsers from "../../../hooks/useFetchUsers"
-import useUserRoles from "../../../hooks/useUserRoles"
+import { CrmTable } from "components/CrmTable"
+import { usePermissions } from "hooks/usePermissions"
+import { AddButton } from "components/CrmActionButtons"
+import CrmSpinner from "components/CrmSpinner"
+import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
+import { AddFarmTaskForm } from "./components/add"
 
 const TaskList = () => {
   document.title = "Farm Tasks List | Gorgia LLC"
-
   const [activeTab, setActiveTab] = useState("all")
-  const [modal, setModal] = useState(false)
-  const [isEdit, setIsEdit] = useState(false)
-  const [task, setTask] = useState(null)
-  const [deleteModal, setDeleteModal] = useState(false)
-  const [assignModal, setAssignModal] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(10)
-  const [sortConfig, setSortConfig] = useState({
-    key: "created_at",
-    direction: "desc",
-  })
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
   const isFarmDepartment = currentUser?.department_id === 38
-
   const { users: allUsers, loading: usersLoading } = useFetchUsers()
   const usersList = allUsers?.filter(user => user.department_id === 38)
-  const userRoles = useUserRoles()
+  const { isAdmin } = usePermissions()
 
-  const hasEditPermission = useMemo(
-    () => userRoles.includes("admin"),
-    [userRoles]
-  )
+  const hasEditPermission = useMemo(() => isAdmin, [isAdmin])
   const hasAssignPermission = useMemo(
-    () => isFarmDepartment,
-    [isFarmDepartment]
+    () => isFarmDepartment || isAdmin,
+    [isFarmDepartment, isAdmin]
   )
 
-  const {
-    tasksList,
-    myTasksList,
-    assignedTasksList,
-    isTasksListLoading,
-    isMyTasksLoading,
-    isAssignedTasksLoading,
-  } = useTaskQueries(isFarmDepartment, hasEditPermission)
+  const { data: tasksList = [], isLoading } = useGetTaskList({
+    enabled: isFarmDepartment || hasEditPermission,
+  })
 
-  const sortedTasks = useMemo(() => {
-    const tasksToSort = isFarmDepartment || hasEditPermission
-      ? activeTab === "all"
-        ? [...(tasksList?.data || [])]
-        : [...(assignedTasksList?.data || [])]
-      : [...(myTasksList?.data || [])]
+  const { data: myTasksList = [], isLoading: isLoadingMy } = useGetMyTasks()
 
-    return tasksToSort.sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime()
-      const dateB = new Date(b.created_at).getTime()
-
-      return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA
+  const { data: assignedTasksList = [], isLoading: isLoadingAssigned } =
+    useGetTasksAssignedToMe({
+      enabled: isFarmDepartment || hasEditPermission,
     })
-  }, [
-    isFarmDepartment,
-    activeTab,
-    tasksList?.data,
-    assignedTasksList?.data,
-    myTasksList?.data,
-    sortConfig,
-    hasEditPermission,
-  ])
 
-  const isLoading = isFarmDepartment
-    ? activeTab === "all"
-      ? isTasksListLoading
-      : isAssignedTasksLoading
-    : isMyTasksLoading
-
-  const createTaskMutation = useCreateTask()
-  const updateTaskMutation = useUpdateTask()
-  const deleteTaskMutation = useDeleteTask()
-  const assignTaskMutation = useAssignTask()
-  const startTaskMutation = useStartTask()
-  const finishTaskMutation = useFinishTask()
-
-  const handleTaskClick = task => {
-    setTask(task)
-    setIsEdit(true)
-    setModal(true)
-  }
-
-  const onClickDelete = task => {
-    setTask(task)
-    setDeleteModal(true)
-  }
-
-  const onClickAssign = task => {
-    setTask(task)
-    setAssignModal(true)
-  }
-
-  const handleDeleteTask = async () => {
-    try {
-      if (task && task.id) {
-        await deleteTaskMutation.mutateAsync(task.id)
-      }
-      setDeleteModal(false)
-    } catch (error) {
-      console.error("Error deleting task:", error)
+  let tasks
+  if (hasAssignPermission) {
+    if (activeTab === "all") {
+      tasks = tasksList?.data || []
+    } else if (activeTab === "my") {
+      tasks = myTasksList?.data || []
+    } else if (activeTab === "assigned") {
+      tasks = assignedTasksList?.data || []
+    } else {
+      // completed
+      tasks = tasksList?.data?.filter(task => task.status === "Completed")
     }
   }
 
-  const handleAssignTask = async selectedUsers => {
-    try {
-      await assignTaskMutation.mutateAsync({
-        taskId: task.id,
-        userIds: selectedUsers,
-      })
-      setAssignModal(false)
-    } catch (error) {
-      console.error("Error assigning task:", error)
-      toast.error(
-        error.response?.data?.message ||
-          "დავალების მიღების დროს დაფიქსირდა შეცდომა"
-      )
-    }
-  }
+  const transformedFarmTasks = React.useMemo(() => {
+    return (
+      tasks?.map(task => ({
+        id: task.id,
+        created_at: new Date(task.created_at).toLocaleDateString("ka"),
+        status: task.status,
+        phone: task.phone_number,
+        priority: task.priority,
+        title: task.task_title,
+        requester: task.user.name + " " + task.user.sur_name,
+        assigned_to: task.assigned_users,
+      })) || []
+    )
+  }, [tasks])
 
-  const handleStartTask = async taskId => {
-    try {
-      await startTaskMutation.mutateAsync(taskId)
-    } catch (error) {
-      console.error("Error starting task:", error)
-    }
-  }
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "id",
+        accessorFn: row => row.id,
+        cell: info => info.getValue(),
+        header: () => <span>#</span>,
+        enableColumnFilter: false,
+        sortingFn: "basic",
+        sortDescFirst: true,
+      },
+      {
+        id: "requester",
+        accessorFn: row => row.requester,
+        cell: info => info.getValue(),
+        header: () => <span>მომთხოვნი პირი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "created_at",
+        accessorKey: "created_at",
+        header: () => "მოთხოვნის თარიღი",
+        cell: info => info.getValue(),
+        enableColumnFilter: false,
+        sortingFn: "datetime",
+        sortDescFirst: true,
+      },
+      {
+        id: "phone",
+        accessorKey: "phone",
+        header: () => <span>მომთხოვნის ნომერი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "priority",
+        accessorKey: "priority",
+        header: () => <span>მოთხოვნის პრიორიტეტი</span>,
+        meta: {
+          filterVariant: "select",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "status",
+        accessorKey: "status",
+        header: () => <span>მოთხოვნის სტატუსი</span>,
+        meta: {
+          filterVariant: "select",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "assigned_to",
+        accessorFn: row => row.assigned_to,
+        header: () => <span>მოთხოვნას ასრულებს</span>,
+        cell: info => {
+          const workers = info.getValue() || []
+          if (workers.length === 0) return null
 
-  const handleFinishTask = async taskId => {
-    try {
-      await finishTaskMutation.mutateAsync(taskId)
-    } catch (error) {
-      console.error("Error finishing task:", error)
-    }
-  }
+          const firstWorker = workers[0]
+          const remainingWorkers = workers.slice(1)
 
-  const handleSort = () => {
-    setSortConfig(prevConfig => ({
-      key: "created_at",
-      direction: prevConfig.direction === "asc" ? "desc" : "asc",
-    }))
-  }
+          return (
+            <div className="relative group">
+              <div className="flex items-center">
+                <span className="text-sm">
+                  {firstWorker.name + " " + firstWorker.sur_name}
+                </span>
+                {remainingWorkers.length > 0 && (
+                  <Tooltip.Provider>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger asChild>
+                        <button className="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                          +{remainingWorkers.length}
+                        </button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Portal>
+                        <Tooltip.Content
+                          className="bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+                          sideOffset={5}
+                        >
+                          <div className="flex flex-col gap-1">
+                            {remainingWorkers.map(worker => (
+                              <div
+                                key={worker.id}
+                                className="whitespace-nowrap text-sm text-gray-700 dark:text-gray-300"
+                              >
+                                {worker.name + " " + worker.sur_name}
+                              </div>
+                            ))}
+                          </div>
+                          <Tooltip.Arrow className="fill-white dark:fill-gray-800" />
+                        </Tooltip.Content>
+                      </Tooltip.Portal>
+                    </Tooltip.Root>
+                  </Tooltip.Provider>
+                )}
+              </div>
+            </div>
+          )
+        },
+        enableSorting: false,
+      },
+      hasAssignPermission && {
+        id: "actions",
+        enableColumnFilter: false,
+        enableSorting: false,
+        header: () => <span>მოქმედებები</span>,
+        cell: () => {
+          return <span> მოქმედების ღილაკები </span>
+        },
+      },
+    ],
+    [hasAssignPermission]
+  )
 
-  const totalPages = Math.ceil((sortedTasks?.length || 0) / itemsPerPage)
-
-  const handlePageClick = page => {
-    if (page !== currentPage) {
-      setCurrentPage(page)
-    }
-  }
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1)
-    }
-  }
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1)
-    }
+  if (isLoading || isLoadingAssigned || isLoadingMy) {
+    return <CrmSpinner />
   }
 
   return (
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-      <DeleteModal
-        show={deleteModal}
-        onDeleteClick={handleDeleteTask}
-        onCloseClick={() => setDeleteModal(false)}
-      />
-      <TaskModal
-        isOpen={modal}
-        toggle={setModal}
-        isEdit={isEdit}
-        task={task}
-        userRoles={userRoles}
-        usersList={usersList}
-        usersLoading={usersLoading}
-        currentUser={currentUser}
-        createTaskMutation={createTaskMutation}
-        updateTaskMutation={updateTaskMutation}
-      />
-      <AssignModal
-        isOpen={assignModal}
-        toggle={setAssignModal}
-        onAssign={handleAssignTask}
-        usersList={usersList}
-      />
-
       {isLoading ? (
         <Spinners setLoading={() => {}} />
       ) : (
-        <Row>
-          <Col xs="12">
-            <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
-              <div className="w-full sm:w-auto">
-                <h5 className="text-xl font-medium mb-3 sm:mb-0">
-                  ბილეთების სია
-                </h5>
-                {(isFarmDepartment || hasEditPermission) && (
-                  <Nav tabs className="mt-3 sm:mt-2">
-                    <NavItem>
-                      <NavLink
-                        className={activeTab === "all" ? "active" : ""}
-                        onClick={() => setActiveTab("all")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        ყველა ბილეთი
-                      </NavLink>
-                    </NavItem>
-                    <NavItem>
-                      <NavLink
-                        className={activeTab === "assigned" ? "active" : ""}
-                        onClick={() => setActiveTab("assigned")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        ჩემზე მიმაგრებული
-                      </NavLink>
-                    </NavItem>
-                  </Nav>
-                )}
-              </div>
-              <div className="mt-3 sm:mt-0">
-                <Link
-                  to="#!"
-                  onClick={() => {
-                    setIsEdit(false)
-                    setTask(null)
-                    setModal(true)
-                  }}
-                  className="btn btn-primary w-full sm:w-auto"
-                >
-                  ახალი ბილეთის გახსნა
-                </Link>
-              </div>
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
+          <div className="w-full sm:w-auto">
+            <h5 className="text-xl font-medium mb-3 sm:mb-0 text-gray-900 dark:text-gray-100">
+              ბილეთების სია
+            </h5>
+            <div className="flex mt-3 sm:mt-2 border-b border-gray-200 dark:border-gray-700">
+              <button
+                className={`px-4 py-2 text-sm font-medium ${
+                  activeTab === "my"
+                    ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+                onClick={() => setActiveTab("my")}
+              >
+                ჩემი ბილეთები
+              </button>
+              {(isFarmDepartment || hasEditPermission) && (
+                <>
+                  <button
+                    className={`px-4 py-2 text-sm font-medium ${
+                      activeTab === "all"
+                        ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                    onClick={() => setActiveTab("all")}
+                  >
+                    ყველა ბილეთი
+                  </button>
+                  <button
+                    className={`px-4 py-2 text-sm font-medium ${
+                      activeTab === "assigned"
+                        ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                    onClick={() => setActiveTab("assigned")}
+                  >
+                    ჩემზე მიბმული ბილეთები
+                  </button>
+                </>
+              )}
+              <button
+                className={`px-4 py-2 text-sm font-medium ${
+                  activeTab === "completed"
+                    ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+                onClick={() => setActiveTab("completed")}
+              >
+                დასრულებული ბილეთები
+              </button>
             </div>
-            {sortedTasks.length > 0 ? (
-              <Fragment>
-                <TaskTable
-                  tasks={sortedTasks}
-                  sortConfig={sortConfig}
-                  handleSort={handleSort}
-                  hasEditPermission={hasEditPermission}
-                  hasAssignPermission={hasAssignPermission}
-                  onEdit={handleTaskClick}
-                  onDelete={onClickDelete}
-                  onAssign={onClickAssign}
-                  onStartTask={handleStartTask}
-                  onFinishTask={handleFinishTask}
-                  activeTab={activeTab}
-                  currentUser={currentUser}
-                />
-                <PaginationControls
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageClick={handlePageClick}
-                  onPrevious={handlePreviousPage}
-                  onNext={handleNextPage}
-                />
-              </Fragment>
-            ) : (
-              <div className="text-center py-8">თასქები არ არის</div>
-            )}
-          </Col>
-        </Row>
+          </div>
+          <div className="mt-3 sm:mt-0">
+            <DialogButton
+              variant="primary"
+              size="sm"
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              <AddButton size="sm" />
+            </DialogButton>
+          </div>
+        </div>
       )}
-      <ToastContainer />
+      <CrmDialog
+        isOpen={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+        title="სამეურნეო თასქის დამატება"
+        description="შეავსეთ ფორმა თასქის დასამატებლად"
+        footer={
+          <>
+            <DialogButton
+              variant="secondary"
+              onClick={() => setIsAddModalOpen(false)}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton type="submit" form="addFarmTaskForm">
+              დამატება
+            </DialogButton>
+          </>
+        }
+      >
+        <AddFarmTaskForm onSuccess={() => setIsAddModalOpen(false)} />
+      </CrmDialog>
+      <CrmTable data={transformedFarmTasks} columns={columns} />
     </div>
   )
 }

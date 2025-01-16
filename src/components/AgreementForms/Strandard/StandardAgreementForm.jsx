@@ -34,7 +34,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
         product_quantity: "",
       },
     ],
-    product_payment_term: "",
+    product_payment_term: 1,
   })
 
   const calculateProductCost = useCallback(products => {
@@ -171,9 +171,10 @@ const StandardAgreementForm = ({ onSuccess }) => {
         // Boolean field, no validation needed
         break
       case "product_payment_term":
-        if (!value && value !== 0) errorMsg = "ველი აუცილებელია"
-        else if (isNaN(value) || Number(value) < 1)
-          errorMsg = "უნდა იყოს დადებითი მთელი რიცხვი"
+        if (!formData.payment_different_terms && !value && value !== 0)
+          errorMsg = "ველი აუცილებელია"
+        else if (value && (isNaN(value) || Number(value) < 0))
+          errorMsg = "არ უნდა იყოს 0-ზე ნაკლები"
         break
       default:
         console.warn(`ველს არ გააჩნია ვალიდაციის წესი: ${field}`)
@@ -654,7 +655,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               <Col lg="6">
                 <div className="mb-3">
                   <Label for="conscription_term">
-                    კონსიგნაციის ვადა (დღეებში)
+                    პროდუქციის მიწოდების ვადა (დღეებში)
                   </Label>
                   <Input
                     type="number"
@@ -664,7 +665,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                     id="conscription_term"
                     value={formData.conscription_term}
                     onChange={handleInputChange}
-                    placeholder="ჩაწერეთ კონსიგნაციის ვადა..."
+                    placeholder="ჩაწერეთ პროდუქციის მიწოდების ვადა..."
                   />
                   {errors.conscription_term && (
                     <div className="form-error">
@@ -774,32 +775,34 @@ const StandardAgreementForm = ({ onSuccess }) => {
                 </Col>
               </Row>
             )}
-            <Row>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="product_payment_term">
-                    გადახდის ვადა (დღეებში)
-                  </Label>
-                  <Input
-                    type="number"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.product_payment_term,
-                    })}
-                    id="product_payment_term"
-                    value={formData.product_payment_term}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ გადახდის ვადა..."
-                    min="1"
-                  />
-                  {errors.product_payment_term && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.product_payment_term}
-                    </div>
-                  )}
-                </div>
-              </Col>
-            </Row>
+            {!formData.payment_different_terms && (
+              <Row>
+                <Col lg="6">
+                  <div className="mb-3">
+                    <Label for="product_payment_term">
+                      გადახდის ვადა (დღეებში)
+                    </Label>
+                    <Input
+                      type="number"
+                      className={classnames("form-control", {
+                        "is-invalid": errors.product_payment_term,
+                      })}
+                      id="product_payment_term"
+                      value={formData.product_payment_term}
+                      onChange={handleInputChange}
+                      placeholder="ჩაწერეთ გადახდის ვადა..."
+                      min="1"
+                    />
+                    {errors.product_payment_term && (
+                      <div className="form-error">
+                        <i className="bx bx-error-circle"></i>
+                        {errors.product_payment_term}
+                      </div>
+                    )}
+                  </div>
+                </Col>
+              </Row>
+            )}
           </Form>
         </TabPane>
 

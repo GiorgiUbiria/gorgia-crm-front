@@ -86,14 +86,14 @@ export const EditDepartmentForm = ({ onSuccess, department }) => {
           {field => (
             <div>
               <label
-                htmlFor={field.name}
+                htmlFor={field.description}
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
                 აღწერა
               </label>
               <textarea
-                id={field.name}
-                name={field.name}
+                id={field.description}
+                name={field.description}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}

@@ -1,6 +1,6 @@
 import React, { Fragment, useMemo, useState } from "react"
 import "bootstrap/dist/css/bootstrap.min.css"
-import { Row, Col, Nav, NavItem, NavLink } from "reactstrap"
+import { Row, Col } from "reactstrap"
 import { ToastContainer } from "react-toastify"
 import { Link } from "react-router-dom"
 
@@ -79,7 +79,7 @@ const TaskList = () => {
         }
         return task.status !== "Completed"
       }
-      return true // Regular users see all their tasks
+      return true
     })
 
     return filteredTasks.sort((a, b) => {
@@ -230,39 +230,42 @@ const TaskList = () => {
           <Col xs="12">
             <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
               <div className="w-full sm:w-auto">
-                <h5 className="text-xl font-medium mb-3 sm:mb-0">
+                <h5 className="text-xl font-medium mb-3 sm:mb-0 text-gray-900 dark:text-gray-100">
                   ბილეთების სია
                 </h5>
                 {(isITDepartment || hasEditPermission) && (
-                  <Nav tabs className="mt-3 sm:mt-2">
-                    <NavItem>
-                      <NavLink
-                        className={activeTab === "all" ? "active" : ""}
-                        onClick={() => setActiveTab("all")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        ახალი და მიმდინარე
-                      </NavLink>
-                    </NavItem>
-                    <NavItem>
-                      <NavLink
-                        className={activeTab === "assigned" ? "active" : ""}
-                        onClick={() => setActiveTab("assigned")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        ჩემზე მიმაგრებული
-                      </NavLink>
-                    </NavItem>
-                    <NavItem>
-                      <NavLink
-                        className={activeTab === "completed" ? "active" : ""}
-                        onClick={() => setActiveTab("completed")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        დასრულებული
-                      </NavLink>
-                    </NavItem>
-                  </Nav>
+                  <div className="flex mt-3 sm:mt-2 border-b border-gray-200 dark:border-gray-700">
+                    <button
+                      className={`px-4 py-2 text-sm font-medium ${
+                        activeTab === "all"
+                          ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
+                      onClick={() => setActiveTab("all")}
+                    >
+                      ახალი და მიმდინარე
+                    </button>
+                    <button
+                      className={`px-4 py-2 text-sm font-medium ${
+                        activeTab === "assigned"
+                          ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
+                      onClick={() => setActiveTab("assigned")}
+                    >
+                      ჩემზე მიმაგრებული
+                    </button>
+                    <button
+                      className={`px-4 py-2 text-sm font-medium ${
+                        activeTab === "completed"
+                          ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
+                      onClick={() => setActiveTab("completed")}
+                    >
+                      დასრულებული
+                    </button>
+                  </div>
                 )}
               </div>
               <div className="mt-3 sm:mt-0">
