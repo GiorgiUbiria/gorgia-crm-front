@@ -34,7 +34,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
         product_quantity: "",
       },
     ],
-    product_payment_term: 1,
+    product_payment_term: "",
   })
 
   const calculateProductCost = useCallback(products => {
@@ -171,7 +171,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
         // Boolean field, no validation needed
         break
       case "product_payment_term":
-        if (!formData.payment_different_terms && !value && value !== 0)
+        if (!formData.payment_different_terms && (!value && value !== 0))
           errorMsg = "ველი აუცილებელია"
         else if (value && (isNaN(value) || Number(value) < 0))
           errorMsg = "არ უნდა იყოს 0-ზე ნაკლები"
@@ -240,7 +240,9 @@ const StandardAgreementForm = ({ onSuccess }) => {
         payment_different_terms: formData.payment_different_terms ? 1 : 0,
         contract_initiator_name: formData.contract_initiator_name,
         product_cost: calculateProductCost(formData.products),
-        product_payment_term: parseInt(formData.product_payment_term),
+        product_payment_term: formData.payment_different_terms 
+          ? null 
+          : parseInt(formData.product_payment_term),
         products: formData.products.map(product => ({
           product_name: product.product_name,
           product_price: parseFloat(product.product_price),
