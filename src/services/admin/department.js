@@ -38,7 +38,9 @@ export const deleteDepartment = async id => {
 }
 
 export const getUsers = async () => {
-  return defaultInstance.get("/api/admin/users")
+  const response = await defaultInstance.get("/api/admin/users")
+  console.log(response)
+  return response
 }
 
 export const deleteUser = async id => {

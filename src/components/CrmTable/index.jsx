@@ -20,10 +20,39 @@ import {
   ChevronRight,
 } from "lucide-react"
 
-export function CrmTable({ columns, data, renderSubComponent, onRowClick }) {
+const sizeVariants = {
+  sm: {
+    headerPadding: "px-3 py-2",
+    cellPadding: "px-3 py-2",
+    text: "text-xs",
+    paginationPadding: "px-3 py-2",
+  },
+  md: {
+    headerPadding: "px-4 py-3",
+    cellPadding: "px-4 py-3",
+    text: "text-sm",
+    paginationPadding: "px-4 py-3",
+  },
+  lg: {
+    headerPadding: "px-6 py-4",
+    cellPadding: "px-5 py-4",
+    text: "text-sm",
+    paginationPadding: "px-6 py-4",
+  },
+}
+
+export function CrmTable({
+  columns,
+  data,
+  renderSubComponent,
+  onRowClick,
+  size = "lg",
+}) {
   const [sorting, setSorting] = React.useState([])
   const [columnFilters, setColumnFilters] = React.useState([])
   const [expanded, setExpanded] = React.useState({})
+
+  const sizeClasses = sizeVariants[size]
 
   const table = useReactTable({
     columns,
@@ -61,15 +90,15 @@ export function CrmTable({ columns, data, renderSubComponent, onRowClick }) {
                   <th
                     key={header.id}
                     colSpan={header.colSpan}
-                    className="px-6 py-4 bg-[#105D8D] dark:!bg-gray-900 border-b border-gray-200 dark:!border-gray-700"
+                    className={`${sizeClasses.headerPadding} bg-[#105D8D] dark:!bg-gray-900 border-b border-gray-200 dark:!border-gray-700`}
                   >
                     {header.isPlaceholder ? null : (
                       <>
                         <div
                           {...{
                             className: header.column.getCanSort()
-                              ? "flex items-center gap-2 cursor-pointer select-none text-gray-100 dark:!text-gray-300 font-medium hover:text-gray-900 dark:!hover:text-gray-100"
-                              : "text-gray-100 dark:!text-gray-300 font-medium",
+                              ? `flex items-center gap-2 cursor-pointer select-none text-gray-100 dark:!text-gray-300 font-medium hover:text-gray-900 dark:!hover:text-gray-100 ${sizeClasses.text}`
+                              : `text-gray-100 dark:!text-gray-300 font-medium ${sizeClasses.text}`,
                             onClick: header.column.getToggleSortingHandler(),
                           }}
                         >
@@ -91,7 +120,7 @@ export function CrmTable({ columns, data, renderSubComponent, onRowClick }) {
                         </div>
                         {header.column.getCanFilter() && (
                           <div className="mt-2">
-                            <Filter column={header.column} />
+                            <Filter column={header.column} size={size} />
                           </div>
                         )}
                       </>
@@ -119,7 +148,7 @@ export function CrmTable({ columns, data, renderSubComponent, onRowClick }) {
                       return (
                         <td
                           key={cell.id}
-                          className="px-5 py-4 text-sm text-gray-700 dark:!text-gray-200 border-r border-gray-200 dark:!border-gray-700 last:border-r-0"
+                          className={`${sizeClasses.cellPadding} ${sizeClasses.text} text-gray-700 dark:!text-gray-200 border-r border-gray-200 dark:!border-gray-700 last:border-r-0`}
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
@@ -143,7 +172,9 @@ export function CrmTable({ columns, data, renderSubComponent, onRowClick }) {
         </table>
       </div>
 
-      <div className="px-6 py-4 border-t border-gray-200 dark:!border-gray-700 bg-white dark:!bg-gray-800">
+      <div
+        className={`${sizeClasses.paginationPadding} border-t border-gray-200 dark:!border-gray-700 bg-white dark:!bg-gray-800`}
+      >
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <button
@@ -219,7 +250,8 @@ export function CrmTable({ columns, data, renderSubComponent, onRowClick }) {
   )
 }
 
-function Filter({ column }) {
+function Filter({ column, size = "lg" }) {
+  const sizeClasses = sizeVariants[size]
   const { filterVariant } = column.columnDef.meta ?? {}
 
   const columnFilterValue = column.getFilterValue()
@@ -248,7 +280,7 @@ function Filter({ column }) {
               ? `(${column.getFacetedMinMaxValues()?.[0]})`
               : ""
           }`}
-          className="w-24 px-2 py-1 border border-gray-200 dark:!border-gray-600 rounded-md text-sm bg-white dark:!bg-gray-800 text-gray-900 dark:!text-gray-100 placeholder-gray-500 dark:!placeholder-gray-400"
+          className={`w-24 px-2 py-1 border border-gray-200 dark:!border-gray-600 rounded-md ${sizeClasses.text} bg-white dark:!bg-gray-800 text-gray-900 dark:!text-gray-100 placeholder-gray-500 dark:!placeholder-gray-400`}
         />
         <DebouncedInput
           type="number"
@@ -261,7 +293,7 @@ function Filter({ column }) {
               ? `(${column.getFacetedMinMaxValues()?.[1]})`
               : ""
           }`}
-          className="w-24 px-2 py-1 border border-gray-200 dark:!border-gray-600 rounded-md text-sm bg-white dark:!bg-gray-800 text-gray-900 dark:!text-gray-100 placeholder-gray-500 dark:!placeholder-gray-400"
+          className={`w-24 px-2 py-1 border border-gray-200 dark:!border-gray-600 rounded-md ${sizeClasses.text} bg-white dark:!bg-gray-800 text-gray-900 dark:!text-gray-100 placeholder-gray-500 dark:!placeholder-gray-400`}
         />
       </div>
       <div className="h-1" />
@@ -270,7 +302,7 @@ function Filter({ column }) {
     <select
       onChange={e => column.setFilterValue(e.target.value)}
       value={columnFilterValue?.toString()}
-      className="w-full px-2 py-1 border border-gray-200 dark:!border-gray-600 rounded-md text-sm bg-white dark:!bg-gray-800 text-gray-900 dark:!text-gray-100"
+      className={`w-full px-2 py-1 border border-gray-200 dark:!border-gray-600 rounded-md ${sizeClasses.text} bg-white dark:!bg-gray-800 text-gray-900 dark:!text-gray-100`}
     >
       <option value="">ყველა</option>
       {column.columnDef.meta?.filterOptions
@@ -312,7 +344,7 @@ function Filter({ column }) {
         value={columnFilterValue ?? ""}
         onChange={value => column.setFilterValue(value)}
         placeholder={`მოძებნე... (${column.getFacetedUniqueValues().size})`}
-        className="w-full px-2 py-1 border border-gray-200 dark:!border-gray-600 rounded-md text-sm bg-white dark:!bg-gray-800 text-gray-900 dark:!text-gray-100 placeholder-gray-500 dark:!placeholder-gray-400"
+        className={`w-full px-2 py-1 border border-gray-200 dark:!border-gray-600 rounded-md ${sizeClasses.text} bg-white dark:!bg-gray-800 text-gray-900 dark:!text-gray-100 placeholder-gray-500 dark:!placeholder-gray-400`}
         list={column.id + "list"}
       />
       <div className="h-1" />

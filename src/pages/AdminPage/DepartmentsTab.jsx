@@ -1,19 +1,12 @@
 import React, { useMemo } from "react"
 import { CrmTable } from "components/CrmTable"
 import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
-import {
-  AddButton,
-  DeleteButton,
-  DownloadExcelButton,
-  EditButton,
-} from "components/CrmActionButtons"
 import { AssignDepartmentHeadForm } from "./components/department/assign"
 import { AddDepartmentForm } from "./components/department/add"
 import { EditDepartmentForm } from "./components/department/edit"
 import { DeleteDepartmentForm } from "./components/department/delete"
 import useModalStore from "store/zustand/modalStore"
 import * as XLSX from "xlsx"
-import { AssignButton } from "components/CrmActionButtons/ActionButtons"
 
 const DepartmentsTab = ({ departments = [], users }) => {
   const { openModal, closeModal, isModalOpen, getModalData } = useModalStore()
@@ -80,39 +73,34 @@ const DepartmentsTab = ({ departments = [], users }) => {
           return (
             <div className="flex items-center gap-x-1 max-w-full">
               <DialogButton
-                variant="info"
+                actionType="assign"
                 size="sm"
+                label="მიბმა"
                 onClick={() =>
                   openModal("assignHead", {
                     departmentId: row.original.id,
                     currentHeadId: row.original.department_head_id,
                   })
                 }
-              >
-                <AssignButton label="მიბმა" size="sm" />
-              </DialogButton>
+              />
               <DialogButton
-                variant="info"
+                actionType="edit"
                 size="sm"
                 onClick={() =>
                   openModal("editDepartment", {
                     department: row.original,
                   })
                 }
-              >
-                <EditButton size="sm" />
-              </DialogButton>
+              />
               <DialogButton
-                variant="danger"
+                actionType="delete"
                 size="sm"
                 onClick={() =>
                   openModal("deleteDepartment", {
                     department_id: row.original.id,
                   })
                 }
-              >
-                <DeleteButton size="sm" />
-              </DialogButton>
+              />
             </div>
           )
         },
@@ -139,10 +127,8 @@ const DepartmentsTab = ({ departments = [], users }) => {
   return (
     <>
       <div className="mb-4 flex gap-x-2">
-        <DialogButton size="sm" onClick={() => openModal("addDepartment")}>
-          <AddButton size="sm" />
-        </DialogButton>
-        <DownloadExcelButton onClick={exportToExcel} />
+        <DialogButton actionType="add" size="sm" onClick={() => openModal("addDepartment")} />
+        <DialogButton actionType="downloadExcel" size="sm" onClick={exportToExcel} />
       </div>
       <CrmDialog
         isOpen={isModalOpen("addDepartment")}

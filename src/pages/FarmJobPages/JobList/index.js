@@ -7,13 +7,11 @@ import {
 } from "../../../queries/farmTasks"
 import { CrmTable } from "components/CrmTable"
 import useAuth from "hooks/useAuth"
-import { AddButton } from "components/CrmActionButtons"
 import CrmSpinner from "components/CrmSpinner"
 import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
 import { AddFarmTaskForm } from "./components/add"
 import useModalStore from "store/zustand/modalStore"
 import { AssignTaskForm } from "./components/assign"
-import { AssignButton } from "components/CrmActionButtons/ActionButtons"
 import { useNavigate } from "react-router-dom"
 import {
   STATUS_MAPPINGS,
@@ -255,16 +253,15 @@ const TaskList = () => {
 
             return (
               <DialogButton
-                variant="info"
+                actionType="assign"
                 size="sm"
+                label="მიღება"
                 onClick={() =>
                   openModal("assignFarmTask", {
                     task_id: row.original.id,
                   })
                 }
-              >
-                <AssignButton size="sm" label="მიღება" />
-              </DialogButton>
+              />
             )
           },
         },
@@ -332,12 +329,10 @@ const TaskList = () => {
         </div>
         <div className="mt-3 sm:mt-0">
           <DialogButton
-            variant="primary"
+            actionType="add"
             size="sm"
             onClick={() => openModal("addFarmTask")}
-          >
-            <AddButton size="sm" />
-          </DialogButton>
+          />
         </div>
       </div>
 

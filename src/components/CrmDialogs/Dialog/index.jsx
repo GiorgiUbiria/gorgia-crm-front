@@ -2,6 +2,75 @@ import React from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import { Cross2Icon } from "@radix-ui/react-icons"
 import { BaseButton } from "components/CrmActionButtons"
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Check,
+  Send,
+  FileText,
+  FileSpreadsheet,
+  Download,
+} from "lucide-react"
+
+const actionTypes = {
+  add: {
+    variant: "primary",
+    icon: Plus,
+    label: "დამატება",
+  },
+  edit: {
+    variant: "info",
+    icon: Pencil,
+    label: "რედაქტირება",
+  },
+  delete: {
+    variant: "danger",
+    icon: Trash2,
+    label: "წაშლა",
+  },
+  cancel: {
+    variant: "secondary",
+    icon: X,
+    label: "გაუქმება",
+  },
+  approve: {
+    variant: "success",
+    icon: Check,
+    label: "დამტკიცება",
+  },
+  reject: {
+    variant: "destructive",
+    icon: X,
+    label: "უარყოფა",
+  },
+  request: {
+    variant: "warning",
+    icon: Send,
+    label: "მოთხოვნა",
+  },
+  downloadPdf: {
+    variant: "info",
+    icon: FileText,
+    label: "PDF-ად ჩამოტვირთვა",
+  },
+  downloadExcel: {
+    variant: "success",
+    icon: FileSpreadsheet,
+    label: "Excel-ად ჩამოტვირთვა",
+  },
+  download: {
+    variant: "primary",
+    icon: Download,
+    label: "ჩამოტვირთვა",
+  },
+  assign: {
+    variant: "info",
+    icon: Send,
+    label: "მინიჭება",
+  },
+}
 
 const CrmDialog = ({
   isOpen,
@@ -49,8 +118,32 @@ const CrmDialog = ({
   </Dialog.Root>
 )
 
-export const DialogButton = ({ ...props }) => {
-  return <BaseButton {...props} />
+export const DialogButton = ({
+  actionType,
+  label,
+  variant,
+  icon: CustomIcon,
+  size = "md",
+  ...props
+}) => {
+  // If actionType is provided, use predefined styles
+  const actionConfig = actionType ? actionTypes[actionType] : null
+  
+  // Use either the action config or provided props
+  const buttonVariant = variant || (actionConfig?.variant ?? "primary")
+  const Icon = CustomIcon || (actionConfig?.icon ?? null)
+  const buttonLabel = label || (actionConfig?.label ?? "")
+
+  return (
+    <BaseButton
+      variant={buttonVariant}
+      icon={Icon}
+      size={size}
+      {...props}
+    >
+      {buttonLabel}
+    </BaseButton>
+  )
 }
 
 export default CrmDialog

@@ -4,7 +4,6 @@ import { useGetDepartmentHeadDailies } from "queries/daily"
 import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
 import { AddDailyForm } from "./components/form"
 import { renderSubComponent } from "./components/subComponent"
-import { PlusCircledIcon } from "@radix-ui/react-icons"
 import CrmSpinner from "components/CrmSpinner"
 import { useNavigate } from "react-router-dom"
 
@@ -110,11 +109,11 @@ const Dailies = () => {
   return (
     <>
       <div className="mb-4">
-        <DialogButton onClick={() => setIsAddModalOpen(true)}>
-          <div className="flex gap-x-2 items-center">
-            <span>დღის შედეგის დამატება</span> <PlusCircledIcon />
-          </div>
-        </DialogButton>
+        <DialogButton 
+          actionType="add" 
+          onClick={() => setIsAddModalOpen(true)}
+          label="დღის შედეგის დამატება"
+        />
       </div>
 
       <CrmDialog

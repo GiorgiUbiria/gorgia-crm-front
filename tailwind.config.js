@@ -14,6 +14,18 @@ module.exports = {
       },
       colors: {
         "sidebar-bg": "#EDF3FD",
+        primary: "#0066FF",
+        secondary: "#F1F5F9",
+        info: "#0EA5E9",
+        success: "#22C55E",
+        warning: "#F59E0B",
+        danger: "#EF4444",
+        destructive: "#DC2626",
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
       },
       maxHeight: {
         96: "24rem",

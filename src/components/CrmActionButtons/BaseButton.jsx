@@ -2,6 +2,7 @@ import React from "react"
 import { twMerge } from "tailwind-merge"
 
 const sizeClasses = {
+  xs: "px-1.5 py-0.5 text-xs",
   sm: "px-2 py-1 text-sm",
   md: "px-3 py-1.5 text-sm",
   lg: "px-4 py-2 text-base",
@@ -16,6 +17,7 @@ const variantClasses = {
   info: "bg-cyan-600 hover:bg-cyan-700 text-white",
   ghost:
     "bg-transparent hover:bg-gray-100 text-gray-700 dark:text-gray-200 dark:hover:bg-gray-700",
+  destructive: "bg-destructive hover:bg-destructive/90 text-white",
 }
 
 export const BaseButton = ({

@@ -140,6 +140,42 @@ const useAuthStore = create((set, get) => ({
         user?.roles?.some(role => role.slug === "admin"))
     )
   },
+
+  // Admin panel specific permissions
+  hasAdminPanelAccess: () => {
+    const { user } = get()
+    return (
+      user?.roles?.some(role => role.slug === "admin") ||
+      user?.roles?.some(role => role.slug === "department_head") ||
+      user?.department_id === 8 // HR department
+    )
+  },
+
+  canManageRoles: () => {
+    const { user } = get()
+    return user?.roles?.some(role => role.slug === "admin")
+  },
+
+  canDeleteUsers: () => {
+    const { user } = get()
+    return (
+      user?.roles?.some(role => role.slug === "admin") ||
+      user?.department_id === 8 // HR department
+    )
+  },
+
+  canViewAllUsers: () => {
+    const { user } = get()
+    return (
+      user?.roles?.some(role => role.slug === "admin") ||
+      user?.department_id === 8 // HR department
+    )
+  },
+
+  canAccessDepartmentsTab: () => {
+    const { user } = get()
+    return user?.roles?.some(role => role.slug === "admin")
+  },
 }))
 
 export default useAuthStore

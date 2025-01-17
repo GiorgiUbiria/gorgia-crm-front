@@ -7,7 +7,6 @@ import { useGetRegularDailies, useGetMyRegularDailies } from "queries/daily"
 import useUserRoles from "hooks/useUserRoles"
 import { AddDailyForm } from "./components/form"
 import { renderSubComponent } from "./components/subComponent"
-import { PlusCircledIcon, DownloadIcon } from "@radix-ui/react-icons"
 import * as XLSX from "xlsx"
 
 const DailiesInner = () => {
@@ -167,19 +166,17 @@ const DailiesInner = () => {
       <div className="p-4 sm:p-6">
         <div className="mb-4 flex gap-3">
           {roles.includes("admin") && (
-            <DialogButton onClick={exportToExcel} variant="secondary">
-              <div className="flex gap-x-2 items-center">
-                <span>Excel გადმოწერა</span>
-                <DownloadIcon />
-              </div>
-            </DialogButton>
+            <DialogButton 
+              actionType="downloadExcel" 
+              onClick={exportToExcel} 
+              label="Excel გადმოწერა"
+            />
           )}
-          <DialogButton onClick={() => setIsAddModalOpen(true)}>
-            <div className="flex gap-x-2 items-center">
-              <span>შეფასების დამატება</span>
-              <PlusCircledIcon />
-            </div>
-          </DialogButton>
+          <DialogButton 
+            actionType="add" 
+            onClick={() => setIsAddModalOpen(true)}
+            label="შეფასების დამატება"
+          />
         </div>
 
         <CrmTable

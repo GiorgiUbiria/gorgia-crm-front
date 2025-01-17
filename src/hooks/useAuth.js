@@ -38,6 +38,13 @@ const useAuth = () => {
     canManageInDepartment: store.canManageInDepartment,
     canApproveForDepartment: store.canApproveForDepartment,
 
+    // Admin panel permissions
+    hasAdminPanelAccess: store.hasAdminPanelAccess,
+    canManageRoles: store.canManageRoles,
+    canDeleteUsers: store.canDeleteUsers,
+    canViewAllUsers: store.canViewAllUsers,
+    canAccessDepartmentsTab: store.canAccessDepartmentsTab,
+
     // Helper to check multiple permissions (any)
     canAny: permissions => {
       return permissions.some(permission => store.can(permission))

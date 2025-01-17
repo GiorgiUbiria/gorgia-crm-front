@@ -20,12 +20,19 @@ export const adminKeys = {
   all: ["admin"],
   departments: () => [...adminKeys.all, "departments"],
   department: id => [...adminKeys.departments(), "department", id],
-  users: () => [...adminKeys.all, "users"],
-  departmentMembers: departmentId => [
-    ...adminKeys.all,
-    "department-members",
-    departmentId,
-  ],
+  users: {
+    all: () => [...adminKeys.all, "users"],
+    lists: () => [...adminKeys.users.all(), "list"],
+    list: filters => [...adminKeys.users.lists(), { ...filters }],
+    detail: id => [...adminKeys.users.all(), "detail", id],
+  },
+  departmentMembers: {
+    all: () => [...adminKeys.all, "department-members"],
+    byDepartment: departmentId => [
+      ...adminKeys.departmentMembers.all(),
+      departmentId,
+    ],
+  },
 }
 
 // Queries
@@ -40,20 +47,22 @@ export const useGetDepartments = (options = {}) => {
   })
 }
 
-export const useGetAdminUsers = () => {
+export const useGetAdminUsers = (filters = {}) => {
   return useQuery({
-    queryKey: adminKeys.users(),
+    queryKey: adminKeys.users.list(filters),
     queryFn: getUsers,
-    select: response => response.data.users,
+    select: response => response.data.data,
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    keepPreviousData: true,
+    refetchOnWindowFocus: true,
   })
 }
 
 export const useGetDepartmentMembers = (departmentId, options = {}) => {
   return useQuery({
-    queryKey: adminKeys.departmentMembers(departmentId),
+    queryKey: adminKeys.departmentMembers.byDepartment(departmentId),
     queryFn: () => getDepartmentMembers(departmentId),
     select: response => response.data.members,
-    enabled: !!departmentId,
     ...options,
   })
 }
@@ -95,7 +104,7 @@ export const useAssignHead = () => {
         queryKey: adminKeys.department(departmentId),
       })
       queryClient.invalidateQueries({
-        queryKey: adminKeys.departmentMembers(departmentId),
+        queryKey: adminKeys.departmentMembers.byDepartment(departmentId),
       })
     },
   })
@@ -121,7 +130,7 @@ export const useDeleteUser = () => {
   return useMutation({
     mutationFn: id => deleteUser(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.users() })
+      queryClient.invalidateQueries({ queryKey: adminKeys.users.lists() })
     },
   })
 }
@@ -131,10 +140,54 @@ export const useUpdateUser = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => updateUserById(id, data),
+    onMutate: async ({ id, data }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: adminKeys.users.lists() })
+      await queryClient.cancelQueries({ queryKey: adminKeys.users.all() })
+
+      // Snapshot for rollback
+      const previousUsers = queryClient.getQueryData(adminKeys.users.list())
+
+      // Update all matching queries
+      queryClient.setQueriesData({ queryKey: adminKeys.users.lists() }, old => {
+        if (!old) return old
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            data: old.data.data.map(user =>
+              user.id === id
+                ? {
+                    ...user,
+                    ...data,
+                    department: data.department_id
+                      ? { id: data.department_id }
+                      : null,
+                    roles: data.roles
+                      ? data.roles.map(roleId => ({ id: roleId }))
+                      : [],
+                  }
+                : user
+            ),
+          },
+        }
+      })
+
+      return { previousUsers }
+    },
+    onError: (err, _, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueriesData(
+          { queryKey: adminKeys.users.lists() },
+          context.previousUsers
+        )
+      }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.users() })
+      // Invalidate and refetch all user-related queries
+      queryClient.invalidateQueries({ queryKey: adminKeys.users.all() })
       queryClient.invalidateQueries({
-        queryKey: adminKeys.departmentMembers(),
+        queryKey: adminKeys.departmentMembers.all(),
       })
     },
   })
@@ -145,8 +198,57 @@ export const useCreateUser = () => {
 
   return useMutation({
     mutationFn: data => createUser(data),
+    onMutate: async newUser => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: adminKeys.users.lists() })
+      await queryClient.cancelQueries({ queryKey: adminKeys.users.all() })
+
+      // Snapshot for rollback
+      const previousUsers = queryClient.getQueryData(adminKeys.users.list())
+
+      // Optimistically update
+      const optimisticUser = {
+        id: Date.now(),
+        name: newUser.name,
+        sur_name: newUser.sur_name,
+        email: newUser.email,
+        mobile_number: newUser.mobile_number,
+        position: newUser.position,
+        department: null,
+        status: "pending",
+        roles: [],
+        created_at: new Date().toISOString(),
+      }
+
+      // Update all possible user list queries
+      queryClient.setQueriesData({ queryKey: adminKeys.users.lists() }, old => {
+        if (!old) return { data: { data: [optimisticUser] } }
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            data: [...(old.data?.data || []), optimisticUser],
+          },
+        }
+      })
+
+      return { previousUsers }
+    },
+    onError: (err, newUser, context) => {
+      // Rollback on error
+      if (context?.previousUsers) {
+        queryClient.setQueriesData(
+          { queryKey: adminKeys.users.lists() },
+          context.previousUsers
+        )
+      }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminKeys.users() })
+      // Invalidate and refetch all user-related queries
+      queryClient.invalidateQueries({ queryKey: adminKeys.users.all() })
+      queryClient.invalidateQueries({
+        queryKey: adminKeys.departmentMembers.all(),
+      })
     },
   })
 }
@@ -157,10 +259,45 @@ export const useApproveDepartmentMember = () => {
   return useMutation({
     mutationFn: ({ departmentId, userId }) =>
       approveDepartmentMember(departmentId, userId),
+    onMutate: async ({ departmentId, userId }) => {
+      await queryClient.cancelQueries({
+        queryKey: adminKeys.users.lists(),
+      })
+      await queryClient.cancelQueries({
+        queryKey: adminKeys.departmentMembers.byDepartment(departmentId),
+      })
+
+      const previousUsers = queryClient.getQueryData(adminKeys.users.lists())
+      const previousMembers = queryClient.getQueryData(
+        adminKeys.departmentMembers.byDepartment(departmentId)
+      )
+
+      // Update user status optimistically
+      queryClient.setQueryData(adminKeys.users.lists(), old => ({
+        ...old,
+        users: old?.users?.map(user =>
+          user.id === userId ? { ...user, status: "accepted" } : user
+        ),
+      }))
+
+      return { previousUsers, previousMembers }
+    },
+    onError: (err, { departmentId }, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(adminKeys.users.lists(), context.previousUsers)
+      }
+      if (context?.previousMembers) {
+        queryClient.setQueryData(
+          adminKeys.departmentMembers.byDepartment(departmentId),
+          context.previousMembers
+        )
+      }
+    },
     onSuccess: (_, { departmentId }) => {
       queryClient.invalidateQueries({
-        queryKey: adminKeys.departmentMembers(departmentId),
+        queryKey: adminKeys.departmentMembers.byDepartment(departmentId),
       })
+      queryClient.invalidateQueries({ queryKey: adminKeys.users.lists() })
     },
   })
 }
@@ -171,10 +308,45 @@ export const useRejectDepartmentMember = () => {
   return useMutation({
     mutationFn: ({ departmentId, userId }) =>
       rejectDepartmentMember(departmentId, userId),
+    onMutate: async ({ departmentId, userId }) => {
+      await queryClient.cancelQueries({
+        queryKey: adminKeys.users.lists(),
+      })
+      await queryClient.cancelQueries({
+        queryKey: adminKeys.departmentMembers.byDepartment(departmentId),
+      })
+
+      const previousUsers = queryClient.getQueryData(adminKeys.users.lists())
+      const previousMembers = queryClient.getQueryData(
+        adminKeys.departmentMembers.byDepartment(departmentId)
+      )
+
+      // Update user status optimistically
+      queryClient.setQueryData(adminKeys.users.lists(), old => ({
+        ...old,
+        users: old?.users?.map(user =>
+          user.id === userId ? { ...user, status: "rejected" } : user
+        ),
+      }))
+
+      return { previousUsers, previousMembers }
+    },
+    onError: (err, { departmentId }, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(adminKeys.users.lists(), context.previousUsers)
+      }
+      if (context?.previousMembers) {
+        queryClient.setQueryData(
+          adminKeys.departmentMembers.byDepartment(departmentId),
+          context.previousMembers
+        )
+      }
+    },
     onSuccess: (_, { departmentId }) => {
       queryClient.invalidateQueries({
-        queryKey: adminKeys.departmentMembers(departmentId),
+        queryKey: adminKeys.departmentMembers.byDepartment(departmentId),
       })
+      queryClient.invalidateQueries({ queryKey: adminKeys.users.lists() })
     },
   })
 }
@@ -187,8 +359,9 @@ export const useUpdateDepartmentMember = () => {
       updateDepartmentMember(departmentId, userId, data),
     onSuccess: (_, { departmentId }) => {
       queryClient.invalidateQueries({
-        queryKey: adminKeys.departmentMembers(departmentId),
+        queryKey: adminKeys.departmentMembers.byDepartment(departmentId),
       })
+      queryClient.invalidateQueries({ queryKey: adminKeys.users.lists() })
     },
   })
 }
