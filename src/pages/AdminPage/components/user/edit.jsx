@@ -23,6 +23,7 @@ export const EditUserForm = ({
   onSuccess,
   departments = [],
   roles = [],
+  canEditRoles,
   user,
 }) => {
   const updateUserMutation = useUpdateUser()
@@ -271,81 +272,87 @@ export const EditUserForm = ({
         </form.Field>
       </div>
 
-      <div>
-        <form.Field
-          name="department_id"
-          validators={{
-            onChange: ({ value }) =>
-              !value
-                ? "მომხმარებლის დეპარტამენტის მითითება სავალდებულოა"
-                : undefined,
-          }}
-        >
-          {field => (
-            <div>
-              <label
-                htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                მომხმარებლის დეპარტამენტი
-              </label>
-              <select
-                id={field.name}
-                name={field.name}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="">აირჩიეთ დეპარტამენტი</option>
-                {departments.map(department => (
-                  <option key={department.id} value={department.id}>
-                    {department.name}
-                  </option>
-                ))}
-              </select>
-              <FieldInfo field={field} />
-            </div>
-          )}
-        </form.Field>
-      </div>
+      {canEditRoles && (
+        <>
+          <div>
+            <form.Field
+              name="department_id"
+              validators={{
+                onChange: ({ value }) =>
+                  !value
+                    ? "მომხმარებლის დეპარტამენტის მითითება სავალდებულოა"
+                    : undefined,
+              }}
+            >
+              {field => (
+                <div>
+                  <label
+                    htmlFor={field.name}
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    მომხმარებლის დეპარტამენტი
+                  </label>
+                  <select
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">აირჩიეთ დეპარტამენტი</option>
+                    {departments.map(department => (
+                      <option key={department.id} value={department.id}>
+                        {department.name}
+                      </option>
+                    ))}
+                  </select>
+                  <FieldInfo field={field} />
+                </div>
+              )}
+            </form.Field>
+          </div>
 
-      <div>
-        <form.Field
-          name="roles"
-          validators={{
-            onChange: ({ value }) =>
-              !value ? "მომხმარებლის როლის მითითება სავალდებულოა" : undefined,
-          }}
-        >
-          {field => (
-            <div>
-              <label
-                htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >
-                მომხმარებლის როლი
-              </label>
-              <select
-                id={field.name}
-                name={field.name}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="">აირჩიეთ როლი</option>
-                {roles.map(role => (
-                  <option key={role.id} value={role.id}>
-                    {role.name}
-                  </option>
-                ))}
-              </select>
-              <FieldInfo field={field} />
-            </div>
-          )}
-        </form.Field>
-      </div>
+          <div>
+            <form.Field
+              name="roles"
+              validators={{
+                onChange: ({ value }) =>
+                  !value
+                    ? "მომხმარებლის როლის მითითება სავალდებულოა"
+                    : undefined,
+              }}
+            >
+              {field => (
+                <div>
+                  <label
+                    htmlFor={field.name}
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    მომხმარებლის როლი
+                  </label>
+                  <select
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">აირჩიეთ როლი</option>
+                    {roles.map(role => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </select>
+                  <FieldInfo field={field} />
+                </div>
+              )}
+            </form.Field>
+          </div>
+        </>
+      )}
 
       <form.Subscribe selector={state => [state.canSubmit, state.isSubmitting]}>
         {([canSubmit, isSubmitting]) => (

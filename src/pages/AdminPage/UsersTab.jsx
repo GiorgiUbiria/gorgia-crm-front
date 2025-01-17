@@ -95,8 +95,6 @@ const UsersTab = ({ departments = [], roles = [] }) => {
     }))
   }, [users])
 
-  console.log(users)
-
   const columns = React.useMemo(
     () => [
       {
@@ -309,7 +307,7 @@ const UsersTab = ({ departments = [], roles = [] }) => {
           onSuccess={() => closeModal("addUser")}
           departments={departments}
           roles={canManageRoles() ? roles : []}
-          hideRoles={!canManageRoles()}
+          canEditRoles={canManageRoles()}
         />
       </CrmDialog>
 
@@ -336,7 +334,7 @@ const UsersTab = ({ departments = [], roles = [] }) => {
           onSuccess={() => closeModal("editUser")}
           departments={departments}
           roles={canManageRoles() ? roles : []}
-          hideRoles={!canManageRoles()}
+          canEditRoles={canManageRoles()}
           user={getModalData("editUser")?.user}
         />
       </CrmDialog>
