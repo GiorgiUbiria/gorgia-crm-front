@@ -273,11 +273,32 @@ function Filter({ column }) {
       className="w-full px-2 py-1 border border-gray-200 dark:!border-gray-600 rounded-md text-sm bg-white dark:!bg-gray-800 text-gray-900 dark:!text-gray-100"
     >
       <option value="">ყველა</option>
-      {sortedUniqueValues.map(value => (
-        <option value={value} key={value}>
-          {value}
-        </option>
-      ))}
+      {column.columnDef.meta?.filterOptions
+        ?.filter(option =>
+          sortedUniqueValues.some(
+            value =>
+              value?.toString().toLowerCase() ===
+              option.value.toString().toLowerCase()
+          )
+        )
+        .map(({ value, label }) => (
+          <option value={value} key={value}>
+            {label}
+          </option>
+        ))}
+      {sortedUniqueValues
+        .filter(value => {
+          if (!value) return false
+          const lowerValue = value.toString().toLowerCase()
+          return !column.columnDef.meta?.filterOptions?.some(
+            opt => opt.value.toString().toLowerCase() === lowerValue
+          )
+        })
+        .map(value => (
+          <option value={value} key={value}>
+            {value}
+          </option>
+        ))}
     </select>
   ) : (
     <>

@@ -2,10 +2,9 @@ import PropTypes from "prop-types"
 import React from "react"
 import { Routes, Route } from "react-router-dom"
 import { authProtectedRoutes, publicRoutes } from "./routes"
-
-import Authmiddleware from "./routes/route"
 import VerticalLayout from "./components/VerticalLayout/"
 import NonAuthLayout from "./components/NonAuthLayout"
+import AuthInitializer from "./components/AuthInitializer"
 
 import "./assets/scss/theme.scss"
 import DataProvider from "components/hoc/DataProvider"
@@ -22,6 +21,7 @@ const App = () => {
 
   return (
     <DataProvider>
+      <AuthInitializer />
       <Routes>
         {publicRoutes.map((route, idx) => (
           <Route
@@ -34,14 +34,7 @@ const App = () => {
         {authProtectedRoutes.map((route, idx) => (
           <Route
             path={route.path}
-            element={
-              <Authmiddleware
-                requiredRoles={route.requiredRoles}
-                requiredDepartmentIds={route.requiredDepartmentIds}
-              >
-                <Layout>{route.component}</Layout>
-              </Authmiddleware>
-            }
+            element={<Layout>{route.component}</Layout>}
             key={idx}
             exact={true}
           />

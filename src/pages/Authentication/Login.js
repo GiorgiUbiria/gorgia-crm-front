@@ -1,5 +1,5 @@
 import PropTypes from "prop-types"
-import React from "react"
+import React, { useEffect } from "react"
 import {
   Row,
   Col,
@@ -19,6 +19,7 @@ import { useLogin } from "../../queries/auth"
 import { toast } from "react-toastify"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import useAuth from "hooks/useAuth"
 
 import profile from "assets/images/profile-img.png"
 import logo from "assets/images/logo.svg"
@@ -28,6 +29,14 @@ const Login = () => {
 
   const navigate = useNavigate()
   const { mutateAsync: login } = useLogin()
+  const { user, isInitialized, setUser, initialize } = useAuth()
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (isInitialized && user) {
+      navigate("/dashboard")
+    }
+  }, [isInitialized, user, navigate])
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -50,13 +59,18 @@ const Login = () => {
           return
         }
 
+        // First set the data in sessionStorage
         sessionStorage.setItem("token", res.data.token)
         sessionStorage.setItem("authUser", JSON.stringify(res.data.user))
+        
+        // Then update the auth store
+        setUser(res.data.user)
+        
+        // Initialize the auth store with the new user data
+        initialize()
+        
         toast.success("წარმატებით გაიარეთ ავტორიზაცია")
-
-        setTimeout(() => {
-          navigate("/dashboard")
-        }, 1000)
+        navigate("/dashboard")
       } catch (error) {
         const errorMessage =
           error.response?.data?.message ||
@@ -70,6 +84,16 @@ const Login = () => {
     e.preventDefault()
     validation.handleSubmit()
     return false
+  }
+
+  // Show loading state while checking auth
+  if (!isInitialized) {
+    return null
+  }
+
+  // If user is already authenticated, don't render the login form
+  if (user) {
+    return null
   }
 
   return (

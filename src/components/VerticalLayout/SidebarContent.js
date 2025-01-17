@@ -2,38 +2,36 @@
 import React, { useEffect, useRef, useCallback, useMemo, useState } from "react"
 import { useLocation } from "react-router-dom"
 import { withTranslation } from "react-i18next"
-import { usePermissions } from "hooks/usePermissions"
+import useAuth from "hooks/useAuth"
 import MenuItem from "./MenuItem"
 import { getMenuConfig } from "./menuConfig"
 import "../customScrollbars.css"
 import PropTypes from "prop-types"
+import CrmSpinner from "components/CrmSpinner"
 
 const SidebarContent = ({ t, onLinkClick }) => {
   const ref = useRef()
   const location = useLocation()
-  const { user } = usePermissions()
+  const auth = useAuth()
   const [expandedMenus, setExpandedMenus] = useState({})
   const [activeMenus, setActiveMenus] = useState([])
 
-  const menuConfig = useMemo(() => getMenuConfig(t, user), [t, user])
+  const menuConfig = useMemo(() => getMenuConfig(t, auth) || [], [t, auth])
 
   const isMenuActive = useCallback((item, currentPath) => {
-    if (!item.to) return false
-
+    if (!item?.to) return false
     if (item.to === currentPath) return true
-
     if (currentPath.startsWith(item.to) && item.to !== "/") return true
-
     if (item.submenu) {
       return item.submenu.some(subItem => isMenuActive(subItem, currentPath))
     }
-
     return false
   }, [])
 
   const getActiveMenuParents = useCallback(
-    (items, currentPath, parents = []) => {
+    (items = [], currentPath, parents = []) => {
       for (const item of items) {
+        if (!item) continue
         if (isMenuActive(item, currentPath)) {
           return parents
         }
@@ -52,8 +50,9 @@ const SidebarContent = ({ t, onLinkClick }) => {
 
   const activateParentDropdown = useCallback(
     path => {
-      const activeParents = getActiveMenuParents(menuConfig, path)
+      if (!menuConfig) return
 
+      const activeParents = getActiveMenuParents(menuConfig, path)
       const newExpandedMenus = { ...expandedMenus }
       let shouldUpdateExpanded = false
 
@@ -65,6 +64,7 @@ const SidebarContent = ({ t, onLinkClick }) => {
       })
 
       const allActivePaths = menuConfig.reduce((acc, item) => {
+        if (!item) return acc
         if (isMenuActive(item, path)) {
           acc.push(item.to)
         }
@@ -79,7 +79,6 @@ const SidebarContent = ({ t, onLinkClick }) => {
       }, [])
 
       const newActiveMenus = [...activeParents, ...allActivePaths]
-
       const isActiveMenusDifferent =
         newActiveMenus.length !== activeMenus.length ||
         !newActiveMenus.every((menu, index) => menu === activeMenus[index])
@@ -104,8 +103,8 @@ const SidebarContent = ({ t, onLinkClick }) => {
 
   const handleMenuClick = useCallback(
     item => {
+      if (!item) return
       if (!item.submenu) {
-        // Close the sidebar on mobile screens
         onLinkClick()
       }
       if (item.submenu) {
@@ -116,27 +115,10 @@ const SidebarContent = ({ t, onLinkClick }) => {
   )
 
   // Define renderSubmenu as a regular function to avoid circular dependencies
-  const renderSubmenu = (submenuItems) => {
-    return submenuItems.map((item, index) => (
-      <MenuItem
-        key={`${item.to}-${index}`}
-        to={item.to}
-        icon={item.icon}
-        label={item.label}
-        hasSubmenu={!!item.submenu}
-        isExpanded={item.submenu && expandedMenus[item.key]}
-        isActive={activeMenus.includes(item.to)}
-        onClick={() => handleMenuClick(item)}
-        onLinkClick={onLinkClick}
-      >
-        {item.submenu ? renderSubmenu(item.submenu) : null}
-      </MenuItem>
-    ))
-  }
-
-  const menuItems = useMemo(
-    () =>
-      menuConfig.map((item, index) => (
+  const renderSubmenu = (submenuItems = []) => {
+    return submenuItems.map((item, index) => {
+      if (!item) return null
+      return (
         <MenuItem
           key={`${item.to}-${index}`}
           to={item.to}
@@ -148,16 +130,44 @@ const SidebarContent = ({ t, onLinkClick }) => {
           onClick={() => handleMenuClick(item)}
           onLinkClick={onLinkClick}
         >
-          {item.submenu && renderSubmenu(item.submenu)}
+          {item.submenu ? renderSubmenu(item.submenu) : null}
         </MenuItem>
-      )),
+      )
+    })
+  }
+
+  const menuItems = useMemo(
+    () =>
+      menuConfig.map((item, index) => {
+        if (!item) return null
+        return (
+          <MenuItem
+            key={`${item.to}-${index}`}
+            to={item.to}
+            icon={item.icon}
+            label={item.label}
+            hasSubmenu={!!item.submenu}
+            isExpanded={item.submenu && expandedMenus[item.key]}
+            isActive={activeMenus.includes(item.to)}
+            onClick={() => handleMenuClick(item)}
+            onLinkClick={onLinkClick}
+          >
+            {item.submenu && renderSubmenu(item.submenu)}
+          </MenuItem>
+        )
+      }),
     [menuConfig, expandedMenus, activeMenus, handleMenuClick, onLinkClick]
   )
 
   useEffect(() => {
-    activateParentDropdown(location.pathname)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname])
+    if (location.pathname) {
+      activateParentDropdown(location.pathname)
+    }
+  }, [location.pathname, activateParentDropdown])
+
+  if (!auth.isInitialized) {
+    return <CrmSpinner />
+  }
 
   return (
     <div

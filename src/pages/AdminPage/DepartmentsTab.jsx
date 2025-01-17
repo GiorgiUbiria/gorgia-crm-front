@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react"
+import React, { useMemo } from "react"
 import { CrmTable } from "components/CrmTable"
 import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
 import {
@@ -11,23 +11,11 @@ import { AssignDepartmentHeadForm } from "./components/assign"
 import { AddDepartmentForm } from "./components/add"
 import { EditDepartmentForm } from "./components/edit"
 import { DeleteDepartmentForm } from "./components/delete"
+import useModalStore from "store/zustand/modalStore"
 import * as XLSX from "xlsx"
 
 const DepartmentsTab = ({ departments = [], users }) => {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isAssignHeadModalOpen, setIsAssignHeadModalOpen] = useState({
-    isOpen: false,
-    departmentId: null,
-    currentHeadId: null,
-  })
-  const [isEditModalOpen, setIsEditModalOpen] = useState({
-    isOpen: false,
-    department: {},
-  })
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState({
-    isOpen: false,
-    department_id: null,
-  })
+  const { openModal, closeModal, isModalOpen, getModalData } = useModalStore()
 
   const transformedDepartments = useMemo(() => {
     if (!Array.isArray(departments)) return []
@@ -94,8 +82,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
                 variant="info"
                 size="sm"
                 onClick={() =>
-                  setIsAssignHeadModalOpen({
-                    isOpen: true,
+                  openModal("assignHead", {
                     departmentId: row.original.id,
                     currentHeadId: row.original.department_head_id,
                   })
@@ -107,8 +94,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
                 variant="info"
                 size="sm"
                 onClick={() =>
-                  setIsEditModalOpen({
-                    isOpen: true,
+                  openModal("editDepartment", {
                     department: row.original,
                   })
                 }
@@ -119,8 +105,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
                 variant="danger"
                 size="sm"
                 onClick={() =>
-                  setIsDeleteModalOpen({
-                    isOpen: true,
+                  openModal("deleteDepartment", {
                     department_id: row.original.id,
                   })
                 }
@@ -132,7 +117,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
         },
       },
     ],
-    []
+    [openModal]
   )
 
   const exportToExcel = () => {
@@ -153,21 +138,21 @@ const DepartmentsTab = ({ departments = [], users }) => {
   return (
     <>
       <div className="mb-4 flex gap-x-2">
-        <DialogButton size="sm" onClick={() => setIsAddModalOpen(true)}>
+        <DialogButton size="sm" onClick={() => openModal("addDepartment")}>
           <AddButton size="sm" />
         </DialogButton>
         <DownloadExcelButton onClick={exportToExcel} />
       </div>
       <CrmDialog
-        isOpen={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen}
+        isOpen={isModalOpen("addDepartment")}
+        onOpenChange={open => !open && closeModal("addDepartment")}
         title="დღის შედეგის დამატება"
         description="შეავსეთ ფორმა დღის შედეგის დასამატებლად"
         footer={
           <>
             <DialogButton
               variant="secondary"
-              onClick={() => setIsAddModalOpen(false)}
+              onClick={() => closeModal("addDepartment")}
             >
               გაუქმება
             </DialogButton>
@@ -177,24 +162,19 @@ const DepartmentsTab = ({ departments = [], users }) => {
           </>
         }
       >
-        <AddDepartmentForm onSuccess={() => setIsAddModalOpen(false)} />
+        <AddDepartmentForm onSuccess={() => closeModal("addDepartment")} />
       </CrmDialog>
+
       <CrmDialog
-        isOpen={isAssignHeadModalOpen.isOpen}
-        onOpenChange={setIsAssignHeadModalOpen}
+        isOpen={isModalOpen("assignHead")}
+        onOpenChange={open => !open && closeModal("assignHead")}
         title="ხელმძღვანელის მიბმა"
         description="აირჩიეთ დეპარტამენტის ხელმძღვანელი"
         footer={
           <>
             <DialogButton
               variant="secondary"
-              onClick={() =>
-                setIsAssignHeadModalOpen({
-                  isOpen: false,
-                  departmentId: null,
-                  currentHeadId: null,
-                })
-              }
+              onClick={() => closeModal("assignHead")}
             >
               გაუქმება
             </DialogButton>
@@ -205,30 +185,23 @@ const DepartmentsTab = ({ departments = [], users }) => {
         }
       >
         <AssignDepartmentHeadForm
-          onSuccess={() =>
-            setIsAssignHeadModalOpen({
-              isOpen: false,
-              departmentId: null,
-              currentHeadId: null,
-            })
-          }
+          onSuccess={() => closeModal("assignHead")}
           users={users}
-          department_id={isAssignHeadModalOpen.departmentId}
-          currentHeadId={isAssignHeadModalOpen.currentHeadId}
+          department_id={getModalData("assignHead")?.departmentId}
+          currentHeadId={getModalData("assignHead")?.currentHeadId}
         />
       </CrmDialog>
+
       <CrmDialog
-        isOpen={isEditModalOpen.isOpen}
-        onOpenChange={setIsEditModalOpen}
+        isOpen={isModalOpen("editDepartment")}
+        onOpenChange={open => !open && closeModal("editDepartment")}
         title="დეპარტამენტის რედაქტირება"
         description="შეცვალეთ დეპარტამენტის საბაზისო ინფორმაცია"
         footer={
           <>
             <DialogButton
               variant="secondary"
-              onClick={() =>
-                setIsEditModalOpen({ isOpen: false, department: {} })
-              }
+              onClick={() => closeModal("editDepartment")}
             >
               გაუქმება
             </DialogButton>
@@ -239,24 +212,21 @@ const DepartmentsTab = ({ departments = [], users }) => {
         }
       >
         <EditDepartmentForm
-          onSuccess={() =>
-            setIsEditModalOpen({ isOpen: false, department: {} })
-          }
-          department={isEditModalOpen.department}
+          onSuccess={() => closeModal("editDepartment")}
+          department={getModalData("editDepartment")?.department}
         />
       </CrmDialog>
+
       <CrmDialog
-        isOpen={isDeleteModalOpen.isOpen}
-        onOpenChange={setIsDeleteModalOpen}
+        isOpen={isModalOpen("deleteDepartment")}
+        onOpenChange={open => !open && closeModal("deleteDepartment")}
         title="დეპარტამენტის წაშლა"
         description="დარწმუნებული ხართ, რომ გსურთ დეპარტამენტის წაშლა?"
         footer={
           <>
             <DialogButton
               variant="secondary"
-              onClick={() =>
-                setIsDeleteModalOpen({ isOpen: false, department_id: {} })
-              }
+              onClick={() => closeModal("deleteDepartment")}
             >
               გაუქმება
             </DialogButton>
@@ -267,10 +237,8 @@ const DepartmentsTab = ({ departments = [], users }) => {
         }
       >
         <DeleteDepartmentForm
-          onSuccess={() =>
-            setIsDeleteModalOpen({ isOpen: false, department_id: null })
-          }
-          department_id={isDeleteModalOpen.department_id}
+          onSuccess={() => closeModal("deleteDepartment")}
+          department_id={getModalData("deleteDepartment")?.department_id}
         />
       </CrmDialog>
 

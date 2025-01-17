@@ -1,6 +1,6 @@
 import React from "react"
 import { Navigate } from "react-router-dom"
-import AccessRoute from "./AccessRoute"
+import ProtectedRoute from "../components/ProtectedRoute"
 
 import AdminPage from "pages/AdminPage"
 import BusinessPage from "pages/Applications/BusinessTrip/BusinessPage"
@@ -74,18 +74,18 @@ import CreateNote from "pages/NotesEditor/CreateNote"
 import EditNote from "pages/NotesEditor/EditNote"
 import ChatBox from "pages/Chat/ChatBox"
 
-const withAccessRoute = (component, conditions = "") => (
-  <AccessRoute conditions={conditions}>{component}</AccessRoute>
+const withProtectedRoute = (component, permission = "") => (
+  <ProtectedRoute permission={permission}>{component}</ProtectedRoute>
 )
 
 const dashboardRoutes = {
   path: "/dashboard",
-  component: <Dashboard />,
+  component: withProtectedRoute(<Dashboard />),
 }
 
 const profileRoutes = {
   path: "/profile",
-  component: <ProfilePage />,
+  component: withProtectedRoute(<ProfilePage />),
 }
 
 const adminRoutes = {
@@ -93,22 +93,22 @@ const adminRoutes = {
   children: {
     dashboard: {
       path: "/admin/dashboard",
-      component: withAccessRoute(
+      component: withProtectedRoute(
         <AdminPage />,
         "role:admin|role:department_head|role:hr_member"
       ),
     },
     approvals: {
       path: "/admin/approvals",
-      component: withAccessRoute(<HeadPage />, "role:admin"),
+      component: withProtectedRoute(<HeadPage />, "role:admin"),
     },
     archive: {
       path: "/admin/archive",
-      component: withAccessRoute(<ArchivePage />, "role:admin"),
+      component: withProtectedRoute(<ArchivePage />, "role:admin"),
     },
     visitors: {
       path: "/admin/visitors",
-      component: withAccessRoute(
+      component: withProtectedRoute(
         <VisitorsTraffic />,
         "role:admin|role:department_head|role:hr_member"
       ),
@@ -124,19 +124,25 @@ const applicationsRoutes = {
       children: {
         new: {
           path: "/applications/purchases/new",
-          component: <ProcurementPage />,
+          component: withProtectedRoute(<ProcurementPage />),
         },
         approve: {
           path: "/applications/purchases/approve",
-          component: <PurchasePageApprove />,
+          component: withProtectedRoute(
+            <PurchasePageApprove />,
+            "role:admin|role:department_head|department:7"
+          ),
         },
         archive: {
           path: "/applications/purchases/archive",
-          component: <ProcurementPageArchive />,
+          component: withProtectedRoute(
+            <ProcurementPageArchive />,
+            "role:admin|role:department_head|role:department_head_assistant|department:7"
+          ),
         },
         myRequests: {
           path: "/applications/purchases/my-requests",
-          component: <UserProcurement />,
+          component: withProtectedRoute(<UserProcurement />),
         },
       },
     },
@@ -145,19 +151,25 @@ const applicationsRoutes = {
       children: {
         new: {
           path: "/applications/vacation/new",
-          component: <VacationPage />,
+          component: withProtectedRoute(<VacationPage />),
         },
         approve: {
           path: "/applications/vacation/approve",
-          component: <VacationPageApprove />,
+          component: withProtectedRoute(
+            <VacationPageApprove />,
+            "role:admin|role:department_head"
+          ),
         },
         archive: {
           path: "/applications/vacation/archive",
-          component: <VacationPageArchive />,
+          component: withProtectedRoute(
+            <VacationPageArchive />,
+            "role:admin|role:department_head|role:department_head_assistant|department:8"
+          ),
         },
         myRequests: {
           path: "/applications/vacation/my-requests",
-          component: <UserVocation />,
+          component: withProtectedRoute(<UserVocation />),
         },
       },
     },
@@ -166,19 +178,25 @@ const applicationsRoutes = {
       children: {
         new: {
           path: "/applications/business-trip/new",
-          component: <BusinessPage />,
+          component: withProtectedRoute(<BusinessPage />),
         },
         approve: {
           path: "/applications/business-trip/approve",
-          component: <TripPageApprove />,
+          component: withProtectedRoute(
+            <TripPageApprove />,
+            "role:admin|role:department_head"
+          ),
         },
         archive: {
           path: "/applications/business-trip/archive",
-          component: <TripPageArchive />,
+          component: withProtectedRoute(
+            <TripPageArchive />,
+            "role:admin|role:department_head|role:department_head_assistant"
+          ),
         },
         myRequests: {
           path: "/applications/business-trip/my-requests",
-          component: <UserTrip />,
+          component: withProtectedRoute(<UserTrip />),
         },
       },
     },
@@ -193,25 +211,25 @@ const hrRoutes = {
       children: {
         new: {
           path: "/hr/documents/new",
-          component: <HrPage />,
+          component: withProtectedRoute(<HrPage />),
         },
         approve: {
           path: "/hr/documents/approve",
-          component: withAccessRoute(
+          component: withProtectedRoute(
             <HrPageApprove />,
             "role:admin|role:department_head,department:8|role:department_head_assistant,department:8"
           ),
         },
         archive: {
           path: "/hr/documents/archive",
-          component: withAccessRoute(
+          component: withProtectedRoute(
             <HrPageArchive />,
             "role:admin|department:8"
           ),
         },
         myRequests: {
           path: "/hr/documents/my-requests",
-          component: <UserHrDocuments />,
+          component: withProtectedRoute(<UserHrDocuments />),
         },
       },
     },
@@ -226,22 +244,28 @@ const legalRoutes = {
       children: {
         new: {
           path: "/legal/contracts/new",
-          component: <AgreementRequest />,
+          component: withProtectedRoute(<AgreementRequest />),
         },
         purchase: {
           path: "/legal/contracts/purchase",
           children: {
             approve: {
               path: "/legal/contracts/purchase/approve",
-              component: <StandardAgreementApprove />,
+              component: withProtectedRoute(
+                <StandardAgreementApprove />,
+                "role:admin|role:department_head"
+              ),
             },
             archive: {
               path: "/legal/contracts/purchase/archive",
-              component: <StandardAgreementArchive />,
+              component: withProtectedRoute(
+                <StandardAgreementArchive />,
+                "role:admin|role:department_head|role:department_head_assistant"
+              ),
             },
             myRequests: {
               path: "/legal/contracts/purchase/my-requests",
-              component: <StandardAgreementUser />,
+              component: withProtectedRoute(<StandardAgreementUser />),
             },
           },
         },
@@ -250,15 +274,21 @@ const legalRoutes = {
           children: {
             approve: {
               path: "/legal/contracts/delivery/approve",
-              component: <DeliveryAgreementApprove />,
+              component: withProtectedRoute(
+                <DeliveryAgreementApprove />,
+                "role:admin|role:department_head"
+              ),
             },
             archive: {
               path: "/legal/contracts/delivery/archive",
-              component: <DeliveryAgreementArchive />,
+              component: withProtectedRoute(
+                <DeliveryAgreementArchive />,
+                "role:admin|role:department_head|role:department_head_assistant"
+              ),
             },
             myRequests: {
               path: "/legal/contracts/delivery/my-requests",
-              component: <DeliveryAgreementUser />,
+              component: withProtectedRoute(<DeliveryAgreementUser />),
             },
           },
         },
@@ -267,15 +297,21 @@ const legalRoutes = {
           children: {
             approve: {
               path: "/legal/contracts/marketing/approve",
-              component: <MarketingAgreementApprove />,
+              component: withProtectedRoute(
+                <MarketingAgreementApprove />,
+                "role:admin|role:department_head"
+              ),
             },
             archive: {
               path: "/legal/contracts/marketing/archive",
-              component: <MarketingAgreementArchive />,
+              component: withProtectedRoute(
+                <MarketingAgreementArchive />,
+                "role:admin|role:department_head|role:department_head_assistant"
+              ),
             },
             myRequests: {
               path: "/legal/contracts/marketing/my-requests",
-              component: <MarketingAgreementUser />,
+              component: withProtectedRoute(<MarketingAgreementUser />),
             },
           },
         },
@@ -284,15 +320,21 @@ const legalRoutes = {
           children: {
             approve: {
               path: "/legal/contracts/service/approve",
-              component: <ServiceAgreementApprove />,
+              component: withProtectedRoute(
+                <ServiceAgreementApprove />,
+                "role:admin|role:department_head"
+              ),
             },
             archive: {
               path: "/legal/contracts/service/archive",
-              component: <ServiceAgreementArchive />,
+              component: withProtectedRoute(
+                <ServiceAgreementArchive />,
+                "role:admin|role:department_head|role:department_head_assistant"
+              ),
             },
             myRequests: {
               path: "/legal/contracts/service/my-requests",
-              component: <ServiceAgreementUser />,
+              component: withProtectedRoute(<ServiceAgreementUser />),
             },
           },
         },
@@ -301,15 +343,21 @@ const legalRoutes = {
           children: {
             approve: {
               path: "/legal/contracts/local/approve",
-              component: <LocalAgreementApprove />,
+              component: withProtectedRoute(
+                <LocalAgreementApprove />,
+                "role:admin|role:department_head"
+              ),
             },
             archive: {
               path: "/legal/contracts/local/archive",
-              component: <LocalAgreementArchive />,
+              component: withProtectedRoute(
+                <LocalAgreementArchive />,
+                "role:admin|role:department_head|role:department_head_assistant"
+              ),
             },
             myRequests: {
               path: "/legal/contracts/local/my-requests",
-              component: <LocalAgreementUser />,
+              component: withProtectedRoute(<LocalAgreementUser />),
             },
           },
         },
@@ -323,19 +371,19 @@ const supportRoutes = {
   children: {
     itTasks: {
       path: "/support/it-tasks",
-      component: <TaskList />,
+      component: withProtectedRoute(<TaskList />),
     },
     itTaskDetails: {
       path: "/support/it-tasks/:id",
-      component: <JobDetails />,
+      component: withProtectedRoute(<JobDetails />),
     },
     farmTasks: {
       path: "/support/farm-tasks",
-      component: <FarmTaskList />,
+      component: withProtectedRoute(<FarmTaskList />),
     },
     farmTaskDetails: {
       path: "/support/farm-tasks/:id",
-      component: <FarmTaskDetails />,
+      component: withProtectedRoute(<FarmTaskDetails />),
     },
   },
 }
@@ -345,11 +393,11 @@ const communicationRoutes = {
   children: {
     chat: {
       path: "/communication/chat",
-      component: <ChatBox />,
+      component: withProtectedRoute(<ChatBox />),
     },
     comments: {
       path: "/communication/comments/:id",
-      component: <MakeComment />,
+      component: withProtectedRoute(<MakeComment />),
     },
   },
 }
@@ -359,15 +407,15 @@ const leadsRoutes = {
   children: {
     vip: {
       path: "/leads/vip",
-      component: <VipLeadsPage />,
+      component: withProtectedRoute(<VipLeadsPage />),
     },
     vipDetails: {
       path: "/leads/vip/:id",
-      component: <VipLeadDetailPage />,
+      component: withProtectedRoute(<VipLeadDetailPage />),
     },
     corporate: {
       path: "/leads/corporate",
-      component: <LeadsPage />,
+      component: withProtectedRoute(<LeadsPage />),
     },
   },
 }
@@ -377,35 +425,41 @@ const toolsRoutes = {
   children: {
     calendar: {
       path: "/tools/calendar",
-      component: <Calendar />,
+      component: withProtectedRoute(<Calendar />),
     },
     notes: {
       path: "/tools/notes",
-      component: <NotesPage />,
+      component: withProtectedRoute(<NotesPage />),
     },
     createNote: {
       path: "/tools/notes/create",
-      component: <CreateNote />,
+      component: withProtectedRoute(<CreateNote />),
     },
     editNote: {
       path: "/tools/notes/edit/:id",
-      component: <EditNote />,
+      component: withProtectedRoute(<EditNote />),
     },
     dailyResults: {
       path: "/tools/daily-results",
-      component: <Dailies />,
+      component: withProtectedRoute(
+        <Dailies />,
+        "role:admin|role:department_head"
+      ),
     },
     dailyResultDetails: {
       path: "/tools/daily-results/:id",
-      component: <Daily />,
+      component: withProtectedRoute(
+        <Daily />,
+        "role:admin|role:department_head"
+      ),
     },
     innerDailyResults: {
       path: "/tools/inner-daily-results",
-      component: <DailiesInner />,
+      component: withProtectedRoute(<DailiesInner />),
     },
     innerDailyResultDetails: {
       path: "/tools/inner-daily-results/:id",
-      component: <DailyInner />,
+      component: withProtectedRoute(<DailyInner />),
     },
   },
 }

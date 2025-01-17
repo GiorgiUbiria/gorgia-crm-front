@@ -12,56 +12,62 @@ import {
   Download,
 } from "lucide-react"
 
-export const AddButton = (props) => (
+export const AddButton = ({ props, label = "დამატება" }) => (
   <BaseButton variant="primary" icon={Plus} size="md" {...props}>
-    დამატება
+    {label}
   </BaseButton>
 )
 
-export const EditButton = ({props, label = "რედაქტირება"}) => (
+export const EditButton = ({ props, label = "რედაქტირება" }) => (
   <BaseButton variant="info" icon={Pencil} size="md" {...props}>
-    {label}{" "}
+    {label}
   </BaseButton>
 )
 
-export const DeleteButton = props => (
+export const DeleteButton = ({ props, label = "წაშლა" }) => (
   <BaseButton variant="danger" icon={Trash2} size="md" {...props}>
-    წაშლა
+    {label}
   </BaseButton>
 )
 
-export const CancelButton = props => (
+export const CancelButton = ({ props, label = "გაუქმება" }) => (
   <BaseButton variant="secondary" icon={X} size="md" {...props}>
-    გაუქმება
+    {label}
   </BaseButton>
 )
 
-export const ApproveButton = props => (
+export const ApproveButton = ({ props, label = "დამტკიცება" }) => (
   <BaseButton variant="success" icon={Check} size="md" {...props}>
-    დამტკიცება
+    {label}
   </BaseButton>
 )
 
-export const RequestButton = props => (
+export const RequestButton = ({ props, label = "მოთხოვნა" }) => (
   <BaseButton variant="warning" icon={Send} size="md" {...props}>
-    მოთხოვნა
+    {label}
   </BaseButton>
 )
 
-export const DownloadPdfButton = props => (
+export const DownloadPdfButton = ({ props, label = "PDF-ად ჩამოტვირთვა" }) => (
   <BaseButton variant="info" icon={FileText} size="md" {...props}>
-    PDF-ად ჩამოტვირთვა
+    {label}
   </BaseButton>
 )
 
-export const DownloadExcelButton = props => (
+export const DownloadExcelButton = ({ props, label = "Excel-ად ჩამოტვირთვა" }) => (
   <BaseButton variant="success" icon={FileSpreadsheet} size="md" {...props}>
-    Excel-ად ჩამოტვირთვა
+    {label}
   </BaseButton>
 )
 
-export const DownloadButton = props => (
+export const DownloadButton = ({ props, label = "ჩამოტვირთვა" }) => (
   <BaseButton variant="primary" icon={Download} size="md" {...props}>
-    ჩამოტვირთვა
+    {label}
+  </BaseButton>
+)
+
+export const AssignButton = ({ props, label = "მინიჭება" }) => (
+  <BaseButton variant="info" icon={Send} size="md" {...props}>
+    {label}
   </BaseButton>
 )
