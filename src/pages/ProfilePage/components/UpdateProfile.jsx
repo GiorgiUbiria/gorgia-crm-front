@@ -12,126 +12,53 @@ const UpdateProfile = ({
   const { t } = useTranslation()
 
   return (
-    <div>
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+    <div className="animate-fade-in">
+      <h2 className="text-xl font-bold text-gray-900 dark:!text-white mb-6">
         {t("პროფილის განახლება")}
       </h2>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("სახელი")}
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={profileForm.name}
-              onChange={handleChangeProfile}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
-            />
-            {profileError.name && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {profileError.name}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("გვარი")}
-            </label>
-            <input
-              type="text"
-              name="sur_name"
-              value={profileForm.sur_name}
-              onChange={handleChangeProfile}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
-            />
-            {profileError.sur_name && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {profileError.sur_name}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("მობილური")}
-            </label>
-            <input
-              type="text"
-              name="mobile_number"
-              value={profileForm.mobile_number}
-              onChange={handleChangeProfile}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
-            />
-            {profileError.mobile_number && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {profileError.mobile_number}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("პირადი ნომერი")}
-            </label>
-            <input
-              type="text"
-              name="id_number"
-              value={profileForm.id_number}
-              onChange={handleChangeProfile}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
-            />
-            {profileError.id_number && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {profileError.id_number}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("დაბადების თარიღი")}
-            </label>
-            <input
-              type="date"
-              name="date_of_birth"
-              value={profileForm.date_of_birth}
-              onChange={handleChangeProfile}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
-            />
-            {profileError.date_of_birth && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {profileError.date_of_birth}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("მუშაობის დაწყების თარიღი")}
-            </label>
-            <input
-              type="date"
-              name="working_start_date"
-              value={profileForm.working_start_date}
-              onChange={handleChangeProfile}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
-            />
-            {profileError.working_start_date && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {profileError.working_start_date}
-              </p>
-            )}
-          </div>
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {[
+            { name: "name", label: t("სახელი"), type: "text" },
+            { name: "sur_name", label: t("გვარი"), type: "text" },
+            { name: "mobile_number", label: t("მობილური"), type: "text" },
+            { name: "id_number", label: t("პირადი ნომერი"), type: "text" },
+            {
+              name: "date_of_birth",
+              label: t("დაბადების თარიღი"),
+              type: "date",
+            },
+            {
+              name: "working_start_date",
+              label: t("მუშაობის დაწყების თარიღი"),
+              type: "date",
+            },
+          ].map(field => (
+            <div key={field.name} className="group">
+              <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-2">
+                {field.label}
+              </label>
+              <input
+                type={field.type}
+                name={field.name}
+                value={profileForm[field.name]}
+                onChange={handleChangeProfile}
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:!border-gray-600 bg-white dark:!bg-gray-700 text-gray-900 dark:!text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:!ring-blue-400 dark:focus:!border-blue-400 transition-all duration-200"
+              />
+              {profileError[field.name] && (
+                <p className="mt-2 text-sm text-red-600 dark:!text-red-400 animate-fade-in">
+                  {profileError[field.name]}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
 
         <div className="flex justify-end">
           <button
             type="submit"
             disabled={!isFormChanged}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:!ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           >
             {t("განახლება")}
           </button>

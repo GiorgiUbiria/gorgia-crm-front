@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -18,6 +18,7 @@ const ProfilePage = () => {
   const { data: userData } = useGetUser()
   const { mutateAsync: changePasswordMutation } = useChangePassword()
   const { mutateAsync: updateUserMutation } = useUpdateUser()
+  const [activeTab, setActiveTab] = useState("profile")
 
   const [passForm, setPassForm] = useState({
     old_password: "",
@@ -75,7 +76,6 @@ const ProfilePage = () => {
       })
     }
   }, [userData])
-
   const handleChangePass = e => {
     const { name, value } = e.target
     setPassForm({
@@ -202,32 +202,69 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <ProfileHeader userData={userData} onImageChange={handleImageChange} />
+    <div className="min-h-screen bg-white dark:!bg-gray-900 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="space-y-6 animate-fade-in">
+          <ProfileHeader
+            userData={userData}
+            onImageChange={handleImageChange}
+          />
 
-      <div className="space-y-6">
-        <GeneralInfo userData={userData} />
+          <div className="bg-white dark:!bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+            <div className="border-b border-gray-200 dark:!border-gray-700">
+              <nav className="flex -mb-px">
+                <button
+                  onClick={() => setActiveTab("profile")}
+                  className={`flex-1 px-4 py-4 text-center border-b-2 font-medium text-sm sm:text-base transition-colors duration-200 ${
+                    activeTab === "profile"
+                      ? "border-blue-500 text-blue-600 dark:!text-blue-400"
+                      : "border-transparent text-gray-500 hover:text-gray-700 dark:!text-gray-400 dark:hover:!text-gray-300"
+                  }`}
+                >
+                  {t("პროფილის პარამეტრები")}
+                </button>
+                <button
+                  onClick={() => setActiveTab("security")}
+                  className={`flex-1 px-4 py-4 text-center border-b-2 font-medium text-sm sm:text-base transition-colors duration-200 ${
+                    activeTab === "security"
+                      ? "border-blue-500 text-blue-600 dark:!text-blue-400"
+                      : "border-transparent text-gray-500 hover:text-gray-700 dark:!text-gray-400 dark:hover:!text-gray-300"
+                  }`}
+                >
+                  {t("უსაფრთხოება")}
+                </button>
+              </nav>
+            </div>
 
-        <div className="h-px bg-gray-200 dark:bg-gray-700" />
-
-        <UpdateProfile
-          profileForm={profileForm}
-          profileError={profileError}
-          handleChangeProfile={handleChangeProfile}
-          onSubmit={submitProfileForm}
-          isFormChanged={isProfileFormChanged()}
-        />
-
-        <div className="h-px bg-gray-200 dark:bg-gray-700" />
-
-        <ChangePassword
-          passForm={passForm}
-          passError={passError}
-          handleChangePass={handleChangePass}
-          onSubmit={submitPassForm}
-        />
+            <div className="p-4 sm:p-6 lg:p-8">
+              {activeTab === "profile" ? (
+                <div className="space-y-8">
+                  <GeneralInfo userData={userData} />
+                  <div className="h-px bg-gray-200 dark:!bg-gray-700" />
+                  <UpdateProfile
+                    profileForm={profileForm}
+                    profileError={profileError}
+                    handleChangeProfile={handleChangeProfile}
+                    onSubmit={submitProfileForm}
+                    isFormChanged={isProfileFormChanged()}
+                  />
+                </div>
+              ) : (
+                <ChangePassword
+                  passForm={passForm}
+                  passError={passError}
+                  handleChangePass={handleChangePass}
+                  onSubmit={submitPassForm}
+                />
+              )}
+            </div>
+          </div>
+        </div>
       </div>
-      <ToastContainer theme="colored" />
+      <ToastContainer
+        position="bottom-right"
+        toastClassName="animate-slide-up"
+      />
     </div>
   )
 }

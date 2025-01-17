@@ -22,10 +22,14 @@ const ProfileHeader = ({ userData, onImageChange }) => {
     : NoAvatarIcon
 
   return (
-    <header className="bg-gradient-to-br from-blue-500 to-blue-900 rounded-lg p-4 sm:p-8 mb-8 shadow-lg">
-      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full">
-        <div className="relative">
-          <div className="relative w-[80px] sm:w-[100px] h-[80px] sm:h-[100px] rounded-lg overflow-hidden border-3 border-white/20 transition-transform hover:scale-[1.03]">
+    <header className="relative bg-gradient-to-br from-blue-500 to-blue-700 dark:from-blue-600 dark:to-blue-900 rounded-2xl p-6 sm:p-8 shadow-xl overflow-hidden group">
+      {/* Background pattern */}
+      <div className="absolute inset-0 bg-white/5 opacity-50" />
+
+      {/* Content */}
+      <div className="relative flex flex-col sm:flex-row items-center gap-6 w-full">
+        <div className="relative group/photo">
+          <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden ring-4 ring-white/20 transition-all duration-300 group-hover/photo:ring-white/40 transform group-hover/photo:scale-[1.02]">
             <img
               src={profileImageSrc}
               alt={`${userData?.name} ${userData?.sur_name}`}
@@ -33,9 +37,11 @@ const ProfileHeader = ({ userData, onImageChange }) => {
             />
             <label
               htmlFor="profile-image-upload"
-              className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+              className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-all duration-300 cursor-pointer backdrop-blur-sm"
             >
-              <span className="text-white text-sm">{t("შეცვლა")}</span>
+              <span className="text-white text-sm font-medium">
+                {t("შეცვლა")}
+              </span>
             </label>
             <input
               id="profile-image-upload"
@@ -45,20 +51,37 @@ const ProfileHeader = ({ userData, onImageChange }) => {
               onChange={onImageChange}
             />
           </div>
+
+          {/* Photo upload indicator */}
+          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center shadow-lg transform scale-0 group-hover/photo:scale-100 transition-transform duration-200">
+            <svg
+              className="w-4 h-4 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+          </div>
         </div>
 
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-          <h1 className="text-xl sm:text-2xl font-semibold text-white m-0 shadow-sm">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 tracking-tight">
             {userData?.name} {userData?.sur_name}
           </h1>
-          <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-1.5">
-            <span className="px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-blue-400 text-white hover:-translate-y-0.5 transition-transform">
+          <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+            <span className="px-4 py-2 rounded-xl text-sm font-medium bg-white/20 text-white backdrop-blur-sm hover:bg-white/30 transition-all duration-200 shadow-inner-lg">
               {userData?.department?.name}
             </span>
             {userData?.roles?.map(role => (
               <span
                 key={role.id}
-                className="px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-green-500 text-white hover:-translate-y-0.5 transition-transform"
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-blue-400/30 text-white backdrop-blur-sm hover:bg-blue-400/40 transition-all duration-200 shadow-inner-lg"
               >
                 {roleNameMapping[role.slug] || role.name}
               </span>

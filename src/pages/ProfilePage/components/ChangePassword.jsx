@@ -2,75 +2,50 @@ import React from "react"
 import PropTypes from "prop-types"
 import { useTranslation } from "react-i18next"
 
-const ChangePassword = ({ passForm, passError, handleChangePass, onSubmit }) => {
+const ChangePassword = ({
+  passForm,
+  passError,
+  handleChangePass,
+  onSubmit,
+}) => {
   const { t } = useTranslation()
 
   return (
-    <div>
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+    <div className="animate-fade-in">
+      <h2 className="text-xl font-bold text-gray-900 dark:!text-white mb-6">
         {t("პაროლის შეცვლა")}
       </h2>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("ძველი პაროლი")}
-            </label>
-            <input
-              type="password"
-              name="old_password"
-              value={passForm.old_password}
-              onChange={handleChangePass}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
-            />
-            {passError.old_password && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {passError.old_password}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("ახალი პაროლი")}
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={passForm.password}
-              onChange={handleChangePass}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
-            />
-            {passError.password && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {passError.password}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t("გაიმეორეთ პაროლი")}
-            </label>
-            <input
-              type="password"
-              name="confirm_password"
-              value={passForm.confirm_password}
-              onChange={handleChangePass}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200 transition-colors duration-200"
-            />
-            {passError.confirm_password && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {passError.confirm_password}
-              </p>
-            )}
-          </div>
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {[
+            { name: "old_password", label: t("ძველი პაროლი") },
+            { name: "password", label: t("ახალი პაროლი") },
+            { name: "confirm_password", label: t("გაიმეორეთ პაროლი") },
+          ].map(field => (
+            <div key={field.name} className="group">
+              <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-2">
+                {field.label}
+              </label>
+              <input
+                type="password"
+                name={field.name}
+                value={passForm[field.name]}
+                onChange={handleChangePass}
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:!border-gray-600 bg-white dark:!bg-gray-700 text-gray-700 dark:!text-gray-100 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:!ring-blue-400 dark:focus:!border-blue-400 transition-all duration-200"
+              />
+              {passError[field.name] && (
+                <p className="mt-2 text-sm text-red-600 dark:!text-red-400 animate-fade-in">
+                  {passError[field.name]}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
 
         <div className="flex justify-end">
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+            className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:!ring-offset-gray-800 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           >
             {t("შეცვლა")}
           </button>

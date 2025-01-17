@@ -1,44 +1,37 @@
 import React, { memo } from "react"
-import { Card, CardBody, Button } from "reactstrap"
-import { Typography } from "@mui/material"
 
 const NoteCard = ({ note, onDelete, onEdit }) => (
-  <Card
-    className="mb-4 note-card"
-    style={{
-      boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",
-      cursor: "pointer",
-    }}
+  <div
+    className="mb-4 rounded-lg bg-white dark:!bg-gray-800 shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer"
     onClick={() => onEdit(note.id)}
   >
-    <CardBody>
-      <div className="d-flex justify-content-between">
-        <Typography variant="body2" color="textSecondary">
+    <div className="p-4">
+      <div className="flex justify-between items-center">
+        <span className="text-sm text-gray-500 dark:!text-gray-400">
           {new Date(note.created_at).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
           })}
-        </Typography>
-        <Button
-          color="danger"
-          size="sm"
+        </span>
+        <button
+          className="px-3 py-1 text-sm text-white bg-red-500 hover:bg-red-600 dark:!bg-red-600 dark:!hover:bg-red-700 rounded transition-colors duration-200"
           onClick={e => {
             e.stopPropagation()
             onDelete(note)
           }}
         >
           წაშლა
-        </Button>
+        </button>
       </div>
-      <Typography variant="h6" className="font-weight-bold text-primary">
+      <h2 className="mt-2 text-xl font-bold text-blue-600 dark:!text-blue-400">
         {note.title}
-      </Typography>
-      <Typography
-        className="text-muted note-content"
+      </h2>
+      <div
+        className="mt-2 text-gray-600 dark:!text-gray-300 prose dark:!prose-invert max-w-none"
         dangerouslySetInnerHTML={{ __html: note.note }}
       />
-    </CardBody>
-  </Card>
+    </div>
+  </div>
 )
 
 export default memo(NoteCard) 

@@ -7,12 +7,13 @@ import {
   DownloadExcelButton,
   EditButton,
 } from "components/CrmActionButtons"
-import { AssignDepartmentHeadForm } from "./components/assign"
-import { AddDepartmentForm } from "./components/add"
-import { EditDepartmentForm } from "./components/edit"
-import { DeleteDepartmentForm } from "./components/delete"
+import { AssignDepartmentHeadForm } from "./components/department/assign"
+import { AddDepartmentForm } from "./components/department/add"
+import { EditDepartmentForm } from "./components/department/edit"
+import { DeleteDepartmentForm } from "./components/department/delete"
 import useModalStore from "store/zustand/modalStore"
 import * as XLSX from "xlsx"
+import { AssignButton } from "components/CrmActionButtons/ActionButtons"
 
 const DepartmentsTab = ({ departments = [], users }) => {
   const { openModal, closeModal, isModalOpen, getModalData } = useModalStore()
@@ -88,7 +89,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
                   })
                 }
               >
-                <EditButton label="მიბმა" size="sm" />
+                <AssignButton label="მიბმა" size="sm" />
               </DialogButton>
               <DialogButton
                 variant="info"

@@ -18,16 +18,16 @@ const CrmDialog = ({
     <Dialog.Portal>
       <Dialog.Overlay className="fixed inset-0 bg-black/40 data-[state=open]:animate-overlayShow" />
       <Dialog.Content
-        className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg focus:outline-none data-[state=open]:animate-contentShow dark:bg-gray-800"
+        className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg focus:outline-none data-[state=open]:animate-contentShow dark:!bg-gray-800"
         style={{ maxWidth }}
       >
         {title && (
-          <Dialog.Title className="m-0 text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <Dialog.Title className="m-0 text-lg font-semibold text-gray-900 dark:!text-gray-100">
             {title}
           </Dialog.Title>
         )}
         {description && (
-          <Dialog.Description className="mb-5 mt-2.5 text-sm leading-normal text-gray-600 dark:text-gray-400">
+          <Dialog.Description className="mb-5 mt-2.5 text-sm leading-normal text-gray-600 dark:!text-gray-400">
             {description}
           </Dialog.Description>
         )}
@@ -38,7 +38,7 @@ const CrmDialog = ({
 
         <Dialog.Close asChild>
           <button
-            className="absolute right-4 top-4 inline-flex h-6 w-6 items-center justify-center rounded-full text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-300"
+            className="absolute right-4 top-4 inline-flex h-6 w-6 items-center justify-center rounded-full text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:!text-gray-400 dark:!hover:text-gray-300"
             aria-label="Close"
           >
             <Cross2Icon />
