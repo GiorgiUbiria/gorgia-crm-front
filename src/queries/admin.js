@@ -163,8 +163,10 @@ export const useUpdateUser = () => {
                     department: data.department_id
                       ? { id: data.department_id }
                       : null,
-                    roles: data.roles
+                    roles: Array.isArray(data.roles)
                       ? data.roles.map(roleId => ({ id: roleId }))
+                      : data.roles
+                      ? [{ id: data.roles }]
                       : [],
                   }
                 : user

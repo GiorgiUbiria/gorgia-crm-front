@@ -10,6 +10,7 @@ import {
   useApproveDepartmentMember,
   useRejectDepartmentMember,
   useGetDepartmentMembers,
+  useDeleteUser,
 } from "queries/admin"
 import CrmSpinner from "components/CrmSpinner"
 import { EditUserForm } from "./components/user/edit"
@@ -54,6 +55,7 @@ const UsersTab = ({ departments = [], roles = [] }) => {
 
   const approveMutation = useApproveDepartmentMember()
   const rejectMutation = useRejectDepartmentMember()
+  const deleteUserMutation = useDeleteUser()
 
   const users = useMemo(() => {
     if (canViewAllUsers() && !isDepartmentHead()) {
@@ -201,7 +203,11 @@ const UsersTab = ({ departments = [], roles = [] }) => {
                   }}
                 />
                 {canDeleteUsers() && (
-                  <DialogButton actionType="delete" size="xs" />
+                  <DialogButton
+                    actionType="delete"
+                    size="xs"
+                    onClick={() => openModal("deleteUser", { user })}
+                  />
                 )}
               </div>
               {user.status === "pending" && (
@@ -404,6 +410,36 @@ const UsersTab = ({ departments = [], roles = [] }) => {
               loading={rejectMutation.isPending}
             >
               უარყოფა
+            </DialogButton>
+          </>
+        }
+      />
+
+      <CrmDialog
+        isOpen={isModalOpen("deleteUser")}
+        onOpenChange={open => !open && closeModal("deleteUser")}
+        title="მომხმარებლის წაშლა"
+        description={`ნამდვილად გსურთ მომხმარებლის "${
+          getModalData("deleteUser")?.user?.displayName?.fullName
+        }" წაშლა?`}
+        footer={
+          <>
+            <DialogButton
+              actionType="cancel"
+              onClick={() => closeModal("deleteUser")}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton
+              actionType="delete"
+              onClick={async () => {
+                const user = getModalData("deleteUser")?.user
+                await deleteUserMutation.mutateAsync(user.id)
+                closeModal("deleteUser")
+              }}
+              loading={deleteUserMutation.isPending}
+            >
+              წაშლა
             </DialogButton>
           </>
         }

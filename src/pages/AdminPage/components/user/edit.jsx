@@ -335,11 +335,17 @@ export const EditUserForm = ({
                     id={field.name}
                     name={field.name}
                     value={field.state.value}
+                    multiple
                     onBlur={field.handleBlur}
-                    onChange={e => field.handleChange(e.target.value)}
+                    onChange={e => {
+                      const selectedOptions = Array.from(
+                        e.target.selectedOptions,
+                        option => Number(option.value)
+                      )
+                      field.handleChange(selectedOptions)
+                    }}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   >
-                    <option value="">აირჩიეთ როლი</option>
                     {roles.map(role => (
                       <option key={role.id} value={role.id}>
                         {role.name}
