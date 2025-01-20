@@ -127,8 +127,16 @@ const DepartmentsTab = ({ departments = [], users }) => {
   return (
     <>
       <div className="mb-4 flex gap-x-2">
-        <DialogButton actionType="add" size="sm" onClick={() => openModal("addDepartment")} />
-        <DialogButton actionType="downloadExcel" size="sm" onClick={exportToExcel} />
+        <DialogButton
+          actionType="add"
+          size="sm"
+          onClick={() => openModal("addDepartment")}
+        />
+        <DialogButton
+          actionType="downloadExcel"
+          size="sm"
+          onClick={exportToExcel}
+        />
       </div>
       <CrmDialog
         isOpen={isModalOpen("addDepartment")}

@@ -44,10 +44,40 @@ const CommentSection = ({ daily, canComment }) => {
     if (!newComment.trim()) return
 
     try {
+      // Convert HTML to our JSON format if needed
+      let commentData
+      if (newComment.includes("<div style=")) {
+        const tempDiv = document.createElement("div")
+        tempDiv.innerHTML = newComment
+        const styles = tempDiv.firstChild.style
+
+        commentData = {
+          text: tempDiv.textContent,
+          format: {
+            bold: styles.fontWeight === "bold",
+            italic: styles.fontStyle === "italic",
+            alignment: styles.textAlign || "left",
+            color: styles.color || "black",
+            fontSize: styles.fontSize === "1.2em" ? "large" : "normal",
+          },
+        }
+      } else {
+        commentData = {
+          text: newComment,
+          format: {
+            bold: false,
+            italic: false,
+            alignment: "left",
+            color: "black",
+            fontSize: "normal",
+          },
+        }
+      }
+
       await createCommentMutation.mutateAsync({
         dailyId: daily.id,
         data: {
-          comment: newComment,
+          comment: JSON.stringify(commentData),
         },
       })
       setNewComment("")
