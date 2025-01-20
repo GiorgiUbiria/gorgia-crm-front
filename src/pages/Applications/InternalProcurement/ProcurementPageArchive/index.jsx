@@ -228,6 +228,16 @@ const ProcurementPageArchive = () => {
         icon: <BiBuilding className="w-5 h-5 text-gray-500" />,
       },
       {
+        label: "მომთხოვნი",
+        value: rowData?.requester.name + " " + rowData?.requester.sur_name,
+        icon: <BiUser className="w-5 h-5 text-gray-500" />,
+      },
+      {
+        label: "მომთხოვნის დეპარტამენტი",
+        value: rowData?.requester?.department?.name || "N/A",
+        icon: <BiUser className="w-5 h-5 text-gray-500" />,
+      },
+      {
         label: "მომთხოვნის ხელმძღვანელი",
         value: rowData?.responsible_for_purchase
           ? `${rowData.responsible_for_purchase.name} ${rowData.responsible_for_purchase.sur_name}`

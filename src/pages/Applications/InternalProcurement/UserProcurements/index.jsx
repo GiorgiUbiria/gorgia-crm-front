@@ -67,6 +67,20 @@ const UserProcurements = () => {
         accessor: "id",
       },
       {
+        Header: "მოითხოვა",
+        accessor: "requester",
+        Cell: ({ row }) => (
+          <div>
+            <div>
+              {row.original.requester?.name} {row.original.requester?.sur_name}
+            </div>
+            <small className="text-muted">
+              {row.original.requester?.department?.name || "N/A"}
+            </small>
+          </div>
+        ),
+      },
+      {
         Header: "ფილიალი",
         accessor: "branch",
       },
@@ -179,6 +193,16 @@ const UserProcurements = () => {
         label: "ფილიალი",
         value: rowData?.branch || "N/A",
         icon: <BiBuilding className="text-primary" />,
+      },
+      {
+        label: "მომთხოვნი",
+        value: rowData?.requester.name + " " + rowData?.requester.sur_name,
+        icon: <BiUser className="w-5 h-5 text-gray-500" />,
+      },
+      {
+        label: "მომთხოვნის დეპარტამენტი",
+        value: rowData?.requester?.department?.name || "N/A",
+        icon: <BiUser className="w-5 h-5 text-gray-500" />,
       },
       {
         label: "მომთხოვნის ხელმძღვანელი",
