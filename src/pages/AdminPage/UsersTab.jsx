@@ -281,19 +281,17 @@ const UsersTab = ({ departments = [], roles = [] }) => {
 
   return (
     <div>
-      <div className="mb-3">
-        <div className="flex justify-end gap-2">
-          <DialogButton
-            actionType="add"
-            size="sm"
-            onClick={() => openModal("addUser")}
-          />
-          <DialogButton
-            actionType="downloadExcel"
-            size="sm"
-            onClick={exportToExcel}
-          />
-        </div>
+      <div className="mb-4 flex gap-x-2">
+        <DialogButton
+          actionType="add"
+          size="sm"
+          onClick={() => openModal("addUser")}
+        />
+        <DialogButton
+          actionType="downloadExcel"
+          size="sm"
+          onClick={exportToExcel}
+        />
       </div>
 
       <CrmDialog

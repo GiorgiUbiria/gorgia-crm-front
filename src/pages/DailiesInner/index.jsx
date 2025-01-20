@@ -181,6 +181,7 @@ const DailiesInner = () => {
 
         <CrmTable
           columns={columns}
+          size="lg"
           data={transformedDailies}
           renderSubComponent={renderSubComponent}
           getRowCanExpand={() => true}

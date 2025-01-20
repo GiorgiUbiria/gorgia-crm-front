@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useCallback } from "react"
 import { CrmTable } from "components/CrmTable"
 import { useGetDepartmentHeadDailies } from "queries/daily"
 import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
@@ -6,6 +6,7 @@ import { AddDailyForm } from "./components/form"
 import { renderSubComponent } from "./components/subComponent"
 import CrmSpinner from "components/CrmSpinner"
 import { useNavigate } from "react-router-dom"
+import * as XLSX from "xlsx"
 
 const Dailies = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -58,32 +59,27 @@ const Dailies = () => {
         accessorFn: row => row.id,
         id: "id",
         cell: info => info.getValue(),
-        header: () => <span>#</span>,
+        header: () => <span>საკითხის ნომერი</span>,
         enableColumnFilter: false,
         sortingFn: "basic",
         sortDescFirst: true,
       },
       {
-        accessorFn: row => row.user_full_name,
-        id: "user_full_name",
-        cell: info => info.getValue(),
-        header: () => <span>სახელი/გვარი</span>,
-        meta: {
-          filterVariant: "text",
-        },
-        enableSorting: false,
-      },
-      {
         accessorKey: "date",
         header: () => "თარიღი",
-        cell: info => new Date(info.getValue()).toLocaleDateString(),
+        cell: info => (
+          <div className="flex items-center gap-2">
+            <span className="i-bx-calendar" />
+            {new Date(info.getValue()).toLocaleDateString()}
+          </div>
+        ),
         enableColumnFilter: false,
         sortingFn: "datetime",
         sortDescFirst: true,
       },
       {
-        accessorKey: "description",
-        header: () => <span>აღწერა</span>,
+        accessorKey: "name",
+        header: () => <span>საკითხი</span>,
         meta: {
           filterVariant: "text",
         },
@@ -98,24 +94,73 @@ const Dailies = () => {
         },
         enableSorting: false,
       },
+      {
+        accessorFn: row => row.user_full_name,
+        id: "user_full_name",
+        header: () => <span>სახელი/გვარი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
     ],
     []
   )
+
+  const exportToExcel = useCallback(() => {
+    const headers = [
+      "დეპარტამენტი",
+      "საკითხის ნომერი",
+      "თარიღი",
+      "საკითხი",
+      "სახელი/გვარი",
+    ]
+    const data = [
+      headers,
+      ...transformedDailies.map(daily => [
+        daily.department.name,
+        daily.id,
+        daily.date,
+        daily.description,
+        daily.user_full_name || "-",
+      ]),
+    ]
+
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Regular Dailies")
+    XLSX.writeFile(wb, "Regular_Dailies.xlsx")
+  }, [transformedDailies])
 
   if (isLoading) {
     return <CrmSpinner />
   }
 
   return (
-    <>
-      <div className="mb-4">
-        <DialogButton 
-          actionType="add" 
-          onClick={() => setIsAddModalOpen(true)}
-          label="დღის შედეგის დამატება"
+    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="p-4 sm:p-6">
+        <div className="mb-4 flex gap-3">
+          <DialogButton
+            actionType="downloadExcel"
+            onClick={exportToExcel}
+            label="Excel გადმოწერა"
+          />
+          <DialogButton
+            actionType="add"
+            onClick={() => setIsAddModalOpen(true)}
+            label="შეფასების დამატება"
+          />
+        </div>
+
+        <CrmTable
+          columns={columns}
+          size="lg"
+          data={transformedDailies}
+          renderSubComponent={renderSubComponent}
+          getRowCanExpand={() => true}
+          onRowClick={handleRowClick}
         />
       </div>
-
       <CrmDialog
         isOpen={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
@@ -137,15 +182,7 @@ const Dailies = () => {
       >
         <AddDailyForm onSuccess={() => setIsAddModalOpen(false)} />
       </CrmDialog>
-
-      <CrmTable
-        columns={columns}
-        data={transformedDailies}
-        renderSubComponent={renderSubComponent}
-        getRowCanExpand={() => true}
-        onRowClick={handleRowClick}
-      />
-    </>
+    </div>
   )
 }
 
