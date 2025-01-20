@@ -87,23 +87,29 @@ const CrmDialog = ({
     <Dialog.Portal>
       <Dialog.Overlay className="fixed inset-0 bg-black/40 data-[state=open]:animate-overlayShow" />
       <Dialog.Content
-        className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg focus:outline-none data-[state=open]:animate-contentShow dark:!bg-gray-800"
+        className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg focus:outline-none data-[state=open]:animate-contentShow dark:!bg-gray-800 flex flex-col"
         style={{ maxWidth }}
       >
-        {title && (
-          <Dialog.Title className="m-0 text-lg font-semibold text-gray-900 dark:!text-gray-100">
-            {title}
-          </Dialog.Title>
-        )}
-        {description && (
-          <Dialog.Description className="mb-5 mt-2.5 text-sm leading-normal text-gray-600 dark:!text-gray-400">
-            {description}
-          </Dialog.Description>
-        )}
+        <div className="p-6">
+          {title && (
+            <Dialog.Title className="m-0 text-lg font-semibold text-gray-900 dark:!text-gray-100">
+              {title}
+            </Dialog.Title>
+          )}
+          {description && (
+            <Dialog.Description className="mb-5 mt-2.5 text-sm leading-normal text-gray-600 dark:!text-gray-400">
+              {description}
+            </Dialog.Description>
+          )}
+        </div>
 
-        <div className="mt-4">{children}</div>
+        <div className="px-6 flex-1 overflow-y-auto">{children}</div>
 
-        {footer && <div className="mt-6 flex justify-end gap-3">{footer}</div>}
+        {footer && (
+          <div className="p-6 pt-4 mt-auto border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            {footer}
+          </div>
+        )}
 
         <Dialog.Close asChild>
           <button
@@ -128,19 +134,14 @@ export const DialogButton = ({
 }) => {
   // If actionType is provided, use predefined styles
   const actionConfig = actionType ? actionTypes[actionType] : null
-  
+
   // Use either the action config or provided props
   const buttonVariant = variant || (actionConfig?.variant ?? "primary")
   const Icon = CustomIcon || (actionConfig?.icon ?? null)
   const buttonLabel = label || (actionConfig?.label ?? "")
 
   return (
-    <BaseButton
-      variant={buttonVariant}
-      icon={Icon}
-      size={size}
-      {...props}
-    >
+    <BaseButton variant={buttonVariant} icon={Icon} size={size} {...props}>
       {buttonLabel}
     </BaseButton>
   )

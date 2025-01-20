@@ -141,52 +141,54 @@ export const useUpdateUser = () => {
   return useMutation({
     mutationFn: ({ id, data }) => updateUserById(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: adminKeys.users.lists() })
+      // Cancel outgoing refetches for all possible user queries
       await queryClient.cancelQueries({ queryKey: adminKeys.users.all() })
 
-      // Snapshot for rollback
-      const previousUsers = queryClient.getQueryData(adminKeys.users.list())
+      // Get all existing user queries
+      const existingQueries = queryClient.getQueriesData({
+        queryKey: adminKeys.users.lists(),
+      })
+      const previousQueries = new Map(existingQueries)
+
+      // Format the optimistic update
+      const updatedUserData = {
+        ...data,
+        department: data.department_id ? { id: data.department_id } : null,
+        roles: Array.isArray(data.roles)
+          ? data.roles.map(roleId => ({
+              id: typeof roleId === "object" ? roleId.id : roleId,
+            }))
+          : [],
+      }
 
       // Update all matching queries
-      queryClient.setQueriesData({ queryKey: adminKeys.users.lists() }, old => {
-        if (!old) return old
-        return {
-          ...old,
-          data: {
-            ...old.data,
-            data: old.data.data.map(user =>
-              user.id === id
-                ? {
-                    ...user,
-                    ...data,
-                    department: data.department_id
-                      ? { id: data.department_id }
-                      : null,
-                    roles: Array.isArray(data.roles)
-                      ? data.roles.map(roleId => ({ id: roleId }))
-                      : data.roles
-                      ? [{ id: data.roles }]
-                      : [],
-                  }
-                : user
-            ),
-          },
-        }
+      existingQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData(queryKey, old => {
+          if (!old?.data?.data) return old
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              data: old.data.data.map(user =>
+                user.id === id ? { ...user, ...updatedUserData } : user
+              ),
+            },
+          }
+        })
       })
 
-      return { previousUsers }
+      return { previousQueries }
     },
     onError: (err, _, context) => {
-      if (context?.previousUsers) {
-        queryClient.setQueriesData(
-          { queryKey: adminKeys.users.lists() },
-          context.previousUsers
-        )
+      // Restore all queries on error
+      if (context?.previousQueries) {
+        context.previousQueries.forEach((value, queryKey) => {
+          queryClient.setQueryData(queryKey, value)
+        })
       }
     },
     onSuccess: () => {
-      // Invalidate and refetch all user-related queries
+      // Invalidate all user-related queries
       queryClient.invalidateQueries({ queryKey: adminKeys.users.all() })
       queryClient.invalidateQueries({
         queryKey: adminKeys.departmentMembers.all(),

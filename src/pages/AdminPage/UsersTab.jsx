@@ -182,6 +182,12 @@ const UsersTab = ({ departments = [], roles = [] }) => {
         },
         meta: {
           filterVariant: "select",
+          filterOptions: Object.entries(statusMapping).map(
+            ([value, label]) => ({
+              value: value,
+              label: label.label,
+            })
+          ),
         },
         enableSorting: false,
       },

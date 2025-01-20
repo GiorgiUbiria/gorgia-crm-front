@@ -57,9 +57,6 @@ export function CrmTable({
   const table = useReactTable({
     columns,
     data,
-    debugTable: true,
-    debugHeaders: true,
-    debugColumns: false,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -72,6 +69,7 @@ export function CrmTable({
     onColumnFiltersChange: setColumnFilters,
     onExpandedChange: setExpanded,
     getRowCanExpand: () => true,
+    autoResetAll: true,
     state: {
       sorting,
       columnFilters,

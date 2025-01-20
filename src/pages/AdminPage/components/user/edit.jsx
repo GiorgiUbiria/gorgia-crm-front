@@ -1,6 +1,7 @@
 import React from "react"
 import { useForm } from "@tanstack/react-form"
 import { useUpdateUser } from "queries/admin"
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"
 
 function FieldInfo({ field }) {
   if (!field.state.meta.isTouched) return null
@@ -26,7 +27,9 @@ export const EditUserForm = ({
   canEditRoles,
   user,
 }) => {
+  const [showPassword, setShowPassword] = React.useState(false)
   const updateUserMutation = useUpdateUser()
+  console.log(user)
 
   const form = useForm({
     defaultValues: {
@@ -41,9 +44,22 @@ export const EditUserForm = ({
       date_of_birth: user?.date_of_birth || "",
       id_number: user?.id_number || "",
       roles: user?.roles?.map(role => role.id) || [],
+      password: "",
     },
     onSubmit: async ({ value }) => {
-      await updateUserMutation.mutateAsync({ id: user.id, data: value })
+      const dataToUpdate = { ...value }
+      
+      // Convert roles to array of IDs
+      if (Array.isArray(dataToUpdate.roles)) {
+        dataToUpdate.roles = dataToUpdate.roles.map(roleId => 
+          typeof roleId === 'object' ? roleId.id : parseInt(roleId)
+        )
+      }
+
+      if (!dataToUpdate.password) {
+        delete dataToUpdate.password
+      }
+      await updateUserMutation.mutateAsync({ id: user.id, data: dataToUpdate })
       onSuccess?.()
     },
   })
@@ -359,6 +375,53 @@ export const EditUserForm = ({
           </div>
         </>
       )}
+
+      <div>
+        <form.Field
+          name="password"
+          validators={{
+            onChange: ({ value }) =>
+              value && value.length < 8
+                ? "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს"
+                : undefined,
+          }}
+        >
+          {field => (
+            <div>
+              <label
+                htmlFor={field.name}
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                პაროლი
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={e => field.handleChange(e.target.value)}
+                  placeholder="დატოვეთ ცარიელი თუ არ გსურთ შეცვლა"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
+              <FieldInfo field={field} />
+            </div>
+          )}
+        </form.Field>
+      </div>
 
       <form.Subscribe selector={state => [state.canSubmit, state.isSubmitting]}>
         {([canSubmit, isSubmitting]) => (
