@@ -14,7 +14,13 @@ module.exports = {
       },
       colors: {
         "sidebar-bg": "#EDF3FD",
-        primary: "#0066FF",
+        primary: {
+          50: "#f0f9ff",
+          100: "#e0f2fe",
+          500: "#0ea5e9",
+          600: "#0284c7",
+          700: "#0369a1",
+        },
         secondary: "#F1F5F9",
         info: "#0EA5E9",
         success: "#22C55E",

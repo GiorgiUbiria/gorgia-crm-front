@@ -1,14 +1,5 @@
 import React, { useState } from "react"
-import {
-  Col,
-  Form,
-  Input,
-  Label,
-  Row,
-  Button,
-  FormGroup,
-  Alert,
-} from "reactstrap"
+import { Input, Label, Button, FormGroup } from "reactstrap"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useNavigate } from "react-router-dom"
@@ -53,6 +44,19 @@ const CategoryOptions = {
   Farm: "სამეურნეო",
 }
 
+const FormSection = ({ title, children, className = "" }) => (
+  <div
+    className={`bg-gray-50 dark:!bg-gray-800/50 rounded-lg p-6 border border-gray-200 dark:!border-gray-700 ${className}`}
+  >
+    {title && (
+      <h3 className="text-lg font-medium text-gray-900 dark:!text-gray-300 mb-4 pb-2 border-b border-gray-200 dark:!border-gray-700">
+        {title}
+      </h3>
+    )}
+    {children}
+  </div>
+)
+
 const InputWithError = ({
   formik,
   name,
@@ -71,160 +75,210 @@ const InputWithError = ({
   const error = getNestedError(formik.errors, name)
   const touched = getNestedError(formik.touched, name)
 
+  const baseInputStyles = `
+    w-full px-4 py-2.5 rounded-lg transition-all duration-200
+    bg-white dark:!bg-gray-800 
+    text-gray-900 dark:!text-gray-100
+    placeholder:text-gray-400 dark:!placeholder:text-gray-500
+    border-2 focus:outline-none focus:ring-2 focus:ring-primary-500/30
+    ${
+      touched && error
+        ? "border-red-300 dark:!border-red-500"
+        : "border-gray-300 hover:border-primary-500/50 dark:!border-gray-600 dark:!hover:border-primary-500/50"
+    }
+  `
+
   return (
-    <div className="mb-3">
-      <Label for={name}>{label}</Label>
-      {type === "select" ? (
-        <Input
-          type={type}
-          id={name}
-          name={name}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={formik.values[name]}
-          invalid={touched && Boolean(error)}
-          {...props}
-        >
-          {children}
-        </Input>
-      ) : type === "file" ? (
-        <Input
-          type={type}
-          id={name}
-          name={name}
-          onBlur={formik.handleBlur}
-          onChange={event => {
-            formik.setFieldValue(name, event.currentTarget.files[0])
-          }}
-          invalid={touched && Boolean(error)}
-          {...props}
-        />
-      ) : (
-        <Input
-          type={type}
-          id={name}
-          name={name}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={formik.values[name]}
-          invalid={touched && Boolean(error)}
-          {...props}
-        />
+    <div className="relative mb-4">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium mb-2 text-gray-700 dark:!text-gray-200"
+      >
+        {label}
+      </label>
+      <div className="relative">
+        {type === "select" ? (
+          <select
+            id={name}
+            name={name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values[name]}
+            className={`${baseInputStyles} cursor-pointer appearance-none bg-no-repeat bg-right pr-10`}
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+              backgroundSize: "1.5em 1.5em",
+            }}
+            {...props}
+          >
+            {children}
+          </select>
+        ) : type === "file" ? (
+          <input
+            type={type}
+            id={name}
+            name={name}
+            onBlur={formik.handleBlur}
+            onChange={event => {
+              formik.setFieldValue(name, event.currentTarget.files[0])
+            }}
+            className={`
+              block w-full text-sm rounded-lg cursor-pointer
+              file:mr-4 file:py-2.5 file:px-4
+              file:rounded-md file:border-0
+              file:text-sm file:font-medium
+              file:bg-primary-50 file:text-primary-700
+              hover:file:bg-primary-100
+              dark:!file:bg-gray-700 dark:!file:text-gray-200
+              dark:!text-gray-200
+              ${touched && error ? "border-red-300" : "border-gray-300"}
+            `}
+            {...props}
+          />
+        ) : type === "textarea" ? (
+          <textarea
+            id={name}
+            name={name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values[name]}
+            className={`${baseInputStyles} min-h-[80px] resize-y`}
+            {...props}
+          />
+        ) : type === "radio" ? (
+          <input
+            type={type}
+            id={name}
+            name={name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values[name]}
+            className={`
+              h-4 w-4 border-gray-300 text-primary-600 focus:ring-2 focus:ring-primary-500/50
+              dark:!bg-gray-700 dark:!border-gray-600 dark:!focus:ring-primary-500/50
+              ${touched && error ? "border-red-300" : ""}
+            `}
+            {...props}
+          />
+        ) : (
+          <input
+            type={type}
+            id={name}
+            name={name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values[name]}
+            className={baseInputStyles}
+            {...props}
+          />
+        )}
+      </div>
+      {touched && error && (
+        <div className="mt-2 text-sm text-red-500 dark:!text-red-400 flex items-center gap-1">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>{error}</span>
+        </div>
       )}
-      {touched && error && <div className="text-danger mt-1">{error}</div>}
     </div>
   )
 }
 
 const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
-  <div className="border rounded p-2 mb-2">
+  <div className="border-2 dark:!border-gray-700 rounded-xl overflow-hidden bg-white dark:!bg-gray-800 transition-all duration-200 hover:shadow-lg dark:!hover:shadow-gray-800/50">
     <div
-      className="d-flex justify-content-between align-items-center"
+      className="flex justify-between items-center cursor-pointer p-4 bg-gray-50 dark:!bg-gray-700/50"
       onClick={onToggle}
-      style={{ cursor: "pointer" }}
     >
-      <h6 className="mb-0">
+      <h6 className="text-lg font-medium text-gray-900 dark:!text-gray-300">
         პროდუქტი {index + 1} - {formik.values.products[index].name || "უსახელო"}
       </h6>
-      <Button type="button" color="link" className="p-0">
+      <button
+        type="button"
+        className="p-2 hover:bg-gray-200 dark:!hover:bg-gray-600 rounded-full transition-colors"
+      >
         {isExpanded ? "▼" : "▶"}
-      </Button>
+      </button>
     </div>
 
     {isExpanded && (
-      <div className="mt-2">
-        <Row className="g-3">
-          <Col md="3">
+      <div className="p-4 space-y-6 border-t-2 border-gray-100 dark:!border-gray-700">
+        <FormSection title="ძირითადი ინფორმაცია">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <InputWithError
               formik={formik}
               name={`products.${index}.name`}
               label="პროდუქტის სახელი"
             />
-          </Col>
-          <Col md="3">
             <InputWithError
               formik={formik}
               name={`products.${index}.quantity`}
               label="რაოდენობა"
               type="number"
             />
-          </Col>
-          <Col md="3">
             <InputWithError
               formik={formik}
               name={`products.${index}.dimensions`}
               label="ზომები"
             />
-          </Col>
-          <Col md="3">
             <InputWithError
               formik={formik}
               name={`products.${index}.payer`}
               label="ვინ ანაზღაურებს თანხას?"
-              type="text"
-            ></InputWithError>
-          </Col>
-        </Row>
-        <Row className="g-2">
-          <Col md="12">
+            />
+          </div>
+        </FormSection>
+
+        <FormSection title="დამატებითი ინფორმაცია">
+          <div className="space-y-4">
             <InputWithError
               formik={formik}
               name={`products.${index}.description`}
               label="აღწერა"
               type="textarea"
-              rows="2"
             />
-          </Col>
-        </Row>
-        <Row className="g-2">
-          <Col md="12">
             <InputWithError
               formik={formik}
               name={`products.${index}.search_variant`}
-              label="თქვენი მოძიებული ვარიანტი (მომწოდებელი, საკონტაქტო ინფორმაცია, ფასი)"
+              label="თქვენი მოძიებული ვარიანტი"
               type="textarea"
-              rows="2"
             />
-          </Col>
-        </Row>
-        <Row className="g-2">
-          <Col md="12">
-            <FormGroup className="mb-2">
-              <InputWithError
-                formik={formik}
-                name={`products.${index}.similar_purchase_planned`}
-                label="იგეგმება, თუ არა უახლოეს 1 თვეში ანალოგიური პროდუქციის შესყიდვა?"
-                type="textarea"
-                rows="2"
-              />
-            </FormGroup>
-          </Col>
-        </Row>
-        <Row className="g-2">
-          {formik.values.category &&
-            formik.values.category !== "IT" &&
-            formik.values.category !== "Marketing" && (
-              <Col md="12">
-                <InputWithError
-                  formik={formik}
-                  name={`products.${index}.in_stock_explanation`}
-                  label="გვაქვს თუ არა ეს პროდუქცია ასორტიმენტში ჩვენ?"
-                  type="textarea"
-                  rows="2"
-                />
-              </Col>
-            )}
-        </Row>
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.similar_purchase_planned`}
+              label="იგეგმება ანალოგიური პროდუქციის შესყიდვა?"
+              type="textarea"
+            />
+          </div>
+        </FormSection>
+
         {formik.values.products.length > 1 && (
-          <div className="mt-2">
-            <Button
+          <div className="flex justify-end">
+            <button
               type="button"
-              color="danger"
-              size="sm"
               onClick={() => onRemove(index)}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-50 
+                rounded-lg hover:bg-red-100 transition-colors
+                dark:!text-red-400 dark:!bg-red-900/30 dark:!hover:bg-red-900/50"
             >
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
               პროდუქტის წაშლა
-            </Button>
+            </button>
           </div>
         )}
       </div>
@@ -491,20 +545,20 @@ const ProcurementPage = () => {
   }
 
   return (
-    <>
-      <div className="max-w-full shadow-sm mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div>
-          <div className="p-4 sm:p-6">
-            <Form onSubmit={formik.handleSubmit}>
-              <div className="space-y-6">
-                {generalError && (
-                  <Alert color="danger" className="mb-4">
-                    <pre className="mb-0 whitespace-pre-wrap">
-                      {generalError}
-                    </pre>
-                  </Alert>
-                )}
+    <div className="min-h-screen dark:!bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white dark:!bg-gray-800 shadow-lg rounded-xl">
+          <div className="p-6">
+            <form onSubmit={formik.handleSubmit} className="space-y-6">
+              {generalError && (
+                <div className="p-4 rounded-lg bg-red-50 dark:!bg-red-900/30 border-2 border-red-200 dark:!border-red-800">
+                  <pre className="text-red-700 dark:!text-red-200 whitespace-pre-wrap text-sm">
+                    {generalError}
+                  </pre>
+                </div>
+              )}
 
+              <FormSection title="ძირითადი ინფორმაცია">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <InputWithError
                     formik={formik}
@@ -540,7 +594,9 @@ const ProcurementPage = () => {
                     label="მიწოდების მისამართი"
                   />
                 </div>
+              </FormSection>
 
+              <FormSection title="შესყიდვის ინფორმაცია">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InputWithError
                     formik={formik}
@@ -557,47 +613,65 @@ const ProcurementPage = () => {
                     rows="2"
                   />
                 </div>
+              </FormSection>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <div>
-                      <Label>იქმნება მარაგი?</Label>
-                      <div className="flex gap-4">
-                        <FormGroup check inline>
-                          <Input
-                            type="radio"
-                            name="creates_stock"
-                            onChange={() =>
-                              formik.setFieldValue("creates_stock", true)
-                            }
-                            checked={formik.values.creates_stock === true}
-                          />
-                          <Label check>დიახ</Label>
-                        </FormGroup>
-                        <FormGroup check inline>
-                          <Input
-                            type="radio"
-                            name="creates_stock"
-                            onChange={() =>
-                              formik.setFieldValue("creates_stock", false)
-                            }
-                            checked={formik.values.creates_stock === false}
-                          />
-                          <Label check>არა</Label>
-                        </FormGroup>
-                      </div>
+              <FormSection title="მარაგის ინფორმაცია">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-gray-700 dark:!text-gray-200">
+                      იქმნება მარაგი?
+                    </Label>
+                    <div className="flex gap-4 mt-2">
+                      <FormGroup check inline>
+                        <Input
+                          type="radio"
+                          name="creates_stock"
+                          onChange={() =>
+                            formik.setFieldValue("creates_stock", true)
+                          }
+                          checked={formik.values.creates_stock === true}
+                          className="text-primary-600 focus:ring-primary-500/50 dark:!bg-gray-700 dark:!border-gray-600"
+                        />
+                        <Label
+                          check
+                          className="text-gray-700 dark:!text-gray-200"
+                        >
+                          დიახ
+                        </Label>
+                      </FormGroup>
+                      <FormGroup check inline>
+                        <Input
+                          type="radio"
+                          name="creates_stock"
+                          onChange={() =>
+                            formik.setFieldValue("creates_stock", false)
+                          }
+                          checked={formik.values.creates_stock === false}
+                          className="text-primary-600 focus:ring-primary-500/50 dark:!bg-gray-700 dark:!border-gray-600"
+                        />
+                        <Label
+                          check
+                          className="text-gray-700 dark:!text-gray-200"
+                        >
+                          არა
+                        </Label>
+                      </FormGroup>
                     </div>
-                    {formik.values.creates_stock && (
-                      <InputWithError
-                        formik={formik}
-                        name="stock_purpose"
-                        label="მარაგის მიზანი"
-                        type="textarea"
-                        rows="2"
-                      />
-                    )}
                   </div>
+                  {formik.values.creates_stock && (
+                    <InputWithError
+                      formik={formik}
+                      name="stock_purpose"
+                      label="მარაგის მიზანი"
+                      type="textarea"
+                      rows="2"
+                    />
+                  )}
+                </div>
+              </FormSection>
 
+              <FormSection title="მოთხოვნის ინფორმაცია">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-4">
                     <InputWithError
                       formik={formik}
@@ -620,28 +694,31 @@ const ProcurementPage = () => {
                       )}
                   </div>
                 </div>
+              </FormSection>
 
-                <div className="space-y-4">
-                  {formik.values.category === "Marketing" && (
-                    <div className="space-y-4">
-                      <InputWithError
-                        formik={formik}
-                        name="external_url"
-                        label="გარე ბმული"
-                        type="text"
-                      />
-                      <InputWithError
-                        formik={formik}
-                        name="file"
-                        label="ფაილის ატვირთვა"
-                        type="file"
-                        onChange={handleFileChange}
-                      />
-                    </div>
-                  )}
-                </div>
+              {(formik.values.category === "Marketing" ||
+                formik.values.category === "Network") && (
+                <FormSection title="მართვის ინფორმაცია">
+                  <div className="space-y-4">
+                    <InputWithError
+                      formik={formik}
+                      name="external_url"
+                      label="გარე ბმული"
+                      type="text"
+                    />
+                    <InputWithError
+                      formik={formik}
+                      name="file"
+                      label="ფაილის ატვირთვა"
+                      type="file"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                </FormSection>
+              )}
 
-                {formik.values.category === "Network" && (
+              {formik.values.category === "Network" && (
+                <FormSection title="ქსელის ინფორმაცია">
                   <div className="space-y-4">
                     <InputWithError
                       formik={formik}
@@ -650,8 +727,10 @@ const ProcurementPage = () => {
                       type="file"
                     />
                   </div>
-                )}
+                </FormSection>
+              )}
 
+              <FormSection title="პროდუქტების სია">
                 <div className="space-y-4">
                   {formik.values.products.map((product, index) => (
                     <ProductForm
@@ -664,41 +743,66 @@ const ProcurementPage = () => {
                     />
                   ))}
                 </div>
+              </FormSection>
 
-                <div>
-                  <Button type="button" color="primary" onClick={addProduct}>
-                    პროდუქტის დამატება
-                  </Button>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    color="secondary"
-                    onClick={showCurrentValidationErrors}
-                  >
-                    შეამოწმე ვალიდაცია
-                  </Button>
-                  <Button
-                    type="submit"
-                    color="primary"
-                    disabled={isLoading}
-                    onClick={() => {
-                      if (Object.keys(formik.errors).length > 0) {
-                        showCurrentValidationErrors()
-                      }
-                    }}
-                  >
-                    {isLoading ? "იგზავნება..." : "გაგზავნა"}
-                  </Button>
-                </div>
+              <div>
+                <Button type="button" color="primary" onClick={addProduct}>
+                  პროდუქტის დამატება
+                </Button>
               </div>
-            </Form>
+
+              <div className="mt-8 flex justify-end gap-4">
+                <button
+                  type="button"
+                  onClick={showCurrentValidationErrors}
+                  className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 
+                    hover:bg-gray-200 rounded-lg transition-colors
+                    dark:!bg-gray-700 dark:!text-gray-300 dark:!hover:bg-gray-600"
+                >
+                  შეამოწმე ვალიდაცია
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-6 py-2.5 text-sm font-medium text-white bg-primary-600 
+                    hover:bg-primary-700 rounded-lg disabled:opacity-50 
+                    disabled:cursor-not-allowed transition-colors
+                    focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      იგზავნება...
+                    </span>
+                  ) : (
+                    "გაგზავნა"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
       <ToastContainer />
-    </>
+    </div>
   )
 }
 
