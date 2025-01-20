@@ -31,6 +31,8 @@ import {
   useGetPurchaseList,
   useGetDepartmentPurchases,
 } from "../../../../queries/purchase"
+import { downloadPurchaseProduct } from "../../../../services/purchase"
+import { DownloadButton } from "../../../../components/CrmActionButtons/ActionButtons"
 import { usePermissions } from "hooks/usePermissions"
 
 const statusMap = {
@@ -403,6 +405,40 @@ const ProcurementPageArchive = () => {
     const ProductsTable = () => {
       if (!rowData?.products?.length) return null
 
+      const handleDownload = async productId => {
+        try {
+          const response = await downloadPurchaseProduct(rowData.id, productId)
+
+          const contentDisposition = response.headers["content-disposition"]
+          let filename = `product_${productId}_file`
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(
+              /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+            )
+            if (filenameMatch && filenameMatch[1]) {
+              filename = filenameMatch[1].replace(/['"]/g, "")
+            }
+          }
+
+          const blob = new Blob([response.data], {
+            type: response.headers["content-type"],
+          })
+
+          const url = window.URL.createObjectURL(blob)
+          const link = document.createElement("a")
+          link.href = url
+          link.setAttribute("download", filename)
+          document.body.appendChild(link)
+          link.click()
+
+          link.parentNode.removeChild(link)
+          window.URL.revokeObjectURL(url)
+        } catch (error) {
+          console.error("Error downloading file:", error)
+          alert("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
+        }
+      }
+
       return (
         <Card className="shadow-sm">
           <CardBody>
@@ -462,6 +498,7 @@ const ProcurementPageArchive = () => {
                     <th>
                       <BiComment /> კომენტარი
                     </th>
+                    <th>მოქმედებები</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -511,6 +548,17 @@ const ProcurementPageArchive = () => {
                           <span className="text-muted">{product.comment}</span>
                         ) : (
                           <span className="text-muted">-</span>
+                        )}
+                      </td>
+                      <td>
+                        {product?.status === "completed" && (
+                          <DownloadButton
+                            props={{
+                              onClick: () => handleDownload(product.id),
+                              size: "sm",
+                            }}
+                            size="sm"
+                          />
                         )}
                       </td>
                     </tr>

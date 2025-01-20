@@ -160,8 +160,8 @@ export const useUpdateProductStatus = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ purchaseId, productId, status, comment }) =>
-      updateProductStatus(purchaseId, productId, status, comment),
+    mutationFn: ({ purchaseId, productId, status, comment, file }) =>
+      updateProductStatus(purchaseId, productId, status, comment, file),
     onSuccess: (_, { purchaseId }) => {
       queryClient.invalidateQueries({
         queryKey: purchaseKeys.products(purchaseId),

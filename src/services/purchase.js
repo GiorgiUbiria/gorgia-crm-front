@@ -88,13 +88,33 @@ export const updateProductStatus = async (
   purchaseId,
   productId,
   status,
-  comment
+  comment,
+  file
 ) => {
+  const formData = new FormData()
+  formData.append("status", status)
+  formData.append("comment", comment)
+  if (file) {
+    formData.append("file", file)
+  }
+
   return await defaultInstance.post(
     `/api/internal-purchases/${purchaseId}/products/${productId}/status`,
+    formData,
     {
-      status,
-      comment,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  )
+}
+
+// Download product file
+export const downloadPurchaseProduct = async (purchaseId, productId) => {
+  return defaultInstance.get(
+    `/api/internal-purchases/${purchaseId}/products/${productId}/download`,
+    {
+      responseType: 'blob'
     }
   )
 }

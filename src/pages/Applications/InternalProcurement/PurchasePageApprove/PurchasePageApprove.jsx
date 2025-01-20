@@ -98,6 +98,7 @@ const PurchasePageApprove = () => {
   const [productStatusModal, setProductStatusModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [productComment, setProductComment] = useState("")
+  const [selectedFile, setSelectedFile] = useState(null)
 
   const canViewTable = useMemo(() => {
     return (
@@ -118,8 +119,6 @@ const PurchasePageApprove = () => {
     data: departmentPurchaseData,
     isLoading: isDepartmentPurchaseLoading,
   } = useGetDepartmentPurchases()
-
-  console.log(purchaseData, departmentPurchaseData)
 
   const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
     useUpdateProductStatus()
@@ -233,12 +232,18 @@ const PurchasePageApprove = () => {
   }
 
   const handleProductStatusChange = (productId, newStatus) => {
+    if (newStatus === "completed" && !selectedFile) {
+      alert("გთხოვთ ატვირთოთ ფაილი")
+      return
+    }
+
     updateProductStatus(
       {
         purchaseId: selectedPurchase.id,
         productId,
         status: newStatus,
         comment: productComment,
+        file: selectedFile,
       },
       {
         onSuccess: () => {
@@ -246,6 +251,7 @@ const PurchasePageApprove = () => {
           setProductComment("")
           setSelectedProduct(null)
           setSelectedPurchase(null)
+          setSelectedFile(null)
         },
         onError: err => {
           console.error("Error updating product status:", err)
@@ -918,6 +924,31 @@ const PurchasePageApprove = () => {
                 />
               </FormGroup>
 
+              <FormGroup>
+                <Label for="fileUpload">ატვირთეთ ფაილი</Label>
+                <Input
+                  type="file"
+                  id="fileUpload"
+                  onChange={e => {
+                    const file = e.target.files[0]
+                    if (file && file.size > 10 * 1024 * 1024) {
+                      alert("ფაილის ზომა არ უნდა აღემატებოდეს 10MB-ს")
+                      e.target.value = ""
+                      setSelectedFile(null)
+                      return
+                    }
+                    setSelectedFile(file)
+                  }}
+                  disabled={isProductUpdateLoading}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                  required={true}
+                />
+                <small className="text-muted">
+                  მაქსიმალური ზომა: 10MB. დაშვებული ფორმატები: PDF, DOC, DOCX,
+                  XLS, XLSX, JPG, JPEG, PNG
+                </small>
+              </FormGroup>
+
               <div className="flex justify-end gap-3 mt-4">
                 <Button
                   variant="contained"
@@ -925,7 +956,11 @@ const PurchasePageApprove = () => {
                   onClick={() =>
                     handleProductStatusChange(selectedProduct?.id, "completed")
                   }
-                  disabled={!productComment.trim() || isProductUpdateLoading}
+                  disabled={
+                    !productComment.trim() ||
+                    isProductUpdateLoading ||
+                    !selectedFile
+                  }
                   className="px-4 py-2"
                 >
                   {isProductUpdateLoading ? "მიმდინარეობს..." : "დასრულება"}
