@@ -87,6 +87,18 @@ const InputWithError = ({
         >
           {children}
         </Input>
+      ) : type === "file" ? (
+        <Input
+          type={type}
+          id={name}
+          name={name}
+          onBlur={formik.handleBlur}
+          onChange={event => {
+            formik.setFieldValue(name, event.currentTarget.files[0])
+          }}
+          invalid={touched && Boolean(error)}
+          {...props}
+        />
       ) : (
         <Input
           type={type}
@@ -225,6 +237,7 @@ const ProcurementPage = () => {
   const navigate = useNavigate()
   const [expandedProducts, setExpandedProducts] = useState([0])
   const [generalError, setGeneralError] = useState(null)
+  const [file, setFile] = useState(null)
 
   const { mutate: createPurchase, isLoading } = useCreatePurchase()
 
@@ -232,6 +245,17 @@ const ProcurementPage = () => {
     setExpandedProducts(prev =>
       prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
     )
+  }
+
+  const handleFileChange = event => {
+    const selectedFile = event.target.files[0]
+    console.log("File selected:", {
+      name: selectedFile?.name,
+      type: selectedFile?.type,
+      size: selectedFile?.size,
+    })
+    setFile(selectedFile)
+    formik.setFieldValue("file", selectedFile)
   }
 
   const formik = useFormik({
@@ -245,6 +269,8 @@ const ProcurementPage = () => {
       creates_stock: false,
       stock_purpose: null,
       delivery_address: "",
+      external_url: "",
+      file: null,
       products: [
         {
           name: "",
@@ -266,6 +292,23 @@ const ProcurementPage = () => {
       try {
         setGeneralError(null)
 
+        console.log("Form submission started with file:", {
+          fileInState: file
+            ? {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+              }
+            : null,
+          fileInFormik: formik.values.file
+            ? {
+                name: formik.values.file.name,
+                type: formik.values.file.type,
+                size: formik.values.file.size,
+              }
+            : null,
+        })
+
         const formattedValues = {
           ...values,
           creates_stock: Boolean(values.creates_stock),
@@ -278,10 +321,24 @@ const ProcurementPage = () => {
                 ? null
                 : product.in_stock_explanation,
           })),
+          file: file,
         }
+
+        console.log("Formatted values before API call:", {
+          category: formattedValues.category,
+          hasFile: !!formattedValues.file,
+          fileDetails: formattedValues.file
+            ? {
+                name: formattedValues.file.name,
+                type: formattedValues.file.type,
+                size: formattedValues.file.size,
+              }
+            : null,
+        })
 
         createPurchase(formattedValues, {
           onSuccess: () => {
+            console.log("Purchase creation successful")
             toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
               position: "top-right",
               autoClose: 3000,
@@ -297,6 +354,26 @@ const ProcurementPage = () => {
             }, 1000)
           },
           onError: err => {
+            console.error("Purchase creation failed:", {
+              error: err,
+              responseData: err?.response?.data,
+              fileState: {
+                fileInState: file
+                  ? {
+                      name: file.name,
+                      type: file.type,
+                      size: file.size,
+                    }
+                  : null,
+                fileInFormik: formik.values.file
+                  ? {
+                      name: formik.values.file.name,
+                      type: formik.values.file.type,
+                      size: formik.values.file.size,
+                    }
+                  : null,
+              },
+            })
             if (err?.response?.data?.errors) {
               const errorMessages = Object.entries(err.response.data.errors)
                 .map(([field, messages]) => {
@@ -326,6 +403,7 @@ const ProcurementPage = () => {
           },
         })
       } catch (err) {
+        console.error("Form submission error:", err)
         if (err.inner) {
           const errorMessages = err.inner
             .map(error => {
@@ -542,6 +620,37 @@ const ProcurementPage = () => {
                       )}
                   </div>
                 </div>
+
+                <div className="space-y-4">
+                  {formik.values.category === "Marketing" && (
+                    <div className="space-y-4">
+                      <InputWithError
+                        formik={formik}
+                        name="external_url"
+                        label="გარე ბმული"
+                        type="text"
+                      />
+                      <InputWithError
+                        formik={formik}
+                        name="file"
+                        label="ფაილის ატვირთვა"
+                        type="file"
+                        onChange={handleFileChange}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {formik.values.category === "Network" && (
+                  <div className="space-y-4">
+                    <InputWithError
+                      formik={formik}
+                      name="file"
+                      label="ფაილის ატვირთვა"
+                      type="file"
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   {formik.values.products.map((product, index) => (

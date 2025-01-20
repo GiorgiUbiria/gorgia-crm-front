@@ -23,10 +23,15 @@ import {
   BiFlag,
   BiComment,
   BiMessageAltX,
+  BiDownload,
+  BiLink,
 } from "react-icons/bi"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import { useGetCurrentUserPurchases } from "../../../../queries/purchase"
-import { downloadPurchaseProduct } from "../../../../services/purchase"
+import {
+  downloadPurchaseProduct,
+  downloadPurchase,
+} from "../../../../services/purchase"
 import { DownloadButton } from "../../../../components/CrmActionButtons/ActionButtons"
 
 const statusMap = {
@@ -189,6 +194,40 @@ const UserProcurements = () => {
     const progressPercentage = Math.round(
       (completedProductsCount / totalProductsCount) * 100
     )
+    const handleDownloadPurchaseFile = async purchaseId => {
+      try {
+        const response = await downloadPurchase(purchaseId)
+
+        const contentDisposition = response.headers["content-disposition"]
+        let filename = `purchase_${purchaseId}_file`
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(
+            /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+          )
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, "")
+          }
+        }
+
+        const blob = new Blob([response.data], {
+          type: response.headers["content-type"] || "application/octet-stream",
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.setAttribute("download", filename)
+        document.body.appendChild(link)
+        link.click()
+
+        // Cleanup
+        link.parentNode.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error("Error downloading file:", error)
+        alert("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
+      }
+    }
 
     const details = [
       {
@@ -258,6 +297,36 @@ const UserProcurements = () => {
         label: "მიწოდების მისამართი",
         value: rowData?.delivery_address || "N/A",
         icon: <BiMapPin />,
+      },
+      {
+        label: "გარე ბმული",
+        value: rowData?.external_url ? (
+          <a
+            href={rowData.external_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary"
+          >
+            {rowData.external_url}
+          </a>
+        ) : (
+          "N/A"
+        ),
+        icon: <BiLink />,
+      },
+      {
+        label: "მიმაგრებული ფაილი",
+        value: rowData?.file_path ? (
+          <button
+            onClick={() => handleDownloadPurchaseFile(rowData.id)}
+            className="btn btn-link btn-sm p-0 text-primary"
+          >
+            ჩამოტვირთვა
+          </button>
+        ) : (
+          "N/A"
+        ),
+        icon: <BiDownload />,
       },
     ]
 

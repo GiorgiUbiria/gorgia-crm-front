@@ -34,6 +34,8 @@ import {
   BiCog,
   BiComment,
   BiMessageAltX,
+  BiLink,
+  BiDownload,
 } from "react-icons/bi"
 import { usePermissions } from "../../../../hooks/usePermissions"
 import MuiTable from "../../../../components/Mui/MuiTable"
@@ -44,6 +46,7 @@ import {
   useUpdateProductStatus,
   useGetDepartmentPurchases,
 } from "../../../../queries/purchase"
+import { downloadPurchase } from "../../../../services/purchase"
 
 const statusMap = {
   "pending department head": {
@@ -412,6 +415,41 @@ const PurchasePageApprove = () => {
   const ExpandedRowContent = rowData => {
     if (!rowData) return null
 
+    const handleDownloadFile = async purchaseId => {
+      try {
+        const response = await downloadPurchase(purchaseId)
+
+        const contentDisposition = response.headers["content-disposition"]
+        let filename = `purchase_${purchaseId}_file`
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(
+            /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+          )
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, "")
+          }
+        }
+
+        const blob = new Blob([response.data], {
+          type: response.headers["content-type"] || "application/octet-stream",
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.setAttribute("download", filename)
+        document.body.appendChild(link)
+        link.click()
+
+        // Cleanup
+        link.parentNode.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error("Error downloading file:", error)
+        alert("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
+      }
+    }
+
     const details = [
       {
         label: "ფილიალი",
@@ -480,6 +518,36 @@ const PurchasePageApprove = () => {
         label: "მიწოდების მისამართი",
         value: rowData?.delivery_address || "N/A",
         icon: <BiMapPin />,
+      },
+      {
+        label: "გარე ბმული",
+        value: rowData?.external_url ? (
+          <a
+            href={rowData.external_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary"
+          >
+            {rowData.external_url}
+          </a>
+        ) : (
+          "N/A"
+        ),
+        icon: <BiLink />,
+      },
+      {
+        label: "მიმაგრებული ფაილი",
+        value: rowData?.file_path ? (
+          <button
+            onClick={() => handleDownloadFile(rowData.id)}
+            className="btn btn-link btn-sm p-0 text-primary"
+          >
+            ჩამოტვირთვა
+          </button>
+        ) : (
+          "N/A"
+        ),
+        icon: <BiDownload />,
       },
     ]
 
@@ -593,7 +661,6 @@ const PurchasePageApprove = () => {
 
     const ProductsTable = () => {
       if (!rowData?.products?.length) return null
-
       return (
         <Card className="shadow-sm">
           <CardBody>
@@ -731,25 +798,6 @@ const PurchasePageApprove = () => {
                           <span className="text-muted">-</span>
                         )}
                       </td>
-                      {canManageProducts(rowData) && (
-                        <td>
-                          {product?.status !== "completed" && (
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="success"
-                              onClick={() => {
-                                setSelectedProduct(product)
-                                setSelectedPurchase(rowData)
-                                setProductStatusModal(true)
-                              }}
-                              startIcon={<BiCheckCircle />}
-                            >
-                              დასრულება
-                            </Button>
-                          )}
-                        </td>
-                      )}
                     </tr>
                   ))}
                 </tbody>
