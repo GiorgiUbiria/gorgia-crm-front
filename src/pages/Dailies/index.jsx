@@ -169,14 +169,15 @@ const Dailies = () => {
         footer={
           <>
             <DialogButton
-              variant="secondary"
+              actionType="cancel"
               onClick={() => setIsAddModalOpen(false)}
-            >
-              გაუქმება
-            </DialogButton>
-            <DialogButton type="submit" form="dailyForm">
-              დამატება
-            </DialogButton>
+              label="გაუქმება"
+            />
+            <DialogButton
+              actionType="submit"
+              form="dailyForm"
+              label="დამატება"
+            />
           </>
         }
       >

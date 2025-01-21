@@ -166,14 +166,14 @@ const DailiesInner = () => {
       <div className="p-4 sm:p-6">
         <div className="mb-4 flex gap-3">
           {roles.includes("admin") && (
-            <DialogButton 
-              actionType="downloadExcel" 
-              onClick={exportToExcel} 
+            <DialogButton
+              actionType="downloadExcel"
+              onClick={exportToExcel}
               label="Excel გადმოწერა"
             />
           )}
-          <DialogButton 
-            actionType="add" 
+          <DialogButton
+            actionType="add"
             onClick={() => setIsAddModalOpen(true)}
             label="შეფასების დამატება"
           />
@@ -197,14 +197,15 @@ const DailiesInner = () => {
         footer={
           <>
             <DialogButton
-              variant="secondary"
+              actionType="cancel"
               onClick={() => setIsAddModalOpen(false)}
-            >
-              გაუქმება
-            </DialogButton>
-            <DialogButton type="submit" form="dailyForm">
-              დამატება
-            </DialogButton>
+              label="გაუქმება"
+            />
+            <DialogButton
+              actionType="submit"
+              form="dailyForm"
+              label="დამატება"
+            />
           </>
         }
       >
