@@ -22,9 +22,9 @@ import { getPublicDepartments as getDepartments } from "../../../../services/adm
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import useFetchUser from "hooks/useFetchUser"
-import useUserRoles from "hooks/useUserRoles"
 import classnames from "classnames"
 import cities from "../common/distances"
+import useAuth from "hooks/useAuth"
 
 const InputWithError = React.memo(function InputWithError({
   formik,
@@ -75,8 +75,11 @@ const InputWithError = React.memo(function InputWithError({
 const BusinessPage = () => {
   const navigate = useNavigate()
   const { user, loading: userLoading } = useFetchUser()
-  const roles = useUserRoles()
-  const isAdmin = useMemo(() => roles.includes("admin"), [roles])
+  const { isAdmin, hasAnyRole } = useAuth()
+  const canRequestForOthers = useMemo(
+    () => isAdmin || hasAnyRole(["department_head", "security_manager"]),
+    [isAdmin, hasAnyRole]
+  )
   const [availableDestinations, setAvailableDestinations] = useState([])
 
   const [departments, setDepartments] = useState([])
@@ -352,7 +355,7 @@ const BusinessPage = () => {
     } else {
       setAvailableDestinations([])
     }
-  }, [formikMyTrip.values.departure_location])
+  }, [formikMyTrip, formikMyTrip.values.departure_location])
 
   useEffect(() => {
     const newDuration = calculateDuration(
@@ -459,14 +462,14 @@ const BusinessPage = () => {
       "final_cost",
       calculateFinalCost(formikMyTrip.values)
     )
-  }, [formikMyTrip.values])
+  }, [formikMyTrip])
 
   const handleCostChangeEmployeeTrip = useCallback(() => {
     formikEmployeeTrip.setFieldValue(
       "final_cost",
       calculateFinalCost(formikEmployeeTrip.values)
     )
-  }, [formikEmployeeTrip.values])
+  }, [formikEmployeeTrip])
 
   useEffect(() => {
     handleCostChangeMyTrip()
@@ -831,7 +834,7 @@ const BusinessPage = () => {
         <div className="p-4 sm:p-6">
           <Card>
             <CardBody className="p-6">
-              {isAdmin && (
+              {canRequestForOthers && (
                 <Nav tabs className="mb-6 border-b border-gray-200">
                   <NavItem>
                     <NavLink
@@ -864,7 +867,7 @@ const BusinessPage = () => {
                 </Nav>
               )}
 
-              {!isAdmin && activeTab !== "1" && toggleTab("1")}
+              {!canRequestForOthers && activeTab !== "1" && toggleTab("1")}
 
               <TabContent activeTab={activeTab}>
                 <TabPane tabId="1">
@@ -875,7 +878,7 @@ const BusinessPage = () => {
                   )}
                 </TabPane>
 
-                {isAdmin && (
+                {canRequestForOthers && (
                   <TabPane tabId="2">
                     {renderForm(
                       formikEmployeeTrip,

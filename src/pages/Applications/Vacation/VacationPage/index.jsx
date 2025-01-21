@@ -19,12 +19,12 @@ import EmployeeVacationForm from "./EmployeeVacationForm"
 import { getPublicDepartments as getDepartments } from "../../../../services/admin/department"
 import { getVacationBalance } from "../../../../services/admin/vacation"
 import useFetchUser from "../../../../hooks/useFetchUser"
-import { usePermissions } from "../../../../hooks/usePermissions"
+import useAuth from "hooks/useAuth"
 
 const VacationPage = () => {
   const navigate = useNavigate()
   const { user, loading: userLoading } = useFetchUser()
-  const { isAdmin, isDepartmentHead, isHrMember } = usePermissions()
+  const { isAdmin, isHrMember, hasAnyRole } = useAuth()
 
   const [departments, setDepartments] = useState([])
   const [departmentsLoading, setDepartmentsLoading] = useState(false)
@@ -74,8 +74,12 @@ const VacationPage = () => {
   }, [])
 
   const canManageOthers = useMemo(() => {
-    return isAdmin || isDepartmentHead || isHrMember
-  }, [isAdmin, isDepartmentHead, isHrMember])
+    return (
+      isAdmin ||
+      isHrMember ||
+      hasAnyRole(["department_head", "security_manager"])
+    )
+  }, [isAdmin, isHrMember, hasAnyRole])
 
   const toggleTab = useCallback(
     tab => {

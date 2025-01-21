@@ -211,10 +211,9 @@ const getBreadcrumbItems = (path, t, user) => {
     }
   }
 
-  // Add new handling for applications routes
   if (path.startsWith("/applications/")) {
     const parts = path.split("/")
-    const applicationType = parts[2] // purchases, business-trip, or vacation
+    const applicationType = parts[2]
     const action = parts[3]
 
     const applicationLabels = {

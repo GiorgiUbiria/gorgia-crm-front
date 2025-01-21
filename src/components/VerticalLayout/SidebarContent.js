@@ -104,40 +104,40 @@ const SidebarContent = ({ t, onLinkClick }) => {
   const handleMenuClick = useCallback(
     item => {
       if (!item) return
-      
-      // If clicking a link item (no submenu), just call onLinkClick
+
       if (!item.submenu) {
         onLinkClick()
         return
       }
 
-      // For items with submenu, always toggle regardless of current route
       toggleMenu(item.key)
     },
     [toggleMenu, onLinkClick]
   )
 
-  // Define renderSubmenu as a regular function to avoid circular dependencies
-  const renderSubmenu = (submenuItems = []) => {
-    return submenuItems.map((item, index) => {
-      if (!item) return null
-      return (
-        <MenuItem
-          key={`${item.to}-${index}`}
-          to={item.to}
-          icon={item.icon}
-          label={item.label}
-          hasSubmenu={!!item.submenu}
-          isExpanded={item.submenu && expandedMenus[item.key]}
-          isActive={activeMenus.includes(item.to)}
-          onClick={() => handleMenuClick(item)}
-          onLinkClick={onLinkClick}
-        >
-          {item.submenu ? renderSubmenu(item.submenu) : null}
-        </MenuItem>
-      )
-    })
-  }
+  const renderSubmenu = useCallback(
+    (submenuItems = []) => {
+      return submenuItems.map((item, index) => {
+        if (!item) return null
+        return (
+          <MenuItem
+            key={`${item.to}-${index}`}
+            to={item.to}
+            icon={item.icon}
+            label={item.label}
+            hasSubmenu={!!item.submenu}
+            isExpanded={item.submenu && expandedMenus[item.key]}
+            isActive={activeMenus.includes(item.to)}
+            onClick={() => handleMenuClick(item)}
+            onLinkClick={onLinkClick}
+          >
+            {item.submenu ? renderSubmenu(item.submenu) : null}
+          </MenuItem>
+        )
+      })
+    },
+    [expandedMenus, activeMenus, handleMenuClick, onLinkClick]
+  )
 
   const menuItems = useMemo(
     () =>
@@ -159,7 +159,14 @@ const SidebarContent = ({ t, onLinkClick }) => {
           </MenuItem>
         )
       }),
-    [menuConfig, expandedMenus, activeMenus, handleMenuClick, onLinkClick]
+    [
+      menuConfig,
+      expandedMenus,
+      activeMenus,
+      onLinkClick,
+      renderSubmenu,
+      handleMenuClick,
+    ]
   )
 
   useEffect(() => {
