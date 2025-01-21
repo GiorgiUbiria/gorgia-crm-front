@@ -256,11 +256,12 @@ const TaskList = () => {
                 actionType="assign"
                 size="sm"
                 label="მიღება"
-                onClick={() =>
+                onClick={e => {
+                  e.stopPropagation()
                   openModal("assignFarmTask", {
                     task_id: row.original.id,
                   })
-                }
+                }}
               />
             )
           },
@@ -346,14 +347,14 @@ const TaskList = () => {
         footer={
           <>
             <DialogButton
-              variant="secondary"
+              actionType="cancel"
               onClick={() => closeModal("addFarmTask")}
-            >
-              გაუქმება
-            </DialogButton>
-            <DialogButton type="submit" form="addFarmTaskForm">
-              დამატება
-            </DialogButton>
+            />
+            <DialogButton
+              type="submit"
+              actionType="add"
+              form="addFarmTaskForm"
+            />
           </>
         }
       >
@@ -370,14 +371,14 @@ const TaskList = () => {
         footer={
           <>
             <DialogButton
-              variant="secondary"
+              actionType="cancel"
               onClick={() => closeModal("assignFarmTask")}
-            >
-              გაუქმება
-            </DialogButton>
-            <DialogButton type="submit" form="assignTaskForm">
-              მიღება
-            </DialogButton>
+            />
+            <DialogButton
+              type="submit"
+              actionType="add"
+              form="assignTaskForm"
+            />
           </>
         }
       >

@@ -256,11 +256,12 @@ const TaskList = () => {
                 actionType="assign"
                 size="sm"
                 label="მიღება"
-                onClick={() =>
+                onClick={e => {
+                  e.stopPropagation()
                   openModal("assignLegalTask", {
                     task_id: row.original.id,
                   })
-                }
+                }}
               />
             )
           },
@@ -346,14 +347,14 @@ const TaskList = () => {
         footer={
           <>
             <DialogButton
-              variant="secondary"
+              actionType="cancel"
               onClick={() => closeModal("addLegalTask")}
-            >
-              გაუქმება
-            </DialogButton>
-            <DialogButton type="submit" form="addLegalTaskForm">
-              დამატება
-            </DialogButton>
+            />
+            <DialogButton
+              type="submit"
+              actionType="add"
+              form="addLegalTaskForm"
+            />
           </>
         }
       >
@@ -370,14 +371,14 @@ const TaskList = () => {
         footer={
           <>
             <DialogButton
-              variant="secondary"
+              actionType="cancel"
               onClick={() => closeModal("assignLegalTask")}
-            >
-              გაუქმება
-            </DialogButton>
-            <DialogButton type="submit" form="assignLegalTaskForm">
-              მიღება
-            </DialogButton>
+            />
+            <DialogButton
+              type="submit"
+              actionType="add"
+              form="assignLegalTaskForm"
+            />
           </>
         }
       >
