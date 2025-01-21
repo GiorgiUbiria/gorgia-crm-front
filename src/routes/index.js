@@ -25,6 +25,8 @@ import UserHrDocuments from "pages/HrDocuments/UserHrDocuments"
 import JobDetails from "pages/JobPages/JobDetails"
 import FarmTaskDetails from "pages/FarmJobPages/JobDetails"
 import FarmTaskList from "pages/FarmJobPages/JobList"
+import LegalTaskList from "pages/LegalJobPages/JobList"
+import LegalTaskDetails from "pages/LegalJobPages/JobDetails"
 // Request Agreement
 import AgreementRequest from "pages/Agreements/AgreementRequest"
 
@@ -384,6 +386,14 @@ const supportRoutes = {
     farmTaskDetails: {
       path: "/support/farm-tasks/:id",
       component: withProtectedRoute(<FarmTaskDetails />),
+    },
+    legalTasks: {
+      path: "/support/legal-tasks",
+      component: withProtectedRoute(<LegalTaskList />),
+    },
+    legalTaskDetails: {
+      path: "/support/legal-tasks/:id",
+      component: withProtectedRoute(<LegalTaskDetails />),
     },
   },
 }

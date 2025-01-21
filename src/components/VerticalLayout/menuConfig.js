@@ -362,6 +362,11 @@ const getMenuItems = (t, can) => {
       label: t("სამეურნეო Tasks"),
     },
     {
+      to: "/support/legal-tasks",
+      icon: LuFileCode,
+      label: t("იურიდიული Tasks"),
+    },
+    {
       to: "/tools/notes",
       icon: LuNotebook,
       label: t("ჩანაწერები"),
