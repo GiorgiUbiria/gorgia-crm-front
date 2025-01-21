@@ -1,9 +1,7 @@
 import React, { useState, useCallback } from "react"
-import { Form, Input, Label, Row, Col, TabContent, TabPane } from "reactstrap"
 import classnames from "classnames"
 import { toast } from "react-toastify"
 import { createAgreement } from "services/agreement"
-import "./index.module.css"
 
 const StandardAgreementForm = ({ onSuccess }) => {
   const [activeTab, setActiveTab] = useState(1)
@@ -171,7 +169,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
         // Boolean field, no validation needed
         break
       case "product_payment_term":
-        if (!formData.payment_different_terms && (!value && value !== 0))
+        if (!formData.payment_different_terms && !value && value !== 0)
           errorMsg = "ველი აუცილებელია"
         else if (value && (isNaN(value) || Number(value) < 0))
           errorMsg = "არ უნდა იყოს 0-ზე ნაკლები"
@@ -240,8 +238,8 @@ const StandardAgreementForm = ({ onSuccess }) => {
         payment_different_terms: formData.payment_different_terms ? 1 : 0,
         contract_initiator_name: formData.contract_initiator_name,
         product_cost: calculateProductCost(formData.products),
-        product_payment_term: formData.payment_different_terms 
-          ? null 
+        product_payment_term: formData.payment_different_terms
+          ? null
           : parseInt(formData.product_payment_term),
         products: formData.products.map(product => ({
           product_name: product.product_name,
@@ -405,14 +403,25 @@ const StandardAgreementForm = ({ onSuccess }) => {
         },
       ],
     }))
+    validateField("products", [
+      ...formData.products,
+      {
+        product_name: "",
+        product_price: "",
+        specification: "",
+        product_quantity: "",
+      },
+    ])
   }
 
   const handleRemoveProduct = index => {
     if (formData.products.length > 1) {
+      const newProducts = formData.products.filter((_, i) => i !== index)
       setFormData(prev => ({
         ...prev,
-        products: prev.products.filter((_, i) => i !== index),
+        products: newProducts,
       }))
+      validateField("products", newProducts)
     }
   }
 
@@ -430,535 +439,783 @@ const StandardAgreementForm = ({ onSuccess }) => {
   }
 
   return (
-    <div className="form-content">
-      <div className="progress-steps mb-4">
-        {[
-          { label: "ძირითადი ინფორმაცია", icon: "bx-user" },
-          { label: "ფინანსური დეტალები", icon: "bx-money" },
-          { label: "დამატებითი ინფორმაცია", icon: "bx-file" },
-        ].map((step, index) => (
-          <div
-            key={index}
-            className={classnames("step", {
-              active: activeTab === index + 1,
-              completed:
-                passedSteps.includes(index + 1) && !hasStepErrors(index + 1),
-              "has-error": hasStepErrors(index + 1),
-              disabled:
-                !passedSteps.includes(index + 1) && !hasStepData(index + 1),
-            })}
-            onClick={() =>
-              passedSteps.includes(index + 1) && toggleTab(index + 1)
-            }
-          >
-            <div className="step-number">
-              <i className={`bx ${step.icon}`}></i>
+    <div className="p-4">
+      <div className="relative mb-12">
+        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 dark:!bg-gray-700 -translate-y-1/2"></div>
+        <div className="relative flex justify-between items-center">
+          {[
+            { label: "ძირითადი ინფორმაცია", icon: "bx-user" },
+            { label: "ფინანსური დეტალები", icon: "bx-money" },
+            { label: "დამატებითი ინფორმაცია", icon: "bx-file" },
+          ].map((step, index) => (
+            <div
+              key={index}
+              className={classnames(
+                "flex flex-col items-center relative z-10 transition-all duration-200",
+                {
+                  "cursor-pointer": passedSteps.includes(index + 1),
+                  "cursor-not-allowed":
+                    !passedSteps.includes(index + 1) && !hasStepData(index + 1),
+                }
+              )}
+              onClick={() =>
+                passedSteps.includes(index + 1) && toggleTab(index + 1)
+              }
+            >
+              <div
+                className={classnames(
+                  "w-14 h-14 rounded-full flex items-center justify-center mb-3 transition-all duration-200 border-2",
+                  {
+                    "bg-blue-600 border-blue-700 text-white":
+                      activeTab === index + 1,
+                    "bg-green-600 border-green-700 text-white":
+                      passedSteps.includes(index + 1) &&
+                      !hasStepErrors(index + 1) &&
+                      activeTab !== index + 1,
+                    "bg-red-600 border-red-700 text-white": hasStepErrors(
+                      index + 1
+                    ),
+                    "bg-gray-200 border-gray-300 text-gray-500 dark:!bg-gray-700 dark:!border-gray-600 dark:!text-gray-400":
+                      !passedSteps.includes(index + 1) &&
+                      !hasStepData(index + 1),
+                    "shadow-lg": activeTab === index + 1,
+                    "scale-110": activeTab === index + 1,
+                  }
+                )}
+              >
+                <i className={`bx ${step.icon} text-2xl`}></i>
+              </div>
+              <div
+                className={classnames(
+                  "text-sm font-medium text-center transition-colors duration-200 absolute -bottom-6 w-32 -translate-x-1/2 left-1/2",
+                  {
+                    "text-blue-600 dark:!text-blue-400":
+                      activeTab === index + 1,
+                    "text-green-600 dark:!text-green-400":
+                      passedSteps.includes(index + 1) &&
+                      !hasStepErrors(index + 1) &&
+                      activeTab !== index + 1,
+                    "text-red-600 dark:!text-red-400": hasStepErrors(index + 1),
+                    "text-gray-500 dark:!text-gray-400":
+                      !passedSteps.includes(index + 1) &&
+                      !hasStepData(index + 1),
+                  }
+                )}
+              >
+                {step.label}
+              </div>
             </div>
-            <div className="step-label">{step.label}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      <TabContent activeTab={activeTab}>
-        <TabPane tabId={1}>
-          <Form>
-            <Row>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="contragent_name">
-                    კონტრაგენტის სრული დასახელება/სახელი და გვარი
-                  </Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.contragent_name,
-                    })}
-                    id="contragent_name"
-                    value={formData.contragent_name}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ კონტრაგენტის სრული დასახელება..."
-                  />
-                  {errors.contragent_name && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.contragent_name}
-                    </div>
-                  )}
+      <div
+        className={classnames("w-full transition-all duration-200", {
+          hidden: activeTab !== 1,
+        })}
+      >
+        <form className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="contragent_name"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                კონტრაგენტის სრული დასახელება/სახელი და გვარი
+              </label>
+              <input
+                type="text"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.contragent_id,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.contragent_id,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="contragent_name"
+                value={formData.contragent_name}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ კონტრაგენტის სრული დასახელება..."
+              />
+              {errors.contragent_name && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.contragent_name}
                 </div>
-              </Col>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="contragent_id">
-                    საიდენტიფიკაციო კოდი/პირადი ნომერი
-                  </Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.contragent_id,
-                    })}
-                    id="contragent_id"
-                    value={formData.contragent_id}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ საიდენტიფიკაციო კოდი..."
-                  />
-                  {errors.contragent_id && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.contragent_id}
-                    </div>
-                  )}
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="contragent_address">
-                    იურიდიული მისამართი/ფაქტიური მისამართი
-                  </Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.contragent_address,
-                    })}
-                    id="contragent_address"
-                    value={formData.contragent_address}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ იურიდიული/ფაქტიური მისამართი..."
-                  />
-                  {errors.contragent_address && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.contragent_address}
-                    </div>
-                  )}
-                </div>
-              </Col>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="contragent_phone_number">ტელეფონის ნომერი</Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.contragent_phone_number,
-                    })}
-                    id="contragent_phone_number"
-                    value={formData.contragent_phone_number}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ ტელეფონის ნომერი..."
-                  />
-                  {errors.contragent_phone_number && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.contragent_phone_number}
-                    </div>
-                  )}
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="contragent_email">ელ.ფოსტა</Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.contragent_email,
-                    })}
-                    id="contragent_email"
-                    value={formData.contragent_email}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ ელ.ფოსტა..."
-                  />
-                  {errors.contragent_email && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.contragent_email}
-                    </div>
-                  )}
-                </div>
-              </Col>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="bank_account">ანგარიშის ნომერი</Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.bank_account,
-                    })}
-                    id="bank_account"
-                    value={formData.bank_account}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ საბანკო რეკვიზიტები..."
-                  />
-                  {errors.bank_account && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.bank_account}
-                    </div>
-                  )}
-                </div>
-              </Col>
-            </Row>
-          </Form>
-        </TabPane>
+              )}
+            </div>
 
-        <TabPane tabId={2}>
-          <Form>
-            <Row>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="contragent_director_name">
-                    დირექტორის სახელი და გვარი
-                  </Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.contragent_director_name,
-                    })}
-                    id="contragent_director_name"
-                    value={formData.contragent_director_name}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ დირექტორის სახელი..."
-                  />
-                  {errors.contragent_director_name && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.contragent_director_name}
-                    </div>
-                  )}
+            <div>
+              <label
+                htmlFor="contragent_id"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                საიდენტიფიკაციო კოდი/პირადი ნომერი
+              </label>
+              <input
+                type="text"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.contragent_id,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.contragent_id,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="contragent_id"
+                value={formData.contragent_id}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ საიდენტიფიკაციო კოდი..."
+              />
+              {errors.contragent_id && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.contragent_id}
                 </div>
-              </Col>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="contragent_director_phone_number">
-                    დირექტორის ტელეფონის ნომერი
-                  </Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.contragent_director_phone_number,
-                    })}
-                    id="contragent_director_phone_number"
-                    value={formData.contragent_director_phone_number}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ დირექტორის ტელეფონის ნომერი..."
-                  />
-                  {errors.contragent_director_phone_number && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.contragent_director_phone_number}
-                    </div>
-                  )}
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="conscription_term">
-                    პროდუქციის მიწოდების ვადა (დღეებში)
-                  </Label>
-                  <Input
-                    type="number"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.conscription_term,
-                    })}
-                    id="conscription_term"
-                    value={formData.conscription_term}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ პროდუქციის მიწოდების ვადა..."
-                  />
-                  {errors.conscription_term && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.conscription_term}
-                    </div>
-                  )}
-                </div>
-              </Col>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="product_delivery_address">
-                    პროდუქციის მიწოდების ადგილი
-                  </Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.product_delivery_address,
-                    })}
-                    id="product_delivery_address"
-                    value={formData.product_delivery_address}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ პროდუქტის მიწოდების ადგილი..."
-                  />
-                  {errors.product_delivery_address && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.product_delivery_address}
-                    </div>
-                  )}
-                </div>
-              </Col>
-            </Row>
+              )}
+            </div>
+          </div>
 
-            <Row>
-              <Col lg="12">
-                <div className="mb-3 form-check">
-                  <Input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="payment_different_terms"
-                    checked={formData.payment_different_terms}
-                    onChange={handleInputChange}
-                  />
-                  <Label
-                    className="form-check-label"
-                    for="payment_different_terms"
-                  >
-                    გადახდის განსხვავებული პირობები
-                  </Label>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="contragent_address"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                იურიდიული მისამართი/ფაქტიური მისამართი
+              </label>
+              <input
+                type="text"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.contragent_address,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.contragent_address,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="contragent_address"
+                value={formData.contragent_address}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ იურიდიული/ფაქტიური მისამართი..."
+              />
+              {errors.contragent_address && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.contragent_address}
                 </div>
-              </Col>
-            </Row>
-            {formData.payment_different_terms && (
-              <Row>
-                <Col lg="6">
-                  <div className="mb-3">
-                    <Label for="advance_payment_percentage">
-                      ავანსის პროცენტი (%)
-                    </Label>
-                    <Input
-                      type="number"
-                      className={classnames("form-control", {
-                        "is-invalid": errors.advance_payment_percentage,
-                      })}
-                      id="advance_payment_percentage"
-                      value={formData.advance_payment_percentage}
-                      onChange={handleInputChange}
-                      placeholder="შეიყვანეთ ავანსის პროცენტი..."
-                      min="0"
-                      max="100"
-                      step="0.01"
-                    />
-                    {errors.advance_payment_percentage && (
-                      <div className="form-error">
-                        <i className="bx bx-error-circle"></i>
-                        {errors.advance_payment_percentage}
-                      </div>
-                    )}
-                  </div>
-                </Col>
-                <Col lg="6">
-                  <div className="mb-3">
-                    <Label for="remaining_payment_percentage">
-                      დარჩენილი თანხის პროცენტი (%)
-                    </Label>
-                    <Input
-                      type="number"
-                      className={classnames("form-control", {
-                        "is-invalid": errors.remaining_payment_percentage,
-                      })}
-                      id="remaining_payment_percentage"
-                      value={formData.remaining_payment_percentage}
-                      onChange={handleInputChange}
-                      placeholder="შეიყვანეთ დარჩენილი თანხის პროცენტი..."
-                      min="0"
-                      max="100"
-                      step="0.01"
-                    />
-                    {errors.remaining_payment_percentage && (
-                      <div className="form-error">
-                        <i className="bx bx-error-circle"></i>
-                        {errors.remaining_payment_percentage}
-                      </div>
-                    )}
-                  </div>
-                </Col>
-              </Row>
-            )}
-            {!formData.payment_different_terms && (
-              <Row>
-                <Col lg="6">
-                  <div className="mb-3">
-                    <Label for="product_payment_term">
-                      გადახდის ვადა (დღეებში)
-                    </Label>
-                    <Input
-                      type="number"
-                      className={classnames("form-control", {
-                        "is-invalid": errors.product_payment_term,
-                      })}
-                      id="product_payment_term"
-                      value={formData.product_payment_term}
-                      onChange={handleInputChange}
-                      placeholder="ჩაწერეთ გადახდის ვადა..."
-                      min="1"
-                    />
-                    {errors.product_payment_term && (
-                      <div className="form-error">
-                        <i className="bx bx-error-circle"></i>
-                        {errors.product_payment_term}
-                      </div>
-                    )}
-                  </div>
-                </Col>
-              </Row>
-            )}
-          </Form>
-        </TabPane>
+              )}
+            </div>
 
-        <TabPane tabId={3}>
-          <Form>
-            <Row>
-              <Col lg="6">
-                <div className="mb-3">
-                  <Label for="contract_initiator_name">
-                    ხელშეკრულების გაფორმებაზე პასუხისმგებელი პირი
-                  </Label>
-                  <Input
-                    type="text"
-                    className={classnames("form-control", {
-                      "is-invalid": errors.contract_initiator_name,
-                    })}
-                    id="contract_initiator_name"
-                    value={formData.contract_initiator_name}
-                    onChange={handleInputChange}
-                    placeholder="ჩაწერეთ ხელშეკრულების გაფორმებაზე პასუხისმგებელი პირი..."
-                  />
-                  {errors.contract_initiator_name && (
-                    <div className="form-error">
-                      <i className="bx bx-error-circle"></i>
-                      {errors.contract_initiator_name}
-                    </div>
+            <div>
+              <label
+                htmlFor="contragent_phone_number"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                ტელეფონის ნომერი
+              </label>
+              <input
+                type="text"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.contragent_phone_number,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.contragent_phone_number,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="contragent_phone_number"
+                value={formData.contragent_phone_number}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ ტელეფონის ნომერი..."
+              />
+              {errors.contragent_phone_number && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.contragent_phone_number}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="contragent_email"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                ელ.ფოსტა
+              </label>
+              <input
+                type="email"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.contragent_email,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.contragent_email,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="contragent_email"
+                value={formData.contragent_email}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ ელ.ფოსტა..."
+              />
+              {errors.contragent_email && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.contragent_email}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="bank_account"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                ანგარიშის ნომერი
+              </label>
+              <input
+                type="text"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.bank_account,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.bank_account,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="bank_account"
+                value={formData.bank_account}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ საბანკო რეკვიზიტები..."
+              />
+              {errors.bank_account && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.bank_account}
+                </div>
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div
+        className={classnames("w-full transition-all duration-200", {
+          hidden: activeTab !== 2,
+        })}
+      >
+        <form className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="contragent_director_name"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                დირექტორის სახელი და გვარი
+              </label>
+              <input
+                type="text"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.contragent_director_name,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.contragent_director_name,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="contragent_director_name"
+                value={formData.contragent_director_name}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ დირექტორის სახელი..."
+              />
+              {errors.contragent_director_name && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.contragent_director_name}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="contragent_director_phone_number"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                დირექტორის ტელეფონის ნომერი
+              </label>
+              <input
+                type="text"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.contragent_director_phone_number,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.contragent_director_phone_number,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="contragent_director_phone_number"
+                value={formData.contragent_director_phone_number}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ დირექტორის ტელეფონის ნომერი..."
+              />
+              {errors.contragent_director_phone_number && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.contragent_director_phone_number}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="conscription_term"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                პროდუქციის მიწოდების ვადა (დღეებში)
+              </label>
+              <input
+                type="number"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.conscription_term,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.conscription_term,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="conscription_term"
+                value={formData.conscription_term}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ პროდუქციის მიწოდების ვადა..."
+              />
+              {errors.conscription_term && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.conscription_term}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="product_delivery_address"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                პროდუქციის მიწოდების ადგილი
+              </label>
+              <input
+                type="text"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.product_delivery_address,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.product_delivery_address,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="product_delivery_address"
+                value={formData.product_delivery_address}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ პროდუქტის მიწოდების ადგილი..."
+              />
+              {errors.product_delivery_address && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.product_delivery_address}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                className="form-checkbox h-4 w-4 text-blue-600"
+                id="payment_different_terms"
+                checked={formData.payment_different_terms}
+                onChange={handleInputChange}
+              />
+              <label
+                htmlFor="payment_different_terms"
+                className="ml-2 block text-sm font-medium text-gray-700 dark:!text-gray-300"
+              >
+                გადახდის განსხვავებული პირობები
+              </label>
+            </div>
+          </div>
+
+          {formData.payment_different_terms && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <label
+                  htmlFor="advance_payment_percentage"
+                  className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+                >
+                  ავანსის პროცენტი (%)
+                </label>
+                <input
+                  type="number"
+                  className={classnames(
+                    "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                    {
+                      "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                        errors.advance_payment_percentage,
+                      "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                        !errors.advance_payment_percentage,
+                      "dark:!bg-gray-800 dark:!text-white": true,
+                    }
                   )}
-                </div>
-              </Col>
-            </Row>
-
-            <Row className="mb-3">
-              <Col lg="12">
-                <Label>დანართი 1 - პროდუქტები</Label>
-                {formData.products.map((product, index) => (
-                  <Row key={index} className="mb-2">
-                    <Col lg="3">
-                      <Input
-                        type="text"
-                        placeholder="პროდუქტის დასახელება"
-                        value={product.product_name}
-                        onChange={e =>
-                          handleProductChange(
-                            index,
-                            "product_name",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </Col>
-                    <Col lg="3">
-                      <Input
-                        type="number"
-                        placeholder="ფასი"
-                        value={product.product_price}
-                        onChange={e =>
-                          handleProductChange(
-                            index,
-                            "product_price",
-                            e.target.value
-                          )
-                        }
-                        step="0.01"
-                        min="0"
-                      />
-                    </Col>
-                    <Col lg="2">
-                      <Input
-                        type="text"
-                        placeholder="სპეციფიკაცია"
-                        value={product.specification}
-                        onChange={e =>
-                          handleProductChange(
-                            index,
-                            "specification",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </Col>
-                    <Col lg="2">
-                      <Input
-                        type="number"
-                        placeholder="რაოდენობა"
-                        value={product.product_quantity}
-                        onChange={e =>
-                          handleProductChange(
-                            index,
-                            "product_quantity",
-                            e.target.value
-                          )
-                        }
-                        min="1"
-                        step="1"
-                      />
-                    </Col>
-                    <Col lg="2">
-                      <button
-                        type="button"
-                        className="btn btn-danger"
-                        onClick={() => handleRemoveProduct(index)}
-                        disabled={formData.products.length === 1}
-                      >
-                        <i className="bx bx-trash"></i>
-                      </button>
-                    </Col>
-                  </Row>
-                ))}
-                {errors.products && (
-                  <div className="form-error mt-2">
+                  id="advance_payment_percentage"
+                  value={formData.advance_payment_percentage}
+                  onChange={handleInputChange}
+                  placeholder="შეიყვანეთ ავანსის პროცენტი..."
+                  min="0"
+                  max="100"
+                  step="0.01"
+                />
+                {errors.advance_payment_percentage && (
+                  <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
                     <i className="bx bx-error-circle"></i>
-                    {errors.products}
+                    {errors.advance_payment_percentage}
                   </div>
                 )}
-                <button
-                  type="button"
-                  className="btn btn-primary mt-2"
-                  onClick={handleAddProduct}
-                >
-                  <i className="bx bx-plus"></i> პროდუქტის დამატება
-                </button>
-              </Col>
-              <Col lg="12" className="mt-3">
-                <div className="alert alert-info">
-                  <strong>პროდუქციის ჯამური ღირებულება:</strong>{" "}
-                  {calculateProductCost(formData.products).toFixed(2)} ₾
-                </div>
-              </Col>
-            </Row>
-          </Form>
-        </TabPane>
+              </div>
 
-        <TabPane tabId={4}>
-          <div className="row justify-content-center">
-            <Col lg="6">
-              <div className="text-center">
-                <div className="mb-4">
-                  <i className="mdi mdi-check-circle-outline text-success display-4" />
+              <div>
+                <label
+                  htmlFor="remaining_payment_percentage"
+                  className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+                >
+                  დარჩენილი თანხის პროცენტი (%)
+                </label>
+                <input
+                  type="number"
+                  className={classnames(
+                    "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                    {
+                      "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                        errors.remaining_payment_percentage,
+                      "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                        !errors.remaining_payment_percentage,
+                      "dark:!bg-gray-800 dark:!text-white": true,
+                    }
+                  )}
+                  id="remaining_payment_percentage"
+                  value={formData.remaining_payment_percentage}
+                  onChange={handleInputChange}
+                  placeholder="შეიყვანეთ დარჩენილი თანხის პროცენტი..."
+                  min="0"
+                  max="100"
+                  step="0.01"
+                />
+                {errors.remaining_payment_percentage && (
+                  <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                    <i className="bx bx-error-circle"></i>
+                    {errors.remaining_payment_percentage}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!formData.payment_different_terms && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <label
+                  htmlFor="product_payment_term"
+                  className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+                >
+                  გადახდის ვადა (დღეებში)
+                </label>
+                <input
+                  type="number"
+                  className={classnames(
+                    "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                    {
+                      "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                        errors.product_payment_term,
+                      "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                        !errors.product_payment_term,
+                      "dark:!bg-gray-800 dark:!text-white": true,
+                    }
+                  )}
+                  id="product_payment_term"
+                  value={formData.product_payment_term}
+                  onChange={handleInputChange}
+                  placeholder="ჩაწერეთ გადახდის ვადა..."
+                  min="1"
+                />
+                {errors.product_payment_term && (
+                  <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                    <i className="bx bx-error-circle"></i>
+                    {errors.product_payment_term}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </form>
+      </div>
+
+      <div
+        className={classnames("w-full transition-all duration-200", {
+          hidden: activeTab !== 3,
+        })}
+      >
+        <form className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="contract_initiator_name"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                ხელშეკრულების გაფორმებაზე პასუხისმგებელი პირი
+              </label>
+              <input
+                type="text"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.contract_initiator_name,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.contract_initiator_name,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                id="contract_initiator_name"
+                value={formData.contract_initiator_name}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ ხელშეკრულების გაფორმებაზე პასუხისმგებელი პირი..."
+              />
+              {errors.contract_initiator_name && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <i className="bx bx-error-circle"></i>
+                  {errors.contract_initiator_name}
                 </div>
-                <div>
-                  <h5>შეკვეთა წარმატებით დასრულდა!</h5>
-                  <p className="text-muted">
-                    თქვენი შეკვეთა წარმატებით შესრულდა.
-                  </p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300">
+                პროდუქტები
+              </label>
+              <button
+                type="button"
+                onClick={handleAddProduct}
+                className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+              >
+                <i className="bx bx-plus"></i>
+                დამატება
+              </button>
+            </div>
+
+            {formData.products.map((product, index) => (
+              <div
+                key={index}
+                className="p-4 border rounded-lg space-y-4 bg-gray-50 dark:!bg-gray-800"
+              >
+                <div className="flex justify-between items-center">
+                  <h6 className="text-sm font-medium text-gray-700 dark:!text-gray-300">
+                    პროდუქტი {index + 1}
+                  </h6>
+                  {formData.products.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveProduct(index)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <i className="bx bx-trash text-xl"></i>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                      პროდუქტის დასახელება
+                    </label>
+                    <input
+                      type="text"
+                      className={classnames(
+                        "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                        {
+                          "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                            errors.contragent_id,
+                          "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                            !errors.contragent_id,
+                          "dark:!bg-gray-800 dark:!text-white": true,
+                        }
+                      )}
+                      value={product.product_name}
+                      onChange={e =>
+                        handleProductChange(
+                          index,
+                          "product_name",
+                          e.target.value
+                        )
+                      }
+                      placeholder="ჩაწერეთ პროდუქტის დასახელება..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                      პროდუქტის ფასი
+                    </label>
+                    <input
+                      type="number"
+                      className={classnames(
+                        "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                        {
+                          "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                            errors.contragent_id,
+                          "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                            !errors.contragent_id,
+                          "dark:!bg-gray-800 dark:!text-white": true,
+                        }
+                      )}
+                      value={product.product_price}
+                      onChange={e =>
+                        handleProductChange(
+                          index,
+                          "product_price",
+                          e.target.value
+                        )
+                      }
+                      placeholder="ჩაწერეთ პროდუქტის ფასი..."
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                      სპეციფიკაცია
+                    </label>
+                    <textarea
+                      className={classnames(
+                        "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                        {
+                          "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                            errors.contragent_id,
+                          "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                            !errors.contragent_id,
+                          "dark:!bg-gray-800 dark:!text-white": true,
+                        }
+                      )}
+                      value={product.specification}
+                      onChange={e =>
+                        handleProductChange(
+                          index,
+                          "specification",
+                          e.target.value
+                        )
+                      }
+                      placeholder="ჩაწერეთ პროდუქტის სპეციფიკაცია..."
+                      rows="3"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                      რაოდენობა
+                    </label>
+                    <input
+                      type="number"
+                      className={classnames(
+                        "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                        {
+                          "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                            errors.contragent_id,
+                          "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                            !errors.contragent_id,
+                          "dark:!bg-gray-800 dark:!text-white": true,
+                        }
+                      )}
+                      value={product.product_quantity}
+                      onChange={e =>
+                        handleProductChange(
+                          index,
+                          "product_quantity",
+                          e.target.value
+                        )
+                      }
+                      placeholder="ჩაწერეთ პროდუქტის რაოდენობა..."
+                      min="1"
+                    />
+                  </div>
                 </div>
               </div>
-            </Col>
-          </div>
-        </TabPane>
-      </TabContent>
+            ))}
 
-      <div className="form-navigation mt-4">
+            {errors.products && (
+              <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                <i className="bx bx-error-circle"></i>
+                {errors.products}
+              </div>
+            )}
+          </div>
+        </form>
+      </div>
+
+      <div
+        className={classnames("w-full transition-all duration-200", {
+          hidden: activeTab !== 4,
+        })}
+      >
+        <div className="flex justify-center">
+          <div className="text-center max-w-lg">
+            <div className="mb-4">
+              <i className="bx bx-check-circle text-6xl text-green-500"></i>
+            </div>
+            <h5 className="text-xl font-medium mb-2">
+              შეკვეთა წარმატებით დასრულდა!
+            </h5>
+            <p className="text-gray-600">თქვენი შეკვეთა წარმატებით შესრულდა.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-between mt-8">
         <button
-          className="btn btn-secondary"
+          className={classnames(
+            "px-4 py-2 rounded-md flex items-center gap-2 transition-all duration-200",
+            {
+              "bg-gray-500 text-white hover:bg-gray-600 dark:!bg-gray-700 dark:!hover:bg-gray-600":
+                activeTab !== 1,
+              invisible: activeTab === 1,
+            }
+          )}
           onClick={() => toggleTab(activeTab - 1)}
           disabled={activeTab === 1}
         >
@@ -967,18 +1224,28 @@ const StandardAgreementForm = ({ onSuccess }) => {
         </button>
 
         {activeTab === 3 ? (
-          <button className="btn btn-success" onClick={handleSubmit}>
+          <button
+            className="bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-green-700 transition-colors duration-200 dark:!bg-green-700 dark:!hover:bg-green-600"
+            onClick={handleSubmit}
+          >
             დასრულება
-            <i className="bx bx-check-circle ms-1"></i>
+            <i className="bx bx-check-circle"></i>
           </button>
         ) : (
           <button
-            className="btn btn-primary"
+            className={classnames(
+              "px-4 py-2 rounded-md flex items-center gap-2 transition-all duration-200",
+              {
+                "bg-blue-600 text-white hover:bg-blue-700 dark:!bg-blue-700 dark:!hover:bg-blue-600":
+                  activeTab !== 4,
+                invisible: activeTab === 4,
+              }
+            )}
             onClick={() => toggleTab(activeTab + 1)}
             disabled={activeTab === 4}
           >
             შემდეგი გვერდი
-            <i className="bx bx-chevron-right ms-1"></i>
+            <i className="bx bx-chevron-right"></i>
           </button>
         )}
       </div>

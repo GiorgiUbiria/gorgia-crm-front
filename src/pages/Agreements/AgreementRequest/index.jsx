@@ -1,5 +1,4 @@
 import React, { useState } from "react"
-import { Card, CardBody, Form, Input, Label, Row, Col } from "reactstrap"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
@@ -8,7 +7,6 @@ import DeliveryAgreementForm from "../../../components/AgreementForms/DeliveryAc
 import MarketingAgreementForm from "../../../components/AgreementForms/Marketing/MarketingAgreementForm"
 import ServiceAgreementForm from "../../../components/AgreementForms/Service/ServiceAgreementForm"
 import LocalAgreementForm from "../../../components/AgreementForms/Local/LocalAgreementForm"
-import "../../../assets/scss/custom/pages/_lawyer.scss"
 
 const AGREEMENT_TYPES = {
   STANDARD: "standard",
@@ -56,18 +54,26 @@ const AgreementRequest = () => {
         theme="colored"
       />
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Card className="border-0 rounded-md mt-5">
-          <CardBody>
-            <Row className="mb-4">
-              <Col lg="6">
-                <Form>
+        <div className="bg-white dark:!bg-gray-800 rounded-lg shadow-sm mt-5">
+          <div className="p-6">
+            <div className="mb-4">
+              <div className="lg:w-1/2">
+                <form>
                   <div className="mb-3">
-                    <Label for="agreementType">ხელშეკრულების ტიპი</Label>
-                    <Input
-                      type="select"
+                    <label
+                      htmlFor="agreementType"
+                      className="block text-sm font-medium text-gray-700 dark:!text-gray-200 mb-2"
+                    >
+                      ხელშეკრულების ტიპი
+                    </label>
+                    <select
                       id="agreementType"
                       value={selectedAgreementType}
                       onChange={e => setSelectedAgreementType(e.target.value)}
+                      className="block w-full rounded-md border-gray-300 dark:!border-gray-600 
+                        shadow-sm focus:border-blue-500 focus:ring-blue-500 
+                        dark:!bg-gray-700 dark:!text-white
+                        sm:text-sm"
                     >
                       <option value={AGREEMENT_TYPES.STANDARD}>
                         ნასყიდობის ხელშეკრულება
@@ -84,14 +90,14 @@ const AgreementRequest = () => {
                       <option value={AGREEMENT_TYPES.LOCAL}>
                         ადგილობრივი შესყიდვის ხელშეკრულება
                       </option>
-                    </Input>
+                    </select>
                   </div>
-                </Form>
-              </Col>
-            </Row>
+                </form>
+              </div>
+            </div>
             {renderAgreementForm()}
-          </CardBody>
-        </Card>
+          </div>
+        </div>
       </div>
     </>
   )
