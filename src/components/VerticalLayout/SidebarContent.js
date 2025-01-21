@@ -104,12 +104,15 @@ const SidebarContent = ({ t, onLinkClick }) => {
   const handleMenuClick = useCallback(
     item => {
       if (!item) return
+      
+      // If clicking a link item (no submenu), just call onLinkClick
       if (!item.submenu) {
         onLinkClick()
+        return
       }
-      if (item.submenu) {
-        toggleMenu(item.key)
-      }
+
+      // For items with submenu, always toggle regardless of current route
+      toggleMenu(item.key)
     },
     [toggleMenu, onLinkClick]
   )

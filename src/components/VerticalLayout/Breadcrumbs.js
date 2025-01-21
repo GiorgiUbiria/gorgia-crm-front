@@ -6,11 +6,11 @@ import { useTranslation } from "react-i18next"
 import { useSelector } from "react-redux"
 
 const AGREEMENT_TYPES = {
-  'purchase': 'ნასყიდობის ხელშეკრულება',
-  'marketing': 'მარკეტინგული ხელშეკრულება',
-  'local': 'ადგილობრივი ხელშეკრულება',
-  'delivery': 'მიწოდების ხელშეკრულება',
-  'service': 'მომსახურების ხელშეკრულება',
+  purchase: "ნასყიდობის ხელშეკრულება",
+  marketing: "მარკეტინგული ხელშეკრულება",
+  local: "ადგილობრივი ხელშეკრულება",
+  delivery: "მიწოდების ხელშეკრულება",
+  service: "მომსახურების ხელშეკრულება",
 }
 
 const findBreadcrumbPath = (
@@ -22,17 +22,14 @@ const findBreadcrumbPath = (
   for (const item of items) {
     const newPath = [...currentPath, item]
 
-    // Check if this item's path matches
     if (item.to === targetPath) {
       result.push(...newPath)
       return true
     }
 
-    // Check if this is a parent path of the target
     if (item.to && targetPath.startsWith(item.to + "/")) {
       const remainingPath = targetPath.slice(item.to.length)
 
-      // Handle admin dashboard
       if (targetPath === "/admin/dashboard") {
         result.push(...newPath)
         result.push({
@@ -42,7 +39,6 @@ const findBreadcrumbPath = (
         return true
       }
 
-      // Handle HR Documents paths
       if (targetPath.startsWith("/hr/documents/")) {
         const hrPath = targetPath.replace("/hr/documents/", "")
         if (
@@ -64,29 +60,35 @@ const findBreadcrumbPath = (
         }
       }
 
-      // Handle agreements paths
       if (targetPath.startsWith("/legal/contracts/")) {
-        const parts = targetPath.split('/')
+        const parts = targetPath.split("/")
         const agreementType = parts[3]
         const action = parts[4]
-        
-        if (AGREEMENT_TYPES[agreementType] && (action === "approve" || action === "archive" || action === "my-requests")) {
+
+        if (
+          AGREEMENT_TYPES[agreementType] &&
+          (action === "approve" ||
+            action === "archive" ||
+            action === "my-requests")
+        ) {
           result.push(...newPath)
           result.push({
             label: AGREEMENT_TYPES[agreementType],
             to: `/legal/contracts/${agreementType}`,
           })
           result.push({
-            label: action === "approve" ? "ვიზირება" :
-                   action === "archive" ? "არქივი" :
-                   "გაგზავნილი",
+            label:
+              action === "approve"
+                ? "ვიზირება"
+                : action === "archive"
+                ? "არქივი"
+                : "გაგზავნილი",
             to: targetPath,
           })
           return true
         }
       }
 
-      // Handle other special paths
       if (
         remainingPath === "/approve" ||
         remainingPath === "/archive" ||
@@ -106,7 +108,6 @@ const findBreadcrumbPath = (
       }
     }
 
-    // Check submenu if exists
     if (item.submenu) {
       if (findBreadcrumbPath(item.submenu, targetPath, newPath, result)) {
         return true
@@ -120,7 +121,6 @@ const getBreadcrumbItems = (path, t, user) => {
   const menuItems = getMenuConfig(t, user)
   const result = []
 
-  // Special case for daily results pages
   if (path === "/tools/daily-results") {
     return [
       {
@@ -138,7 +138,6 @@ const getBreadcrumbItems = (path, t, user) => {
     ]
   }
 
-  // Special case for admin pages
   if (path === "/admin/dashboard") {
     return [
       {
@@ -152,7 +151,6 @@ const getBreadcrumbItems = (path, t, user) => {
     ]
   }
 
-  // Special case for HR Documents pages
   if (path.startsWith("/hr/documents/")) {
     const section = path.split("/").pop()
     return [
@@ -176,9 +174,8 @@ const getBreadcrumbItems = (path, t, user) => {
     ]
   }
 
-  // Special case for agreements pages
   if (path.startsWith("/legal/contracts/")) {
-    const parts = path.split('/')
+    const parts = path.split("/")
     const agreementType = parts[3]
     const action = parts[4]
 
@@ -196,10 +193,60 @@ const getBreadcrumbItems = (path, t, user) => {
 
       if (action) {
         breadcrumbs.push({
-          label: action === "approve" ? t("ვიზირება") :
-                 action === "archive" ? t("არქივი") :
-                 action === "my-requests" ? t("გაგზავნილი") :
-                 action === "new" ? t("ახალი მოთხოვნა") : t(action),
+          label:
+            action === "approve"
+              ? t("ვიზირება")
+              : action === "archive"
+              ? t("არქივი")
+              : action === "my-requests"
+              ? t("გაგზავნილი")
+              : action === "new"
+              ? t("ახალი მოთხოვნა")
+              : t(action),
+          path: path,
+        })
+      }
+
+      return breadcrumbs
+    }
+  }
+
+  // Add new handling for applications routes
+  if (path.startsWith("/applications/")) {
+    const parts = path.split("/")
+    const applicationType = parts[2] // purchases, business-trip, or vacation
+    const action = parts[3]
+
+    const applicationLabels = {
+      purchases: t("შიდა შესყიდვები"),
+      "business-trip": t("მივლინება"),
+      vacation: t("შვებულება"),
+    }
+
+    if (applicationLabels[applicationType]) {
+      const breadcrumbs = [
+        {
+          label: t("განცხადებები"),
+          path: "/applications",
+        },
+        {
+          label: applicationLabels[applicationType],
+          path: `/applications/${applicationType}`,
+        },
+      ]
+
+      if (action) {
+        breadcrumbs.push({
+          label:
+            action === "approve"
+              ? t("ვიზირება")
+              : action === "archive"
+              ? t("არქივი")
+              : action === "my-requests"
+              ? t("გაგზავნილი")
+              : action === "new"
+              ? t("დამატება")
+              : t(action),
           path: path,
         })
       }
@@ -210,7 +257,6 @@ const getBreadcrumbItems = (path, t, user) => {
 
   findBreadcrumbPath(menuItems, path, [], result)
 
-  // If no breadcrumbs found but we're on an admin page
   if (result.length === 0 && path.startsWith("/admin/")) {
     return [
       {
@@ -246,7 +292,10 @@ const Breadcrumbs = () => {
   }
 
   return (
-    <nav className="flex overflow-x-auto scrollbar-none" aria-label="Breadcrumb">
+    <nav
+      className="flex overflow-x-auto scrollbar-none"
+      aria-label="Breadcrumb"
+    >
       <ol className="inline-flex items-center flex-nowrap min-w-full">
         <li className="inline-flex items-center flex-shrink-0">
           <Link
