@@ -196,7 +196,6 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
         console.warn("Failed to parse comment segments:", e, {
           content: comment.comment,
         })
-        // If parsing fails, treat as plain text
         segments = [
           {
             text: String(comment.comment),
@@ -210,7 +209,6 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
         ]
       }
 
-      console.log("Rendering segments:", segments)
       return (
         <div>
           {segments.map((segment, index) => {
@@ -236,28 +234,34 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
   }
 
   return (
-    <div className={`${depth > 0 ? "ml-8 border-l border-gray-200 pl-4" : ""}`}>
-      <div className="bg-white p-4 rounded-lg shadow-sm">
+    <div
+      className={`${
+        depth > 0
+          ? "ml-8 border-l-2 border-gray-100 dark:!border-gray-700 pl-4"
+          : ""
+      }`}
+    >
+      <div className="bg-gray-50 dark:!bg-gray-700/80 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-start gap-4">
-          <div className="w-8 h-8 rounded-full bg-[#105D8D] text-white flex items-center justify-center text-sm font-medium">
+          <div className="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#105D8D] to-[#1A7AB8] dark:!from-[#1A7AB8] dark:!to-[#2389CC] text-white flex items-center justify-center text-sm font-semibold shadow-inner">
             {name?.[0]?.toUpperCase() || "?"}
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="font-semibold text-gray-900 dark:!text-gray-50">
                 {name} {sur_name}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:!text-gray-400">
                 {formatDistanceToNow(created_at)}
               </span>
             </div>
-            <div className="mt-2 text-gray-700">{renderComment()}</div>
-            <div className="mt-2 flex items-center gap-4">
+            <div className="mt-3 text-gray-700 dark:!text-gray-200 break-words">
+              {renderComment()}
+            </div>
+            <div className="mt-4 flex items-center gap-4">
               <button
-                onClick={() => {
-                  setIsReplying(!isReplying)
-                }}
-                className="text-sm text-[#105D8D] hover:text-[#0D4D75] font-medium"
+                onClick={() => setIsReplying(!isReplying)}
+                className="text-sm font-medium text-[#105D8D] hover:text-[#0D4D75] dark:!text-[#4BA3E3] dark:!hover:text-[#71B8ED] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#105D8D] dark:!focus:ring-offset-gray-800 rounded-md"
               >
                 პასუხის გაცემა
               </button>
@@ -265,7 +269,7 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
                 <button
                   onClick={handleDelete}
                   disabled={deleteCommentMutation.isPending}
-                  className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="text-sm font-medium text-red-500 hover:text-red-600 dark:!text-red-400 dark:!hover:text-red-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:!focus:ring-offset-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {deleteCommentMutation.isPending ? "იშლება..." : "წაშლა"}
                 </button>
@@ -275,19 +279,20 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
         </div>
 
         {isReplying && (
-          <CommentForm
-            value={replyContent}
-            onChange={e => setReplyContent(e.target.value)}
-            onSubmit={handleSubmitReply}
-            onCancel={() => {
-              setIsReplying(false)
-              setReplyContent("")
-            }}
-            isLoading={createCommentMutation.isPending}
-            placeholder="დაწერე პასუხი..."
-            submitText="პასუხის გაგზავნა"
-            className="mt-4 ml-12"
-          />
+          <div className="mt-4 ml-14">
+            <CommentForm
+              value={replyContent}
+              onChange={e => setReplyContent(e.target.value)}
+              onSubmit={handleSubmitReply}
+              onCancel={() => {
+                setIsReplying(false)
+                setReplyContent("")
+              }}
+              isLoading={createCommentMutation.isPending}
+              placeholder="დაწერე პასუხი..."
+              submitText="პასუხის გაგზავნა"
+            />
+          </div>
         )}
       </div>
 

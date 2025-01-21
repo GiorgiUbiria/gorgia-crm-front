@@ -22,7 +22,11 @@ const CommentSection = ({ daily, canComment }) => {
     isLoading: isLoadingComments,
     isError: isErrorComments,
     error: commentsError,
-  } = useGetDailyComments(daily?.id)
+    refetch: refetchComments,
+  } = useGetDailyComments(daily?.id, {
+    staleTime: 30000,
+    refetchOnWindowFocus: true,
+  })
 
   const rootComments = React.useMemo(() => {
     const comments = commentsData?.data || daily?.comments || []
@@ -31,7 +35,8 @@ const CommentSection = ({ daily, canComment }) => {
       comments.flatMap(comment => comment.replies || []).map(reply => reply.id)
     )
 
-    return comments.filter(comment => !replyIds.has(comment.id))
+    const roots = comments.filter(comment => !replyIds.has(comment.id))
+    return roots
   }, [commentsData?.data, daily?.comments])
 
   const handleSubmitComment = async e => {
@@ -39,16 +44,47 @@ const CommentSection = ({ daily, canComment }) => {
     if (!newComment.trim()) return
 
     try {
+      // Convert HTML to our JSON format if needed
+      let commentData
+      if (newComment.includes("<div style=")) {
+        const tempDiv = document.createElement("div")
+        tempDiv.innerHTML = newComment
+        const styles = tempDiv.firstChild.style
+
+        commentData = {
+          text: tempDiv.textContent,
+          format: {
+            bold: styles.fontWeight === "bold",
+            italic: styles.fontStyle === "italic",
+            alignment: styles.textAlign || "left",
+            color: styles.color || "black",
+            fontSize: styles.fontSize === "1.2em" ? "large" : "normal",
+          },
+        }
+      } else {
+        commentData = {
+          text: newComment,
+          format: {
+            bold: false,
+            italic: false,
+            alignment: "left",
+            color: "black",
+            fontSize: "normal",
+          },
+        }
+      }
+
       await createCommentMutation.mutateAsync({
         dailyId: daily.id,
         data: {
-          comment: newComment,
+          comment: JSON.stringify(commentData),
         },
       })
       setNewComment("")
       setShowCommentForm(false)
-      toast.success("კომენტარი წარმატებით დაემატა")
+      await refetchComments()
     } catch (error) {
+      console.error("❌ Comment submission failed:", error)
       toast.error(
         error.response?.data?.message ||
           "კომენტარის დამატების დროს დაფიქსირდა შეცდომა"
@@ -56,9 +92,9 @@ const CommentSection = ({ daily, canComment }) => {
     }
   }
 
-  if (isLoadingComments || createCommentMutation.isPending) {
+  if (isLoadingComments) {
     return (
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
         <div className="p-6 flex justify-center">
           <Spinner color="primary" />
         </div>
@@ -67,9 +103,10 @@ const CommentSection = ({ daily, canComment }) => {
   }
 
   if (isErrorComments) {
+    console.error("❌ Error loading comments:", commentsError)
     return (
-      <div className="bg-white shadow rounded-lg">
-        <div className="p-6 text-center text-red-500">
+      <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
+        <div className="p-6 text-center text-red-500 dark:!text-red-400">
           {commentsError?.message || "კომენტარების ჩატვირთვა ვერ მოხერხდა"}
         </div>
       </div>
@@ -77,14 +114,16 @@ const CommentSection = ({ daily, canComment }) => {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
+    <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
       <div className="p-6">
-        <div className="flex items-center justify-between mb-6 border-b pb-4">
+        <div className="flex items-center justify-between mb-6 border-b border-gray-200 dark:!border-gray-700 pb-4">
           <CommentHeader count={rootComments.length} />
           {canComment && !showCommentForm && (
             <button
-              onClick={() => setShowCommentForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] text-white rounded-lg transition-colors"
+              onClick={() => {
+                setShowCommentForm(true)
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] dark:!bg-[#1A7AB8] dark:!hover:bg-[#1569A0] text-white rounded-lg transition-colors"
             >
               <Plus size={16} />
               <span>დაამატე კომენტარი</span>
@@ -116,7 +155,9 @@ const CommentSection = ({ daily, canComment }) => {
               />
             ))
           ) : (
-            <p className="text-center text-gray-500">კომენტარები არ არის</p>
+            <p className="text-center text-gray-500 dark:!text-gray-400">
+              კომენტარები არ არის
+            </p>
           )}
         </div>
       </div>

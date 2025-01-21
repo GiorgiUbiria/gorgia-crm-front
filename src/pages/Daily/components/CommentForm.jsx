@@ -58,7 +58,7 @@ const CommentForm = ({
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:!text-gray-400 dark:!hover:text-gray-200"
           >
             გაუქმება
           </button>
@@ -66,7 +66,7 @@ const CommentForm = ({
         <button
           type="submit"
           disabled={isLoading}
-          className="px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:!bg-[#1A7AB8] dark:!hover:bg-[#1569A0]"
         >
           {isLoading ? "იგზავნება..." : submitText}
         </button>

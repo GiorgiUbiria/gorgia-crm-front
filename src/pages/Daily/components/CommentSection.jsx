@@ -94,7 +94,7 @@ const CommentSection = ({ daily, canComment }) => {
 
   if (isLoadingComments) {
     return (
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
         <div className="p-6 flex justify-center">
           <Spinner color="primary" />
         </div>
@@ -105,8 +105,8 @@ const CommentSection = ({ daily, canComment }) => {
   if (isErrorComments) {
     console.error("❌ Error loading comments:", commentsError)
     return (
-      <div className="bg-white shadow rounded-lg">
-        <div className="p-6 text-center text-red-500">
+      <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
+        <div className="p-6 text-center text-red-500 dark:!text-red-400">
           {commentsError?.message || "კომენტარების ჩატვირთვა ვერ მოხერხდა"}
         </div>
       </div>
@@ -114,16 +114,16 @@ const CommentSection = ({ daily, canComment }) => {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
+    <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
       <div className="p-6">
-        <div className="flex items-center justify-between mb-6 border-b pb-4">
+        <div className="flex items-center justify-between mb-6 border-b border-gray-200 dark:!border-gray-700 pb-4">
           <CommentHeader count={rootComments.length} />
           {canComment && !showCommentForm && (
             <button
               onClick={() => {
                 setShowCommentForm(true)
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] text-white rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] dark:!bg-[#1A7AB8] dark:!hover:bg-[#1569A0] text-white rounded-lg transition-colors"
             >
               <Plus size={16} />
               <span>დაამატე კომენტარი</span>
@@ -155,7 +155,9 @@ const CommentSection = ({ daily, canComment }) => {
               />
             ))
           ) : (
-            <p className="text-center text-gray-500">კომენტარები არ არის</p>
+            <p className="text-center text-gray-500 dark:!text-gray-400">
+              კომენტარები არ არის
+            </p>
           )}
         </div>
       </div>
