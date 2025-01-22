@@ -342,7 +342,7 @@ const TaskList = () => {
         onOpenChange={open => {
           if (!open) closeModal("addLegalTask")
         }}
-        title="სამეურნეო თასქის დამატება"
+        title="იურიდიული თასქის დამატება"
         description="შეავსეთ ფორმა თასქის დასამატებლად"
         footer={
           <>

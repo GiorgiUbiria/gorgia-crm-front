@@ -798,6 +798,24 @@ const PurchasePageApprove = () => {
                           <span className="text-muted">-</span>
                         )}
                       </td>
+                      {canManageProducts(rowData) && (
+                        <td>
+                          {product.status !== "completed" && (
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              size="small"
+                              onClick={() => {
+                                setSelectedProduct(product)
+                                setSelectedPurchase(rowData)
+                                setProductStatusModal(true)
+                              }}
+                            >
+                              დასრულება
+                            </Button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

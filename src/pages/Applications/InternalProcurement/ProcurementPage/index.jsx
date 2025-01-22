@@ -26,21 +26,13 @@ const branchOptions = [
   "სარაჯიშვილი - საწყობი",
 ]
 
-const categoryOptions = [
-  "IT",
-  "Marketing",
-  "Security",
-  "Network",
-  "Office Manager",
-  "Farm",
-]
+const categoryOptions = ["IT", "Marketing", "Security", "Network", "Farm"]
 
 const CategoryOptions = {
   IT: "IT",
   Marketing: "მარკეტინგი",
   Security: "უსაფრთხოება",
   Network: "საცალო ქსელი",
-  "Office Manager": "ოფის-მენეჯერი",
   Farm: "სამეურნეო",
 }
 
@@ -252,6 +244,12 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
               formik={formik}
               name={`products.${index}.similar_purchase_planned`}
               label="იგეგმება ანალოგიური პროდუქციის შესყიდვა?"
+              type="textarea"
+            />
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.in_stock_explanation`}
+              label="გვაქვს თუ არა ეს პროდუქცია ასორტიმენტში ჩვენ?"
               type="textarea"
             />
           </div>
@@ -696,8 +694,7 @@ const ProcurementPage = () => {
                 </div>
               </FormSection>
 
-              {(formik.values.category === "Marketing" ||
-                formik.values.category === "Network") && (
+              {formik.values.category === "Marketing" && (
                 <FormSection title="მართვის ინფორმაცია">
                   <div className="space-y-4">
                     <InputWithError
@@ -716,19 +713,20 @@ const ProcurementPage = () => {
                   </div>
                 </FormSection>
               )}
-
-              {formik.values.category === "Network" && (
-                <FormSection title="ქსელის ინფორმაცია">
-                  <div className="space-y-4">
-                    <InputWithError
-                      formik={formik}
-                      name="file"
-                      label="ფაილის ატვირთვა"
-                      type="file"
-                    />
-                  </div>
-                </FormSection>
-              )}
+              {formik.values.category !== "Marketing" &&
+                formik.values.category !== "" && (
+                  <FormSection title="მართვის ინფორმაცია">
+                    <div className="space-y-4">
+                      <InputWithError
+                        formik={formik}
+                        name="file"
+                        label="ფაილის ატვირთვა"
+                        type="file"
+                        onChange={handleFileChange}
+                      />
+                    </div>
+                  </FormSection>
+                )}
 
               <FormSection title="პროდუქტების სია">
                 <div className="space-y-4">

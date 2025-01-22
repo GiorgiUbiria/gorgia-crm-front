@@ -5,7 +5,7 @@ import {
   useVacations,
   useDepartmentVacations,
 } from "../../../../queries/vacation"
-import { usePermissions } from "hooks/usePermissions"
+import useAuth from "hooks/useAuth"
 
 const statusMap = {
   pending: {
@@ -182,13 +182,15 @@ const ExpandedRowContent = ({ rowData }) => {
 const VacationPageArchive = () => {
   document.title = "შვებულებების არქივი | Gorgia LLC"
 
-  const { isAdmin } = usePermissions()
+  const { isAdmin, isDepartmentHead, isHrMember } = useAuth()
   const {
     data: departmentVacationData,
     isLoading: departmentVacationsLoading,
-  } = useDepartmentVacations()
+  } = useDepartmentVacations({
+    enabled: !!isDepartmentHead,
+  })
   const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
-    enabled: !!isAdmin,
+    enabled: !!isAdmin || !!isHrMember,
   })
 
   const columns = useMemo(
