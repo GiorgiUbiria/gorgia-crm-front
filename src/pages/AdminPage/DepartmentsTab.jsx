@@ -7,9 +7,17 @@ import { EditDepartmentForm } from "./components/department/edit"
 import { DeleteDepartmentForm } from "./components/department/delete"
 import useModalStore from "store/zustand/modalStore"
 import * as XLSX from "xlsx"
+import CrmSpinner from "components/CrmSpinner"
+import useAuth from "hooks/useAuth"
+import { useGetAdminUsers } from "queries/admin"
 
-const DepartmentsTab = ({ departments = [], users }) => {
+const DepartmentsTab = ({ departments = [] }) => {
   const { openModal, closeModal, isModalOpen, getModalData } = useModalStore()
+  const { canViewAllUsers, isDepartmentHead } = useAuth()
+
+  const { data: allUsers = [], isLoading } = useGetAdminUsers({
+    enabled: canViewAllUsers() && !isDepartmentHead(),
+  })
 
   const transformedDepartments = useMemo(() => {
     if (!Array.isArray(departments)) return []
@@ -124,6 +132,10 @@ const DepartmentsTab = ({ departments = [], users }) => {
     XLSX.writeFile(wb, "დეპარტამენტები.xlsx")
   }
 
+  if (isLoading) {
+    return <CrmSpinner size="lg" />
+  }
+
   return (
     <>
       <div className="mb-4 flex gap-x-2">
@@ -168,12 +180,16 @@ const DepartmentsTab = ({ departments = [], users }) => {
         footer={
           <>
             <DialogButton
-              variant="secondary"
+              actionType="cancel"
               onClick={() => closeModal("assignHead")}
             >
               გაუქმება
             </DialogButton>
-            <DialogButton type="submit" form="assignHeadForm">
+            <DialogButton
+              type="submit"
+              actionType="assign"
+              form="assignHeadForm"
+            >
               ხელმძღვანელის მიბმა
             </DialogButton>
           </>
@@ -181,7 +197,7 @@ const DepartmentsTab = ({ departments = [], users }) => {
       >
         <AssignDepartmentHeadForm
           onSuccess={() => closeModal("assignHead")}
-          users={users}
+          users={allUsers}
           department_id={getModalData("assignHead")?.departmentId}
           currentHeadId={getModalData("assignHead")?.currentHeadId}
         />
@@ -195,12 +211,16 @@ const DepartmentsTab = ({ departments = [], users }) => {
         footer={
           <>
             <DialogButton
-              variant="secondary"
+              actionType="cancel"
               onClick={() => closeModal("editDepartment")}
             >
               გაუქმება
             </DialogButton>
-            <DialogButton type="submit" form="editDepartmentForm">
+            <DialogButton
+              type="submit"
+              actionType="edit"
+              form="editDepartmentForm"
+            >
               რედაქტირება
             </DialogButton>
           </>
@@ -220,12 +240,16 @@ const DepartmentsTab = ({ departments = [], users }) => {
         footer={
           <>
             <DialogButton
-              variant="secondary"
+              actionType="cancel"
               onClick={() => closeModal("deleteDepartment")}
             >
               გაუქმება
             </DialogButton>
-            <DialogButton type="submit" form="deleteDepartmentForm">
+            <DialogButton
+              type="submit"
+              actionType="delete"
+              form="deleteDepartmentForm"
+            >
               წაშლა
             </DialogButton>
           </>

@@ -67,7 +67,9 @@ const TaskList = () => {
           return assignedTasksList?.data || []
         case "completed":
           return (
-            tasksList?.data?.filter(task => task.status === "Completed") || []
+            tasksList?.data?.filter(
+              task => task.status?.toLowerCase() === "completed"
+            ) || []
           )
         default:
           return []
@@ -87,15 +89,17 @@ const TaskList = () => {
       tasks?.map(task => ({
         id: task.id,
         created_at: new Date(task.created_at).toLocaleDateString("ka"),
-        status: task.status,
+        status: task.status?.toLowerCase(),
         phone: task.phone_number,
-        priority: task.priority,
+        priority: task.priority?.toLowerCase(),
         title: task.task_title,
         requester: task.user.name + " " + task.user.sur_name,
         assigned_to: task.assigned_users,
       })) || []
     )
   }, [tasks])
+
+  console.log(transformedLegalTasks)
 
   const columns = useMemo(
     () =>
@@ -171,13 +175,16 @@ const TaskList = () => {
           cell: info => {
             const status = info.getValue()?.toLowerCase()
             return (
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  STATUS_COLORS[status] || STATUS_COLORS.pending
-                }`}
-              >
-                {STATUS_MAPPINGS[status] || status}
-              </span>
+              <div className="inline-flex justify-center">
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    STATUS_COLORS[status] || STATUS_COLORS.pending
+                  }`}
+                  title={STATUS_MAPPINGS[status] || status}
+                >
+                  {STATUS_MAPPINGS[status] || status}
+                </span>
+              </div>
             )
           },
           meta: {
@@ -376,7 +383,8 @@ const TaskList = () => {
             />
             <DialogButton
               type="submit"
-              actionType="add"
+              label="მიღება"
+              actionType="assign"
               form="assignLegalTaskForm"
             />
           </>

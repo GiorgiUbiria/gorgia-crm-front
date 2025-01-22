@@ -1,31 +1,32 @@
 import React from "react"
 import { CheckCircle, Clock, AlertCircle, XCircle } from "lucide-react"
+import { STATUS_MAPPINGS, STATUS_COLORS } from "../../JobList/utils/mappings"
 
 const TaskStatus = ({ status }) => {
   const statusConfig = {
-    "In Progress": {
+    "in progress": {
       icon: Clock,
-      label: "მიმდინარე",
-      classes: "bg-[#105D8D] text-white",
+      label: STATUS_MAPPINGS["in progress"],
+      classes: STATUS_COLORS["in progress"],
     },
-    Pending: {
+    pending: {
       icon: AlertCircle,
-      label: "მოლოდინის რეჟიმში",
-      classes: "bg-yellow-100 text-yellow-800",
+      label: STATUS_MAPPINGS.pending,
+      classes: STATUS_COLORS.pending,
     },
-    Completed: {
+    completed: {
       icon: CheckCircle,
-      label: "დასრულებული",
-      classes: "bg-emerald-100 text-emerald-800",
+      label: STATUS_MAPPINGS.completed,
+      classes: STATUS_COLORS.completed,
     },
-    Cancelled: {
+    cancelled: {
       icon: XCircle,
-      label: "გაუქმებული",
-      classes: "bg-red-100 text-red-800",
+      label: STATUS_MAPPINGS.cancelled,
+      classes: STATUS_COLORS.cancelled,
     },
   }
 
-  const config = statusConfig[status] || statusConfig["Pending"]
+  const config = statusConfig[status?.toLowerCase()] || statusConfig.pending
   const Icon = config.icon
 
   return (

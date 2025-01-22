@@ -58,10 +58,13 @@ const UsersTab = ({ departments = [], roles = [] }) => {
   const deleteUserMutation = useDeleteUser()
 
   const users = useMemo(() => {
-    if (canViewAllUsers() && !isDepartmentHead()) {
+    if (canViewAllUsers()) {
       return allUsers
     }
-    return members
+    if (isDepartmentHead() && !canViewAllUsers()) {
+      return members
+    }
+    return []
   }, [allUsers, members, canViewAllUsers, isDepartmentHead])
 
   const transformedUsers = useMemo(() => {

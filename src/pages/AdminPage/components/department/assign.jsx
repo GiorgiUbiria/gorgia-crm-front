@@ -21,15 +21,15 @@ function FieldInfo({ field }) {
 
 export const AssignDepartmentHeadForm = ({
   onSuccess,
-  users,
+  users = [],
   department_id,
   currentHeadId,
 }) => {
   const assignHeadMutation = useAssignHead()
-  console.log(currentHeadId)
+
   const form = useForm({
     defaultValues: {
-      userId: currentHeadId || null,
+      userId: currentHeadId || "",
     },
     onSubmit: async ({ value }) => {
       const payload = { ...value, departmentId: department_id }
@@ -67,13 +67,14 @@ export const AssignDepartmentHeadForm = ({
               <select
                 id={field.userId}
                 name={field.userId}
-                value={field.state.value}
+                value={field.state.value || ""}
                 onChange={e => field.handleChange(e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               >
-                {users.map(user => (
+                <option value="">აირჩიეთ ხელმძღვანელი</option>
+                {Array.isArray(users) && users.map(user => (
                   <option key={user.id} value={user.id}>
-                    <span> {user.name + " " + user.sur_name}</span>
+                    {user.name + " " + user.sur_name}
                   </option>
                 ))}
               </select>

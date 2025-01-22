@@ -19,6 +19,7 @@ const AdminPage = () => {
       enabled: can("role:admin"),
     })
 
+
   const isLoading =
     isAuthLoading ||
     (can("role:admin") && isDepartmentsLoading) ||

@@ -97,7 +97,7 @@ const adminRoutes = {
       path: "/admin/dashboard",
       component: withProtectedRoute(
         <AdminPage />,
-        "role:admin|role:department_head|role:hr_member"
+        "role:admin|role:department_head|department:8"
       ),
     },
     approvals: {
