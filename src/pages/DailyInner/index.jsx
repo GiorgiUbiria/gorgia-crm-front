@@ -7,12 +7,11 @@ import CommentThread from "./components/CommentThread"
 import CommentSection from "./components/CommentSection"
 import { DailyHeader } from "./components/DailyHeader"
 import DailyDescription from "./components/DailyDescription"
-import useCurrentUser from "hooks/useCurrentUser"
 
 const DailyInner = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { currentUser } = useCurrentUser()
+  const { user } = useAuth()
   const {
     data: dailyData,
     isLoading,
@@ -78,7 +77,7 @@ const DailyInner = () => {
 
                     <CommentThread
                       comments={dailyData?.daily?.comments}
-                      currentUserId={currentUser?.id}
+                      currentUserId={user?.id}
                     />
                   </div>
                 </CardBody>

@@ -88,6 +88,16 @@ const useAuthStore = create((set, get) => ({
     return user?.department_id === 8
   },
 
+  isLegalDepartment: () => {
+    const { user } = get()
+    return user?.department_id === 10
+  },
+
+  isITDepartment: () => {
+    const { user } = get()
+    return user?.department_id === 5
+  },
+
   // Compound Permission Checks
   hasAnyRole: roles => {
     const { user } = get()

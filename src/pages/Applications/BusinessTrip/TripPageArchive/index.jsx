@@ -2,8 +2,7 @@ import React, { useEffect, useState, useMemo } from "react"
 import { Row, Col } from "reactstrap"
 import { getAllTripsList, getDepartmentTripList } from "../../../../services/trip"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { usePermissions } from "hooks/usePermissions"
-
+import useAuth from "hooks/useAuth"
 const statusMap = {
   pending: {
     label: "განხილვაში",
@@ -215,12 +214,12 @@ const TripPageArchive = () => {
   document.title = "მივლინებების არქივი | Gorgia LLC"
 
   const [trips, setTrips] = useState([])
-  const { isAdmin } = usePermissions()
+  const { isAdmin } = useAuth()
 
   const fetchTrips = async () => {
     try {
       let response
-      isAdmin
+      isAdmin()
         ? (response = await getAllTripsList())
         : (response = await getDepartmentTripList())
       setTrips(response.data.business_trips)

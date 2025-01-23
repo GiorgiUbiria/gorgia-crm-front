@@ -5,13 +5,13 @@ import {
   useGetTaskComments,
   useCreateTaskComment,
 } from "../../../../queries/taskComments"
-import useCurrentUser from "../../../../hooks/useCurrentUser"
 import CommentThread from "./CommentThread"
 import { toast } from "react-toastify"
+import useAuth from "hooks/useAuth"
 
 const CommentSection = ({ taskData, canComment }) => {
   const [newComment, setNewComment] = useState("")
-  const { currentUser, isLoading: userLoading } = useCurrentUser()
+  const { user, isLoading: userLoading } = useAuth()
 
   const {
     data: comments = [],
@@ -101,7 +101,7 @@ const CommentSection = ({ taskData, canComment }) => {
               <CommentThread
                 key={comment.id}
                 comment={comment}
-                currentUser={currentUser}
+                currentUser={user}
                 taskId={taskData.id}
                 canEdit={false}
               />

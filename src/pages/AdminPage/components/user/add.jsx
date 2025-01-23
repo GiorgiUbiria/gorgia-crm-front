@@ -74,7 +74,7 @@ export const AddUserForm = ({
             <div>
               <label
                 htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 მომხმარებლის სახელი
               </label>
@@ -85,7 +85,7 @@ export const AddUserForm = ({
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -109,7 +109,7 @@ export const AddUserForm = ({
             <div>
               <label
                 htmlFor={field.sur_name}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 მომხმარებლის გვარი
               </label>
@@ -120,7 +120,7 @@ export const AddUserForm = ({
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -148,7 +148,7 @@ export const AddUserForm = ({
             <div>
               <label
                 htmlFor={field.email}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 მომხმარებლის ელ-ფოსტა
               </label>
@@ -159,7 +159,7 @@ export const AddUserForm = ({
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -183,7 +183,7 @@ export const AddUserForm = ({
             <div>
               <label
                 htmlFor={field.mobile_number}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 მომხმარებლის ტელეფონის ნომერი
               </label>
@@ -194,7 +194,7 @@ export const AddUserForm = ({
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -218,7 +218,7 @@ export const AddUserForm = ({
             <div>
               <label
                 htmlFor={field.position}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 მომხმარებლის პოზიცია
               </label>
@@ -229,7 +229,7 @@ export const AddUserForm = ({
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -253,7 +253,7 @@ export const AddUserForm = ({
             <div>
               <label
                 htmlFor={field.id_number}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 მომხმარებლის პირადი ნომერი
               </label>
@@ -264,7 +264,7 @@ export const AddUserForm = ({
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -288,7 +288,7 @@ export const AddUserForm = ({
                 <div>
                   <label
                     htmlFor={field.department_id}
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
                   >
                     მომხმარებლის დეპარტამენტი
                   </label>
@@ -298,7 +298,7 @@ export const AddUserForm = ({
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={e => field.handleChange(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
                   >
                     <option value="">აირჩიეთ დეპარტამენტი</option>
                     {departments.map(department => (
@@ -327,7 +327,7 @@ export const AddUserForm = ({
                 <div>
                   <label
                     htmlFor={field.roles}
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
                   >
                     მომხმარებლის როლი
                   </label>
@@ -337,7 +337,7 @@ export const AddUserForm = ({
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={e => field.handleChange(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
                   >
                     <option value="">აირჩიეთ როლი</option>
                     {roles.map(role => (

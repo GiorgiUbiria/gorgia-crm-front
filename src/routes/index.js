@@ -139,7 +139,7 @@ const applicationsRoutes = {
           path: "/applications/purchases/archive",
           component: withProtectedRoute(
             <ProcurementPageArchive />,
-            "role:admin|role:department_head|role:department_head_assistant|department:7"
+            "role:admin|role:department_head|role:department_head_assistant|department:7|user:373"
           ),
         },
         myRequests: {

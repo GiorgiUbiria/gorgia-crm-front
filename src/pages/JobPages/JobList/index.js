@@ -21,8 +21,8 @@ import {
   useFinishTask,
 } from "../../../queries/tasks"
 
-import useFetchUsers from "../../../hooks/useFetchUsers"
-import useUserRoles from "../../../hooks/useUserRoles"
+import useFetchUsers from "hooks/useFetchUsers"
+import useAuth from "hooks/useAuth"
 
 const TaskList = () => {
   document.title = "Tasks List | Gorgia LLC"
@@ -40,16 +40,14 @@ const TaskList = () => {
     direction: "desc",
   })
 
-  const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
-  const isITDepartment = currentUser?.department_id === 5
+  const { user, isITDepartment, isAdmin } = useAuth()
 
   const { users: allUsers, loading: usersLoading } = useFetchUsers()
   const usersList = allUsers?.filter(user => user.department_id === 5)
-  const userRoles = useUserRoles()
 
   const hasEditPermission = useMemo(
-    () => userRoles.includes("admin"),
-    [userRoles]
+    () => isAdmin(),
+    [isAdmin]
   )
   const hasAssignPermission = useMemo(() => isITDepartment, [isITDepartment])
 
@@ -212,7 +210,7 @@ const TaskList = () => {
         userRoles={userRoles}
         usersList={usersList}
         usersLoading={usersLoading}
-        currentUser={currentUser}
+        currentUser={user}
         createTaskMutation={createTaskMutation}
         updateTaskMutation={updateTaskMutation}
       />
@@ -230,16 +228,16 @@ const TaskList = () => {
           <Col xs="12">
             <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
               <div className="w-full sm:w-auto">
-                <h5 className="text-xl font-medium mb-3 sm:mb-0 text-gray-900 dark:text-gray-100">
+                <h5 className="text-xl font-medium mb-3 sm:mb-0 text-gray-900 dark:!text-gray-100">
                   ბილეთების სია
                 </h5>
                 {(isITDepartment || hasEditPermission) && (
-                  <div className="flex mt-3 sm:mt-2 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex mt-3 sm:mt-2 border-b border-gray-200 dark:!border-gray-700">
                     <button
                       className={`px-4 py-2 text-sm font-medium ${
                         activeTab === "all"
-                          ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                          ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
+                          : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
                       }`}
                       onClick={() => setActiveTab("all")}
                     >
@@ -248,8 +246,8 @@ const TaskList = () => {
                     <button
                       className={`px-4 py-2 text-sm font-medium ${
                         activeTab === "assigned"
-                          ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                          ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
+                          : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
                       }`}
                       onClick={() => setActiveTab("assigned")}
                     >
@@ -258,8 +256,8 @@ const TaskList = () => {
                     <button
                       className={`px-4 py-2 text-sm font-medium ${
                         activeTab === "completed"
-                          ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                          ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
+                          : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
                       }`}
                       onClick={() => setActiveTab("completed")}
                     >
@@ -296,7 +294,7 @@ const TaskList = () => {
                   onStartTask={handleStartTask}
                   onFinishTask={handleFinishTask}
                   activeTab={activeTab}
-                  currentUser={currentUser}
+                  currentUser={user}
                 />
                 <PaginationControls
                   currentPage={currentPage}

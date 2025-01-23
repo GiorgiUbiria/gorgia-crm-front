@@ -8,8 +8,6 @@ import TaskStatus from "./components/TaskStatus"
 import TaskActions from "./components/TaskActions"
 import TaskTimeline from "./components/TaskTimeline"
 import CommentSection from "./components/CommentSection"
-import useUserRoles from "../../../hooks/useUserRoles"
-import useCurrentUser from "../../../hooks/useCurrentUser"
 import Spinners from "../../../components/Common/Spinner"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -18,8 +16,7 @@ const JobDetails = () => {
   document.title = "Farm Task Details | Gorgia LLC"
   const { id } = useParams()
   const navigate = useNavigate()
-  const userRoles = useUserRoles()
-  const { currentUser, isLoading: userLoading } = useCurrentUser()
+  const { isAdmin, user } = useAuth()
 
   const {
     data: task,
@@ -41,24 +38,24 @@ const JobDetails = () => {
     if (!task) return false
 
     return (
-      userRoles.includes("admin") ||
-      (currentUser?.department_id === 38 &&
-        task.data.assigned_users?.some(user => user.id === currentUser?.id)) ||
-      currentUser?.roles?.includes("admin")
+      isAdmin() ||
+      (getUserDepartmentId() === 38 &&
+        task.data.assigned_users?.some(user => user.id === user?.id)) ||
+      isAdmin()
     )
-  }, [userRoles, currentUser, task])
+  }, [task, isAdmin])
 
-  const isFarmDepartment = currentUser?.department_id === 38
+  const isFarmDepartment = getUserDepartmentId() === 38
 
   const canAccessTask = useMemo(() => {
-    if (!task || !currentUser) return false
+    if (!task || !user) return false
     return (
       hasEditPermission ||
       isFarmDepartment ||
-      task.data.user.id === currentUser.id ||
-      task.data.assigned_users?.some(user => user.id === currentUser.id)
+      task.data.user.id === user?.id ||
+      task.data.assigned_users?.some(user => user.id === user?.id)
     )
-  }, [task, hasEditPermission, isFarmDepartment, currentUser])
+  }, [task, user, hasEditPermission, isFarmDepartment])
 
   if (userLoading || taskLoading) {
     return (

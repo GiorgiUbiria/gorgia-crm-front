@@ -5,16 +5,16 @@ import {
   useCreateDailyComment,
   useGetDailyComments,
 } from "../../../queries/dailyComment"
-import useCurrentUser from "../../../hooks/useCurrentUser"
 import CommentThread from "./CommentThread"
 import CommentHeader from "./CommentHeader"
 import CommentForm from "./CommentForm"
 import { toast } from "react-toastify"
+import useAuth from "hooks/useAuth"
 
 const CommentSection = ({ daily, canComment }) => {
   const [newComment, setNewComment] = useState("")
   const [showCommentForm, setShowCommentForm] = useState(false)
-  const { currentUser } = useCurrentUser()
+  const { user } = useAuth()
   const createCommentMutation = useCreateDailyComment()
 
   const {
@@ -150,7 +150,7 @@ const CommentSection = ({ daily, canComment }) => {
               <CommentThread
                 key={comment.id}
                 comment={comment}
-                currentUser={currentUser}
+                rurrentUser={user}
                 dailyId={daily.id}
               />
             ))

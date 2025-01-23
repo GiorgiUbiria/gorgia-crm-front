@@ -1,41 +1,31 @@
 import { useEffect } from "react"
-import { useSelector, useDispatch } from "react-redux"
+import { useThemeStore } from "../store/zustand/themeStore"
 
 const THEME_STORAGE_KEY = "app-theme-preference"
 
 export const useTheme = () => {
-  const dispatch = useDispatch()
-  const isDarkMode = useSelector(state => state.Layout.isDarkMode)
+  const { isDarkMode, toggleTheme, setTheme } = useThemeStore()
 
-  const toggleTheme = () => {
-    dispatch({ type: "TOGGLE_THEME" })
-  }
-
-  // Initialize theme based on saved preference or system preference
+  // Handle system theme preference changes
   useEffect(() => {
-    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
 
-    if (savedTheme === "dark" && !isDarkMode) {
-      dispatch({ type: "TOGGLE_THEME" })
-    } else if (savedTheme === "light" && isDarkMode) {
-      dispatch({ type: "TOGGLE_THEME" })
-    } else if (!savedTheme && prefersDark && !isDarkMode) {
-      dispatch({ type: "TOGGLE_THEME" })
+    const handleChange = e => {
+      setTheme(e.matches)
     }
 
-    // Apply theme attribute immediately
-    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light')
-  }, [])
+    mediaQuery.addEventListener("change", handleChange)
+    return () => mediaQuery.removeEventListener("change", handleChange)
+  }, [setTheme])
 
   // Update theme when it changes
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.setAttribute('data-theme', 'dark')
+      document.documentElement.setAttribute("data-theme", "dark")
       localStorage.setItem(THEME_STORAGE_KEY, "dark")
       document.documentElement.style.colorScheme = "dark"
     } else {
-      document.documentElement.setAttribute('data-theme', 'light')
+      document.documentElement.setAttribute("data-theme", "light")
       localStorage.setItem(THEME_STORAGE_KEY, "light")
       document.documentElement.style.colorScheme = "light"
     }

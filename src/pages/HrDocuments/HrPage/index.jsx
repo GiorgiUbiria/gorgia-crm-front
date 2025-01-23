@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { createHrDocument } from "services/hrDocument"
 import * as Yup from "yup"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import useFetchUsers from "hooks/useFetchUsers"
-import { usePermissions } from "hooks/usePermissions"
+import useAuth from "hooks/useAuth"
 import { Row, Col, Label } from "reactstrap"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import classnames from "classnames"
@@ -117,45 +116,21 @@ const forUserValidationSchema = activeTab => {
 
 const HrPage = () => {
   const navigate = useNavigate()
-  const reduxUser = JSON.parse(sessionStorage.getItem("authUser"))
-  const [currentUser, setCurrentUser] = useState(reduxUser)
+  const { user, isAdmin, isHrMember } = useAuth()
   const [activeTab, setActiveTab] = useState("1")
-  const { isAdmin } = usePermissions()
-  const isHrMember = currentUser?.department_id === 8
   const isHrDepartmentHead =
-    isHrMember && currentUser?.role === "department_head"
-
-  const { users } = useFetchUsers({
-    enabled: activeTab === "2" && (isAdmin || isHrMember || isHrDepartmentHead),
-  })
-
-  const [selectedUser, setSelectedUser] = useState(null)
+    isHrMember && user?.roles?.some(role => role.slug === "department_head")
   const [startedDate, setStartedDate] = useState({
     started_date: "",
   })
 
   const canAccessOtherTab = isAdmin || isHrMember || isHrDepartmentHead
 
-  useEffect(() => {
-    setCurrentUser(reduxUser)
-  }, [reduxUser])
-
-  useEffect(() => {
-    if (activeTab === "2" && selectedUser) {
-      const user = users.find(u => u.id === parseInt(selectedUser))
-      setSelectedUser(user || null)
-    } else {
-      setSelectedUser(null)
-    }
-  }, [activeTab, selectedUser, users])
-
   const handleDocumentSubmit = async (values, { setSubmitting }) => {
     try {
-      const contextUser = currentUser
-
       const documentData = {
         name: values.documentType,
-        user_id: contextUser.id,
+        user_id: user.id,
         first_name: values.first_name,
         last_name: values.last_name,
         is_other_user: activeTab === "2" ? 1 : 0,
@@ -211,8 +186,8 @@ const HrPage = () => {
     <>
       {tab === 2 && (
         <div className="row g-3 mb-4">
-          {renderUserInfo(selectedUser, "სახელი", "first_name", true)}
-          {renderUserInfo(selectedUser, "გვარი", "last_name", true)}
+          {renderUserInfo(values, "სახელი", "first_name", true)}
+          {renderUserInfo(values, "გვარი", "last_name", true)}
         </div>
       )}
       <div className="row g-3 mb-4">
@@ -220,7 +195,6 @@ const HrPage = () => {
           <div className="col-md-6">
             <div className="flex flex-row">
               <Label className="form-label">დაწყების თარიღი</Label>
-              {/* date! */}
               <DatePicker
                 startDate={startedDate}
                 handleStartedDate={setStartedDate}
@@ -245,7 +219,7 @@ const HrPage = () => {
                 disabled={isDocumentTypeDisabled(
                   type,
                   tab == 1
-                    ? currentUser?.working_start_date
+                    ? user?.working_start_date
                     : startedDate?.started_date
                 )}
               >
@@ -285,8 +259,8 @@ const HrPage = () => {
 
       {/* User Info */}
       <div className="row g-3 mb-4 mt-2">
-        {renderUserInfo(currentUser, "პირადი ნომერი", "id_number", isAdmin)}
-        {renderUserInfo(currentUser, "პოზიცია", "position", isAdmin)}
+        {renderUserInfo(user, "პირადი ნომერი", "id_number", isAdmin)}
+        {renderUserInfo(user, "პოზიცია", "position", isAdmin)}
       </div>
 
       {/* Purpose field for paid documents */}
@@ -350,7 +324,7 @@ const HrPage = () => {
                 <div className="mt-4">
                   <Formik
                     enableReinitialize
-                    initialValues={getInitialValues(activeTab, currentUser)}
+                    initialValues={getInitialValues(activeTab, user)}
                     validationSchema={forUserValidationSchema(activeTab)}
                     onSubmit={handleDocumentSubmit}
                   >

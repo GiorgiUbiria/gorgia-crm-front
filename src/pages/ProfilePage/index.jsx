@@ -218,7 +218,7 @@ const ProfilePage = () => {
                   className={`flex-1 px-4 py-4 text-center border-b-2 font-medium text-sm sm:text-base transition-colors duration-200 ${
                     activeTab === "profile"
                       ? "border-blue-500 text-blue-600 dark:!text-blue-400"
-                      : "border-transparent text-gray-500 hover:text-gray-700 dark:!text-gray-400 dark:hover:!text-gray-300"
+                      : "border-transparent text-gray-500 hover:text-gray-700 dark:!text-gray-400 dark:!hover:!text-gray-300"
                   }`}
                 >
                   {t("პროფილის პარამეტრები")}
@@ -228,7 +228,7 @@ const ProfilePage = () => {
                   className={`flex-1 px-4 py-4 text-center border-b-2 font-medium text-sm sm:text-base transition-colors duration-200 ${
                     activeTab === "security"
                       ? "border-blue-500 text-blue-600 dark:!text-blue-400"
-                      : "border-transparent text-gray-500 hover:text-gray-700 dark:!text-gray-400 dark:hover:!text-gray-300"
+                      : "border-transparent text-gray-500 hover:text-gray-700 dark:!text-gray-400 dark:!hover:!text-gray-300"
                   }`}
                 >
                   {t("უსაფრთხოება")}

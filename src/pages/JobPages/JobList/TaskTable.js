@@ -3,8 +3,7 @@ import { Table, Badge, Spinner, UncontrolledTooltip } from "reactstrap"
 import { Link, useNavigate } from "react-router-dom"
 import { MdEdit, MdDelete, Md1kPlus } from "react-icons/md"
 import { formatDate } from "../../../utils/dateUtils"
-import useCurrentUser from "../../../hooks/useCurrentUser"
-import useUserRoles from "../../../hooks/useUserRoles"
+import useAuth from "hooks/useAuth"
 
 const TaskTable = ({
   tasks,
@@ -18,8 +17,7 @@ const TaskTable = ({
   activeTab,
 }) => {
   const navigate = useNavigate()
-  const { currentUser, isLoading } = useCurrentUser()
-  const userRoles = useUserRoles()
+  const { user, isLoading, getUserDepartmentId } = useAuth()
 
   if (isLoading) {
     return (
@@ -29,7 +27,7 @@ const TaskTable = ({
     )
   }
 
-  if (!currentUser) {
+  if (!user) {
     return (
       <div className="text-center p-5">
         <p>Please log in to view tasks.</p>
@@ -42,9 +40,9 @@ const TaskTable = ({
 
     return (
       hasEditPermission || // Admin
-      task.user_id === currentUser?.id || // Task creator
-      currentUser?.department_id === 5 || // IT department
-      task.assigned_users?.some(user => user.id === currentUser?.id) // Assigned user
+      task.user_id === user?.id || // Task creator
+      getUserDepartmentId() === 5 || // IT department
+      task.assigned_users?.some(user => user.id === user?.id) // Assigned user
     )
   }
 
@@ -62,7 +60,7 @@ const TaskTable = ({
 
   const canShowAssignButton = task => {
     // Check if user is in IT department
-    if (!currentUser?.department_id === 5) return false
+    if (getUserDepartmentId() !== 5) return false
 
     // Don't show for completed or cancelled tasks
     if (task.status === "Completed" || task.status === "Cancelled") return false
@@ -70,14 +68,14 @@ const TaskTable = ({
     // Don't show in assigned tab
     if (activeTab === "assigned") return false
 
-    const isAdmin = userRoles.includes("admin")
-    const isITSupport = userRoles.includes("it_support")
+    const isAdmin = isAdmin()
+    const isITSupport = isITSupport()
 
     // Always show for admin and IT support, regardless of assignment
     if (isAdmin || isITSupport) return true
 
     // For regular IT members, only show if they're not already assigned
-    return !task.assigned_users?.some(user => user.id === currentUser?.id)
+    return !task.assigned_users?.some(user => user.id === user?.id)
   }
 
   const columns = [

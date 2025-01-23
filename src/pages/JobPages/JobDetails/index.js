@@ -8,18 +8,16 @@ import TaskStatus from "./components/TaskStatus"
 import TaskActions from "./components/TaskActions"
 import TaskTimeline from "./components/TaskTimeline"
 import CommentSection from "./components/CommentSection"
-import useUserRoles from "../../../hooks/useUserRoles"
-import useCurrentUser from "../../../hooks/useCurrentUser"
 import Spinners from "../../../components/Common/Spinner"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import useAuth from "hooks/useAuth"
 
 const JobDetails = () => {
   document.title = "Job Details | Gorgia LLC"
   const { id } = useParams()
   const navigate = useNavigate()
-  const userRoles = useUserRoles()
-  const { currentUser, isLoading: userLoading } = useCurrentUser()
+  const { user, isLoading: userLoading, isAdmin, getUserDepartmentId } = useAuth()
 
   const {
     data: task,
@@ -43,23 +41,23 @@ const JobDetails = () => {
     if (!taskData) return false
 
     return (
-      userRoles.includes("admin") ||
-      (currentUser?.department_id === 5 &&
-        taskData.assigned_users?.some(user => user.id === currentUser?.id))
+      isAdmin() ||
+      (getUserDepartmentId() === 5 &&
+        taskData.assigned_users?.some(user => user.id === user?.id))
     )
-  }, [userRoles, currentUser, taskData])
+  }, [taskData, isAdmin, getUserDepartmentId])
 
-  const isITDepartment = currentUser?.department_id === 5
+  const isITDepartment = getUserDepartmentId() === 5
 
   const canAccessTask = useMemo(() => {
-    if (!taskData || !currentUser) return false
+    if (!taskData || !user) return false
     return (
       hasEditPermission ||
       isITDepartment ||
-      taskData.user.id === currentUser.id ||
-      taskData.assigned_users?.some(user => user.id === currentUser.id)
+      taskData.user.id === user?.id ||
+      taskData.assigned_users?.some(user => user.id === user?.id)
     )
-  }, [taskData, hasEditPermission, isITDepartment, currentUser])
+  }, [taskData, hasEditPermission, isITDepartment, user])
 
   if (userLoading || taskLoading) {
     return (

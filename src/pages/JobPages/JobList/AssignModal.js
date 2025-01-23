@@ -1,32 +1,30 @@
 import React, { useState, useEffect } from "react"
 import { Modal, ModalHeader, ModalBody, Form, Button, Label } from "reactstrap"
 import { toast } from "react-toastify"
-import useCurrentUser from "../../../hooks/useCurrentUser"
-import useUserRoles from "../../../hooks/useUserRoles"
-import useFetchUsers from "../../../hooks/useFetchUsers"
-import CustomSelect from "../../../components/Select"
+import useAuth from "hooks/useAuth"
+import useFetchUsers from "hooks/useFetchUsers"
+import CustomSelect from "components/Select"
 
 const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
   const [selectedUsers, setSelectedUsers] = useState([])
-  const { currentUser } = useCurrentUser()
-  const userRoles = useUserRoles()
+  const { user, isAdmin, getUserDepartmentId, isDepartmentHead, isITSupport } =
+    useAuth()
   const { users: allUsers, loading: usersLoading } = useFetchUsers()
 
-  const isAdmin = userRoles.includes("admin")
-  const isDepartmentHead =
-    userRoles.includes("department_head") && currentUser?.department_id === 5
-  const isITSupport = userRoles.includes("it_support")
-  const isITMember = currentUser?.department_id === 5
+  const isITMember = getUserDepartmentId() === 5
 
   useEffect(() => {
-    if (task?.assigned_users && (isAdmin || isDepartmentHead || isITSupport)) {
+    if (
+      task?.assigned_users &&
+      (isAdmin() || isDepartmentHead() || isITSupport() || isITMember)
+    ) {
       const currentlyAssigned = task.assigned_users.map(user => ({
         value: user.id,
         label: `${user.name} ${user.sur_name}`,
       }))
       setSelectedUsers(currentlyAssigned)
     }
-  }, [task, isAdmin, isDepartmentHead, isITSupport])
+  }, [task, isAdmin, isDepartmentHead, isITSupport, isITMember])
   const usersList = allUsers?.filter(user => user.department_id === 5)
 
   const handleClose = () => {
@@ -38,18 +36,9 @@ const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
     e.preventDefault()
     try {
       const assignedUserIds =
-        isAdmin || isDepartmentHead || isITSupport
+        isAdmin() || isDepartmentHead() || isITSupport()
           ? selectedUsers.map(user => user.value)
-          : [currentUser.id]
-
-      console.log("AssignModal - Submitting Assignment:", {
-        assignedUserIds,
-        selectedUsers,
-        isAdmin,
-        isDepartmentHead,
-        isITSupport,
-        isITMember,
-      })
+          : [user.id]
 
       await onAssign(assignedUserIds)
       toast.success("დავალება მიღებულია")
@@ -86,14 +75,14 @@ const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
               className="mdi mdi-check-circle-outline text-success"
               style={{ fontSize: "3rem" }}
             ></i>
-            {isAdmin || isDepartmentHead || isITSupport ? (
+            {isAdmin() || isDepartmentHead() || isITSupport() ? (
               <h5 className="mt-3">აირჩიეთ პასუხისმგებელი პირები</h5>
             ) : (
               <h5 className="mt-3">გსურთ დავალების მიღება?</h5>
             )}
           </div>
 
-          {(isAdmin || isDepartmentHead || isITSupport) && (
+          {(isAdmin() || isDepartmentHead() || isITSupport()) && (
             <div className="mb-4">
               <Label className="form-label">პასუხისმგებელი პირები</Label>
               <CustomSelect
@@ -115,7 +104,7 @@ const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
               type="submit"
               color="primary"
               disabled={
-                (isAdmin || isDepartmentHead || isITSupport) &&
+                (isAdmin() || isDepartmentHead() || isITSupport()) &&
                 selectedUsers.length === 0
               }
             >

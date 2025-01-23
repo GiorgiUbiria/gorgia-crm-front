@@ -1,14 +1,9 @@
 import React from "react"
-import { useDispatch, useSelector } from "react-redux"
+import { useThemeStore } from "../../../store/zustand/themeStore"
 import { MoonIcon, SunIcon } from "@heroicons/react/24/outline"
 
 const ThemeSwitcher = () => {
-  const dispatch = useDispatch()
-  const isDarkMode = useSelector(state => state.Layout.isDarkMode)
-
-  const toggleTheme = () => {
-    dispatch({ type: "TOGGLE_THEME" })
-  }
+  const { isDarkMode, toggleTheme } = useThemeStore()
 
   return (
     <button

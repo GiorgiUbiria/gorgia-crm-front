@@ -51,11 +51,12 @@ export const useGetCurrentUserPurchases = (page = 1, perPage = 15) => {
   })
 }
 
-export const useGetDepartmentPurchases = (page = 1, perPage = 15) => {
+export const useGetDepartmentPurchases = (page = 1, perPage = 15, options = {}) => {
   return useQuery({
     queryKey: purchaseKeys.departmentPurchases(page, perPage),
     queryFn: () => getDepartmentPurchases(page, perPage),
     select: response => response.data,
+    ...options,
   })
 }
 

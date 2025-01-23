@@ -38,7 +38,7 @@ import {
   downloadPurchase,
 } from "../../../../services/purchase"
 import { DownloadButton } from "../../../../components/CrmActionButtons/ActionButtons"
-import { usePermissions } from "hooks/usePermissions"
+import useAuth from "hooks/useAuth"
 
 const statusMap = {
   "pending department head": {
@@ -70,27 +70,47 @@ const statusMap = {
 
 const ProcurementPageArchive = () => {
   document.title = "შესყიდვების არქივი | Gorgia LLC"
+
   const {
     isAdmin,
     isDepartmentHead,
     isDepartmentHeadAssistant,
-    userDepartmentId,
-  } = usePermissions()
-  const { data: purchaseData, isLoading } = useGetPurchaseList()
+    getUserDepartmentId,
+    can,
+  } = useAuth()
+  const { data: purchaseData, isLoading } = useGetPurchaseList(
+    {},
+    {
+      enabled: isAdmin() || getUserDepartmentId() === 7 || can("user:373"),
+    }
+  )
 
   const {
     data: departmentPurchaseData,
     isLoading: isDepartmentPurchaseLoading,
-  } = useGetDepartmentPurchases()
+  } = useGetDepartmentPurchases(_, _, {
+    enabled:
+      (isDepartmentHead() || isDepartmentHeadAssistant()) &&
+      !isAdmin() &&
+      getUserDepartmentId() !== 7 &&
+      can("user:373"),
+  })
 
   const canViewTable = useMemo(() => {
     return (
-      isAdmin ||
-      isDepartmentHead ||
-      isDepartmentHeadAssistant ||
-      userDepartmentId === 7
+      isAdmin() ||
+      isDepartmentHead() ||
+      isDepartmentHeadAssistant() ||
+      getUserDepartmentId() === 7 ||
+      can("user:373")
     )
-  }, [isAdmin, isDepartmentHead, isDepartmentHeadAssistant, userDepartmentId])
+  }, [
+    isAdmin,
+    isDepartmentHead,
+    isDepartmentHeadAssistant,
+    getUserDepartmentId,
+    can,
+  ])
 
   const columns = useMemo(
     () => [

@@ -30,8 +30,7 @@ import {
 import AutoApprovalCountdown from "../../../../components/Vacation/AutoApprovalCountdown"
 import CancellationModal from "../../../../components/Vacation/CancellationModal"
 import { Tooltip } from "@mui/material"
-import { usePermissions } from "hooks/usePermissions"
-
+import useAuth from "hooks/useAuth"
 const statusMap = {
   pending: {
     label: "განხილვაში",
@@ -222,13 +221,13 @@ const ExpandedRowContent = ({ rowData }) => {
 const VacationPageApprove = () => {
   document.title = "შვებულების ვიზირება | Gorgia LLC"
 
-  const { isAdmin} = usePermissions()
+  const { isAdmin } = useAuth()
   const {
     data: departmentVacationData,
     isLoading: departmentVacationsLoading,
   } = useDepartmentVacations()
   const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
-    enabled: !!isAdmin,
+    enabled: !!isAdmin(),
   })
   const { mutate: updateStatus } = useUpdateVacationStatus()
 
@@ -496,7 +495,7 @@ const VacationPageApprove = () => {
         },
       },
     }))
-  }, [vacationsData])
+  }, [departmentVacationData?.data?.data, vacationsData?.data?.data, isAdmin])
 
   const filterOptions = [
     {

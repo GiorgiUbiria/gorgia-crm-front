@@ -1,7 +1,7 @@
 import React from "react"
 import { useForm } from "@tanstack/react-form"
 import { useCreateDepartmentHeadDaily } from "queries/daily"
-import useCurrentUser from "hooks/useCurrentUser"
+import useAuth from "hooks/useAuth"
 
 function FieldInfo({ field }) {
   if (!field.state.meta.isTouched) return null
@@ -21,7 +21,7 @@ function FieldInfo({ field }) {
 }
 
 export const AddDailyForm = ({ onSuccess }) => {
-  const { currentUser } = useCurrentUser()
+  const { user } = useAuth()
   const createDaily = useCreateDepartmentHeadDaily()
 
   const form = useForm({
@@ -29,7 +29,7 @@ export const AddDailyForm = ({ onSuccess }) => {
       date: new Date().toISOString().split("T")[0],
       name: "",
       description: "",
-      department_id: currentUser?.department_id,
+      department_id: user?.department_id,
     },
     onSubmit: async ({ value }) => {
       await createDaily.mutateAsync(value)
@@ -59,7 +59,7 @@ export const AddDailyForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 თარიღი
               </label>
@@ -70,7 +70,7 @@ export const AddDailyForm = ({ onSuccess }) => {
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -94,7 +94,7 @@ export const AddDailyForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 საკითხი
               </label>
@@ -105,7 +105,7 @@ export const AddDailyForm = ({ onSuccess }) => {
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -119,7 +119,7 @@ export const AddDailyForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 აღწერა
               </label>
@@ -130,7 +130,7 @@ export const AddDailyForm = ({ onSuccess }) => {
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
                 rows={4}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>

@@ -22,7 +22,7 @@ const ProfileHeader = ({ userData, onImageChange }) => {
     : NoAvatarIcon
 
   return (
-    <header className="relative bg-gradient-to-br from-blue-500 to-blue-700 dark:from-blue-600 dark:to-blue-900 rounded-2xl p-6 sm:p-8 shadow-xl overflow-hidden group">
+    <header className="relative bg-gradient-to-br from-blue-500 to-blue-700 dark:!from-blue-600 dark:!to-blue-900 rounded-2xl p-6 sm:p-8 shadow-xl overflow-hidden group">
       {/* Background pattern */}
       <div className="absolute inset-0 bg-white/5 opacity-50" />
 

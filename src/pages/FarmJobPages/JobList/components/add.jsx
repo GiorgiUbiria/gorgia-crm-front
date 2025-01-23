@@ -64,7 +64,7 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.task_title}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 პრობლემის ტიპი
               </label>
@@ -75,7 +75,7 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -89,7 +89,7 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.description}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 აღწერა
               </label>
@@ -100,7 +100,7 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
                 rows={4}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -124,7 +124,7 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.phone_number}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 ტელეფონის ნომერი
               </label>
@@ -135,7 +135,7 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               />
               <FieldInfo field={field} />
             </div>
@@ -155,7 +155,7 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.priority}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
                 პრიორიტეტი
               </label>
@@ -164,7 +164,7 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
                 name={field.priority}
                 value={field.state.value}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
               >
                 <option value="Low">
                   <span> დაბალი </span>

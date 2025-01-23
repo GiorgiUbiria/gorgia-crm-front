@@ -14,8 +14,8 @@ import {
 } from "reactstrap"
 import { useFormik } from "formik"
 import * as Yup from "yup"
-import useCurrentUser from "../../../hooks/useCurrentUser"
-import { SearchableSelect } from "../../../components/Select"
+import { SearchableSelect } from "components/Select"
+import useAuth from "hooks/useAuth"
 
 const TaskModal = ({
   isOpen,
@@ -28,7 +28,7 @@ const TaskModal = ({
   createTaskMutation,
   updateTaskMutation,
 }) => {
-  const { currentUser, isLoading: userLoading } = useCurrentUser()
+  const { user, isLoading: userLoading } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Close modal handler that checks if submission is in progress
@@ -39,7 +39,7 @@ const TaskModal = ({
   }
 
   const initialValues = {
-    user_id: currentUser?.id || "",
+    user_id: user?.id || "",
     task_title: task?.task_title || "",
     description: task?.description || "",
     priority: task?.priority || "Low",
@@ -102,14 +102,14 @@ const TaskModal = ({
         const isITSupport = userRoles.includes("it_support")
         const isDepartmentHead =
           userRoles.includes("department_head") &&
-          currentUser?.department_id === 5
+          user?.department_id === 5
 
         const formData = {
           ...values,
           assigned_users:
             isAdmin || isITSupport || isDepartmentHead
               ? values.assigned_users.map(user => user.value)
-              : [currentUser.id],
+              : [user.id],
         }
 
         if (isEdit && task?.id) {
@@ -143,7 +143,7 @@ const TaskModal = ({
     )
   }
 
-  if (!currentUser) {
+  if (!user) {
     toggle(false)
     return null
   }

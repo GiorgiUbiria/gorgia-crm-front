@@ -4,23 +4,20 @@ import { CrmTable } from "components/CrmTable"
 import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
 import CrmSpinner from "components/CrmSpinner"
 import { useGetRegularDailies, useGetMyRegularDailies } from "queries/daily"
-import useUserRoles from "hooks/useUserRoles"
 import { AddDailyForm } from "./components/form"
 import { renderSubComponent } from "./components/subComponent"
 import * as XLSX from "xlsx"
+import useAuth from "hooks/useAuth"
 
 const DailiesInner = () => {
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
   const navigate = useNavigate()
-  const roles = useUserRoles()
-  const user = JSON.parse(sessionStorage.getItem("authUser"))
 
-  const isAdminOrDepartmentHead =
-    roles.includes("admin") || roles.includes("department_head")
+  const { isAdmin, isDepartmentHead } = useAuth()
 
   const { data: adminDailiesData, isLoading: adminIsLoading } =
     useGetRegularDailies({
-      enabled: isAdminOrDepartmentHead,
+      enabled: isAdmin() || isDepartmentHead(),
       staleTime: 5 * 60 * 1000,
       keepPreviousData: true,
       refetchOnWindowFocus: true,
@@ -28,16 +25,16 @@ const DailiesInner = () => {
 
   const { data: userDailiesData, isLoading: userIsLoading } =
     useGetMyRegularDailies({
-      enabled: !isAdminOrDepartmentHead,
+      enabled: !isAdmin() && !isDepartmentHead(),
       staleTime: 5 * 60 * 1000,
       keepPreviousData: true,
       refetchOnWindowFocus: true,
     })
 
-  const dailiesData = isAdminOrDepartmentHead
-    ? adminDailiesData
-    : userDailiesData
-  const isLoading = isAdminOrDepartmentHead ? adminIsLoading : userIsLoading
+  const dailiesData =
+    isAdmin() || isDepartmentHead() ? adminDailiesData : userDailiesData
+  const isLoading =
+    isAdmin() || isDepartmentHead() ? adminIsLoading : userIsLoading
 
   const handleRowClick = React.useCallback(
     row => {

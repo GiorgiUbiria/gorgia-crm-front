@@ -117,5 +117,7 @@ export const procurementSchema = Yup.object()
       .of(productSchema)
       .min(1, "მინიმუმ ერთი პროდუქტი სავალდებულოა")
       .required("პროდუქტების მითითება სავალდებულოა"),
+
+    external_url: Yup.string().nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
   })
   .from("category", "category")

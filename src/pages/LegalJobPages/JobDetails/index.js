@@ -8,8 +8,7 @@ import TaskStatus from "./components/TaskStatus"
 import TaskActions from "./components/TaskActions"
 import TaskTimeline from "./components/TaskTimeline"
 import CommentSection from "./components/CommentSection"
-import useUserRoles from "../../../hooks/useUserRoles"
-import useCurrentUser from "../../../hooks/useCurrentUser"
+import useAuth from "hooks/useAuth"
 import Spinners from "../../../components/Common/Spinner"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -18,8 +17,7 @@ const JobDetails = () => {
   document.title = "Legal Task Details | Gorgia LLC"
   const { id } = useParams()
   const navigate = useNavigate()
-  const userRoles = useUserRoles()
-  const { currentUser, isLoading: userLoading } = useCurrentUser()
+  const { user, isLoading: userLoading } = useAuth()
 
   const {
     data: task,
@@ -41,24 +39,24 @@ const JobDetails = () => {
     if (!task) return false
 
     return (
-      userRoles.includes("admin") ||
-      (currentUser?.department_id === 10 &&
-        task.data.assigned_users?.some(user => user.id === currentUser?.id)) ||
-      currentUser?.roles?.includes("admin")
+      isAdmin() ||
+      (isLegalDepartment() &&
+        task.data.assigned_users?.some(user => user.id === user?.id)) ||
+      isAdmin()
     )
-  }, [userRoles, currentUser, task])
+  }, [task, isLegalDepartment])
 
-  const isLegalDepartment = currentUser?.department_id === 10
+  const isLegalDepartment = getUserDepartmentId() === 10
 
   const canAccessTask = useMemo(() => {
-    if (!task || !currentUser) return false
+    if (!task || !user) return false
     return (
       hasEditPermission ||
       isLegalDepartment ||
-      task.data.user.id === currentUser.id ||
-      task.data.assigned_users?.some(user => user.id === currentUser.id)
+      task.data.user.id === user.id ||
+      task.data.assigned_users?.some(user => user.id === user.id)
     )
-  }, [task, hasEditPermission, isLegalDepartment, currentUser])
+  }, [task, hasEditPermission, isLegalDepartment, user])
 
   if (userLoading || taskLoading) {
     return (

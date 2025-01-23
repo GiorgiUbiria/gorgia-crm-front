@@ -37,7 +37,7 @@ import {
   BiLink,
   BiDownload,
 } from "react-icons/bi"
-import { usePermissions } from "../../../../hooks/usePermissions"
+import useAuth from "hooks/useAuth"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
 import {
@@ -90,9 +90,9 @@ const PurchasePageApprove = () => {
   const {
     isDepartmentHead,
     isDepartmentHeadAssistant,
-    userDepartmentId,
+    getUserDepartmentId,
     isAdmin,
-  } = usePermissions()
+  } = useAuth()
 
   const [rejectionModal, setRejectionModal] = useState(false)
   const [selectedPurchase, setSelectedPurchase] = useState(null)
@@ -105,18 +105,18 @@ const PurchasePageApprove = () => {
 
   const canViewTable = useMemo(() => {
     return (
-      isAdmin ||
-      isDepartmentHead ||
-      isDepartmentHeadAssistant ||
-      userDepartmentId === 7
+      isAdmin() ||
+      isDepartmentHead() ||
+      isDepartmentHeadAssistant() ||
+      getUserDepartmentId() === 7
     )
-  }, [isAdmin, isDepartmentHead, isDepartmentHeadAssistant, userDepartmentId])
+  }, [isAdmin, isDepartmentHead, isDepartmentHeadAssistant, getUserDepartmentId])
 
   const { data: purchaseData, isLoading: isPurchasesLoading } =
     useGetPurchaseList(
       {},
       {
-        enabled: !!isAdmin,
+        enabled: !!isAdmin(),
       }
     )
 
@@ -134,12 +134,12 @@ const PurchasePageApprove = () => {
   const canManageProducts = useCallback(
     purchase => {
       return (
-        isAdmin ||
-        (userDepartmentId === 7 &&
+        isAdmin() ||
+        (getUserDepartmentId() === 7 &&
           purchase.status === "pending products completion")
       )
     },
-    [isAdmin, userDepartmentId]
+    [isAdmin, getUserDepartmentId]
   )
 
   const canApproveRequest = useCallback(
@@ -160,14 +160,14 @@ const PurchasePageApprove = () => {
 
       switch (purchase.status) {
         case "pending department head":
-          return userDepartmentId === requesterDepartmentId
+          return getUserDepartmentId() === requesterDepartmentId
         case "pending requested department":
-          return userDepartmentId === categoryDepartmentId
+          return getUserDepartmentId() === categoryDepartmentId
         default:
           return false
       }
     },
-    [isDepartmentHead, userDepartmentId, isAdmin]
+    [isDepartmentHead, getUserDepartmentId, isAdmin]
   )
 
   const getNextStatus = purchase => {

@@ -20,7 +20,7 @@ import {
   BiXCircle,
   BiArrowBack,
 } from "react-icons/bi"
-import { usePermissions } from "hooks/usePermissions"
+import useAuth from "hooks/useAuth"
 
 const statusMap = {
   pending: {
@@ -238,12 +238,12 @@ const TripPageApprove = () => {
   const [rejectionComment, setRejectionComment] = useState("")
   const [confirmModal, setConfirmModal] = useState(false)
   const [actionType, setActionType] = useState(null)
-  const { isAdmin } = usePermissions()
+  const { isAdmin } = useAuth()
 
   const fetchTrips = async () => {
     try {
       let response
-      isAdmin ? response = await getAllTripsList() : response = await getDepartmentTripList()
+      isAdmin() ? response = await getAllTripsList() : response = await getDepartmentTripList()
       setTrips(response.data.business_trips)
     } catch (err) {
       console.error("Error fetching trip requests:", err)

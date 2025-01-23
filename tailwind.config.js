@@ -12,6 +12,16 @@ module.exports = {
       spacing: {
         1.5: "0.375rem",
       },
+      transitionProperty: {
+        'theme': 'background-color, border-color, color, fill, stroke, opacity, box-shadow, transform',
+      },
+      transitionDuration: {
+        '0': '0ms',
+        '2000': '2000ms',
+      },
+      transitionTimingFunction: {
+        'theme': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
       colors: {
         "sidebar-bg": "#EDF3FD",
         primary: {
@@ -44,5 +54,19 @@ module.exports = {
       },
     },
   },
-  plugins: [require("@tailwindcss/typography")],
+  plugins: [
+    require("@tailwindcss/typography"),
+    function({ addBase }) {
+      addBase({
+        ':root': {
+          '--theme-transition': '0.3s ease-in-out',
+        },
+        '*, *::before, *::after': {
+          'transition-property': 'background-color, border-color, color, fill, stroke',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '0.3s',
+        },
+      })
+    },
+  ],
 }

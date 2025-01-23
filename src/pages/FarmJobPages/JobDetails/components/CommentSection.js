@@ -5,13 +5,13 @@ import {
   useGetTaskComments,
   useCreateTaskComment,
 } from "../../../../queries/farmTasks"
-import useCurrentUser from "../../../../hooks/useCurrentUser"
+import useAuth from "hooks/useAuth"
 import CommentThread from "./CommentThread"
 import { toast } from "react-toastify"
 
 const CommentSection = ({ task, canComment }) => {
   const [newComment, setNewComment] = useState("")
-  const { currentUser, isLoading: userLoading } = useCurrentUser()
+  const { user, isLoading: userLoading } = useAuth()
 
   const {
     data: comments = [],
@@ -19,7 +19,6 @@ const CommentSection = ({ task, canComment }) => {
     error,
   } = useGetTaskComments(task.data.id)
 
-  console.log(comments)
   const createCommentMutation = useCreateTaskComment()
 
   const handleSubmitComment = async e => {
@@ -102,7 +101,7 @@ const CommentSection = ({ task, canComment }) => {
               <CommentThread
                 key={comment.id}
                 comment={comment}
-                currentUser={currentUser}
+                currentUser={user}
                 taskId={task.data.id}
                 canEdit={false}
               />

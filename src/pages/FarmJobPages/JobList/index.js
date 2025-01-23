@@ -210,26 +210,26 @@ const TaskList = () => {
                     <Tooltip.Provider>
                       <Tooltip.Root>
                         <Tooltip.Trigger asChild>
-                          <button className="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                          <button className="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:!bg-gray-700 text-gray-600 dark:!text-gray-300 rounded-full">
                             +{remainingWorkers.length}
                           </button>
                         </Tooltip.Trigger>
                         <Tooltip.Portal>
                           <Tooltip.Content
-                            className="bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+                            className="bg-white dark:!bg-gray-800 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:!border-gray-700"
                             sideOffset={5}
                           >
                             <div className="flex flex-col gap-1">
                               {remainingWorkers.map(worker => (
                                 <div
                                   key={worker.id}
-                                  className="whitespace-nowrap text-sm text-gray-700 dark:text-gray-300"
+                                  className="whitespace-nowrap text-sm text-gray-700 dark:!text-gray-300"
                                 >
                                   {worker.name + " " + worker.sur_name}
                                 </div>
                               ))}
                             </div>
-                            <Tooltip.Arrow className="fill-white dark:fill-gray-800" />
+                            <Tooltip.Arrow className="fill-white dark:!fill-gray-800" />
                           </Tooltip.Content>
                         </Tooltip.Portal>
                       </Tooltip.Root>
@@ -278,15 +278,15 @@ const TaskList = () => {
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
         <div className="w-full sm:w-auto">
-          <h5 className="text-xl font-medium mb-3 sm:mb-0 text-gray-900 dark:text-gray-100">
+          <h5 className="text-xl font-medium mb-3 sm:mb-0 text-gray-900 dark:!text-gray-100">
             ბილეთების სია
           </h5>
-          <div className="flex mt-3 sm:mt-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex mt-3 sm:mt-2 border-b border-gray-200 dark:!border-gray-700">
             <button
               className={`px-4 py-2 text-sm font-medium ${
                 activeTab === "my"
-                  ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
+                  : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
               }`}
               onClick={() => setActiveTab("my")}
             >
@@ -297,8 +297,8 @@ const TaskList = () => {
                 <button
                   className={`px-4 py-2 text-sm font-medium ${
                     activeTab === "all"
-                      ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
+                      : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
                   }`}
                   onClick={() => setActiveTab("all")}
                 >
@@ -307,8 +307,8 @@ const TaskList = () => {
                 <button
                   className={`px-4 py-2 text-sm font-medium ${
                     activeTab === "assigned"
-                      ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
+                      : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
                   }`}
                   onClick={() => setActiveTab("assigned")}
                 >
@@ -317,8 +317,8 @@ const TaskList = () => {
                 <button
                   className={`px-4 py-2 text-sm font-medium ${
                     activeTab === "completed"
-                      ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
+                      : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
                   }`}
                   onClick={() => setActiveTab("completed")}
                 >
