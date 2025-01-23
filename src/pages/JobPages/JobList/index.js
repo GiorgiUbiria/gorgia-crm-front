@@ -207,7 +207,6 @@ const TaskList = () => {
         toggle={setModal}
         isEdit={isEdit}
         task={task}
-        userRoles={userRoles}
         usersList={usersList}
         usersLoading={usersLoading}
         currentUser={user}

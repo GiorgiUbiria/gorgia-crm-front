@@ -26,6 +26,7 @@ const useAuth = () => {
     isHrMember: store.isHrMember,
     isLegalDepartment: store.isLegalDepartment,
     isITDepartment: store.isITDepartment,
+    isITSupport: store.isITSupport,
 
     // Role checks
     hasAnyRole: store.hasAnyRole,

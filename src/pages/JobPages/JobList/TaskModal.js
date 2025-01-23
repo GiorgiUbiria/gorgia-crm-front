@@ -22,16 +22,14 @@ const TaskModal = ({
   toggle,
   isEdit,
   task,
-  userRoles,
   usersList,
   usersLoading,
   createTaskMutation,
   updateTaskMutation,
 }) => {
-  const { user, isLoading: userLoading } = useAuth()
+  const { user, isAdmin, isITSupport, isLoading: userLoading } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Close modal handler that checks if submission is in progress
   const handleClose = () => {
     if (!isSubmitting) {
       toggle(false)
@@ -98,16 +96,14 @@ const TaskModal = ({
       if (isSubmitting) return
       setIsSubmitting(true)
       try {
-        const isAdmin = userRoles.includes("admin")
-        const isITSupport = userRoles.includes("it_support")
-        const isDepartmentHead =
-          userRoles.includes("department_head") &&
-          user?.department_id === 5
+        const isAdminCheck = isAdmin()
+        const isITSupportCheck = isITSupport()
+        const isDepartmentHeadCheck = isDepartmentHead()
 
         const formData = {
           ...values,
           assigned_users:
-            isAdmin || isITSupport || isDepartmentHead
+            isAdminCheck || isITSupportCheck || isDepartmentHeadCheck
               ? values.assigned_users.map(user => user.value)
               : [user.id],
         }
@@ -215,18 +211,26 @@ const TaskModal = ({
                     <option value="" disabled hidden>
                       აირჩიეთ პრობლემის ტიპი
                     </option>
-                    <option value="პრინტერის პრობლემა">პრინტერის პრობლემა</option>
+                    <option value="პრინტერის პრობლემა">
+                      პრინტერის პრობლემა
+                    </option>
                     <option value="სერვისი">სერვისი</option>
                     <option value="პაროლის აღდგენა">პაროლის აღდგენა</option>
-                    <option value="ელ-ფოსტის პრობლემა">ელ-ფოსტის პრობლემა</option>
-                    <option value="ტექნიკური პრობლემა">ტექნიკური პრობლემა</option>
+                    <option value="ელ-ფოსტის პრობლემა">
+                      ელ-ფოსტის პრობლემა
+                    </option>
+                    <option value="ტექნიკური პრობლემა">
+                      ტექნიკური პრობლემა
+                    </option>
                     <option value="სერვისის პრობლემა">სერვისის პრობლემა</option>
                     <option value="ფაილების აღდგენა">ფაილების აღდგენა</option>
                     <option value="სხვა">სხვა</option>
                   </Input>
                   {validation.touched.task_title &&
                     validation.errors.task_title && (
-                      <FormFeedback>{validation.errors.task_title}</FormFeedback>
+                      <FormFeedback>
+                        {validation.errors.task_title}
+                      </FormFeedback>
                     )}
                 </div>
                 {[
@@ -275,7 +279,9 @@ const TaskModal = ({
                   />
                   {validation.touched.description &&
                     validation.errors.description && (
-                      <FormFeedback>{validation.errors.description}</FormFeedback>
+                      <FormFeedback>
+                        {validation.errors.description}
+                      </FormFeedback>
                     )}
                 </div>
                 <div className="mb-3">
@@ -317,12 +323,12 @@ const TaskModal = ({
                     <option value="Medium">საშუალო</option>
                     <option value="High">მაღალი</option>
                   </Input>
-                  {validation.touched.priority && validation.errors.priority && (
-                    <FormFeedback>{validation.errors.priority}</FormFeedback>
-                  )}
+                  {validation.touched.priority &&
+                    validation.errors.priority && (
+                      <FormFeedback>{validation.errors.priority}</FormFeedback>
+                    )}
                 </div>
-                {(userRoles.includes("admin") ||
-                  userRoles.includes("it_support")) && (
+                {(isAdmin() || isITSupport()) && (
                   <div className="mb-3">
                     <Label className="form-label">პასუხისმგებელი პირები</Label>
                     <SearchableSelect
@@ -359,9 +365,10 @@ const TaskModal = ({
                       validation.touched.due_date && validation.errors.due_date
                     }
                   />
-                  {validation.touched.due_date && validation.errors.due_date && (
-                    <FormFeedback>{validation.errors.due_date}</FormFeedback>
-                  )}
+                  {validation.touched.due_date &&
+                    validation.errors.due_date && (
+                      <FormFeedback>{validation.errors.due_date}</FormFeedback>
+                    )}
                 </div>
               </Col>
             </Row>

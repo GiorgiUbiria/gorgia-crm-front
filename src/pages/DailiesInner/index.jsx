@@ -13,7 +13,7 @@ const DailiesInner = () => {
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
   const navigate = useNavigate()
 
-  const { isAdmin, isDepartmentHead } = useAuth()
+  const { user, isAdmin, isDepartmentHead } = useAuth()
 
   const { data: adminDailiesData, isLoading: adminIsLoading } =
     useGetRegularDailies({
@@ -162,7 +162,7 @@ const DailiesInner = () => {
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="p-4 sm:p-6">
         <div className="mb-4 flex gap-3">
-          {roles.includes("admin") && (
+          {isAdmin() && (
             <DialogButton
               actionType="downloadExcel"
               onClick={exportToExcel}

@@ -17,7 +17,7 @@ const TaskTable = ({
   activeTab,
 }) => {
   const navigate = useNavigate()
-  const { user, isLoading, getUserDepartmentId } = useAuth()
+  const { user, isLoading, getUserDepartmentId, isAdmin, isITSupport } = useAuth()
 
   if (isLoading) {
     return (
@@ -68,11 +68,11 @@ const TaskTable = ({
     // Don't show in assigned tab
     if (activeTab === "assigned") return false
 
-    const isAdmin = isAdmin()
-    const isITSupport = isITSupport()
+    const isAdminUser = isAdmin()
+    const isITSupportUser = isITSupport()
 
     // Always show for admin and IT support, regardless of assignment
-    if (isAdmin || isITSupport) return true
+    if (isAdminUser || isITSupportUser) return true
 
     // For regular IT members, only show if they're not already assigned
     return !task.assigned_users?.some(user => user.id === user?.id)

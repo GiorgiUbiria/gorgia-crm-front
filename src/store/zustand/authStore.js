@@ -98,6 +98,11 @@ const useAuthStore = create((set, get) => ({
     return user?.department_id === 5
   },
 
+  isITSupport: () => {
+    const { user } = get()
+    return user?.roles?.some(role => role.slug === "it_support")
+  },
+
   // Compound Permission Checks
   hasAnyRole: roles => {
     const { user } = get()
