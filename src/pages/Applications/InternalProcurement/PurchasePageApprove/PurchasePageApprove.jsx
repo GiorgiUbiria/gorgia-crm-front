@@ -113,7 +113,12 @@ const PurchasePageApprove = () => {
   }, [isAdmin, isDepartmentHead, isDepartmentHeadAssistant, userDepartmentId])
 
   const { data: purchaseData, isLoading: isPurchasesLoading } =
-    useGetPurchaseList(true)
+    useGetPurchaseList(
+      {},
+      {
+        enabled: !!isAdmin,
+      }
+    )
 
   const { mutate: updatePurchaseStatus, isLoading: isStatusUpdateLoading } =
     useUpdatePurchaseStatus()
@@ -121,7 +126,7 @@ const PurchasePageApprove = () => {
   const {
     data: departmentPurchaseData,
     isLoading: isDepartmentPurchaseLoading,
-  } = useGetDepartmentPurchases()
+  } = useGetDepartmentPurchases({}, { enabled: isDepartmentHead })
 
   const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
     useUpdateProductStatus()

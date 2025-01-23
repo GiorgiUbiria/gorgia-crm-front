@@ -168,7 +168,8 @@ const useAuthStore = create((set, get) => ({
     const { user } = get()
     return (
       user?.roles?.some(role => role.slug === "admin") ||
-      user?.department_id === 8 // HR department
+      (user?.department_id === 8 &&
+        user?.roles?.some(role => role.slug === "department_head_assistant")) // HR department
     )
   },
 

@@ -103,7 +103,7 @@ const CrmDialog = ({
           )}
         </div>
 
-        <div className="px-6 flex-1 overflow-y-auto">{children}</div>
+        <div className="px-6 flex-1 mb-8">{children}</div>
 
         {footer && (
           <div className="p-6 pt-4 mt-auto border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
