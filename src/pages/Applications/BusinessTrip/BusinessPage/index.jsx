@@ -77,7 +77,7 @@ const BusinessPage = () => {
   const { user, loading: userLoading } = useFetchUser()
   const { isAdmin, hasAnyRole } = useAuth()
   const canRequestForOthers = useMemo(
-    () => isAdmin || hasAnyRole(["department_head", "security_manager"]),
+    () => isAdmin() || hasAnyRole(["department_head", "security_manager"]),
     [isAdmin, hasAnyRole]
   )
   const [availableDestinations, setAvailableDestinations] = useState([])

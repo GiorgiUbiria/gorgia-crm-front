@@ -31,21 +31,23 @@ export const useVacationBalance = () => {
   })
 }
 
-export const useVacations = (filters = {}) => {
+export const useVacations = (options = {}) => {
   return useQuery({
-    queryKey: vacationKeys.lists(filters),
-    queryFn: () => getVacations(filters),
+    queryKey: vacationKeys.lists(options.filters),
+    queryFn: () => getVacations(options.filters),
     staleTime: 1000 * 60 * 2,
     cacheTime: 1000 * 60 * 15,
+    ...options,
   })
 }
 
-export const useDepartmentVacations = () => {
+export const useDepartmentVacations = (options = {}) => {
   return useQuery({
     queryKey: vacationKeys.listDepartment(),
     queryFn: () => getDepartmentVacations(),
     staleTime: 1000 * 60 * 2,
     cacheTime: 1000 * 60 * 15,
+    ...options,
   })
 }
 

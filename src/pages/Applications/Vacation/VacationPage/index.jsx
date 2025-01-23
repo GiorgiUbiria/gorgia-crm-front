@@ -75,8 +75,8 @@ const VacationPage = () => {
 
   const canManageOthers = useMemo(() => {
     return (
-      isAdmin ||
-      isHrMember ||
+      isAdmin() ||
+      isHrMember() ||
       hasAnyRole(["department_head", "security_manager"])
     )
   }, [isAdmin, isHrMember, hasAnyRole])

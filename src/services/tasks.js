@@ -47,13 +47,19 @@ export const getTask = async id => {
 }
 
 export const createTask = async data => {
-  console.log("Task Service - Creating Task:", data)
+  console.group("Task Creation Debug")
+  console.log("Task Service - Creating Task - Request Data:", data)
   try {
+    console.log("Task Service - Sending POST request to /api/tasks")
     const response = await defaultInstance.post("/api/tasks", data)
     console.log("Task Service - Creation Response:", response.data)
+    console.log("Task Service - Response Status:", response.status)
+    console.groupEnd()
     return response.data
   } catch (error) {
     console.error("Task Service - Creation Error:", error)
+    console.error("Task Service - Error Response:", error.response?.data)
+    console.groupEnd()
     throw error
   }
 }

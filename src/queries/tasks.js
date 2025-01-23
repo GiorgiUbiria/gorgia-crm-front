@@ -104,7 +104,9 @@ export const useCreateTask = () => {
   return useMutation({
     mutationFn: createTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all })
+      queryClient.invalidateQueries({ queryKey: taskKeys.list() })
+      queryClient.invalidateQueries({ queryKey: taskKeys.myTasks() })
+      queryClient.invalidateQueries({ queryKey: taskKeys.assignedToMe() })
     },
   })
 }

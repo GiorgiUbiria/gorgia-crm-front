@@ -183,14 +183,15 @@ const VacationPageArchive = () => {
   document.title = "შვებულებების არქივი | Gorgia LLC"
 
   const { isAdmin, isDepartmentHead, isHrMember } = useAuth()
+
   const {
     data: departmentVacationData,
     isLoading: departmentVacationsLoading,
   } = useDepartmentVacations({
-    enabled: !!isDepartmentHead,
+    enabled: isDepartmentHead() && !isAdmin() && !isHrMember(),
   })
   const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
-    enabled: !!isAdmin || !!isHrMember,
+    enabled: isAdmin() || isHrMember(),
   })
 
   const columns = useMemo(
@@ -274,9 +275,10 @@ const VacationPageArchive = () => {
   const transformedVacations = useMemo(() => {
     if (!departmentVacationData?.data?.data && !vacationsData?.data?.data)
       return []
-    const vacations = isAdmin
-      ? vacationsData?.data?.data
-      : departmentVacationData?.data?.data
+    const vacations =
+      isAdmin() || isHrMember()
+        ? vacationsData?.data?.data
+        : departmentVacationData?.data?.data
 
     if (!vacations) return []
     return vacations.map(vacation => ({
@@ -341,7 +343,7 @@ const VacationPageArchive = () => {
         },
       },
     }))
-  })
+  }, [departmentVacationData, vacationsData, isAdmin, isHrMember])
 
   const filterOptions = [
     {

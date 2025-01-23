@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import {
   Modal,
   ModalHeader,
@@ -29,6 +29,14 @@ const TaskModal = ({
   updateTaskMutation,
 }) => {
   const { currentUser, isLoading: userLoading } = useCurrentUser()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Close modal handler that checks if submission is in progress
+  const handleClose = () => {
+    if (!isSubmitting) {
+      toggle(false)
+    }
+  }
 
   const initialValues = {
     user_id: currentUser?.id || "",
@@ -87,6 +95,8 @@ const TaskModal = ({
       due_date: Yup.date().nullable(),
     }),
     onSubmit: async values => {
+      if (isSubmitting) return
+      setIsSubmitting(true)
       try {
         const isAdmin = userRoles.includes("admin")
         const isITSupport = userRoles.includes("it_support")
@@ -107,9 +117,6 @@ const TaskModal = ({
             id: task.id,
             data: formData,
           })
-        } else if (isEdit) {
-          console.error("Cannot update task: missing task ID")
-          return
         } else {
           await createTaskMutation.mutateAsync(formData)
         }
@@ -118,6 +125,8 @@ const TaskModal = ({
         toggle(false)
       } catch (error) {
         console.error("TaskModal - Submission Error:", error)
+      } finally {
+        setIsSubmitting(false)
       }
     },
   })
@@ -149,8 +158,10 @@ const TaskModal = ({
   return (
     <Modal
       isOpen={isOpen}
-      toggle={() => toggle(false)}
+      toggle={handleClose}
       className="modal-dialog-centered"
+      backdrop="static"
+      keyboard={!isSubmitting}
     >
       <style>
         {`
@@ -172,199 +183,210 @@ const TaskModal = ({
           }
         `}
       </style>
-      <ModalHeader toggle={() => toggle(false)} tag="h4">
+      <ModalHeader toggle={!isSubmitting ? handleClose : undefined} tag="h4">
         {isEdit ? "რედაქტირება" : "ახალი თილეთის გახსნა"}
       </ModalHeader>
       <ModalBody>
         <Form
           onSubmit={e => {
             e.preventDefault()
+            e.stopPropagation()
             validation.handleSubmit()
             return false
           }}
         >
-          <Row>
-            <Col xs="12">
-              <div className="mb-3">
-                <Label className="form-label">აირჩიეთ პრობლემის ტიპი</Label>
-                <Input
-                  name="task_title"
-                  type="select"
-                  className="form-select"
-                  onChange={validation.handleChange}
-                  onBlur={validation.handleBlur}
-                  value={validation.values.task_title || ""}
-                  invalid={
-                    validation.touched.task_title &&
-                    validation.errors.task_title
-                  }
-                >
-                  <option value="" disabled hidden>
-                    აირჩიეთ პრობლემის ტიპი
-                  </option>
-                  <option value="პრინტერის პრობლემა">პრინტერის პრობლემა</option>
-                  <option value="სერვისი">სერვისი</option>
-                  <option value="პაროლის აღდგენა">პაროლის აღდგენა</option>
-                  <option value="ელ-ფოსტის პრობლემა">ელ-ფოსტის პრობლემა</option>
-                  <option value="ტექნიკური პრობლემა">ტექნიკური პრობლემა</option>
-                  <option value="სერვისის პრობლემა">სერვისის პრობლემა</option>
-                  <option value="ფაილების აღდგენა">ფაილების აღდგენა</option>
-                  <option value="სხვა">სხვა</option>
-                </Input>
-                {validation.touched.task_title &&
-                  validation.errors.task_title && (
-                    <FormFeedback>{validation.errors.task_title}</FormFeedback>
-                  )}
-              </div>
-              {[
-                "პრინტერის პრობლემა",
-                "ელ-ფოსტის პრობლემა",
-                "ფაილების აღდგენა",
-              ].includes(validation.values.task_title) && (
+          <fieldset disabled={isSubmitting}>
+            <Row>
+              <Col xs="12">
                 <div className="mb-3">
-                  <Label className="form-label">IP მისამართი</Label>
+                  <Label className="form-label">აირჩიეთ პრობლემის ტიპი</Label>
                   <Input
-                    name="ip_address"
-                    type="text"
-                    className="form-control"
-                    placeholder="ჩაწერეთ თქვენი იპ მისამართი"
+                    name="task_title"
+                    type="select"
+                    className="form-select"
                     onChange={validation.handleChange}
                     onBlur={validation.handleBlur}
-                    value={validation.values.ip_address || ""}
+                    value={validation.values.task_title || ""}
                     invalid={
-                      validation.touched.ip_address &&
-                      validation.errors.ip_address
+                      validation.touched.task_title &&
+                      validation.errors.task_title
+                    }
+                  >
+                    <option value="" disabled hidden>
+                      აირჩიეთ პრობლემის ტიპი
+                    </option>
+                    <option value="პრინტერის პრობლემა">პრინტერის პრობლემა</option>
+                    <option value="სერვისი">სერვისი</option>
+                    <option value="პაროლის აღდგენა">პაროლის აღდგენა</option>
+                    <option value="ელ-ფოსტის პრობლემა">ელ-ფოსტის პრობლემა</option>
+                    <option value="ტექნიკური პრობლემა">ტექნიკური პრობლემა</option>
+                    <option value="სერვისის პრობლემა">სერვისის პრობლემა</option>
+                    <option value="ფაილების აღდგენა">ფაილების აღდგენა</option>
+                    <option value="სხვა">სხვა</option>
+                  </Input>
+                  {validation.touched.task_title &&
+                    validation.errors.task_title && (
+                      <FormFeedback>{validation.errors.task_title}</FormFeedback>
+                    )}
+                </div>
+                {[
+                  "პრინტერის პრობლემა",
+                  "ელ-ფოსტის პრობლემა",
+                  "ფაილების აღდგენა",
+                ].includes(validation.values.task_title) && (
+                  <div className="mb-3">
+                    <Label className="form-label">IP მისამართი</Label>
+                    <Input
+                      name="ip_address"
+                      type="text"
+                      className="form-control"
+                      placeholder="ჩაწერეთ თქვენი იპ მისამართი"
+                      onChange={validation.handleChange}
+                      onBlur={validation.handleBlur}
+                      value={validation.values.ip_address || ""}
+                      invalid={
+                        validation.touched.ip_address &&
+                        validation.errors.ip_address
+                      }
+                    />
+                    {validation.touched.ip_address &&
+                      validation.errors.ip_address && (
+                        <FormFeedback>
+                          {validation.errors.ip_address}
+                        </FormFeedback>
+                      )}
+                  </div>
+                )}
+                <div className="mb-3">
+                  <Label className="form-label">აღწერა</Label>
+                  <Input
+                    name="description"
+                    type="textarea"
+                    className="form-control"
+                    placeholder="აღწერეთ პრობლემა"
+                    rows="4"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.description || ""}
+                    invalid={
+                      validation.touched.description &&
+                      validation.errors.description
                     }
                   />
-                  {validation.touched.ip_address &&
-                    validation.errors.ip_address && (
+                  {validation.touched.description &&
+                    validation.errors.description && (
+                      <FormFeedback>{validation.errors.description}</FormFeedback>
+                    )}
+                </div>
+                <div className="mb-3">
+                  <Label className="form-label">ტელეფონის ნომერი</Label>
+                  <Input
+                    name="phone_number"
+                    type="text"
+                    className="form-control"
+                    placeholder="ჩაწერეთ თელეფონის ნომერი"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.phone_number || ""}
+                    invalid={
+                      validation.touched.phone_number &&
+                      validation.errors.phone_number
+                    }
+                  />
+                  {validation.touched.phone_number &&
+                    validation.errors.phone_number && (
                       <FormFeedback>
-                        {validation.errors.ip_address}
+                        {validation.errors.phone_number}
                       </FormFeedback>
                     )}
                 </div>
-              )}
-              <div className="mb-3">
-                <Label className="form-label">აღწერა</Label>
-                <Input
-                  name="description"
-                  type="textarea"
-                  className="form-control"
-                  placeholder="აღწერეთ პრობლემა"
-                  rows="4"
-                  onChange={validation.handleChange}
-                  onBlur={validation.handleBlur}
-                  value={validation.values.description || ""}
-                  invalid={
-                    validation.touched.description &&
-                    validation.errors.description
-                  }
-                />
-                {validation.touched.description &&
-                  validation.errors.description && (
-                    <FormFeedback>{validation.errors.description}</FormFeedback>
-                  )}
-              </div>
-              <div className="mb-3">
-                <Label className="form-label">ტელეფონის ნომერი</Label>
-                <Input
-                  name="phone_number"
-                  type="text"
-                  className="form-control"
-                  placeholder="ჩაწერეთ თელეფონის ნომერი"
-                  onChange={validation.handleChange}
-                  onBlur={validation.handleBlur}
-                  value={validation.values.phone_number || ""}
-                  invalid={
-                    validation.touched.phone_number &&
-                    validation.errors.phone_number
-                  }
-                />
-                {validation.touched.phone_number &&
-                  validation.errors.phone_number && (
-                    <FormFeedback>
-                      {validation.errors.phone_number}
-                    </FormFeedback>
-                  )}
-              </div>
-              <div className="mb-3">
-                <Label className="form-label">პრიორიტეტი</Label>
-                <Input
-                  name="priority"
-                  type="select"
-                  className="form-select"
-                  onChange={validation.handleChange}
-                  onBlur={validation.handleBlur}
-                  value={validation.values.priority || ""}
-                  invalid={
-                    validation.touched.priority && validation.errors.priority
-                  }
-                >
-                  <option value="Low">დაბალი</option>
-                  <option value="Medium">საშუალო</option>
-                  <option value="High">მაღალი</option>
-                </Input>
-                {validation.touched.priority && validation.errors.priority && (
-                  <FormFeedback>{validation.errors.priority}</FormFeedback>
-                )}
-              </div>
-              {(userRoles.includes("admin") ||
-                userRoles.includes("it_support")) && (
                 <div className="mb-3">
-                  <Label className="form-label">პასუხისმგებელი პირები</Label>
-                  <SearchableSelect
-                    isMulti
-                    name="assigned_users"
-                    options={userOptions}
-                    value={validation.values.assigned_users}
-                    onChange={selectedOptions => {
-                      validation.setFieldValue(
-                        "assigned_users",
-                        selectedOptions || []
-                      )
-                    }}
-                    onBlur={() =>
-                      validation.setFieldTouched("assigned_users", true)
+                  <Label className="form-label">პრიორიტეტი</Label>
+                  <Input
+                    name="priority"
+                    type="select"
+                    className="form-select"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.priority || ""}
+                    invalid={
+                      validation.touched.priority && validation.errors.priority
                     }
-                    isLoading={usersLoading}
-                    error={validation.errors.assigned_users}
-                    touched={validation.touched.assigned_users}
-                    placeholder="აირჩიეთ პასუხისმგებელი პირები"
-                  />
+                  >
+                    <option value="Low">დაბალი</option>
+                    <option value="Medium">საშუალო</option>
+                    <option value="High">მაღალი</option>
+                  </Input>
+                  {validation.touched.priority && validation.errors.priority && (
+                    <FormFeedback>{validation.errors.priority}</FormFeedback>
+                  )}
                 </div>
-              )}
-              <div className="mb-3">
-                <Label className="form-label">შესრულების ვადა</Label>
-                <Input
-                  name="due_date"
-                  type="date"
-                  className="form-control"
-                  onChange={validation.handleChange}
-                  onBlur={validation.handleBlur}
-                  value={validation.values.due_date || ""}
-                  invalid={
-                    validation.touched.due_date && validation.errors.due_date
-                  }
-                />
-                {validation.touched.due_date && validation.errors.due_date && (
-                  <FormFeedback>{validation.errors.due_date}</FormFeedback>
+                {(userRoles.includes("admin") ||
+                  userRoles.includes("it_support")) && (
+                  <div className="mb-3">
+                    <Label className="form-label">პასუხისმგებელი პირები</Label>
+                    <SearchableSelect
+                      isMulti
+                      name="assigned_users"
+                      options={userOptions}
+                      value={validation.values.assigned_users}
+                      onChange={selectedOptions => {
+                        validation.setFieldValue(
+                          "assigned_users",
+                          selectedOptions || []
+                        )
+                      }}
+                      onBlur={() =>
+                        validation.setFieldTouched("assigned_users", true)
+                      }
+                      isLoading={usersLoading}
+                      error={validation.errors.assigned_users}
+                      touched={validation.touched.assigned_users}
+                      placeholder="აირჩიეთ პასუხისმგებელი პირები"
+                    />
+                  </div>
                 )}
-              </div>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <div className="text-end mt-4">
-                <Button
-                  color="success"
-                  type="submit"
-                  className="w-full sm:w-auto"
-                >
-                  გაგზავნა
-                </Button>
-              </div>
-            </Col>
-          </Row>
+                <div className="mb-3">
+                  <Label className="form-label">შესრულების ვადა</Label>
+                  <Input
+                    name="due_date"
+                    type="date"
+                    className="form-control"
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    value={validation.values.due_date || ""}
+                    invalid={
+                      validation.touched.due_date && validation.errors.due_date
+                    }
+                  />
+                  {validation.touched.due_date && validation.errors.due_date && (
+                    <FormFeedback>{validation.errors.due_date}</FormFeedback>
+                  )}
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <div className="text-end mt-4">
+                  <Button
+                    color="success"
+                    type="submit"
+                    className="w-full sm:w-auto position-relative"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Spinner size="sm" className="me-2" />
+                        მიმდინარეობს დამუშავება...
+                      </>
+                    ) : (
+                      "გაგზავნა"
+                    )}
+                  </Button>
+                </div>
+              </Col>
+            </Row>
+          </fieldset>
         </Form>
       </ModalBody>
     </Modal>
