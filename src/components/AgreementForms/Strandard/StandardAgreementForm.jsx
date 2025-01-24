@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react"
 import classnames from "classnames"
-import { toast } from "react-toastify"
 import { createAgreement } from "services/agreement"
+import { toast } from "store/zustand/toastStore"
 
 const StandardAgreementForm = ({ onSuccess }) => {
   const [activeTab, setActiveTab] = useState(1)
@@ -195,7 +195,10 @@ const StandardAgreementForm = ({ onSuccess }) => {
     })
 
     if (!isValid) {
-      toast.error("გთხოვთ შეავსოთ ყველა სავალდებულო ველი")
+      toast.error("გთხოვთ შეავსოთ ყველა სავალდებულო ველი", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
 
     return isValid
@@ -211,14 +214,17 @@ const StandardAgreementForm = ({ onSuccess }) => {
       const remainingPercent = Number(formData.remaining_payment_percentage)
 
       if (Math.abs(advancePercent + remainingPercent - 100) > 0.01) {
-        toast.error("გადახდის პროცენტების ჯამი უნდა იყოს 100")
+        toast.error("გადახდის პროცენტების ჯამი უნდა იყოს 100", "შეცდომა", {
+          duration: 2000,
+          size: "small",
+        })
         return
       }
     }
 
-    toast.info("მიმდინარეობს დამუშავება...", {
-      autoClose: false,
-      toastId: "submitProgress",
+    toast.info("მიმდინარეობს დამუშავება...", "დამუშავება", {
+      duration: 2000,
+      size: "small",
     })
 
     try {
@@ -259,10 +265,12 @@ const StandardAgreementForm = ({ onSuccess }) => {
       }
 
       const response = await createAgreement(dataToSend)
-      toast.dismiss("submitProgress")
 
       if (response) {
-        toast.success("ხელშეკრულება წარმატებით შეიქმნა")
+        toast.success("ხელშეკრულება წარმატებით შეიქმნა", "წარმატება", {
+          duration: 2000,
+          size: "small",
+        })
         setFormData({
           contragent_name: "",
           contragent_id: "",
@@ -297,7 +305,6 @@ const StandardAgreementForm = ({ onSuccess }) => {
       }
     } catch (error) {
       console.error("Form submission error:", error)
-      toast.dismiss("submitProgress")
       handleError(error)
     }
   }
@@ -308,28 +315,65 @@ const StandardAgreementForm = ({ onSuccess }) => {
     if (error.response) {
       switch (error.response.status) {
         case 400:
-          toast.error("არასწორი მოაცემებ. გთხოვთ შამოწმოთ შეყვანილი ინფორმაცია")
+          toast.error(
+            "არასწორი მოაცემებ. გთხოვთ შამოწმოთ შეყვანილი ინფორმაცია",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
+          )
           break
         case 401:
-          toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
+          toast.error("გთხოვთ გაიაროთ ავტორიზაცია", "შეცდომა", {
+            duration: 2000,
+            size: "small",
+          })
           break
         case 422:
           if (validationErrors) {
             Object.keys(validationErrors).forEach(key => {
-              toast.error(validationErrors[key][0])
+              toast.error(validationErrors[key][0], "შეცდომა", {
+                duration: 2000,
+                size: "small",
+              })
             })
           }
           break
         case 500:
-          toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+          toast.error(
+            "სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
+          )
           break
         default:
-          toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+          toast.error(
+            "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
+          )
       }
     } else if (error.request) {
-      toast.error("კავშირის შეცდომა. გთხოვთ შეამოწმოთ ინტერნეტ კავშირი")
+      toast.error(
+        "კავშირის შეცდომა. გთხოვთ შეამოწმოთ ინტერნეტ კავშირი",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
+      )
     } else {
-      toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+      toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 

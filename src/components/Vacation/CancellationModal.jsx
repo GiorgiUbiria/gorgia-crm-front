@@ -9,30 +9,41 @@ import {
   Input,
   Button,
 } from "reactstrap"
-import { toast } from "react-toastify"
 import { cancelVacation } from "../../services/admin/vacation"
+import { toast } from "store/zustand/toastStore"
 
 const CancellationModal = ({ isOpen, toggle, vacationId, onSuccess }) => {
   const [reason, setReason] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault()
     if (reason.length < 5) {
-      toast.error("მიზეზი უნდა შეიცავდეს მინიმუმ 5 სიმბოლოს")
+      toast.error("მიზეზი უნდა შეიცავდეს მინიმუმ 5 სიმბოლოს", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
       return
     }
 
     setIsSubmitting(true)
     try {
       await cancelVacation(vacationId, { cancellation_reason: reason })
-      toast.success("შვებულება წარმატებით გაუქმდა")
+      toast.success("შვებულება წარმატებით გაუქმდა", "წარმატება", {
+        duration: 2000,
+        size: "small",
+      })
       onSuccess()
       toggle()
     } catch (error) {
       toast.error(
         error?.response?.data?.message ||
-          "შვებულების გაუქმებისას დაფიქსირდა შეცდომა"
+          "შვებულების გაუქმებისას დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
       )
     } finally {
       setIsSubmitting(false)
@@ -41,9 +52,7 @@ const CancellationModal = ({ isOpen, toggle, vacationId, onSuccess }) => {
 
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>
-        შვებულების გაუქმება
-      </ModalHeader>
+      <ModalHeader toggle={toggle}>შვებულების გაუქმება</ModalHeader>
       <ModalBody>
         <Form onSubmit={handleSubmit}>
           <FormGroup>
@@ -53,7 +62,7 @@ const CancellationModal = ({ isOpen, toggle, vacationId, onSuccess }) => {
               name="cancellationReason"
               id="cancellationReason"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={e => setReason(e.target.value)}
               placeholder="მიუთითეთ გაუქმების მიზეზი (მინიმუმ 5 სიმბოლო)"
               rows="4"
               required
@@ -83,4 +92,4 @@ const CancellationModal = ({ isOpen, toggle, vacationId, onSuccess }) => {
   )
 }
 
-export default CancellationModal 
+export default CancellationModal

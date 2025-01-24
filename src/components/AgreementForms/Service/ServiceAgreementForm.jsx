@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import classnames from "classnames"
-import { toast } from "react-toastify"
 import { createAgreement } from "services/serviceAgreement"
+import { toast } from "store/zustand/toastStore"
 
 const ServiceAgreementForm = ({ onSuccess }) => {
   const [activeTab, setActiveTab] = useState(1)
@@ -104,7 +104,10 @@ const ServiceAgreementForm = ({ onSuccess }) => {
     })
 
     if (!isValid) {
-      toast.error("გთხოვთ შეავსოთ ყველა სავალდებულო ველი")
+      toast.error("გთხოვთ შეავსოთ ყველა სავალდებულო ველი", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
 
     return isValid
@@ -115,9 +118,9 @@ const ServiceAgreementForm = ({ onSuccess }) => {
       return
     }
 
-    toast.info("მიმდინარეობს დამუშავება...", {
-      autoClose: false,
-      toastId: "submitProgress",
+    toast.info("მიმდინარეობს დამუშავება...", "დამუშავება", {
+      duration: 2000,
+      size: "small",
     })
 
     const formDataToSend = new FormData()
@@ -136,10 +139,12 @@ const ServiceAgreementForm = ({ onSuccess }) => {
 
     try {
       const response = await createAgreement(formDataToSend)
-      toast.dismiss("submitProgress")
 
       if (response) {
-        toast.success("ხელშეკრულება წარმატებით შეიქმნა")
+        toast.success("ხელშეკრულება წარმატებით შეიქმნა", "წარმატება", {
+          duration: 2000,
+          size: "small",
+        })
         setFormData({
           executor_firm_name: "",
           executor_id_number: "",
@@ -166,7 +171,6 @@ const ServiceAgreementForm = ({ onSuccess }) => {
         onSuccess?.()
       }
     } catch (error) {
-      toast.dismiss("submitProgress")
       handleError(error)
     }
   }
@@ -175,28 +179,65 @@ const ServiceAgreementForm = ({ onSuccess }) => {
     if (error.response) {
       switch (error.response.status) {
         case 400:
-          toast.error("არასწორი მოაცემებ. გთხოვთ შამოწმოთ შეყვანილი ინფორმაცია")
+          toast.error(
+            "არასწორი მოაცემებ. გთხოვთ შამოწმოთ შეყვანილი ინფორმაცია",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
+          )
           break
         case 401:
-          toast.error("გთხოვთ გაიაროთ ავტორიზაცია")
+          toast.error("გთხოვთ გაიაროთ ავტორიზაცია", "შეცდომა", {
+            duration: 2000,
+            size: "small",
+          })
           break
         case 422: {
           const validationErrors = error.response.data.errors
           Object.keys(validationErrors).forEach(key => {
-            toast.error(validationErrors[key][0])
+            toast.error(validationErrors[key][0], "შეცდომა", {
+              duration: 2000,
+              size: "small",
+            })
           })
           break
         }
         case 500:
-          toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+          toast.error(
+            "სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
+          )
           break
         default:
-          toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+          toast.error(
+            "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
+          )
       }
     } else if (error.request) {
-      toast.error("კავშირის შეცდომა. გთხოვთ შეამოწმოთ ინტერნეტ კავშირი")
+      toast.error(
+        "კავშირის შეცდომა. გთხოვთ შეამოწმოთ ინტერნეტ კავშირი",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
+      )
     } else {
-      toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით")
+      toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 
