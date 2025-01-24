@@ -1,8 +1,6 @@
 import React, { useState } from "react"
 import { createHrDocument } from "services/hrDocument"
 import * as Yup from "yup"
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
 import useAuth from "hooks/useAuth"
 import { Row, Col, Label } from "reactstrap"
 import { Formik, Form, Field, ErrorMessage } from "formik"
@@ -12,6 +10,7 @@ import { Button } from "reactstrap"
 import { useNavigate } from "react-router-dom"
 import DatePicker from "components/DatePicker"
 import { subMonths, isBefore } from "date-fns"
+import { toast } from "store/zustand/toastStore"
 
 const DOCUMENT_TYPES = {
   PAID_EMPLOYMENT: "ხელფასიანი ცნობა",
@@ -147,12 +146,18 @@ const HrPage = () => {
       }
 
       if (!documentData.region) {
-        toast.error("გთხოვთ აირჩიოთ რეგიონი")
+        toast.error("გთხოვთ აირჩიოთ რეგიონი", "შეცდომა", {
+          duration: 2000,
+          size: "small",
+        })
         return
       }
 
       await createHrDocument(documentData)
-      toast.success("დოკუმენტი წარმატებით შეიქმნა")
+      toast.success("დოკუმენტი წარმატებით შეიქმნა", "წარმატება", {
+        duration: 2000,
+        size: "small",
+      })
 
       if (canAccessOtherTab && activeTab === "2") {
         navigate("/hr/documents/approve")
@@ -161,7 +166,10 @@ const HrPage = () => {
       }
     } catch (err) {
       console.error("Error creating HR document:", err)
-      toast.error("დოკუმენტის შექმნა ვერ მოხერხდა")
+      toast.error("დოკუმენტის შექმნა ვერ მოხერხდა", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     } finally {
       setSubmitting(false)
     }
@@ -360,7 +368,7 @@ const HrPage = () => {
             </div>
           </Col>
         </Row>
-        <ToastContainer />
+        
       </div>
     </>
   )

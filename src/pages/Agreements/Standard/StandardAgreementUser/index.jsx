@@ -13,8 +13,7 @@ import {
   BsPerson,
   BsVoicemail,
 } from "react-icons/bs"
-import { toast, ToastContainer } from "react-toastify"
-
+import { toast } from "store/zustand/toastStore"
 const StandardAgreementUser = () => {
   document.title = "ჩემი ხელშეკრულებები | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
@@ -45,7 +44,10 @@ const StandardAgreementUser = () => {
       }
     } catch (err) {
       console.error("Error fetching agreements:", err)
-      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა")
+      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 
@@ -157,10 +159,20 @@ const StandardAgreementUser = () => {
   const handleDownload = async agreementId => {
     try {
       await downloadAgreementService(agreementId)
-      toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
+      toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა", "შესრულდა", {
+        duration: 2000,
+        size: "small",
+      })
     } catch (error) {
       console.error("Download failed:", error)
-      toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
+      toast.error(
+        error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
+      )
     }
   }
 
@@ -412,7 +424,7 @@ const StandardAgreementUser = () => {
           renderRowDetails={renderRowDetails}
         />
       </div>
-      <ToastContainer />
+      
     </>
   )
 }

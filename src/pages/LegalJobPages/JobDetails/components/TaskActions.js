@@ -1,8 +1,7 @@
 import React from "react"
 import { Play, CheckCircle } from "lucide-react"
 import { useStartTask, useFinishTask } from "../../../../queries/legalTasks"
-import { toast } from "react-toastify"
-
+import { toast } from "store/zustand/toastStore"
 const TaskActions = ({ task, canEdit }) => {
   const startTaskMutation = useStartTask()
   const finishTaskMutation = useFinishTask()
@@ -20,11 +19,19 @@ const TaskActions = ({ task, canEdit }) => {
   const handleStartTask = async () => {
     try {
       await startTaskMutation.mutateAsync(task.data.id)
-      toast.success("დავალება დაწყებულია")
+      toast.success("დავალება დაწყებულია", "წარმატება", {
+        duration: 2000,
+        size: "small",
+      })
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "დავალების დაწყების დროს დაფიქსირდა შეცდომა"
+          "დავალების დაწყების დროს დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
       )
     }
   }
@@ -32,11 +39,19 @@ const TaskActions = ({ task, canEdit }) => {
   const handleFinishTask = async () => {
     try {
       await finishTaskMutation.mutateAsync(task.data.id)
-      toast.success("დავალება დასრულებულია")
+      toast.success("დავალება დასრულებულია", "წარმატება", {
+        duration: 2000,
+        size: "small",
+      })
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "დავალების დასრულების დროს დაფიქსირდა შეცდომა"
+          "დავალების დასრულების დროს დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
       )
     }
   }

@@ -40,7 +40,14 @@ const Login = () => {
         const res = await login(values)
 
         if (res.data.status !== 200) {
-          toast.error("შეცდომა: " + res.data.message)
+          toast.error(
+            "ავტორიზაცია ვერ მოხერხდა, გთხოვთ სცადოთ თავიდან",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
+          )
           return
         }
 
@@ -57,13 +64,14 @@ const Login = () => {
         })
         navigate("/dashboard")
       } catch (error) {
-        const errorMessage =
-          error.response?.data?.message ||
-          "ავტორიზაცია ვერ მოხერხდა. გთხოვთ სცადოთ თავიდან."
-        toast.error(errorMessage, "შეცდომა", {
-          duration: 2000,
-          size: "small",
-        })
+        toast.error(
+          "ავტორიზაცია ვერ მოხერხდა, გთხოვთ სცადოთ თავიდან",
+          "შეცდომა",
+          {
+            duration: 2000,
+            size: "small",
+          }
+        )
       }
     },
   })

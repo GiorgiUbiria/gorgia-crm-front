@@ -1,7 +1,6 @@
 import React, { useMemo } from "react"
 import { Container } from "reactstrap"
 import { useParams, useNavigate } from "react-router-dom"
-import { toast } from "react-toastify"
 import { useGetTask } from "../../../queries/legalTasks"
 import TaskHeader from "./components/TaskHeader"
 import TaskStatus from "./components/TaskStatus"
@@ -10,8 +9,7 @@ import TaskTimeline from "./components/TaskTimeline"
 import CommentSection from "./components/CommentSection"
 import useAuth from "hooks/useAuth"
 import Spinners from "../../../components/Common/Spinner"
-import { ToastContainer } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
+import { toast } from "store/zustand/toastStore"
 
 const JobDetails = () => {
   document.title = "Legal Task Details | Gorgia LLC"
@@ -26,10 +24,20 @@ const JobDetails = () => {
   } = useGetTask(id, {
     onError: error => {
       if (error.response?.status === 403) {
-        toast.error("შენ არ გაქვს უფლება იხილო ეს დავალება")
+        toast.error("შენ არ გაქვს უფლება იხილო ეს დავალება", "შეცდომა", {
+          duration: 2000,
+          size: "small",
+        })
         navigate("/support/legal-tasks")
       } else {
-        toast.error("დავალების ინფორმაციის ჩატვირთვის დროს დაფიქსირდა შეცდომა")
+        toast.error(
+          "დავალების ინფორმაციის ჩატვირთვის დროს დაფიქსირდა შეცდომა",
+          "შეცდომა",
+          {
+            duration: 2000,
+            size: "small",
+          }
+        )
         console.error("Error fetching task details:", error)
       }
     },
@@ -88,7 +96,7 @@ const JobDetails = () => {
         </div>
       </div>
       <CommentSection task={task} canComment={canAccessTask} />
-      <ToastContainer />
+      
     </div>
   )
 }

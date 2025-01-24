@@ -8,7 +8,7 @@ import {
 import CommentThread from "./CommentThread"
 import CommentHeader from "./CommentHeader"
 import CommentForm from "./CommentForm"
-import { toast } from "react-toastify"
+import { toast } from "store/zustand/toastStore"
 import useAuth from "hooks/useAuth"
 
 const CommentSection = ({ daily, canComment }) => {
@@ -87,7 +87,12 @@ const CommentSection = ({ daily, canComment }) => {
       console.error("❌ Comment submission failed:", error)
       toast.error(
         error.response?.data?.message ||
-          "კომენტარის დამატების დროს დაფიქსირდა შეცდომა"
+          "კომენტარის დამატების დროს დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
       )
     }
   }

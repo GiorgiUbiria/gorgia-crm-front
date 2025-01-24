@@ -1,7 +1,6 @@
 import React from "react"
 import RichTextEditor from "./RichTextEditor"
-import { toast } from "react-toastify"
-
+import { toast } from "store/zustand/toastStore"
 const CommentForm = ({
   onSubmit,
   value,
@@ -41,7 +40,10 @@ const CommentForm = ({
       await onSubmit(e)
     } catch (error) {
       console.error("❌ Comment submission failed:", error)
-      toast.error("კომენტარის დამატების დროს დაფიქსირდა შეცდომა")
+      toast.error("კომენტარის დამატების დროს დაფიქსირდა შეცდომა", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 

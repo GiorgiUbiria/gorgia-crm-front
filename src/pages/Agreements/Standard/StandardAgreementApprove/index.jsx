@@ -22,7 +22,6 @@ import {
   BsVoicemail,
 } from "react-icons/bs"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { ToastContainer } from "react-toastify"
 
 const statusMap = {
   pending: {
@@ -484,7 +483,7 @@ const StandardAgreementApprove = () => {
           filterOptions={filterOptions}
           renderRowDetails={renderRowDetails}
         />
-        <ToastContainer />
+        
       </div>
 
       <Modal isOpen={confirmModal.isOpen} toggle={handleModalClose}>

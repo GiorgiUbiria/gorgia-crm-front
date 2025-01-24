@@ -1,11 +1,11 @@
 import React, { useState } from "react"
-import { toast } from "react-toastify"
 import {
   useCreateDailyComment,
   useDeleteDailyComment,
 } from "../../../queries/dailyComment"
 import { formatDistanceToNow } from "../../../utils/dateUtils"
 import CommentForm from "./CommentForm"
+import { toast } from "store/zustand/toastStore"
 
 const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
   const [isReplying, setIsReplying] = useState(false)
@@ -58,7 +58,12 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
       console.error("❌ Reply submission failed:", error)
       toast.error(
         error.response?.data?.message ||
-          "პასუხის დამატების დროს დაფიქსირდა შეცდომა"
+          "პასუხის დამატების დროს დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
       )
     }
   }
@@ -75,7 +80,12 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
       console.error("❌ Comment deletion failed:", error)
       toast.error(
         error.response?.data?.message ||
-          "კომენტარის წაშლის დროს დაფიქსირდა შეცდომა"
+          "კომენტარის წაშლის დროს დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
       )
     }
   }

@@ -2,20 +2,24 @@ import React, { useEffect, useCallback, useMemo } from "react"
 import { Form, Button, Alert, Spinner } from "reactstrap"
 import { useFormik } from "formik"
 import { myVacationSchema } from "./validationSchema"
-import { useCreateVacation, useVacationBalance } from "../../../../queries/vacation"
-import { toast } from "react-toastify"
+import {
+  useCreateVacation,
+  useVacationBalance,
+} from "../../../../queries/vacation"
 import { useNavigate } from "react-router-dom"
 import VacationBalance from "../../../../components/Vacation/VacationBalance"
 import InputWithError from "./InputWithError"
 import RestDaysCheckbox from "./RestDaysCheckbox"
 import { Tooltip } from "@mui/material"
+import { toast } from "store/zustand/toastStore"
 
 const MyVacationForm = ({ user }) => {
   const navigate = useNavigate()
-  
-  const { data: vacationBalanceResponse, isLoading: balanceLoading } = useVacationBalance()
+
+  const { data: vacationBalanceResponse, isLoading: balanceLoading } =
+    useVacationBalance()
   const vacationBalance = vacationBalanceResponse?.data
-  
+
   const { mutate: createVacationMutation } = useCreateVacation()
 
   const calculateDuration = useCallback((startDate, endDate, restDays) => {
@@ -77,7 +81,12 @@ const MyVacationForm = ({ user }) => {
           values.duration_days > vacationBalance?.remaining_days
         ) {
           toast.error(
-            "მოთხოვნილი დღეების რაოდენობა აღემატება დარჩენილ ანაზღაურებად შვებულებას"
+            "მოთხოვნილი დღეების რაოდენობა აღემატება დარჩენილ ანაზღაურებად შვებულებას",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
           )
           return
         }
@@ -86,7 +95,14 @@ const MyVacationForm = ({ user }) => {
           values.vacation_type === "administrative_leave" &&
           values.duration_days > 7
         ) {
-          toast.error("ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღეს")
+          toast.error(
+            "ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღეს",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
+          )
           return
         }
 
@@ -113,33 +129,37 @@ const MyVacationForm = ({ user }) => {
           duration_days: values.duration_days,
         }
 
-        await createVacationMutation(submitData, {
+        createVacationMutation(submitData, {
           onSuccess: () => {
-            toast.success("შვებულება წარმატებით გაიგზავნა", {
-              position: "top-right",
-              autoClose: 3000,
+            toast.success("შვებულება წარმატებით გაიგზავნა", "წარმატება", {
+              duration: 2000,
+              size: "small",
             })
-            
+
             setTimeout(() => {
               resetForm()
               navigate("/applications/vacation/my-requests")
             }, 1000)
           },
-          onError: (error) => {
+          onError: error => {
             console.error("Submission error:", error)
             toast.error(
               error?.response?.data?.message ||
                 "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.",
+              "შეცდომა",
               {
-                position: "top-right",
-                autoClose: 5000,
+                duration: 2000,
+                size: "small",
               }
             )
           },
         })
       } catch (err) {
         console.error("Error submitting vacation:", err)
-        toast.error("შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.")
+        toast.error("შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.", "შეცდომა", {
+          duration: 2000,
+          size: "small",
+        })
       } finally {
         setSubmitting(false)
       }
@@ -159,13 +179,23 @@ const MyVacationForm = ({ user }) => {
       if (formik.values.vacation_type === "paid_leave") {
         if (newDuration > vacationBalance?.remaining_days) {
           toast.warning(
-            `მოთხოვნილი დღეების რაოდენობა (${newDuration}) აღემატება დატჩენილ ანაზღაურებად შვებულებას (${vacationBalance?.remaining_days})`
+            `მოთხოვნილი დღეების რაოდენობა (${newDuration}) აღემატება დატჩენილ ანაზღაურებად შვებულებას (${vacationBalance?.remaining_days})`,
+            "გაგრძელება",
+            {
+              duration: 2000,
+              size: "small",
+            }
           )
         }
       } else if (formik.values.vacation_type === "administrative_leave") {
         if (newDuration > 7) {
           toast.warning(
-            "ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღეს"
+            "ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღეს",
+            "გაგრძელება",
+            {
+              duration: 2000,
+              size: "small",
+            }
           )
         }
       }

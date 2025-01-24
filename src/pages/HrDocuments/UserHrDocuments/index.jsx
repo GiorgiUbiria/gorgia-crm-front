@@ -2,8 +2,7 @@ import React, { useEffect, useState, useMemo } from "react"
 import { getCurrentUserHrDocuments } from "services/hrDocument"
 import MuiTable from "../../../components/Mui/MuiTable"
 import { downloadHrDocument as downloadHrDocumentService } from "services/hrDocument"
-import { toast, ToastContainer } from "react-toastify"
-
+import { toast } from "store/zustand/toastStore"
 const statusMap = {
   in_progress: {
     label: "განხილვაში",
@@ -176,10 +175,20 @@ const UserHrDocuments = () => {
       document.body.appendChild(link)
       link.click()
       link.remove()
-      toast.success("HR დოკუმენტი წარმატებით ჩამოიტვირთა")
+      toast.success("HR დოკუმენტი წარმატებით ჩამოიტვირთა", "წარმატება", {
+        duration: 2000,
+        size: "small",
+      })
     } catch (error) {
       console.error("Download failed:", error)
-      toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
+      toast.error(
+        error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
+      )
     }
   }
 
@@ -220,7 +229,7 @@ const UserHrDocuments = () => {
           />
         </div>
       </div>
-      <ToastContainer />
+      
     </>
   )
 }

@@ -3,8 +3,8 @@ import { Row, Col, Button, Spinner } from "reactstrap"
 import MuiTable from "components/Mui/MuiTable"
 import VacationBalance from "components/Vacation/VacationBalance"
 import CancellationModal from "components/Vacation/CancellationModal"
-import { toast } from "react-toastify"
 import { Tooltip } from "@mui/material"
+import { toast } from "store/zustand/toastStore"
 import { useUserVacations, useVacationBalance, useCancelVacation } from "../../../../queries/vacation"
 
 const statusMap = {
@@ -207,12 +207,20 @@ const UserVocation = () => {
         onSuccess: () => {
           setShowCancellationModal(false)
           setSelectedVacation(null)
-          toast.success("შვებულება წარმატებით გაუქმდა")
+          toast.success("შვებულება წარმატებით გაუქმდა", "შესრულდა", {
+            duration: 2000,
+            size: "small",
+          })
         },
         onError: (error) => {
           toast.error(
             error?.response?.data?.message ||
-              "შვებულების გაუქმება ვერ მოხერხდა"
+              "შვებულების გაუქმება ვერ მოხერხდა",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
           )
         },
       }

@@ -11,9 +11,8 @@ import {
 import { TabContent, Label, Spinner } from "reactstrap"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import DatePicker from "components/DatePicker"
-import { toast, ToastContainer } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
 import { subMonths, isBefore } from "date-fns"
+import { toast } from "store/zustand/toastStore"
 
 const statusMap = {
   in_progress: {
@@ -337,7 +336,10 @@ const HrPageApprove = () => {
 
   const handleConfirm = () => {
     if (!formData.region) {
-      toast.error("გთხოვთ აირჩიეთ რეგიონი")
+      toast.error("გთხოვთ აირჩიეთ რეგიონი", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
       return
     }
 
@@ -742,7 +744,6 @@ const HrPageApprove = () => {
           </Dialog>
         </div>
       </div>
-      <ToastContainer />
     </>
   )
 }

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { toast, ToastContainer } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
 import {
   useGetUser,
   useChangePassword,
   useUpdateUser,
 } from "../../queries/user"
-
+import { toast } from "store/zustand/toastStore"
 import ProfileHeader from "./components/ProfileHeader"
 import GeneralInfo from "./components/GeneralInfo"
 import UpdateProfile from "./components/UpdateProfile"
@@ -111,12 +109,18 @@ const ProfilePage = () => {
       if (res.data.status === 401) {
         setPassError({ old_password: res.data.message })
       } else {
-        toast.success(res.data.message)
+        toast.success(res.data.message, "წარმატება", {
+          duration: 2000,
+          size: "small",
+        })
       }
     } catch (err) {
       for (const [key, value] of Object.entries(err.response.data)) {
         setPassError(prev => ({ ...prev, [key]: value[0] }))
-        toast.error(value[0])
+        toast.error(value[0], "შეცდომა", {
+          duration: 2000,
+          size: "small",
+        })
       }
     }
   }
@@ -165,7 +169,10 @@ const ProfilePage = () => {
           sessionStorage.setItem("authUser", JSON.stringify(updatedUser))
         }
 
-        toast.success(t("პროფილი წარმატებით განახლდა"))
+        toast.success(t("პროფილი წარმატებით განახლდა"), "წარმატება", {
+          duration: 2000,
+          size: "small",
+        })
         setProfileError({
           name: "",
           sur_name: "",
@@ -184,7 +191,10 @@ const ProfilePage = () => {
     } catch (err) {
       for (const [key, value] of Object.entries(err.response.data)) {
         setProfileError(prev => ({ ...prev, [key]: value[0] }))
-        toast.error(value[0])
+        toast.error(value[0], "შეცდომა", {
+          duration: 2000,
+          size: "small",
+        })
       }
     }
   }
@@ -261,10 +271,6 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
-      <ToastContainer
-        position="bottom-right"
-        toastClassName="animate-slide-up"
-      />
     </div>
   )
 }

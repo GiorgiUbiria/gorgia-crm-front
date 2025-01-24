@@ -11,8 +11,6 @@ import {
   Spinner,
   Alert,
 } from "reactstrap"
-import { toast, ToastContainer } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
 import classnames from "classnames"
 import MyVacationForm from "./MyVacationForm"
 import EmployeeVacationForm from "./EmployeeVacationForm"
@@ -20,6 +18,7 @@ import { getPublicDepartments as getDepartments } from "../../../../services/adm
 import { getVacationBalance } from "../../../../services/admin/vacation"
 import useFetchUser from "../../../../hooks/useFetchUser"
 import useAuth from "hooks/useAuth"
+import { toast } from "store/zustand/toastStore"
 
 const VacationPage = () => {
   const navigate = useNavigate()
@@ -42,7 +41,10 @@ const VacationPage = () => {
         setVacationBalance(response.data)
       } catch (error) {
         console.error("Error fetching vacation balance:", error)
-        toast.error("შვებულების ბალანსის მიღება ვერ მოხერხდა")
+        toast.error("შვებულების ბალანსის მიღება ვერ მოხერხდა", "შეცდომა", {
+          duration: 2000,
+          size: "small",
+        })
       } finally {
         setBalanceLoading(false)
       }
@@ -169,18 +171,6 @@ const VacationPage = () => {
             )}
           </TabContent>
         </div>
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={true}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="colored"
-        />
       </div>
     </>
   )

@@ -5,7 +5,7 @@ import {
   getDepartmentAgreements,
   downloadAgreement as downloadAgreementService,
 } from "services/agreement"
-import { toast, ToastContainer } from "react-toastify"
+import { toast } from "store/zustand/toastStore"
 import {
   BsBank,
   BsCalendar,
@@ -18,10 +18,20 @@ import {
 const handleDownload = async agreementId => {
   try {
     await downloadAgreementService(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
+    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა", "შესრულდა", {
+      duration: 2000,
+      size: "small",
+    })
   } catch (error) {
     console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
+    toast.error(
+      error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად",
+      "შეცდომა",
+      {
+        duration: 2000,
+        size: "small",
+      }
+    )
   }
 }
 
@@ -408,7 +418,7 @@ const StandardAgreementArchive = () => {
           renderRowDetails={renderRowDetails}
         />
       </div>
-      <ToastContainer />
+      
     </>
   )
 }

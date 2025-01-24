@@ -2,14 +2,15 @@ import React, { useEffect, useCallback, useMemo } from "react"
 import { Form, Button, Alert, Label, Input } from "reactstrap"
 import { useFormik } from "formik"
 import { employeeVacationSchema } from "./validationSchema"
-import { toast } from "react-toastify"
 import InputWithError from "./InputWithError"
 import RestDaysCheckbox from "./RestDaysCheckbox"
 import VacationBalance from "../../../../components/Vacation/VacationBalance"
 import { useCreateVacationForEmployee } from "../../../../queries/vacation"
+import { toast } from "store/zustand/toastStore"
 
 const EmployeeVacationForm = ({ departments, navigate }) => {
-  const { mutate: createVacationMutation, isLoading: isSubmitting } = useCreateVacationForEmployee()
+  const { mutate: createVacationMutation, isLoading: isSubmitting } =
+    useCreateVacationForEmployee()
 
   const formik = useFormik({
     initialValues: {
@@ -40,7 +41,12 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
           values.duration_days > 7
         ) {
           toast.error(
-            "ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღის გრძელებას."
+            "ადმინისტრაციული შვებულება არ შეიძლება აღემატებოდეს 7 დღის გრძელებას.",
+            "შეცდომა",
+            {
+              duration: 2000,
+              size: "small",
+            }
           )
           return
         }
@@ -70,9 +76,9 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
 
         await createVacationMutation(submitData, {
           onSuccess: () => {
-            toast.success("შვებულება წარმატებით გაიგზავნა!", {
-              position: "top-right",
-              autoClose: 3000,
+            toast.success("შვებულება წარმატებით გაიგზავნა!", "შესრულდა", {
+              duration: 2000,
+              size: "small",
             })
 
             setTimeout(() => {
@@ -80,21 +86,25 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
               navigate("/applications/vacation/my-requests")
             }, 1000)
           },
-          onError: (error) => {
+          onError: error => {
             console.error("Submission error:", error)
             toast.error(
               error?.response?.data?.message ||
                 "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.",
+              "შეცდომა",
               {
-                position: "top-right",
-                autoClose: 5000,
+                duration: 2000,
+                size: "small",
               }
             )
           },
         })
       } catch (err) {
         console.error("Error submitting vacation:", err)
-        toast.error("შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.")
+        toast.error("შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით.", "შეცდომა", {
+          duration: 2000,
+          size: "small",
+        })
       } finally {
         setSubmitting(false)
       }
@@ -144,7 +154,12 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
       if (formik.values.vacation_type === "administrative_leave") {
         if (newDuration > 7) {
           toast.warning(
-            "ადმინისტრაციული შვებულება არ შეიძლება გაგრძელდეს 7 დღის გრძელებას."
+            "ადმინისტრაციული შვებულება არ შეიძლება გაგრძელდეს 7 დღის გრძელებას.",
+            "გაგრძელება",
+            {
+              duration: 2000,
+              size: "small",
+            }
           )
         }
       }

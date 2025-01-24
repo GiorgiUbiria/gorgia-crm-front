@@ -7,7 +7,7 @@ import {
 } from "../../../../queries/farmTasks"
 import useAuth from "hooks/useAuth"
 import CommentThread from "./CommentThread"
-import { toast } from "react-toastify"
+import { toast } from "store/zustand/toastStore"
 
 const CommentSection = ({ task, canComment }) => {
   const [newComment, setNewComment] = useState("")
@@ -37,7 +37,12 @@ const CommentSection = ({ task, canComment }) => {
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "კომენტარის დამატების დროს დაფიქსირდა შეცდომა"
+          "კომენტარის დამატების დროს დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
       )
     }
   }

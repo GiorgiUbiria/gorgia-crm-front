@@ -44,7 +44,36 @@ const useToastStore = create((set, get) => ({
   clearAllToasts: () => set({ toasts: [] }),
 }))
 
-// Custom hook for easier toast management
+// Direct API for non-hook usage
+export const toast = {
+  success: (message, title, options = {}) =>
+    useToastStore.getState().addToast({
+      message,
+      title,
+      variant: "success",
+      ...options,
+    }),
+
+  error: (message, title, options = {}) =>
+    useToastStore.getState().addToast({
+      message,
+      title,
+      variant: "error",
+      ...options,
+    }),
+
+  info: (message, title, options = {}) =>
+    useToastStore.getState().addToast({
+      message,
+      title,
+      variant: "info",
+      ...options,
+    }),
+
+  custom: options => useToastStore.getState().addToast(options),
+}
+
+// Hook for component usage
 export const useToast = () => {
   const { addToast } = useToastStore()
 

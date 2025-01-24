@@ -9,15 +9,12 @@ import {
   BsVoicemail,
 } from "react-icons/bs"
 import { downloadAgreement as downloadDeliveryAgreementService } from "services/deliveryAgreement"
-import { toast } from "react-toastify"
 
 const handleDownload = async agreementId => {
   try {
     await downloadDeliveryAgreementService(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
   } catch (error) {
     console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
   }
 }
 

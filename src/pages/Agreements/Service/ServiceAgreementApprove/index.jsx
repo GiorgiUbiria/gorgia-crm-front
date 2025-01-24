@@ -21,7 +21,6 @@ import {
   BsPerson,
 } from "react-icons/bs"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { ToastContainer } from "react-toastify"
 
 const statusMap = {
   pending: {
@@ -579,7 +578,7 @@ const ServiceAgreementApprove = () => {
         </ModalFooter>
       </Modal>
 
-      <ToastContainer />
+      
     </>
   )
 }

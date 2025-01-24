@@ -41,6 +41,7 @@
     "laravel-echo": "^1.17.1",
     "lodash": "^4.17.21",
     "lucide-react": "^0.462.0",
+    "nanoid": "^5.0.9",
     "postcss": "^8.4.49",
     "prop-types": "^15.8.1",
     "pusher-js": "^8.4.0-rc2",

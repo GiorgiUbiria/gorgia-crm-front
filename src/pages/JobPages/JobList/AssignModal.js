@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react"
 import { Modal, ModalHeader, ModalBody, Form, Button, Label } from "reactstrap"
-import { toast } from "react-toastify"
 import useAuth from "hooks/useAuth"
 import useFetchUsers from "hooks/useFetchUsers"
 import CustomSelect from "components/Select"
+import { toast } from "store/zustand/toastStore"
 
 const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
   const [selectedUsers, setSelectedUsers] = useState([])
@@ -41,13 +41,21 @@ const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
           : [user.id]
 
       await onAssign(assignedUserIds)
-      toast.success("დავალება მიღებულია")
+      toast.success("დავალება მიღებულია", "წარმატება", {
+        duration: 2000,
+        size: "small",
+      })
       handleClose()
     } catch (error) {
       console.error("AssignModal - Assignment Error:", error)
       toast.error(
         error.response?.data?.message ||
-          "დავალების მიღების დროს დაფიქსირდა შეცდომა"
+          "დავალების მიღების დროს დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
       )
     }
   }

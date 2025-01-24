@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react"
 import { getUserAgreemnets } from "services/localAgreement"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { ToastContainer } from "react-toastify"
 import { expandedRows } from "./expandedRows"
 
 const statusMap = {
@@ -192,7 +191,6 @@ const LocalAgreementUser = () => {
           renderRowDetails={expandedRows}
         />
       </div>
-      <ToastContainer />
     </>
   )
 }

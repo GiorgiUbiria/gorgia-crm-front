@@ -9,7 +9,7 @@ import {
   BsPerson,
 } from "react-icons/bs"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { toast, ToastContainer } from "react-toastify"
+import { toast } from "store/zustand/toastStore"
 
 const statusMap = {
   pending: {
@@ -38,10 +38,20 @@ const STATUS_MAPPING = {
 const handleDownload = async agreementId => {
   try {
     await downloadAgreement(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
+    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა", "შესრულდა", {
+      duration: 2000,
+      size: "small",
+    })
   } catch (error) {
     console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
+    toast.error(
+      error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად",
+      "შეცდომა",
+      {
+        duration: 2000,
+        size: "small",
+      }
+    )
   }
 }
 
@@ -57,7 +67,10 @@ const ServiceAgreementUser = () => {
       }
     } catch (err) {
       console.error("Error fetching agreements:", err)
-      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა")
+      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 
@@ -446,7 +459,7 @@ const ServiceAgreementUser = () => {
           renderRowDetails={renderRowDetails}
         />
       </div>
-      <ToastContainer />
+      
     </>
   )
 }

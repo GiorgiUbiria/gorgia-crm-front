@@ -132,7 +132,7 @@ const applicationsRoutes = {
           path: "/applications/purchases/approve",
           component: withProtectedRoute(
             <PurchasePageApprove />,
-            "role:admin|role:department_head|department:7"
+            "role:admin|role:department_head|user:155|user:156|user:157"
           ),
         },
         archive: {

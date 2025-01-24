@@ -1,9 +1,9 @@
 import React, { useState } from "react"
-import { toast } from "react-toastify"
 import {
   useCreateTaskComment,
   useDeleteTaskComment,
 } from "../../../../queries/taskComments"
+import { toast } from "store/zustand/toastStore"
 
 const formatTimeAgo = date => {
   const now = new Date()
@@ -68,7 +68,12 @@ const CommentThread = ({ comment, currentUser, taskId, depth = 0 }) => {
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "პასუხის დამატების დროს დაფიქსირდა შეცდომა"
+          "პასუხის დამატების დროს დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
       )
     }
   }
@@ -80,7 +85,12 @@ const CommentThread = ({ comment, currentUser, taskId, depth = 0 }) => {
       } catch (error) {
         toast.error(
           error.response?.data?.message ||
-            "კომენტარის წაშლის დროს დაფიქსირდა შეცდომა"
+            "კომენტარის წაშლის დროს დაფიქსირდა შეცდომა",
+          "შეცდომა",
+          {
+            duration: 2000,
+            size: "small",
+          }
         )
       }
     }

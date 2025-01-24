@@ -6,9 +6,7 @@ import {
   updateAgreementStatus,
 } from "services/localAgreement"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { ToastContainer } from "react-toastify"
 import { expandedRows } from "./expandedRows"
-
 const statusMap = {
   pending: {
     label: "განხილვაში",
@@ -337,8 +335,6 @@ const LocalAgreementApprove = () => {
           </Button>
         </ModalFooter>
       </Modal>
-
-      <ToastContainer />
     </>
   )
 }

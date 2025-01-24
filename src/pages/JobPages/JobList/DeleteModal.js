@@ -1,15 +1,25 @@
 import React from "react"
 import { Modal, ModalHeader, ModalBody, Button } from "reactstrap"
-import { toast } from "react-toastify"
-
+import { toast } from "store/zustand/toastStore"
 const DeleteModal = ({ show, onDeleteClick, onCloseClick }) => {
   const handleDelete = async () => {
     try {
       await onDeleteClick()
-      toast.success("დავალება წაშლილია")
+      toast.success("დავალება წაშლილია", "წარმატება", {
+        duration: 2000,
+        size: "small",
+      })
       onCloseClick()
     } catch (error) {
-      toast.error(error.response?.data?.message || "დავალების წაშლის დროს დაფიქსირდა შეცდომა")
+      toast.error(
+        error.response?.data?.message ||
+          "დავალების წაშლის დროს დაფიქსირდა შეცდომა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
+      )
     }
   }
 

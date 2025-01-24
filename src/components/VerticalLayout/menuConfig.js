@@ -85,7 +85,10 @@ const getMenuItems = (t, can) => {
               to: "/applications/purchases/approve",
               label: t("ვიზირება"),
               icon: LuShieldCheck,
-              show: () => can("role:admin|role:department_head|department:7"),
+              show: () =>
+                can(
+                  "role:admin|role:department_head|user:155|user:156|user:157"
+                ),
             },
             {
               to: "/applications/purchases/archive",

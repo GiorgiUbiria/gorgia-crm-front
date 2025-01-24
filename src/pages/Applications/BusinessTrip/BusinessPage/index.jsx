@@ -19,12 +19,11 @@ import { useFormik } from "formik"
 import { businessSchema } from "./validationSchema"
 import { createBusinessTrip } from "../../../../services/admin/business"
 import { getPublicDepartments as getDepartments } from "../../../../services/admin/department"
-import { toast, ToastContainer } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
 import useFetchUser from "hooks/useFetchUser"
 import classnames from "classnames"
 import cities from "../common/distances"
 import useAuth from "hooks/useAuth"
+import { toast } from "store/zustand/toastStore"
 
 const InputWithError = React.memo(function InputWithError({
   formik,
@@ -254,9 +253,9 @@ const BusinessPage = () => {
 
         const res = await createBusinessTrip(submitData)
         if (res.status === 200) {
-          toast.success("მივლინება წარმატებით გაიგზავნა", {
-            position: "top-right",
-            autoClose: 3000,
+          toast.success("მივლინება წარმატებით გაიგზავნა", "შესრულდა", {
+            duration: 2000,
+            size: "small",
           })
 
           resetForm({
@@ -276,9 +275,9 @@ const BusinessPage = () => {
           err?.response?.data?.data?.message ||
           "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით."
 
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000,
+        toast.error(errorMessage, "შეცდომა", {
+          duration: 2000,
+          size: "small",
         })
       } finally {
         setSubmitting(false)
@@ -316,9 +315,9 @@ const BusinessPage = () => {
 
         const res = await createBusinessTrip(submitData)
         if (res.status === 200) {
-          toast.success("მივლინება წარმატებით გაიგზავნა", {
-            position: "top-right",
-            autoClose: 3000,
+          toast.success("მივლინება წარმატებით გაიგზავნა", "შესრულდა", {
+            duration: 2000,
+            size: "small",
           })
 
           resetForm()
@@ -331,9 +330,9 @@ const BusinessPage = () => {
           err?.response?.data?.data?.message ||
           "შეცდომა მოხდა. გთხოვთ სცადეთ მოგვიანებით."
 
-        toast.error(errorMessage, {
-          position: "top-right",
-          autoClose: 5000,
+        toast.error(errorMessage, "შეცდომა", {
+          duration: 2000,
+          size: "small",
         })
       } finally {
         setSubmitting(false)
@@ -892,17 +891,6 @@ const BusinessPage = () => {
           </Card>
         </div>
       </div>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
     </>
   )
 }

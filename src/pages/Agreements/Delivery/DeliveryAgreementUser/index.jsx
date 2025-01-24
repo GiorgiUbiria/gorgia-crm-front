@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import { getUserAgreemnets } from "services/deliveryAgreement"
-import { toast } from "react-toastify"
+import { toast } from "store/zustand/toastStore"
 import { expandedRows } from "./expandedRows"
 
 const statusMap = {
@@ -40,7 +40,10 @@ const DeliveryAgreementUser = () => {
       }
     } catch (err) {
       console.error("Error fetching agreements:", err)
-      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა")
+      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 

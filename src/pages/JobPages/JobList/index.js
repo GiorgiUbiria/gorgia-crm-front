@@ -1,7 +1,6 @@
 import React, { Fragment, useMemo, useState } from "react"
 import "bootstrap/dist/css/bootstrap.min.css"
 import { Row, Col } from "reactstrap"
-import { ToastContainer } from "react-toastify"
 import { Link } from "react-router-dom"
 
 import DeleteModal from "./DeleteModal"
@@ -309,7 +308,7 @@ const TaskList = () => {
           </Col>
         </Row>
       )}
-      <ToastContainer />
+      
     </div>
   )
 }

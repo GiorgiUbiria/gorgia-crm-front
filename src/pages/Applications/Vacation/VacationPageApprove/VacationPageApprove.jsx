@@ -12,9 +12,9 @@ import {
   Badge,
   Spinner,
 } from "reactstrap"
-import { toast } from "react-toastify"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
+import { toast } from "store/zustand/toastStore"
 import {
   BiCheck,
   BiX,
@@ -259,20 +259,43 @@ const VacationPageApprove = () => {
             toast.success(
               actionType === "approved"
                 ? "შვებულება დამტკიცდა"
-                : "შვებულება უარყოფილია"
+                : "შვებულება უარყოფილია",
+              "წარმატება",
+              {
+                duration: 2000,
+                size: "small",
+              }
             )
             setConfirmModal(false)
             setSelectedVacation(null)
             setActionType(null)
           },
           onError: () => {
-            toast.error("მოქმედების შესრულება ვერ მოხერხდა")
+            toast.error(
+              actionType === "approved"
+                ? "შვებულების დამტკიცება ვერ მოხერხდა"
+                : "შვებულების უარყოფა ვერ მოხერხდა",
+              "შეცდომა",
+              {
+                duration: 2000,
+                size: "small",
+              }
+            )
           },
         }
       )
     } catch (err) {
       console.error("Error updating vacation status:", err)
-      toast.error("მოქმედების შესრულება ვერ მოხერხდა")
+      toast.error(
+        actionType === "approved"
+          ? "შვებულების დამტკიცება ვერ მოხერხდა"
+          : "შვებულების უარყოფა ვერ მოხერხდა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
+      )
     }
   }
 
@@ -286,19 +309,28 @@ const VacationPageApprove = () => {
         },
         {
           onSuccess: () => {
-            toast.success("შვებულება უარყოფილია")
+            toast.success("შვებულება უარყოფილია", "წარმატება", {
+              duration: 2000,
+              size: "small",
+            })
             setRejectionModal(false)
             setRejectionComment("")
             setSelectedVacation(null)
           },
           onError: () => {
-            toast.error("შვებულების უარყოფა ვერ მოხერხდა")
+            toast.error("შვებულების უარყოფა ვერ მოხერხდა", "შეცდომა", {
+              duration: 2000,
+              size: "small",
+            })
           },
         }
       )
     } catch (err) {
       console.error("Error rejecting vacation:", err)
-      toast.error("შვებულების უარყოფა ვერ მოხერხდა")
+      toast.error("შვებულების უარყოფა ვერ მოხერხდა", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 

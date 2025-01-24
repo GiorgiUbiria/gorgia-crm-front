@@ -1,11 +1,10 @@
 import React, { useState } from "react"
 import { Input, Label, Button, FormGroup } from "reactstrap"
-import { toast, ToastContainer } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
 import { useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import { procurementSchema } from "./validationSchema"
 import { useCreatePurchase } from "../../../../queries/purchase"
+import { toast } from "store/zustand/toastStore"
 
 const branchOptions = [
   "დიდუბე",
@@ -391,13 +390,9 @@ const ProcurementPage = () => {
         createPurchase(formattedValues, {
           onSuccess: () => {
             console.log("Purchase creation successful")
-            toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
+            toast.success("თქვენი მოთხოვნა წარმატებით გაიგზავნა!", "შესრულდა", {
+              duration: 2000,
+              size: "small",
             })
 
             formik.resetForm()
@@ -799,7 +794,7 @@ const ProcurementPage = () => {
           </div>
         </div>
       </div>
-      <ToastContainer />
+      
     </div>
   )
 }
