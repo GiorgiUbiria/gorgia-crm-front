@@ -87,10 +87,10 @@ const CrmDialog = ({
     <Dialog.Portal>
       <Dialog.Overlay className="fixed inset-0 bg-black/40 data-[state=open]:animate-overlayShow" />
       <Dialog.Content
-        className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg focus:outline-none data-[state=open]:animate-contentShow dark:!bg-gray-800 flex flex-col"
+        className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg focus:outline-none data-[state=open]:animate-contentShow dark:!bg-gray-800 flex flex-col overflow-hidden"
         style={{ maxWidth }}
       >
-        <div className="p-6">
+        <div className="flex-none p-6">
           {title && (
             <Dialog.Title className="m-0 text-lg font-semibold text-gray-900 dark:!text-gray-100">
               {title}
@@ -103,10 +103,10 @@ const CrmDialog = ({
           )}
         </div>
 
-        <div className="px-6 flex-1 mb-8">{children}</div>
+        <div className="px-6 flex-1 overflow-y-auto min-h-0">{children}</div>
 
         {footer && (
-          <div className="p-6 pt-4 mt-auto border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+          <div className="p-6 pt-4 flex-none border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
             {footer}
           </div>
         )}

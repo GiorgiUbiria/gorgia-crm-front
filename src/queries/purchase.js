@@ -112,6 +112,7 @@ export const useUpdatePurchaseStatus = () => {
       updatePurchaseStatus(id, status, comment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: purchaseKeys.all })
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.departmentPurchases() })
     },
   })
 }

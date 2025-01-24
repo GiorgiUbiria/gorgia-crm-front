@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import { getUserAgreemnets } from "services/deliveryAgreement"
-import { toast, ToastContainer } from "react-toastify"
+import { toast } from "react-toastify"
 import { expandedRows } from "./expandedRows"
 
 const statusMap = {
@@ -197,7 +197,6 @@ const DeliveryAgreementUser = () => {
           renderRowDetails={expandedRows}
         />
       </div>
-      <ToastContainer />
     </>
   )
 }

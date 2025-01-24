@@ -1,18 +1,11 @@
 import React, { useEffect, useState, useMemo } from "react"
-import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Spinner,
-} from "reactstrap"
+import { Modal, ModalHeader, ModalBody, ModalFooter, Spinner } from "reactstrap"
 import Button from "@mui/material/Button"
 import {
   getDepartmentAgreements as getDeliveryDepartmentAgreements,
   updateAgreementStatus as updateDeliveryAgreementStatus,
 } from "services/deliveryAgreement"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { ToastContainer } from "react-toastify"
 import { expandedRows } from "./expandedRows"
 
 const statusMap = {
@@ -299,7 +292,6 @@ const DeliveryAgreementApprove = () => {
           filterOptions={filterOptions}
           renderRowDetails={expandedRows}
         />
-        <ToastContainer />
       </div>
 
       <Modal isOpen={confirmModal.isOpen} toggle={handleModalClose}>

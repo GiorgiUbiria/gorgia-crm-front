@@ -221,13 +221,15 @@ const ExpandedRowContent = ({ rowData }) => {
 const VacationPageApprove = () => {
   document.title = "შვებულების ვიზირება | Gorgia LLC"
 
-  const { isAdmin } = useAuth()
+  const { isAdmin, isDepartmentHead, isDepartmentHeadAssistant } = useAuth()
   const {
     data: departmentVacationData,
     isLoading: departmentVacationsLoading,
-  } = useDepartmentVacations()
+  } = useDepartmentVacations({
+    enabled: isDepartmentHead() || isDepartmentHeadAssistant(),
+  })
   const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
-    enabled: !!isAdmin(),
+    enabled: isAdmin(),
   })
   const { mutate: updateStatus } = useUpdateVacationStatus()
 

@@ -110,13 +110,18 @@ const PurchasePageApprove = () => {
       isDepartmentHeadAssistant() ||
       getUserDepartmentId() === 7
     )
-  }, [isAdmin, isDepartmentHead, isDepartmentHeadAssistant, getUserDepartmentId])
+  }, [
+    isAdmin,
+    isDepartmentHead,
+    isDepartmentHeadAssistant,
+    getUserDepartmentId,
+  ])
 
   const { data: purchaseData, isLoading: isPurchasesLoading } =
     useGetPurchaseList(
       {},
       {
-        enabled: !!isAdmin(),
+        enabled: !!isAdmin() || getUserDepartmentId() === 7,
       }
     )
 
@@ -126,7 +131,7 @@ const PurchasePageApprove = () => {
   const {
     data: departmentPurchaseData,
     isLoading: isDepartmentPurchaseLoading,
-  } = useGetDepartmentPurchases({}, { enabled: isDepartmentHead })
+  } = useGetDepartmentPurchases({}, { enabled: isDepartmentHead() })
 
   const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
     useUpdateProductStatus()
@@ -144,19 +149,33 @@ const PurchasePageApprove = () => {
 
   const canApproveRequest = useCallback(
     purchase => {
-      // Completed or Rejected can't
-      if (purchase.status === "completed" || purchase.status === "rejected")
+      // Completed or Rejected can't be changed
+      if (purchase.status === "completed" || purchase.status === "rejected") {
         return false
+      }
 
-      // Admin can always
-      if (isAdmin) return true
+      // Admin can always approve
+      if (isAdmin()) {
+        return true
+      }
 
       // Department head only
-      if (!isDepartmentHead) return false
+      if (!isDepartmentHead()) {
+        return false
+      }
 
       const purchaseCategory = purchase.category
       const requesterDepartmentId = purchase.requester?.department_id
       const categoryDepartmentId = categoryDepartmentMap[purchaseCategory]
+
+      if (requesterDepartmentId === categoryDepartmentId) {
+        // If requester's department head is also category's department head,
+        // only "pending department head" status is relevant for them
+        return (
+          purchase.status === "pending department head" &&
+          getUserDepartmentId() === requesterDepartmentId
+        )
+      }
 
       switch (purchase.status) {
         case "pending department head":
@@ -171,25 +190,28 @@ const PurchasePageApprove = () => {
   )
 
   const getNextStatus = purchase => {
-    const skipFirstStep = false
+    if (purchase.status === "pending department head") {
+      const purchaseCategory = purchase.category
+      const requesterDepartmentId = purchase.requester?.department_id
+      const categoryDepartmentId = categoryDepartmentMap[purchaseCategory]
 
-    switch (purchase.status) {
-      case "pending department head":
-        return skipFirstStep
-          ? "pending products completion"
-          : "pending requested department"
-
-      case "pending requested department":
+      if (requesterDepartmentId === categoryDepartmentId) {
         return "pending products completion"
-
-      case "pending products completion":
-        return purchase.products?.every(p => p.status === "completed")
-          ? "completed"
-          : purchase.status
-
-      default:
-        return purchase.status
+      }
+      return "pending requested department"
     }
+
+    if (purchase.status === "pending requested department") {
+      return "pending products completion"
+    }
+
+    if (purchase.status === "pending products completion") {
+      return purchase.products?.every(p => p.status === "completed")
+        ? "completed"
+        : purchase.status
+    }
+
+    return purchase.status
   }
 
   const handleModalOpen = (action, purchase) => {
@@ -875,14 +897,16 @@ const PurchasePageApprove = () => {
           <MuiTable
             columns={columns}
             data={
-              isAdmin || userDepartmentId === 7
+              isAdmin() || getUserDepartmentId() === 7
                 ? purchaseData?.data || []
                 : departmentPurchaseData?.data || []
             }
             filterOptions={filterOptions}
             enableSearch={true}
             isLoading={
-              isAdmin ? isPurchasesLoading : isDepartmentPurchaseLoading
+              isAdmin() || getUserDepartmentId() === 7
+                ? isPurchasesLoading
+                : isDepartmentPurchaseLoading
             }
             renderRowDetails={ExpandedRowContent}
             rowClassName="cursor-pointer hover:bg-gray-50"

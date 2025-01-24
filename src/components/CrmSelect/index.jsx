@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, forwardRef } from "react"
 import { ChevronDownIcon, CheckIcon } from "@radix-ui/react-icons"
 import classNames from "classnames"
+import { createPortal } from "react-dom"
 
 const CrmSelect = forwardRef(
   (
@@ -42,25 +43,29 @@ const CrmSelect = forwardRef(
     // Close dropdown when clicking outside
     useEffect(() => {
       const handleClickOutside = event => {
+        // Get the portal element
+        const portalElement = document.querySelector('[data-select-dropdown]');
+        
         if (
           dropdownRef.current &&
           !dropdownRef.current.contains(event.target) &&
-          !triggerRef.current?.contains(event.target)
+          !triggerRef.current?.contains(event.target) &&
+          !portalElement?.contains(event.target)
         ) {
-          setIsOpen(false)
-          setIsFocused(false)
+          setIsOpen(false);
+          setIsFocused(false);
           // Restore selected option's label when clicking outside
           if (selectedOption) {
-            setSearchQuery(selectedOption.label)
+            setSearchQuery(selectedOption.label);
           } else {
-            setSearchQuery("")
+            setSearchQuery("");
           }
         }
-      }
+      };
 
-      document.addEventListener("mousedown", handleClickOutside)
-      return () => document.removeEventListener("mousedown", handleClickOutside)
-    }, [selectedOption])
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [selectedOption]);
 
     // Set initial search query when component mounts or selected option changes
     useEffect(() => {
@@ -143,11 +148,29 @@ const CrmSelect = forwardRef(
         : selectedOption?.label || ""
       : selectedOption?.label || ""
 
+    // Add this effect after other useEffects
+    useEffect(() => {
+      if (isOpen) {
+        const updatePosition = () => {
+          // Force a re-render to update dropdown position
+          setIsOpen(true)
+        }
+
+        window.addEventListener("scroll", updatePosition)
+        window.addEventListener("resize", updatePosition)
+
+        return () => {
+          window.removeEventListener("scroll", updatePosition)
+          window.removeEventListener("resize", updatePosition)
+        }
+      }
+    }, [isOpen])
+
     return (
       <div className="relative w-full" ref={dropdownRef}>
         <div className="flex flex-col gap-1">
           {label && (
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="text-sm font-medium text-gray-700 dark:!text-gray-300">
               {label}
             </label>
           )}
@@ -166,10 +189,10 @@ const CrmSelect = forwardRef(
               className={classNames(
                 "flex h-10 w-full items-center rounded-md border bg-white px-3 pr-8 text-sm text-gray-900",
                 "focus:outline-none focus:ring-2 focus:ring-blue-500",
-                "dark:bg-gray-800 dark:text-gray-100",
+                "dark:!bg-gray-800 dark:!text-gray-100",
                 {
                   "border-red-500": error,
-                  "border-gray-300 dark:border-gray-600": !error,
+                  "border-gray-300 dark:!border-gray-600": !error,
                   "opacity-50 cursor-not-allowed": disabled,
                   "cursor-pointer": !searchable,
                 },
@@ -182,7 +205,7 @@ const CrmSelect = forwardRef(
             >
               <ChevronDownIcon
                 className={classNames(
-                  "h-4 w-4 text-gray-500 transition-transform dark:text-gray-400",
+                  "h-4 w-4 text-gray-500 transition-transform dark:!text-gray-400",
                   { "rotate-180": isOpen }
                 )}
               />
@@ -191,36 +214,55 @@ const CrmSelect = forwardRef(
           {error && <span className="text-sm text-red-500">{error}</span>}
         </div>
 
-        {isOpen && (
-          <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-            <div className="max-h-[300px] overflow-y-auto p-1">
-              {sortedOptions.length > 0 ? (
-                sortedOptions.map(option => (
-                  <div
-                    key={option.value}
-                    onClick={() => handleSelect(option)}
-                    className={classNames(
-                      "relative flex h-9 cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm text-gray-900",
-                      "hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700",
-                      {
-                        "bg-gray-100 dark:bg-gray-700": option.value === value,
-                      }
-                    )}
-                  >
-                    <span className="truncate">{option.label}</span>
-                    {option.value === value && (
-                      <CheckIcon className="absolute right-2 h-4 w-4 text-blue-500" />
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="px-2 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  მონაცემები არ მოიძებნა
+        {isOpen &&
+          createPortal(
+            <div
+              data-select-dropdown
+              style={{
+                position: 'absolute',
+                zIndex: 9999,
+                width: dropdownRef.current?.offsetWidth,
+                left: dropdownRef.current?.getBoundingClientRect().left,
+                top: dropdownRef.current?.getBoundingClientRect().bottom + window.scrollY,
+              }}
+            >
+              <div 
+                className="w-full overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg dark:!border-gray-700 dark:!bg-gray-800"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="max-h-[300px] overflow-y-auto p-1">
+                  {sortedOptions.length > 0 ? (
+                    sortedOptions.map(option => (
+                      <div
+                        key={option.value}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelect(option);
+                        }}
+                        className={classNames(
+                          "relative flex h-9 cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm text-gray-900",
+                          "hover:bg-gray-100 dark:!text-gray-100 dark:!hover:bg-gray-700",
+                          {
+                            "bg-gray-100 dark:!bg-gray-700": option.value === value,
+                          }
+                        )}
+                      >
+                        <span className="truncate">{option.label}</span>
+                        {option.value === value && (
+                          <CheckIcon className="absolute right-2 h-4 w-4 text-blue-500" />
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-2 py-4 text-center text-sm text-gray-500 dark:!text-gray-400">
+                      მონაცემები არ მოიძებნა
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        )}
+              </div>
+            </div>,
+            document.body
+          )}
       </div>
     )
   }

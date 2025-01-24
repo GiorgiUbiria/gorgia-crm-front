@@ -93,7 +93,7 @@ const ProcurementPageArchive = () => {
       (isDepartmentHead() || isDepartmentHeadAssistant()) &&
       !isAdmin() &&
       getUserDepartmentId() !== 7 &&
-      can("user:373"),
+      !can("user:373"),
   })
 
   const canViewTable = useMemo(() => {
@@ -709,14 +709,18 @@ const ProcurementPageArchive = () => {
           <MuiTable
             columns={columns}
             data={
-              isAdmin
+              isAdmin() || getUserDepartmentId() === 7
                 ? purchaseData?.data || []
                 : departmentPurchaseData?.data || []
             }
             filterOptions={filterOptions}
             customSearchFunction={customSearchFunction}
             enableSearch={true}
-            isLoading={isAdmin ? isLoading : isDepartmentPurchaseLoading}
+            isLoading={
+              isAdmin() || getUserDepartmentId() === 7
+                ? isLoading
+                : isDepartmentPurchaseLoading
+            }
             renderRowDetails={ExpandedRowContent}
             rowClassName="cursor-pointer hover:bg-gray-50"
           />

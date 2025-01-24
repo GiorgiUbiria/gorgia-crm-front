@@ -77,7 +77,11 @@ const VacationPage = () => {
     return (
       isAdmin() ||
       isHrMember() ||
-      hasAnyRole(["department_head", "security_manager"])
+      hasAnyRole([
+        "department_head",
+        "security_manager",
+        "department_head_assistant",
+      ])
     )
   }, [isAdmin, isHrMember, hasAnyRole])
 

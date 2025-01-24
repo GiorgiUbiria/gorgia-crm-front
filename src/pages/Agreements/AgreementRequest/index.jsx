@@ -1,6 +1,4 @@
 import React, { useState } from "react"
-import { ToastContainer } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
 
 import StandardAgreementForm from "../../../components/AgreementForms/Strandard/StandardAgreementForm"
 import DeliveryAgreementForm from "../../../components/AgreementForms/DeliveryAcceptance/DeliveryAgreementForm"
@@ -41,18 +39,6 @@ const AgreementRequest = () => {
 
   return (
     <>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-white dark:!bg-gray-800 rounded-lg shadow-sm mt-5">
           <div className="p-6">
