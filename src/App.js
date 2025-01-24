@@ -6,23 +6,27 @@ import VerticalLayout from "./components/VerticalLayout/"
 import NonAuthLayout from "./components/NonAuthLayout"
 import AuthInitializer from "./components/AuthInitializer"
 import ToastContainer from "./components/CrmToast/ToastContainer"
-
 import "./assets/scss/theme.scss"
-import DataProvider from "components/hoc/DataProvider"
 import "boxicons/css/boxicons.min.css"
 import "./index.css"
-
-const getLayout = () => {
-  let Layout = VerticalLayout
-  return Layout
-}
+import UserRegistrationNotification from "components/UserRegistrationNotification"
+import useAuth from "hooks/useAuth"
 
 const App = () => {
-  const Layout = getLayout()
+  const Layout = VerticalLayout
+
+  const { user, getUserDepartmentId, isDepartmentHead } = useAuth()
 
   return (
-    <DataProvider>
+    <>
       <AuthInitializer />
+      {user && (
+        <UserRegistrationNotification
+          userId={user.id}
+          departmentId={getUserDepartmentId()}
+          isHeadOfDepartment={isDepartmentHead()}
+        />
+      )}
       <Routes>
         {publicRoutes.map((route, idx) => (
           <Route
@@ -42,7 +46,7 @@ const App = () => {
         ))}
       </Routes>
       <ToastContainer />
-    </DataProvider>
+    </>
   )
 }
 

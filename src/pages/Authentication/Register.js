@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { registerUser } from "services/auth"
 import { getPublicDepartments } from "services/admin/department"
 import profileImg from "../../assets/images/profile-img.png"
+import { toast } from "store/zustand/toastStore"
 
 const InputField = ({ label, name, type = "text", placeholder, formik }) => (
   <div className="space-y-1">
@@ -110,11 +111,14 @@ const Register = () => {
 
           if (response.status === 200) {
             toast.success(
-              "მომხმარებელი წარმატებით დარეგისტრირდა! გთხოვთ დაელოდოთ ადმინისტრატორის დადასტურებას."
+              "მომხმარებელი წარმატებით დარეგისტრირდა! გთხოვთ დაელოდოთ ადმინისტრატორის დადასტურებას.",
+              "წარმატება",
+              {
+                duration: 2000,
+                size: "small",
+              }
             )
-            setTimeout(() => {
-              navigate("/auth/login")
-            }, 2000)
+            navigate("/auth/login")
           }
         } catch (error) {
           const errorMessage = error.response?.data
@@ -123,10 +127,16 @@ const Register = () => {
               : error.response.data.message
             : "რეგისტრაცია ვერ მოხერხდა. გთხოვთ სცადოთ თავიდან."
 
-          toast.error("რეგისტრაცია ვერ მოხერხდა: " + errorMessage)
+          toast.error("რეგისტრაცია ვერ მოხერხდა: " + errorMessage, "შეცდომა", {
+            duration: 2000,
+            size: "small",
+          })
         }
       } else {
-        toast.error("გთხოვთ შეავსეთ ყველა ველი სწორად")
+        toast.error("გთხოვთ შეავსეთ ყველა ველი სწორად", "შეცდომა", {
+          duration: 2000,
+          size: "small",
+        })
       }
     },
   })
