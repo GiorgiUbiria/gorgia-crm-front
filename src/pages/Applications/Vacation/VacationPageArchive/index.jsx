@@ -182,13 +182,18 @@ const ExpandedRowContent = ({ rowData }) => {
 const VacationPageArchive = () => {
   document.title = "შვებულებების არქივი | Gorgia LLC"
 
-  const { isAdmin, isDepartmentHead, isHrMember } = useAuth()
+  const { isAdmin, isDepartmentHead, isHrMember, isDepartmentHeadAssistant } =
+    useAuth()
 
   const {
     data: departmentVacationData,
     isLoading: departmentVacationsLoading,
   } = useDepartmentVacations({
-    enabled: isDepartmentHead() && !isAdmin() && !isHrMember(),
+    enabled:
+      isDepartmentHead() &&
+      !isAdmin() &&
+      !isHrMember() &&
+      !isDepartmentHeadAssistant(),
   })
   const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
     enabled: isAdmin() || isHrMember(),

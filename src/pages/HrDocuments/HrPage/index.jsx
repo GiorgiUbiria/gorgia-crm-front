@@ -116,7 +116,7 @@ const forUserValidationSchema = activeTab => {
 
 const HrPage = () => {
   const navigate = useNavigate()
-  const { user, isAdmin, isHrMember } = useAuth()
+  const { user, isAdmin, isHrMember, isSecurityManager } = useAuth()
   const [activeTab, setActiveTab] = useState("1")
   const isHrDepartmentHead =
     isHrMember && user?.roles?.some(role => role.slug === "department_head")
@@ -124,7 +124,8 @@ const HrPage = () => {
     started_date: "",
   })
 
-  const canAccessOtherTab = isAdmin || isHrMember || isHrDepartmentHead
+  const canAccessOtherTab =
+    isAdmin() || isHrMember() || isHrDepartmentHead() || isSecurityManager()
 
   const handleDocumentSubmit = async (values, { setSubmitting }) => {
     try {
@@ -309,7 +310,7 @@ const HrPage = () => {
                       ჩემთვის
                     </NavLink>
                   </NavItem>
-                  {canAccessOtherTab && (isAdmin || isHrMember) && (
+                  {canAccessOtherTab && (
                     <NavItem>
                       <NavLink
                         className={classnames({ active: activeTab === "2" })}

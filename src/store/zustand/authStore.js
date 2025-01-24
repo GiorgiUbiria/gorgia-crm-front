@@ -103,6 +103,11 @@ const useAuthStore = create((set, get) => ({
     return user?.roles?.some(role => role.slug === "it_support")
   },
 
+  isSecurityManager: () => {
+    const { user } = get()
+    return user?.roles?.some(role => role.slug === "security_manager")
+  },
+
   // Compound Permission Checks
   hasAnyRole: roles => {
     const { user } = get()
