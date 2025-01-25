@@ -3,8 +3,6 @@ import Pusher from "pusher-js"
 
 window.Pusher = Pusher
 
-console.log(process.env.REACT_APP_WS_HOST, process.env.REACT_APP_WS_PORT, process.env.REACT_APP_FORCE_TLS)
-
 const token = sessionStorage.getItem("token")
 
 const echo = new Echo({
