@@ -10,7 +10,6 @@ import {
   ModalHeader,
   ModalBody,
   Badge,
-  Spinner,
 } from "reactstrap"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
@@ -31,6 +30,8 @@ import AutoApprovalCountdown from "../../../../components/Vacation/AutoApprovalC
 import CancellationModal from "../../../../components/Vacation/CancellationModal"
 import { Tooltip } from "@mui/material"
 import useAuth from "hooks/useAuth"
+import CrmSpinner from "../../../../components/CrmSpinner"
+
 const statusMap = {
   pending: {
     label: "განხილვაში",
@@ -462,74 +463,144 @@ const VacationPageApprove = () => {
   )
 
   const transformedVacations = useMemo(() => {
-    if (!departmentVacationData?.data?.data && !vacationsData?.data?.data)
-      return []
-    const vacations = isAdmin
-      ? vacationsData?.data?.data
-      : departmentVacationData?.data?.data
+    // For department heads/assistants
+    if (
+      (isDepartmentHead() || isDepartmentHeadAssistant()) &&
+      departmentVacationData?.data
+    ) {
+      console.log(departmentVacationData.data)
+      return departmentVacationData.data.data.map(vacation => ({
+        id: vacation.id,
+        status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+        start_date: vacation.start_date
+          ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
+          : "-",
+        end_date: vacation.end_date
+          ? new Date(vacation.end_date).toLocaleDateString("ka-GE")
+          : "-",
+        duration: (vacation.duration_days ?? 0).toString() + " დღე",
+        type: vacation.type
+          ? TYPE_MAPPING[vacation.type] || vacation.type
+          : "უცნობი",
+        requested_by: vacation.user
+          ? `${vacation.user?.name || ""} ${
+              vacation.user?.sur_name || ""
+            }`.trim() || "უცნობი"
+          : "უცნობი",
+        requested_at: vacation.created_at
+          ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
+          : "-",
+        requested_for: `${vacation.employee_name || ""} | ${
+          vacation.position || ""
+        } | ${vacation.department || ""}`,
+        isAutoApproved: vacation.is_auto_approved || false,
+        created_at: vacation.created_at,
+        expanded: {
+          holiday_days: {
+            is_monday: vacation.is_monday || "no",
+            is_tuesday: vacation.is_tuesday || "no",
+            is_wednesday: vacation.is_wednesday || "no",
+            is_thursday: vacation.is_thursday || "no",
+            is_friday: vacation.is_friday || "no",
+            is_saturday: vacation.is_saturday || "no",
+            is_sunday: vacation.is_sunday || "no",
+          },
+          substitute: {
+            substitute_name: vacation.substitute_name || "უცნობია",
+            substitute_position: vacation.substitute_position || "უცნობია",
+          },
+          review: {
+            reviewed_by: vacation.reviewed_by
+              ? `${vacation.reviewed_by?.name || ""} ${
+                  vacation.reviewed_by?.sur_name || ""
+                }`
+              : "ჯერ არ არის განხილული",
+            reviewed_at: vacation?.reviewed_at
+              ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+              : "-",
+            rejection_reason: vacation.rejection_reason || "",
+          },
+          cancellation: {
+            cancellation_reason: vacation.cancellation_reason || "",
+            cancelled_at: vacation.cancelled_at
+              ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+              : "",
+          },
+        },
+      }))
+    }
 
-    if (!vacations) return []
+    // For admins
+    if (isAdmin() && vacationsData?.data?.data) {
+      return vacationsData.data.data.map(vacation => ({
+        id: vacation.id,
+        status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+        start_date: vacation.start_date
+          ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
+          : "-",
+        end_date: vacation.end_date
+          ? new Date(vacation.end_date).toLocaleDateString("ka-GE")
+          : "-",
+        duration: (vacation.duration_days ?? 0).toString() + " დღე",
+        type: vacation.type
+          ? TYPE_MAPPING[vacation.type] || vacation.type
+          : "უცნობი",
+        requested_by: vacation.user
+          ? `${vacation.user?.name || ""} ${
+              vacation.user?.sur_name || ""
+            }`.trim() || "უცნობი"
+          : "უცნობი",
+        requested_at: vacation.created_at
+          ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
+          : "-",
+        requested_for: `${vacation.employee_name || ""} | ${
+          vacation.position || ""
+        } | ${vacation.department || ""}`,
+        isAutoApproved: vacation.is_auto_approved || false,
+        created_at: vacation.created_at,
+        expanded: {
+          holiday_days: {
+            is_monday: vacation.is_monday || "no",
+            is_tuesday: vacation.is_tuesday || "no",
+            is_wednesday: vacation.is_wednesday || "no",
+            is_thursday: vacation.is_thursday || "no",
+            is_friday: vacation.is_friday || "no",
+            is_saturday: vacation.is_saturday || "no",
+            is_sunday: vacation.is_sunday || "no",
+          },
+          substitute: {
+            substitute_name: vacation.substitute_name || "უცნობია",
+            substitute_position: vacation.substitute_position || "უცნობია",
+          },
+          review: {
+            reviewed_by: vacation.reviewed_by
+              ? `${vacation.reviewed_by?.name || ""} ${
+                  vacation.reviewed_by?.sur_name || ""
+                }`
+              : "ჯერ არ არის განხილული",
+            reviewed_at: vacation?.reviewed_at
+              ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+              : "-",
+            rejection_reason: vacation.rejection_reason || "",
+          },
+          cancellation: {
+            cancellation_reason: vacation.cancellation_reason || "",
+            cancelled_at: vacation.cancelled_at
+              ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+              : "",
+          },
+        },
+      }))
+    }
 
-    return vacations.map(vacation => ({
-      id: vacation.id,
-      status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
-      start_date: vacation.start_date
-        ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
-        : "-",
-      end_date: vacation.end_date
-        ? new Date(vacation.end_date).toLocaleDateString("ka-GE")
-        : "-",
-      duration: (vacation.duration_days ?? 0).toString() + " დღე",
-      type: vacation.type
-        ? TYPE_MAPPING[vacation.type] || vacation.type
-        : "უცნობი",
-      requested_by: vacation.user
-        ? `${vacation.user?.name || ""} ${
-            vacation.user?.sur_name || ""
-          }`.trim() || "უცნობი"
-        : "უცნობი",
-      requested_at: vacation.created_at
-        ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
-        : "-",
-      requested_for: `${vacation.employee_name || ""} | ${
-        vacation.position || ""
-      } | ${vacation.department || ""}`,
-      isAutoApproved: vacation.is_auto_approved || false,
-      created_at: vacation.created_at,
-      expanded: {
-        holiday_days: {
-          is_monday: vacation.is_monday || null,
-          is_tuesday: vacation.is_tuesday || null,
-          is_wednesday: vacation.is_wednesday || null,
-          is_thursday: vacation.is_thursday || null,
-          is_friday: vacation.is_friday || null,
-          is_saturday: vacation.is_saturday || null,
-          is_sunday: vacation.is_sunday || null,
-        },
-        substitute: {
-          substitute_name: vacation.substitute_name || "უცნობია",
-          substitute_position: vacation.substitute_position || "უცნობია",
-        },
-        review: {
-          reviewed_by: vacation.reviewed_by
-            ? `${vacation.reviewed_by?.name || ""} ${
-                vacation.reviewed_by?.sur_name || ""
-              }`
-            : "ჯერ არ არის განხილული",
-          reviewed_at: vacation?.reviewed_at
-            ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
-            : "-",
-          rejection_reason: vacation.rejection_reason || "",
-        },
-        cancellation: {
-          cancellation_reason: vacation.cancellation_reason || "",
-          cancelled_at: vacation.cancelled_at
-            ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
-            : "",
-        },
-      },
-    }))
-  }, [departmentVacationData?.data?.data, vacationsData?.data?.data, isAdmin])
+    return []
+  }, [
+    departmentVacationData?.data,
+    vacationsData?.data?.data,
+    isAdmin,
+    isDepartmentHead,
+    isDepartmentHeadAssistant,
+  ])
 
   const filterOptions = [
     {
@@ -557,10 +628,36 @@ const VacationPageApprove = () => {
 
   const expandedRow = row => <ExpandedRowContent rowData={row} />
 
-  if (vacationsLoading && departmentVacationsLoading) {
+  // Combine loading states
+  const isLoading = vacationsLoading || departmentVacationsLoading
+
+  // Update data ready check to match the correct data structure
+  const isDataReady = useMemo(() => {
+    if (isAdmin()) {
+      return Boolean(vacationsData?.data?.data)
+    }
+    if (isDepartmentHead() || isDepartmentHeadAssistant()) {
+      return Boolean(departmentVacationData?.data) // Changed from departmentVacationData?.data?.data
+    }
+    return false
+  }, [
+    vacationsData,
+    departmentVacationData,
+    isAdmin,
+    isDepartmentHead,
+    isDepartmentHeadAssistant,
+  ])
+
+  // Show loading state while data is being fetched
+  if (isLoading || !isDataReady) {
     return (
-      <div className="text-center mt-5">
-        <Spinner color="primary" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <CrmSpinner size="lg" />
+          <p className="mt-4 text-gray-500 dark:text-gray-400">
+            მონაცემების ჩატვირთვა...
+          </p>
+        </div>
       </div>
     )
   }
