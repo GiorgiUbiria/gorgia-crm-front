@@ -190,10 +190,9 @@ const VacationPageArchive = () => {
     isLoading: departmentVacationsLoading,
   } = useDepartmentVacations({
     enabled:
-      isDepartmentHead() &&
+      (isDepartmentHead() || isDepartmentHeadAssistant()) &&
       !isAdmin() &&
-      !isHrMember() &&
-      !isDepartmentHeadAssistant(),
+      !isHrMember(),
   })
   const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
     enabled: isAdmin() || isHrMember(),
