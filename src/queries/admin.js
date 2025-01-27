@@ -14,6 +14,7 @@ import {
   rejectDepartmentMember,
   updateDepartmentMember,
 } from "../services/admin/department"
+import { listUsers } from "../services/user"
 
 // Query keys
 export const adminKeys = {
@@ -25,6 +26,7 @@ export const adminKeys = {
     lists: () => [...adminKeys.users.all(), "list"],
     list: filters => [...adminKeys.users.lists(), { ...filters }],
     detail: id => [...adminKeys.users.all(), "detail", id],
+    list_names: () => [...adminKeys.users.all(), "list_names"],
   },
   departmentMembers: {
     all: () => [...adminKeys.all, "department-members"],
@@ -55,6 +57,14 @@ export const useGetAdminUsers = (filters = {}) => {
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     keepPreviousData: true,
     refetchOnWindowFocus: true,
+  })
+}
+
+export const useGetListNames = () => {
+  return useQuery({
+    queryKey: adminKeys.users.list_names(),
+    queryFn: listUsers,
+    select: response => response.data.data
   })
 }
 

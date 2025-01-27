@@ -10,6 +10,7 @@ import {
   Umbrella,
   PlaneTakeoff,
   ArrowRight,
+  CalendarDays,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -106,13 +107,12 @@ const widgets = [
   },
   {
     id: 11,
-    title: "...",
-    description: "მალე დაემატება",
-    icon: PlaneTakeoff,
-    buttonText: "მოითხოვე",
-    link: "/applications/business-trip/new",
-    color: "slate",
-    disabled: true,
+    title: "trainingcalendar.gorgia.ge",
+    description: "გადადი სასწავლო კალენდარზე",
+    icon: CalendarDays,
+    buttonText: "გადასვლა",
+    link: "https://trainingcalendar.gorgia.ge/",
+    color: "green",
   },
   {
     id: 12,

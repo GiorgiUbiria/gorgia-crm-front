@@ -74,7 +74,7 @@ import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 import CreateNote from "pages/NotesEditor/CreateNote"
 import EditNote from "pages/NotesEditor/EditNote"
-import ChatBox from "pages/Chat/ChatBox"
+import ChatRoom from "../pages/ChatRoom"
 
 const withProtectedRoute = (component, permission = "") => (
   <ProtectedRoute permission={permission}>{component}</ProtectedRoute>
@@ -403,7 +403,7 @@ const communicationRoutes = {
   children: {
     chat: {
       path: "/communication/chat",
-      component: withProtectedRoute(<ChatBox />),
+      component: withProtectedRoute(<ChatRoom />),
     },
     comments: {
       path: "/communication/comments/:id",

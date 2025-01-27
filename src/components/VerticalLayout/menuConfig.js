@@ -15,6 +15,7 @@ import {
   LuPencilRuler,
   LuPlus,
   LuNotebook,
+  LuMessageSquare,
 } from "react-icons/lu"
 
 const getMenuItems = (t, can) => {
@@ -373,6 +374,11 @@ const getMenuItems = (t, can) => {
       to: "/tools/notes",
       icon: LuNotebook,
       label: t("ჩანაწერები"),
+    },
+    {
+      to: "/communication/chat",
+      icon: LuMessageSquare,
+      label: t("ჩატი"),
     },
   ]
 

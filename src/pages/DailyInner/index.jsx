@@ -7,6 +7,7 @@ import CommentThread from "./components/CommentThread"
 import CommentSection from "./components/CommentSection"
 import { DailyHeader } from "./components/DailyHeader"
 import DailyDescription from "./components/DailyDescription"
+import useAuth from "hooks/useAuth"
 
 const DailyInner = () => {
   const { id } = useParams()

@@ -6,6 +6,8 @@ import { createPortal } from "react-dom"
 const CrmSelect = forwardRef(
   (
     {
+      isLoading = false,
+      touched,
       options = [],
       value: propValue,
       onChange,
@@ -23,6 +25,9 @@ const CrmSelect = forwardRef(
     const [isFocused, setIsFocused] = useState(false)
     const triggerRef = useRef(null)
     const dropdownRef = useRef(null)
+
+    // Add new ref for dropdown portal container
+    const portalContainerRef = useRef(null)
 
     // Normalize value to handle both string and object values
     const value = propValue?.value || propValue || ""
@@ -44,28 +49,28 @@ const CrmSelect = forwardRef(
     useEffect(() => {
       const handleClickOutside = event => {
         // Get the portal element
-        const portalElement = document.querySelector('[data-select-dropdown]');
-        
+        const portalElement = document.querySelector("[data-select-dropdown]")
+
         if (
           dropdownRef.current &&
           !dropdownRef.current.contains(event.target) &&
           !triggerRef.current?.contains(event.target) &&
           !portalElement?.contains(event.target)
         ) {
-          setIsOpen(false);
-          setIsFocused(false);
+          setIsOpen(false)
+          setIsFocused(false)
           // Restore selected option's label when clicking outside
           if (selectedOption) {
-            setSearchQuery(selectedOption.label);
+            setSearchQuery(selectedOption.label)
           } else {
-            setSearchQuery("");
+            setSearchQuery("")
           }
         }
-      };
+      }
 
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [selectedOption]);
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [selectedOption])
 
     // Set initial search query when component mounts or selected option changes
     useEffect(() => {
@@ -166,6 +171,57 @@ const CrmSelect = forwardRef(
       }
     }, [isOpen])
 
+    // Add function to check if component is inside a dialog
+    const isInsideDialog = () => {
+      return !!dropdownRef.current?.closest('[role="dialog"]')
+    }
+
+    // Add function to get portal container
+    const getPortalContainer = () => {
+      if (isInsideDialog()) {
+        // If inside dialog, create/use a container div inside the dialog
+        if (!portalContainerRef.current) {
+          portalContainerRef.current = document.createElement("div")
+          portalContainerRef.current.style.position = "relative"
+          dropdownRef.current?.appendChild(portalContainerRef.current)
+        }
+        return portalContainerRef.current
+      }
+      return document.body
+    }
+
+    // Clean up portal container on unmount
+    useEffect(() => {
+      return () => {
+        if (portalContainerRef.current) {
+          portalContainerRef.current.remove()
+        }
+      }
+    }, [])
+
+    // Modify dropdown positioning logic
+    const getDropdownStyles = () => {
+      if (isInsideDialog()) {
+        return {
+          position: "absolute",
+          zIndex: 9999,
+          width: "100%",
+          left: 0,
+          top: "100%",
+          marginTop: "4px",
+        }
+      }
+
+      return {
+        position: "absolute",
+        zIndex: 9999,
+        width: dropdownRef.current?.offsetWidth,
+        left: dropdownRef.current?.getBoundingClientRect().left,
+        top:
+          dropdownRef.current?.getBoundingClientRect().bottom + window.scrollY,
+      }
+    }
+
     return (
       <div className="relative w-full" ref={dropdownRef}>
         <div className="flex flex-col gap-1">
@@ -211,39 +267,37 @@ const CrmSelect = forwardRef(
               />
             </div>
           </div>
-          {error && <span className="text-sm text-red-500">{error}</span>}
+          {touched && error && (
+            <div className="d-block mt-1 text-sm text-red-500">{error}</div>
+          )}
         </div>
 
         {isOpen &&
           createPortal(
-            <div
-              data-select-dropdown
-              style={{
-                position: 'absolute',
-                zIndex: 9999,
-                width: dropdownRef.current?.offsetWidth,
-                left: dropdownRef.current?.getBoundingClientRect().left,
-                top: dropdownRef.current?.getBoundingClientRect().bottom + window.scrollY,
-              }}
-            >
-              <div 
+            <div data-select-dropdown style={getDropdownStyles()}>
+              <div
                 className="w-full overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg dark:!border-gray-700 dark:!bg-gray-800"
-                onClick={(e) => e.stopPropagation()}
+                onClick={e => e.stopPropagation()}
               >
                 <div className="max-h-[300px] overflow-y-auto p-1">
-                  {sortedOptions.length > 0 ? (
+                  {isLoading ? (
+                    <div className="px-2 py-4 text-center text-sm text-gray-500 dark:!text-gray-400">
+                      იტვირთება...
+                    </div>
+                  ) : sortedOptions.length > 0 ? (
                     sortedOptions.map(option => (
                       <div
                         key={option.value}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelect(option);
+                        onClick={e => {
+                          e.stopPropagation()
+                          handleSelect(option)
                         }}
                         className={classNames(
                           "relative flex h-9 cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm text-gray-900",
                           "hover:bg-gray-100 dark:!text-gray-100 dark:!hover:bg-gray-700",
                           {
-                            "bg-gray-100 dark:!bg-gray-700": option.value === value,
+                            "bg-gray-100 dark:!bg-gray-700":
+                              option.value === value,
                           }
                         )}
                       >
@@ -261,7 +315,7 @@ const CrmSelect = forwardRef(
                 </div>
               </div>
             </div>,
-            document.body
+            getPortalContainer()
           )}
       </div>
     )

@@ -28,3 +28,7 @@ export const fetchUsers = async () => {
   const response = await defaultInstance.get("/api/admin/users")
   return response
 }
+
+export const listUsers = async () => {
+  return defaultInstance.get("/api/list-users")
+}
