@@ -15,9 +15,13 @@ const NotificationDropdown = () => {
     deleteNotification,
   } = useNotifications()
   const [previousCount, setPreviousCount] = useState(unreadCount)
+  const [hasInteracted, setHasInteracted] = useState(false)
   const notificationAudio = new Audio(notificationSound)
 
-  const toggle = () => setIsOpen(!isOpen)
+  const toggle = () => {
+    setIsOpen(!isOpen)
+    setHasInteracted(true)
+  }
 
   const handleMarkAsRead = (e, notification) => {
     e.preventDefault()
@@ -73,13 +77,16 @@ const NotificationDropdown = () => {
   }
 
   useEffect(() => {
-    if (unreadCount > previousCount) {
-      notificationAudio
-        .play()
-        .catch(error => console.log("Audio playback failed:", error))
+    if (unreadCount > previousCount && hasInteracted) {
+      notificationAudio.play().catch(error => {
+        // Only log errors other than autoplay restrictions
+        if (error.name !== "NotAllowedError") {
+          console.error("Audio playback failed:", error)
+        }
+      })
     }
     setPreviousCount(unreadCount)
-  }, [unreadCount, previousCount])
+  }, [unreadCount, previousCount, hasInteracted, notificationAudio])
 
   const renderNotification = notification => {
     if (!notification?.data) return null
