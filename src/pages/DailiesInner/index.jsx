@@ -172,7 +172,7 @@ const DailiesInner = () => {
           <DialogButton
             actionType="add"
             onClick={() => setIsAddModalOpen(true)}
-            label="შეფასების დამატება"
+            label="დღის შედეგის დამატება"
           />
         </div>
 
@@ -189,8 +189,8 @@ const DailiesInner = () => {
       <CrmDialog
         isOpen={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
-        title="შეფასების დამატება"
-        description="შეავსეთ ფორმა შეფასების დასამატებლად"
+        title="დღის შედეგის დამატება"
+        description="შეავსეთ ფორმა დღის შედეგის დასამატებლად"
         footer={
           <>
             <DialogButton

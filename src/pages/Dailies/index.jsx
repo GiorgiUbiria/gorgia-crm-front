@@ -148,7 +148,7 @@ const Dailies = () => {
           <DialogButton
             actionType="add"
             onClick={() => setIsAddModalOpen(true)}
-            label="შეფასების დამატება"
+            label="დღის შედეგის დამატება"
           />
         </div>
 
