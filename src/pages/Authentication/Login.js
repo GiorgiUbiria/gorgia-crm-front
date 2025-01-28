@@ -89,11 +89,11 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center">
       <div className="max-w-md w-full space-y-8">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-          <div className="bg-primary-100 dark:bg-primary-900 p-6">
+        <div className="bg-white dark:!bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-primary-100 dark:!bg-primary-900 p-6">
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-7 flex flex-col justify-center">
-                <div className="text-primary-600 dark:text-primary-400">
+                <div className="text-primary-600 dark:!text-primary-400">
                   <h5 className="text-xl font-bold">მოგესალმებით !</h5>
                   <p className="mt-2">გაიარეთ ავტორიზაცია Gorgia LLC-ში.</p>
                 </div>
@@ -108,7 +108,7 @@ const Login = () => {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="block text-sm font-medium text-gray-700 dark:!text-gray-300"
                 >
                   ელ-ფოსტა
                 </label>
@@ -119,17 +119,17 @@ const Login = () => {
                   className={`mt-1 block w-full h-11 rounded-md shadow-sm px-3
                     ${
                       validation.touched.email && validation.errors.email
-                        ? "border-red-500 dark:border-red-500"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "border-red-500 dark:!border-red-500"
+                        : "border-gray-300 dark:!border-gray-600"
                     } 
-                    focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white`}
+                    focus:ring-primary-500 focus:border-primary-500 dark:!bg-gray-700 dark:!text-white`}
                   placeholder="ჩაწერეთ ელ-ფოსტა"
                   onChange={validation.handleChange}
                   onBlur={validation.handleBlur}
                   value={validation.values.email || ""}
                 />
                 {validation.touched.email && validation.errors.email && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  <p className="mt-1 text-sm text-red-600 dark:!text-red-400">
                     {validation.errors.email}
                   </p>
                 )}
@@ -137,7 +137,7 @@ const Login = () => {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="block text-sm font-medium text-gray-700 dark:!text-gray-300"
                 >
                   პაროლი
                 </label>
@@ -148,24 +148,24 @@ const Login = () => {
                   className={`mt-1 block w-full h-11 rounded-md shadow-sm px-3
                     ${
                       validation.touched.password && validation.errors.password
-                        ? "border-red-500 dark:border-red-500"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "border-red-500 dark:!border-red-500"
+                        : "border-gray-300 dark:!border-gray-600"
                     } 
-                    focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white`}
+                    focus:ring-primary-500 focus:border-primary-500 dark:!bg-gray-700 dark:!text-white`}
                   placeholder="ჩაწერეთ პაროლი"
                   onChange={validation.handleChange}
                   onBlur={validation.handleBlur}
                   value={validation.values.password || ""}
                 />
                 {validation.touched.password && validation.errors.password && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  <p className="mt-1 text-sm text-red-600 dark:!text-red-400">
                     {validation.errors.password}
                   </p>
                 )}
               </div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:!bg-primary-500 dark:!hover:bg-primary-600"
               >
                 ავტორიზაცია
               </button>
@@ -173,16 +173,16 @@ const Login = () => {
           </div>
         </div>
         <div className="text-center space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:!text-gray-400">
             არ გაქვს ანგარიში?{" "}
             <Link
               to="/auth/register"
-              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:!text-primary-400"
             >
               რეგისტრაცია
             </Link>
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:!text-gray-400">
             © {new Date().getFullYear()} Gorgia LLC. Crafted with{" "}
             <span className="text-red-500">&hearts;</span> by GORGIA
           </p>

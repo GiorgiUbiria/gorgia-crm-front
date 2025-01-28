@@ -11,7 +11,7 @@ const InputField = ({ label, name, type = "text", placeholder, formik }) => (
   <div className="space-y-1">
     <label
       htmlFor={name}
-      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+      className="block text-sm font-medium text-gray-700 dark:!text-gray-300"
     >
       {label}
     </label>
@@ -26,13 +26,13 @@ const InputField = ({ label, name, type = "text", placeholder, formik }) => (
       className={`block w-full h-11 rounded-md shadow-sm px-3
         ${
           formik.touched[name] && formik.errors[name]
-            ? "border-red-500 dark:border-red-500"
-            : "border-gray-300 dark:border-gray-600"
+            ? "border-red-500 dark:!border-red-500"
+            : "border-gray-300 dark:!border-gray-600"
         } 
-        focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white`}
+        focus:ring-primary-500 focus:border-primary-500 dark:!bg-gray-700 dark:!text-white`}
     />
     {formik.touched[name] && formik.errors[name] && (
-      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+      <p className="mt-1 text-sm text-red-600 dark:!text-red-400">
         {formik.errors[name]}
       </p>
     )}
@@ -142,14 +142,14 @@ const Register = () => {
   })
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:!bg-gray-900">
       <div className="max-w-2xl w-full space-y-8">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white dark:!bg-gray-800 rounded-lg shadow-lg overflow-hidden">
           {/* Header Section */}
-          <div className="bg-primary-100 dark:bg-primary-900 p-6">
+          <div className="bg-primary-100 dark:!bg-primary-900 p-6">
             <div className="grid grid-cols-12">
               <div className="col-span-7">
-                <div className="text-primary-600 dark:text-primary-400">
+                <div className="text-primary-600 dark:!text-primary-400">
                   <h5 className="text-xl font-bold">რეგისტრაცია</h5>
                   <p className="mt-2">შექმენით თქვენი ანგარიში Gorgia LLC-ში</p>
                 </div>
@@ -201,7 +201,7 @@ const Register = () => {
                 <div className="space-y-1">
                   <label
                     htmlFor="department_id"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-gray-700 dark:!text-gray-300"
                   >
                     დეპარტამენტი
                   </label>
@@ -215,10 +215,10 @@ const Register = () => {
                       ${
                         validation.touched.department_id &&
                         validation.errors.department_id
-                          ? "border-red-500 dark:border-red-500"
-                          : "border-gray-300 dark:border-gray-600"
+                          ? "border-red-500 dark:!border-red-500"
+                          : "border-gray-300 dark:!border-gray-600"
                       } 
-                      focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white`}
+                      focus:ring-primary-500 focus:border-primary-500 dark:!bg-gray-700 dark:!text-white`}
                   >
                     <option value="">აირჩიე დეპარტამენტი</option>
                     {Array.isArray(departments) &&
@@ -230,7 +230,7 @@ const Register = () => {
                   </select>
                   {validation.touched.department_id &&
                     validation.errors.department_id && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      <p className="mt-1 text-sm text-red-600 dark:!text-red-400">
                         {validation.errors.department_id}
                       </p>
                     )}
@@ -262,7 +262,7 @@ const Register = () => {
 
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:!bg-primary-500 dark:!hover:bg-primary-600"
               >
                 რეგისტრაცია
               </button>
@@ -270,16 +270,16 @@ const Register = () => {
           </div>
         </div>
         <div className="text-center space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:!text-gray-400">
             უკვე გაქვთ ანგარიში?{" "}
             <Link
               to="/auth/login"
-              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:!text-primary-400"
             >
               ავტორიზაცია
             </Link>
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:!text-gray-400">
             © {new Date().getFullYear()} Gorgia LLC. Crafted with{" "}
             <span className="text-red-500">&hearts;</span> by GORGIA
           </p>

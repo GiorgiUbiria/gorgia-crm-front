@@ -59,3 +59,10 @@ export const updateVacationStatus = async (id, status, rejection_reason) => {
 export const getVacationDetails = async id => {
   return defaultInstance.get(`/api/vacation/${id}/show`)
 }
+
+export const updateOneCStatus = async (id, status) => {
+  return defaultInstance.post(`/api/vacation/${id}/one-c-status`, {
+    stored_in_one_c: status.stored_in_one_c,
+    one_c_comment: status.one_c_comment,
+  })
+}

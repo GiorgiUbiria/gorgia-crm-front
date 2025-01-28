@@ -27,7 +27,7 @@ const TaskModal = ({
   createTaskMutation,
   updateTaskMutation,
 }) => {
-  const { user, isAdmin, isITSupport, isLoading: userLoading } = useAuth()
+  const { user, isAdmin, isITSupport, isLoading: userLoading, isDepartmentHead } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleClose = () => {

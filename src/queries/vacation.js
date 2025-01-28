@@ -8,6 +8,7 @@ import {
   cancelVacation,
   getVacationDetails,
   getDepartmentVacations,
+  updateOneCStatus,
 } from "../services/admin/vacation"
 import { getCurrentUserVocations } from "../services/vacation"
 
@@ -109,6 +110,17 @@ export const useCancelVacation = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => cancelVacation(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: vacationKeys.all })
+    },
+  })
+}
+
+export const useUpdateOneCStatus = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }) => updateOneCStatus(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vacationKeys.all })
     },

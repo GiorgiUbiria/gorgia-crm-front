@@ -1,9 +1,20 @@
-import React, { useMemo } from "react"
-import { Row, Col, Spinner } from "reactstrap"
+import React, { useMemo, useState } from "react"
+import {
+  Row,
+  Col,
+  Spinner,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Input,
+} from "reactstrap"
 import MuiTable from "components/Mui/MuiTable"
 import {
   useVacations,
   useDepartmentVacations,
+  useUpdateOneCStatus,
 } from "../../../../queries/vacation"
 import useAuth from "hooks/useAuth"
 
@@ -62,18 +73,42 @@ const TYPE_MAPPING = {
 }
 
 const ExpandedRowContent = ({ rowData }) => {
+  const updateOneCStatusMutation = useUpdateOneCStatus()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [comment, setComment] = useState("")
+
   if (!rowData) return null
 
   const {
     start_date,
     end_date,
     requested_for,
+    status,
     expanded: {
       holiday_days,
       substitute: { substitute_name, substitute_position },
       review: { reviewed_by, reviewed_at, rejection_reason },
+      one_c_status: { stored_in_one_c, one_c_comment },
     },
   } = rowData
+
+  const handleModalSubmit = () => {
+    try {
+      updateOneCStatusMutation.mutate({
+        id: rowData.id,
+        data: {
+          stored_in_one_c: true,
+          one_c_comment:
+            comment ||
+            `Stored in 1C on ${new Date().toISOString().split("T")[0]}`,
+        },
+      })
+      setModalOpen(false)
+      setComment("")
+    } catch (error) {
+      console.error("Error updating 1C status:", error)
+    }
+  }
 
   const dayMapGe = {
     is_monday: "ორშაბათი",
@@ -174,7 +209,85 @@ const ExpandedRowContent = ({ rowData }) => {
             )}
           </div>
         </Col>
+
+        <Col md={12}>
+          <div className="border rounded p-3">
+            <div className="d-flex align-items-center justify-content-between mb-2">
+              <div className="d-flex align-items-center">
+                <i className="bx bx-data me-2 text-primary"></i>
+                <h6 className="mb-0" style={{ fontSize: "0.9375rem" }}>
+                  1C სტატუსი
+                </h6>
+              </div>
+            </div>
+            <div className="d-flex flex-column gap-1">
+              <small
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: "0.8125rem",
+                  color:
+                    status === "pending"
+                      ? "#757575"
+                      : stored_in_one_c
+                      ? "#28a745"
+                      : "#dc3545",
+                }}
+              >
+                <i
+                  className={`bx ${
+                    status === "pending"
+                      ? "bx-time"
+                      : stored_in_one_c
+                      ? "bx-check"
+                      : "bx-x"
+                  } me-1`}
+                ></i>
+                {status === "pending"
+                  ? "ჯერ-ჯერობით არ არის დამტკიცებული"
+                  : stored_in_one_c
+                  ? "გადატანილია"
+                  : "არ არის გადატანილი"}
+              </small>
+              {one_c_comment && (
+                <small
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontSize: "0.8125rem",
+                  }}
+                >
+                  <i className="bx bx-comment-detail me-1"></i>
+                  {one_c_comment}
+                </small>
+              )}
+            </div>
+          </div>
+        </Col>
       </Row>
+
+      <Modal isOpen={modalOpen} toggle={() => setModalOpen(false)}>
+        <ModalHeader toggle={() => setModalOpen(false)}>
+          1C-ში გადატანის კომენტარი
+        </ModalHeader>
+        <ModalBody>
+          <Input
+            type="textarea"
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="შეიყვანეთ კომენტარი (არასავალდებულო)"
+            rows={4}
+          />
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={() => setModalOpen(false)}>
+            გაუქმება
+          </Button>
+          <Button color="primary" onClick={handleModalSubmit}>
+            შენახვა
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   )
 }
@@ -184,6 +297,54 @@ const VacationPageArchive = () => {
 
   const { isAdmin, isDepartmentHead, isHrMember, isDepartmentHeadAssistant } =
     useAuth()
+  const updateOneCStatusMutation = useUpdateOneCStatus()
+
+  const isHrAssistant = isDepartmentHeadAssistant() || isHrMember()
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedVacation, setSelectedVacation] = useState(null)
+  const [comment, setComment] = useState("")
+
+  const handleOneCStatusUpdate = async (id, currentStatus) => {
+    if (!currentStatus) {
+      setSelectedVacation({ id, currentStatus })
+      setModalOpen(true)
+      return
+    }
+
+    try {
+      updateOneCStatusMutation.mutate({
+        id,
+        data: {
+          stored_in_one_c: !currentStatus,
+          one_c_comment: "",
+        },
+      })
+    } catch (error) {
+      console.error("Error updating 1C status:", error)
+    }
+  }
+
+  const handleModalSubmit = () => {
+    if (!selectedVacation) return
+
+    try {
+      updateOneCStatusMutation.mutate({
+        id: selectedVacation.id,
+        data: {
+          stored_in_one_c: !selectedVacation.currentStatus,
+          one_c_comment:
+            comment ||
+            `Stored in 1C on ${new Date().toISOString().split("T")[0]}`,
+        },
+      })
+      setModalOpen(false)
+      setSelectedVacation(null)
+      setComment("")
+    } catch (error) {
+      console.error("Error updating 1C status:", error)
+    }
+  }
 
   const {
     data: departmentVacationData,
@@ -273,8 +434,82 @@ const VacationPageArchive = () => {
           )
         },
       },
+      {
+        Header: "1C სტატუსი",
+        accessor: "one_c_status",
+        Cell: ({ row }) => {
+          const { status } = row.original
+          const stored_in_one_c =
+            row.original.expanded.one_c_status.stored_in_one_c
+          const isApproved = status === "approved" || status === "auto_approved"
+
+          if (!isHrAssistant || (!isApproved && status !== "pending")) {
+            return (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  color: stored_in_one_c ? "#28a745" : "#dc3545",
+                  fontSize: "0.8125rem",
+                }}
+              >
+                <i
+                  className={`bx ${stored_in_one_c ? "bx-check" : "bx-x"} me-1`}
+                ></i>
+                {status === "pending"
+                  ? "ჯერ-ჯერობით არ არის დამტკიცებული"
+                  : stored_in_one_c
+                  ? "გადატანილია"
+                  : "არ არის გადატანილი"}
+              </span>
+            )
+          }
+
+          if (stored_in_one_c) {
+            return (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  color: "#28a745",
+                  fontSize: "0.8125rem",
+                }}
+              >
+                <i className="bx bx-check me-1"></i>
+                გადატანილია
+              </span>
+            )
+          }
+
+          return (
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() =>
+                handleOneCStatusUpdate(row.original.id, stored_in_one_c)
+              }
+              disabled={updateOneCStatusMutation.isLoading}
+              style={{ fontSize: "0.8125rem" }}
+            >
+              {updateOneCStatusMutation.isLoading &&
+              row.original.id === updateOneCStatusMutation.variables?.id ? (
+                <Spinner size="sm" />
+              ) : (
+                <>
+                  <i className="bx bx-upload me-1"></i>
+                  გადატანა 1C-ში
+                </>
+              )}
+            </button>
+          )
+        },
+      },
     ],
-    []
+    [
+      handleOneCStatusUpdate,
+      isHrAssistant,
+      updateOneCStatusMutation.isLoading,
+      updateOneCStatusMutation.variables?.id,
+    ]
   )
   const transformedVacations = useMemo(() => {
     if (!departmentVacationData?.data?.data && !vacationsData?.data?.data)
@@ -345,6 +580,10 @@ const VacationPageArchive = () => {
             ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
             : "",
         },
+        one_c_status: {
+          stored_in_one_c: vacation.stored_in_one_c || false,
+          one_c_comment: vacation.one_c_comment || "",
+        },
       },
     }))
   }, [departmentVacationData, vacationsData, isAdmin, isHrMember])
@@ -396,6 +635,29 @@ const VacationPageArchive = () => {
           />
         </div>
       </div>
+
+      <Modal isOpen={modalOpen} toggle={() => setModalOpen(false)}>
+        <ModalHeader toggle={() => setModalOpen(false)}>
+          1C-ში გადატანის კომენტარი
+        </ModalHeader>
+        <ModalBody>
+          <Input
+            type="textarea"
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="შეიყვანეთ კომენტარი (არასავალდებულო)"
+            rows={4}
+          />
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={() => setModalOpen(false)}>
+            გაუქმება
+          </Button>
+          <Button color="primary" onClick={handleModalSubmit}>
+            შენახვა
+          </Button>
+        </ModalFooter>
+      </Modal>
     </>
   )
 }
