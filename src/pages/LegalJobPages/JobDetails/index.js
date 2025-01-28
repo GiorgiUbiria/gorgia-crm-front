@@ -15,7 +15,7 @@ const JobDetails = () => {
   document.title = "Legal Task Details | Gorgia LLC"
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user, isLoading: userLoading } = useAuth()
+  const { user, isLoading: userLoading, getUserDepartmentId, isAdmin } = useAuth()
 
   const {
     data: task,
@@ -43,6 +43,8 @@ const JobDetails = () => {
     },
   })
 
+  const isLegalDepartment = getUserDepartmentId() === 10
+
   const hasEditPermission = useMemo(() => {
     if (!task) return false
 
@@ -53,8 +55,6 @@ const JobDetails = () => {
       isAdmin()
     )
   }, [task, isLegalDepartment])
-
-  const isLegalDepartment = getUserDepartmentId() === 10
 
   const canAccessTask = useMemo(() => {
     if (!task || !user) return false
@@ -96,7 +96,6 @@ const JobDetails = () => {
         </div>
       </div>
       <CommentSection task={task} canComment={canAccessTask} />
-      
     </div>
   )
 }

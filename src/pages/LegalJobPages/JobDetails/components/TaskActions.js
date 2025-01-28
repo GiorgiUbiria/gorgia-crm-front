@@ -2,18 +2,20 @@ import React from "react"
 import { Play, CheckCircle } from "lucide-react"
 import { useStartTask, useFinishTask } from "../../../../queries/legalTasks"
 import { toast } from "store/zustand/toastStore"
+import useAuth from "hooks/useAuth"
+
 const TaskActions = ({ task, canEdit }) => {
+  const { user } = useAuth()
   const startTaskMutation = useStartTask()
   const finishTaskMutation = useFinishTask()
 
   if (!task) return null
   if (!canEdit) return null
 
-  const currentUser = JSON.parse(sessionStorage.getItem("authUser"))
 
   const canUpdateStatus =
-    (currentUser.department_id === 10 &&
-      task.data.assigned_users?.some(user => user.id === currentUser.id)) ||
+    (user.department_id === 10 &&
+      task.data.assigned_users?.some(user => user.id === user.id)) ||
     canEdit
 
   const handleStartTask = async () => {

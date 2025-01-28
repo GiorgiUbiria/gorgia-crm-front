@@ -9,12 +9,13 @@ import TaskTimeline from "./components/TaskTimeline"
 import CommentSection from "./components/CommentSection"
 import CrmSpinner from "components/CrmSpinner"
 import { toast } from "store/zustand/toastStore"
+import useAuth from "hooks/useAuth"
 
 const JobDetails = () => {
   document.title = "Farm Task Details | Gorgia LLC"
   const { id } = useParams()
   const navigate = useNavigate()
-  const { isAdmin, user } = useAuth()
+  const { isAdmin, user, getUserDepartmentId, isLoading: userLoading } = useAuth()
 
   const {
     data: task,
