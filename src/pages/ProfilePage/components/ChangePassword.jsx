@@ -1,6 +1,5 @@
 import React from "react"
 import PropTypes from "prop-types"
-import { useTranslation } from "react-i18next"
 
 const ChangePassword = ({
   passForm,
@@ -8,19 +7,17 @@ const ChangePassword = ({
   handleChangePass,
   onSubmit,
 }) => {
-  const { t } = useTranslation()
-
   return (
     <div className="animate-fade-in">
       <h2 className="text-xl font-bold text-gray-900 dark:!text-white mb-6">
-        {t("პაროლის შეცვლა")}
+        {"პაროლის შეცვლა"}
       </h2>
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {[
-            { name: "old_password", label: t("ძველი პაროლი") },
-            { name: "password", label: t("ახალი პაროლი") },
-            { name: "confirm_password", label: t("გაიმეორეთ პაროლი") },
+            { name: "old_password", label: "ძველი პაროლი" },
+            { name: "password", label: "ახალი პაროლი" },
+            { name: "confirm_password", label: "გაიმეორეთ პაროლი" },
           ].map(field => (
             <div key={field.name} className="group">
               <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-2">
@@ -47,7 +44,7 @@ const ChangePassword = ({
             type="submit"
             className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:!focus:!ring-offset-gray-800 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           >
-            {t("შეცვლა")}
+            {"შეცვლა"}
           </button>
         </div>
       </form>

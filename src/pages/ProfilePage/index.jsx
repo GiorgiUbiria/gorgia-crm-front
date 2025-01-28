@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react"
-import { useTranslation } from "react-i18next"
 import {
   useGetUser,
   useChangePassword,
@@ -12,7 +11,6 @@ import UpdateProfile from "./components/UpdateProfile"
 import ChangePassword from "./components/ChangePassword"
 
 const ProfilePage = () => {
-  const { t } = useTranslation()
   const { data: userData } = useGetUser()
   const { mutateAsync: changePasswordMutation } = useChangePassword()
   const { mutateAsync: updateUserMutation } = useUpdateUser()
@@ -169,7 +167,7 @@ const ProfilePage = () => {
           sessionStorage.setItem("authUser", JSON.stringify(updatedUser))
         }
 
-        toast.success(t("პროფილი წარმატებით განახლდა"), "წარმატება", {
+        toast.success("პროფილი წარმატებით განახლდა", "წარმატება", {
           duration: 2000,
           size: "small",
         })
@@ -231,7 +229,7 @@ const ProfilePage = () => {
                       : "border-transparent text-gray-500 hover:text-gray-700 dark:!text-gray-400 dark:!hover:!text-gray-300"
                   }`}
                 >
-                  {t("პროფილის პარამეტრები")}
+                  {"პროფილის პარამეტრები"}
                 </button>
                 <button
                   onClick={() => setActiveTab("security")}
@@ -241,7 +239,7 @@ const ProfilePage = () => {
                       : "border-transparent text-gray-500 hover:text-gray-700 dark:!text-gray-400 dark:!hover:!text-gray-300"
                   }`}
                 >
-                  {t("უსაფრთხოება")}
+                  {"უსაფრთხოება"}
                 </button>
               </nav>
             </div>

@@ -10,45 +10,211 @@
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://bit.ly/CRA-PWA
 
-const isLocalhost = Boolean(
-  window.location.hostname === "localhost" ||
-    // [::1] is the IPv6 localhost address.
-    window.location.hostname === "[::1]" ||
-    // 127.0.0.0/8 are considered localhost for IPv4.
-    window.location.hostname.match(
-      /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-    )
-)
+const CACHE_NAME = "gorgia-crm-v1"
+const DYNAMIC_CACHE_NAME = "gorgia-crm-dynamic-v1"
+const SESSION_CHANNEL = "session-channel"
 
-export function register(config) {
-  if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
-    // The URL constructor is available in all browsers that support SW.
-    const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href)
-    if (publicUrl.origin !== window.location.origin) {
-      // Our service worker won't work if PUBLIC_URL is on a different origin
-      // from what our page is served on. This might happen if a CDN is used to
-      // serve assets; see https://github.com/facebook/create-react-app/issues/2374
-      return
+// Assets to cache immediately
+const STATIC_ASSETS = [
+  "/",
+  "/index.html",
+  "/static/js/main.bundle.js",
+  "/static/css/main.css",
+  "/manifest.json",
+  "/favicon.ico",
+  "/logo192.png",
+  "/logo512.png",
+]
+
+// URLs that should never be cached
+const NEVER_CACHE_URLS = [
+  "/api/",
+  "/sanctum/",
+  "/login",
+  "/logout",
+  "/register",
+]
+
+// Check if a request should be cached
+const shouldCache = url => {
+  // Don't cache API calls or auth routes
+  return !NEVER_CACHE_URLS.some(u => url.includes(u))
+}
+
+// Custom response handler for auth routes
+const handleAuthResponse = async response => {
+  // Check if the response indicates auth issues
+  if (response.status === 401 || response.status === 419) {
+    // Clear all caches to prevent stale auth data
+    const cacheNames = await caches.keys()
+    await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)))
+
+    // Broadcast auth error to all tabs
+    if ("BroadcastChannel" in window) {
+      const bc = new BroadcastChannel("auth-channel")
+      bc.postMessage({ type: "AUTH_ERROR" })
     }
 
+    // Redirect to login
+    return Response.redirect("/login")
+  }
+  return response
+}
+
+// Install event - cache static assets
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches
+      .open(CACHE_NAME)
+      .then(cache => cache.addAll(STATIC_ASSETS))
+      .then(() => self.skipWaiting())
+  )
+})
+
+// Activate event - clean up old caches
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    Promise.all([
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames
+            .filter(
+              cacheName =>
+                cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE_NAME
+            )
+            .map(cacheName => caches.delete(cacheName))
+        )
+      }),
+      // Claim all clients to ensure the new service worker takes over immediately
+      self.clients.claim(),
+    ])
+  )
+})
+
+// Fetch event - network first with cache fallback strategy
+self.addEventListener("fetch", event => {
+  // Skip non-GET requests
+  if (event.request.method !== "GET") return
+
+  const url = new URL(event.request.url)
+
+  // Handle same-origin requests only
+  if (url.origin !== self.location.origin) return
+
+  // Don't cache auth-related URLs
+  if (!shouldCache(url.pathname)) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => handleAuthResponse(response))
+        .catch(() => {
+          // If offline and it's an HTML request, return offline page
+          if (event.request.headers.get("accept").includes("text/html")) {
+            return caches.match("/offline.html")
+          }
+          return new Response("Offline")
+        })
+    )
+    return
+  }
+
+  // Network first strategy with cache fallback
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // Clone the response before caching
+        const responseToCache = response.clone()
+
+        // Cache successful responses
+        if (response.ok) {
+          caches.open(DYNAMIC_CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache)
+          })
+        }
+
+        return response
+      })
+      .catch(async () => {
+        // Try to get from cache
+        const cachedResponse = await caches.match(event.request)
+
+        if (cachedResponse) {
+          return cachedResponse
+        }
+
+        // If it's an HTML request, return offline page
+        if (event.request.headers.get("accept").includes("text/html")) {
+          return caches.match("/offline.html")
+        }
+
+        // Otherwise, return a basic offline response
+        return new Response("Offline")
+      })
+  )
+})
+
+// Handle messages from clients
+self.addEventListener("message", event => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting()
+  }
+})
+
+// Export registration function
+export function register(config) {
+  if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`
 
-      if (isLocalhost) {
-        // This is running on localhost. Let's check if a service worker still exists or not.
-        checkValidServiceWorker(swUrl, config)
+      registerValidSW(swUrl, config)
 
-        // Add some additional logging to localhost, pointing developers to the
-        // service worker/PWA documentation.
-        navigator.serviceWorker.ready.then(() => {
-          console.log(
-            "This web app is being served cache-first by a service " +
-              "worker. To learn more, visit https://bit.ly/CRA-PWA"
-          )
+      // Set up session management
+      if ("BroadcastChannel" in window) {
+        const sessionChannel = new BroadcastChannel(SESSION_CHANNEL)
+        const authChannel = new BroadcastChannel("auth-channel")
+
+        // Generate a unique session ID
+        const sessionId = Date.now().toString()
+        localStorage.setItem("sessionId", sessionId)
+
+        // Broadcast new session
+        sessionChannel.postMessage({
+          type: "NEW_SESSION",
+          sessionId,
+          timestamp: Date.now(),
         })
-      } else {
-        // Is not localhost. Just register service worker
-        registerValidSW(swUrl, config)
+
+        // Listen for other sessions
+        sessionChannel.onmessage = event => {
+          const currentSessionId = localStorage.getItem("sessionId")
+          if (
+            event.data.type === "NEW_SESSION" &&
+            event.data.sessionId !== currentSessionId
+          ) {
+            // If another session is detected and it's newer, log out this session
+            if (event.data.timestamp > parseInt(currentSessionId)) {
+              localStorage.clear()
+              sessionStorage.clear()
+              window.location.href = "/login?reason=multiple_sessions"
+            }
+          }
+        }
+
+        // Handle auth errors
+        authChannel.onmessage = event => {
+          if (event.data.type === "AUTH_ERROR") {
+            localStorage.clear()
+            sessionStorage.clear()
+            if (!window.location.pathname.includes("/login")) {
+              window.location.href = "/login?reason=auth_error"
+            }
+          }
+        }
+
+        // Clean up on page unload
+        window.addEventListener("unload", () => {
+          sessionChannel.close()
+          authChannel.close()
+        })
       }
     })
   }
@@ -58,33 +224,29 @@ function registerValidSW(swUrl, config) {
   navigator.serviceWorker
     .register(swUrl)
     .then(registration => {
+      // Check for updates on page load
+      registration.update()
+
+      // Set up periodic updates
+      setInterval(() => {
+        registration.update()
+      }, 1000 * 60 * 60) // Check for updates every hour
+
       registration.onupdatefound = () => {
         const installingWorker = registration.installing
         if (installingWorker == null) {
           return
         }
+
         installingWorker.onstatechange = () => {
           if (installingWorker.state === "installed") {
             if (navigator.serviceWorker.controller) {
-              // At this point, the updated precached content has been fetched,
-              // but the previous service worker will still serve the older
-              // content until all client tabs are closed.
-              console.log(
-                "New content is available and will be used when all " +
-                  "tabs for this page are closed. See https://bit.ly/CRA-PWA."
-              )
-
-              // Execute callback
+              // New content available
               if (config && config.onUpdate) {
                 config.onUpdate(registration)
               }
             } else {
-              // At this point, everything has been precached.
-              // It's the perfect time to display a
-              // "Content is cached for offline use." message.
-              console.log("Content is cached for offline use.")
-
-              // Execute callback
+              // Content cached for offline use
               if (config && config.onSuccess) {
                 config.onSuccess(registration)
               }
@@ -95,36 +257,6 @@ function registerValidSW(swUrl, config) {
     })
     .catch(error => {
       console.error("Error during service worker registration:", error)
-    })
-}
-
-function checkValidServiceWorker(swUrl, config) {
-  // Check if the service worker can be found. If it can't reload the page.
-  fetch(swUrl, {
-    headers: { "Service-Worker": "script" },
-  })
-    .then(response => {
-      // Ensure service worker exists, and that we really are getting a JS file.
-      const contentType = response.headers.get("content-type")
-      if (
-        response.status === 404 ||
-        (contentType != null && contentType.indexOf("javascript") === -1)
-      ) {
-        // No service worker found. Probably a different app. Reload the page.
-        navigator.serviceWorker.ready.then(registration => {
-          registration.unregister().then(() => {
-            window.location.reload()
-          })
-        })
-      } else {
-        // Service worker found. Proceed as normal.
-        registerValidSW(swUrl, config)
-      }
-    })
-    .catch(() => {
-      console.log(
-        "No internet connection found. App is running in offline mode."
-      )
     })
 }
 

@@ -1,6 +1,5 @@
 import React, { useEffect } from "react"
 import PropTypes from "prop-types"
-import withRouter from "components/Common/withRouter"
 import { logoutUser } from "services/auth"
 import { useNavigate } from "react-router-dom"
 import useAuth from "hooks/useAuth"
@@ -48,4 +47,4 @@ Logout.propTypes = {
   history: PropTypes.object,
 }
 
-export default withRouter(Logout)
+export default Logout

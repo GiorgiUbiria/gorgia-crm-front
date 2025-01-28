@@ -1,7 +1,6 @@
 import React from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Card, CardBody, Container, Row, Col } from "reactstrap"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import { useGetDepartmentHeadDaily } from "queries/daily"
 import CommentThread from "./components/CommentThread"
 import CommentSection from "./components/CommentSection"
@@ -59,10 +58,6 @@ const DailyInner = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs
-          title="დღიური შეფასება"
-          breadcrumbItem={daily?.name || ""}
-        />
         {daily && (
           <Row>
             <Col>

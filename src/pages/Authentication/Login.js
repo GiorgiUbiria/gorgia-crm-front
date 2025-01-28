@@ -1,7 +1,6 @@
 import PropTypes from "prop-types"
 import React, { useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import withRouter from "components/Common/withRouter"
 import * as Yup from "yup"
 import { useFormik } from "formik"
 import { useLogin } from "../../queries/auth"
@@ -192,7 +191,7 @@ const Login = () => {
   )
 }
 
-export default withRouter(Login)
+export default Login
 
 Login.propTypes = {
   history: PropTypes.object,

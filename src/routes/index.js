@@ -60,9 +60,7 @@ import NotesPage from "pages/NotesPage"
 import ProfilePage from "pages/ProfilePage"
 import VipLeadDetailPage from "pages/VipLeadsPage/VipLeadDetailPage"
 import VipLeadsPage from "pages/VipLeadsPage/VipLeadsPage"
-import VisitorsTraffic from "pages/VisitorsTraffic/VisitorsTraffic"
 import ArchivePage from "../pages/ArchivePage"
-import ForgetPwd from "../pages/Authentication/ForgetPassword"
 import Login from "../pages/Authentication/Login"
 import Logout from "../pages/Authentication/Logout"
 import Register from "../pages/Authentication/Register"
@@ -107,13 +105,6 @@ const adminRoutes = {
     archive: {
       path: "/admin/archive",
       component: withProtectedRoute(<ArchivePage />, "role:admin"),
-    },
-    visitors: {
-      path: "/admin/visitors",
-      component: withProtectedRoute(
-        <VisitorsTraffic />,
-        "role:admin|role:department_head|role:hr_member"
-      ),
     },
   },
 }
@@ -516,7 +507,6 @@ const authProtectedRoutes = [
 const publicRoutes = [
   { path: "/auth/login", component: <Login /> },
   { path: "/auth/logout", component: <Logout /> },
-  { path: "/auth/forgot-password", component: <ForgetPwd /> },
   { path: "/auth/register", component: <Register /> },
 ]
 

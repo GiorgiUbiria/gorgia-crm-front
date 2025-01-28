@@ -1,6 +1,5 @@
 import React from "react"
 import PropTypes from "prop-types"
-import { useTranslation } from "react-i18next"
 import NoAvatarIcon from "../../../assets/images/no-avatar.jpg"
 
 const roleNameMapping = {
@@ -16,17 +15,14 @@ const roleNameMapping = {
 }
 
 const ProfileHeader = ({ userData, onImageChange }) => {
-  const { t } = useTranslation()
   const profileImageSrc = userData?.profile_image
     ? `${process.env.REACT_APP_BASE_URL}/${userData.profile_image}`
     : NoAvatarIcon
 
   return (
     <header className="relative bg-gradient-to-br from-blue-500 to-blue-700 dark:!from-blue-600 dark:!to-blue-900 rounded-2xl p-6 sm:p-8 shadow-xl overflow-hidden group">
-      {/* Background pattern */}
       <div className="absolute inset-0 bg-white/5 opacity-50" />
 
-      {/* Content */}
       <div className="relative flex flex-col sm:flex-row items-center gap-6 w-full">
         <div className="relative group/photo">
           <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden ring-4 ring-white/20 transition-all duration-300 group-hover/photo:ring-white/40 transform group-hover/photo:scale-[1.02]">
@@ -39,9 +35,7 @@ const ProfileHeader = ({ userData, onImageChange }) => {
               htmlFor="profile-image-upload"
               className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-all duration-300 cursor-pointer backdrop-blur-sm"
             >
-              <span className="text-white text-sm font-medium">
-                {t("შეცვლა")}
-              </span>
+              <span className="text-white text-sm font-medium">{"შეცვლა"}</span>
             </label>
             <input
               id="profile-image-upload"
@@ -52,7 +46,6 @@ const ProfileHeader = ({ userData, onImageChange }) => {
             />
           </div>
 
-          {/* Photo upload indicator */}
           <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center shadow-lg transform scale-0 group-hover/photo:scale-100 transition-transform duration-200">
             <svg
               className="w-4 h-4 text-white"

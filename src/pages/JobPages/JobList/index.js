@@ -8,7 +8,7 @@ import TaskModal from "./TaskModal"
 import AssignModal from "./AssignModal"
 import PaginationControls from "./PaginationControls"
 import TaskTable from "./TaskTable"
-import Spinners from "../../../components/Common/Spinner"
+import CrmSpinner from "components/CrmSpinner"
 
 import {
   useTaskQueries,
@@ -220,7 +220,7 @@ const TaskList = () => {
       />
 
       {isLoading ? (
-        <Spinners setLoading={() => {}} />
+        <CrmSpinner />
       ) : (
         <Row>
           <Col xs="12">

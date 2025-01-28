@@ -18,34 +18,34 @@ import {
   LuMessageSquare,
 } from "react-icons/lu"
 
-const getMenuItems = (t, can) => {
+const getMenuItems = can => {
   const menuItems = [
     {
       to: "/dashboard",
       icon: LuHouse,
-      label: t("მთავარი გვერდი"),
+      label: "მთავარი გვერდი",
     },
     {
       key: "admin",
       icon: BsGear,
-      label: t("სამართავი პანელი"),
+      label: "სამართავი პანელი",
       submenu: [
         {
           to: "/admin/dashboard",
           icon: LuLayoutDashboard,
-          label: t("მთავარი"),
+          label: "მთავარი",
           show: () => can("role:admin|role:department_head|department:8"),
         },
         {
           to: "/admin/approvals",
           icon: LuShieldCheck,
-          label: t("ვიზირება"),
+          label: "ვიზირება",
           show: () => can("role:admin"),
         },
         {
           to: "/admin/archive",
           icon: LuArchive,
-          label: t("არქივი"),
+          label: "არქივი",
           show: () => can("role:admin"),
         },
       ],
@@ -53,38 +53,38 @@ const getMenuItems = (t, can) => {
     {
       to: "/profile",
       icon: BsPerson,
-      label: t("პროფილი"),
+      label: "პროფილი",
     },
     {
       to: "/tools/daily-results",
       icon: LuClipboardList,
-      label: t("დეპარტამენტის დღის შედეგები"),
+      label: "დეპარტამენტის დღის შედეგები",
       show: () => can("role:admin|role:department_head"),
     },
     {
       to: "/tools/inner-daily-results",
       icon: LuClipboardList,
-      label: t("დღის შედეგები"),
+      label: "დღის შედეგები",
     },
     {
       key: "applications",
       icon: LuFileText,
-      label: t("განცხადებები"),
+      label: "განცხადებები",
       submenu: [
         {
           key: "internalPurchases",
-          label: t("შიდა შესყიდვები"),
+          label: "შიდა შესყიდვები",
           icon: LuShoppingCart,
           to: "/applications/purchases",
           submenu: [
             {
               to: "/applications/purchases/new",
-              label: t("დამატება"),
+              label: "დამატება",
               icon: LuPlus,
             },
             {
               to: "/applications/purchases/approve",
-              label: t("ვიზირება"),
+              label: "ვიზირება",
               icon: LuShieldCheck,
               show: () =>
                 can(
@@ -93,7 +93,7 @@ const getMenuItems = (t, can) => {
             },
             {
               to: "/applications/purchases/archive",
-              label: t("არქივი"),
+              label: "არქივი",
               icon: LuArchive,
               show: () =>
                 can(
@@ -102,31 +102,31 @@ const getMenuItems = (t, can) => {
             },
             {
               to: "/applications/purchases/my-requests",
-              label: t("გაგზავნილი"),
+              label: "გაგზავნილი",
               icon: LuFileText,
             },
           ],
         },
         {
           key: "business-trip",
-          label: t("მივლინება"),
+          label: "მივლინება",
           icon: LuPlane,
           to: "/applications/business-trip",
           submenu: [
             {
               to: "/applications/business-trip/new",
-              label: t("დამატება"),
+              label: "დამატება",
               icon: LuPlus,
             },
             {
               to: "/applications/business-trip/approve",
-              label: t("ვიზირება"),
+              label: "ვიზირება",
               icon: LuShieldCheck,
               show: () => can("role:admin|role:department_head"),
             },
             {
               to: "/applications/business-trip/archive",
-              label: t("არქივი"),
+              label: "არქივი",
               icon: LuArchive,
               show: () =>
                 can(
@@ -135,31 +135,31 @@ const getMenuItems = (t, can) => {
             },
             {
               to: "/applications/business-trip/my-requests",
-              label: t("გაგზავნილი"),
+              label: "გაგზავნილი",
               icon: LuFileText,
             },
           ],
         },
         {
           key: "vacation",
-          label: t("შვებულება"),
+          label: "შვებულება",
           icon: LuCalendarDays,
           to: "/applications/vacation",
           submenu: [
             {
               to: "/applications/vacation/new",
-              label: t("დამატება"),
+              label: "დამატება",
               icon: LuPlus,
             },
             {
               to: "/applications/vacation/approve",
-              label: t("ვიზირება"),
+              label: "ვიზირება",
               icon: LuShieldCheck,
               show: () => can("role:admin|role:department_head"),
             },
             {
               to: "/applications/vacation/archive",
-              label: t("არქივი"),
+              label: "არქივი",
               icon: LuArchive,
               show: () =>
                 can(
@@ -168,7 +168,7 @@ const getMenuItems = (t, can) => {
             },
             {
               to: "/applications/vacation/my-requests",
-              label: t("გაგზავნილი"),
+              label: "გაგზავნილი",
               icon: LuFileText,
             },
           ],
@@ -178,17 +178,17 @@ const getMenuItems = (t, can) => {
     {
       key: "hrDocs",
       icon: LuFolder,
-      label: t("HR დოკუმენტები"),
+      label: "HR დოკუმენტები",
       submenu: [
         {
           to: "/hr/documents/new",
           icon: LuPlus,
-          label: t("ახალი მოთხოვნა"),
+          label: "ახალი მოთხოვნა",
         },
         {
           to: "/hr/documents/approve",
           icon: LuShieldCheck,
-          label: t("ვიზირება"),
+          label: "ვიზირება",
           show: () =>
             can(
               "role:admin|role:department_head,department:8|role:department_head_assistant,department:8"
@@ -197,12 +197,12 @@ const getMenuItems = (t, can) => {
         {
           to: "/hr/documents/archive",
           icon: LuArchive,
-          label: t("არქივი"),
+          label: "არქივი",
           show: () => can("role:admin|department:8"),
         },
         {
           to: "/hr/documents/my-requests",
-          label: t("ჩემი მოთხოვნები"),
+          label: "ჩემი მოთხოვნები",
           icon: LuFileText,
         },
       ],
@@ -210,28 +210,28 @@ const getMenuItems = (t, can) => {
     {
       key: "agreements",
       icon: LuFileCode,
-      label: t("ხელშეკრულებები"),
+      label: "ხელშეკრულებები",
       submenu: [
         {
           key: "request",
-          label: t("მოთხოვნა"),
+          label: "მოთხოვნა",
           icon: LuPlus,
           to: "/legal/contracts/new",
         },
         {
           key: "purchase",
-          label: t("ნასყიდობის ხელშეკრულება"),
+          label: "ნასყიდობის ხელშეკრულება",
           icon: LuFileCode,
           submenu: [
             {
               to: "/legal/contracts/purchase/approve",
-              label: t("ვიზირება"),
+              label: "ვიზირება",
               icon: LuShieldCheck,
               show: () => can("role:admin|role:department_head"),
             },
             {
               to: "/legal/contracts/purchase/archive",
-              label: t("არქივი"),
+              label: "არქივი",
               icon: LuArchive,
               show: () =>
                 can(
@@ -240,25 +240,25 @@ const getMenuItems = (t, can) => {
             },
             {
               to: "/legal/contracts/purchase/my-requests",
-              label: t("გაგზავნილი"),
+              label: "გაგზავნილი",
               icon: LuFileText,
             },
           ],
         },
         {
           key: "delivery",
-          label: t("მიღება-ჩაბარების აქტი"),
+          label: "მიღება-ჩაბარების აქტი",
           icon: LuFileCode,
           submenu: [
             {
               to: "/legal/contracts/delivery/approve",
-              label: t("ვიზირება"),
+              label: "ვიზირება",
               icon: LuShieldCheck,
               show: () => can("role:admin|role:department_head"),
             },
             {
               to: "/legal/contracts/delivery/archive",
-              label: t("არქივი"),
+              label: "არქივი",
               icon: LuArchive,
               show: () =>
                 can(
@@ -267,25 +267,25 @@ const getMenuItems = (t, can) => {
             },
             {
               to: "/legal/contracts/delivery/my-requests",
-              label: t("გაგზავნილი"),
+              label: "გაგზავნილი",
               icon: LuFileText,
             },
           ],
         },
         {
           key: "marketing",
-          label: t("მარკეტინგული მომსახურების ხელშეკრულება"),
+          label: "მარკეტინგული მომსახურების ხელშეკრულება",
           icon: LuFileCode,
           submenu: [
             {
               to: "/legal/contracts/marketing/approve",
-              label: t("ვიზირება"),
+              label: "ვიზირება",
               icon: LuShieldCheck,
               show: () => can("role:admin|role:department_head"),
             },
             {
               to: "/legal/contracts/marketing/archive",
-              label: t("არქივი"),
+              label: "არქივი",
               icon: LuArchive,
               show: () =>
                 can(
@@ -294,25 +294,25 @@ const getMenuItems = (t, can) => {
             },
             {
               to: "/legal/contracts/marketing/my-requests",
-              label: t("გაგზავნილი"),
+              label: "გაგზავნილი",
               icon: LuFileText,
             },
           ],
         },
         {
           key: "service",
-          label: t("მომსახურების ხელშეკრულება"),
+          label: "მომსახურების ხელშეკრულება",
           icon: LuFileCode,
           submenu: [
             {
               to: "/legal/contracts/service/approve",
-              label: t("ვიზირება"),
+              label: "ვიზირება",
               icon: LuShieldCheck,
               show: () => can("role:admin|role:department_head"),
             },
             {
               to: "/legal/contracts/service/archive",
-              label: t("არქივი"),
+              label: "არქივი",
               icon: LuArchive,
               show: () =>
                 can(
@@ -321,25 +321,25 @@ const getMenuItems = (t, can) => {
             },
             {
               to: "/legal/contracts/service/my-requests",
-              label: t("გაგზავნილი"),
+              label: "გაგზავნილი",
               icon: LuFileText,
             },
           ],
         },
         {
           key: "local",
-          label: t("ადგილობრივი შესყიდვის ხელშეკრულება"),
+          label: "ადგილობრივი შესყიდვის ხელშეკრულება",
           icon: LuFileCode,
           submenu: [
             {
               to: "/legal/contracts/local/approve",
-              label: t("ვიზირება"),
+              label: "ვიზირება",
               icon: LuShieldCheck,
               show: () => can("role:admin|role:department_head"),
             },
             {
               to: "/legal/contracts/local/archive",
-              label: t("არქივი"),
+              label: "არქივი",
               icon: LuArchive,
               show: () =>
                 can(
@@ -348,7 +348,7 @@ const getMenuItems = (t, can) => {
             },
             {
               to: "/legal/contracts/local/my-requests",
-              label: t("გაგზავნილი"),
+              label: "გაგზავნილი",
               icon: LuFileText,
             },
           ],
@@ -358,39 +358,37 @@ const getMenuItems = (t, can) => {
     {
       to: "/support/it-tasks",
       icon: LuHeadset,
-      label: t("IT მხარდაჭერა"),
+      label: "IT მხარდაჭერა",
     },
     {
       to: "/support/farm-tasks",
       icon: LuPencilRuler,
-      label: t("სამეურნეო Tasks"),
+      label: "სამეურნეო Tasks",
     },
     {
       to: "/support/legal-tasks",
       icon: LuFileCode,
-      label: t("იურიდიული Tasks"),
+      label: "იურიდიული Tasks",
     },
     {
       to: "/tools/notes",
       icon: LuNotebook,
-      label: t("ჩანაწერები"),
+      label: "ჩანაწერები",
     },
     {
       to: "/communication/chat",
       icon: LuMessageSquare,
-      label: t("ჩატი"),
+      label: "ჩატი",
     },
   ]
 
   const filterMenuItems = items => {
     return items
       .map(item => {
-        // If item has a show function, check if it should be shown
         if (item.show && !item.show()) {
           return null
         }
 
-        // If item has submenu, filter it recursively
         if (item.submenu) {
           const filteredSubmenu = filterMenuItems(item.submenu)
           if (filteredSubmenu.length > 0) {
@@ -401,13 +399,13 @@ const getMenuItems = (t, can) => {
 
         return item
       })
-      .filter(Boolean) // Remove null items
+      .filter(Boolean)
   }
 
   return filterMenuItems(menuItems)
 }
 
-export const getMenuConfig = (t, auth) => {
+export const getMenuConfig = auth => {
   if (!auth?.can) return []
-  return getMenuItems(t, auth.can)
+  return getMenuItems(auth.can)
 }

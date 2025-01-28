@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useRef, useCallback, useMemo, useState } from "react"
 import { useLocation } from "react-router-dom"
-import { withTranslation } from "react-i18next"
 import useAuth from "hooks/useAuth"
 import MenuItem from "./MenuItem"
 import { getMenuConfig } from "./menuConfig"
@@ -9,14 +8,14 @@ import "../customScrollbars.css"
 import PropTypes from "prop-types"
 import CrmSpinner from "components/CrmSpinner"
 
-const SidebarContent = ({ t, onLinkClick }) => {
+const SidebarContent = ({ onLinkClick }) => {
   const ref = useRef()
   const location = useLocation()
   const auth = useAuth()
   const [expandedMenus, setExpandedMenus] = useState({})
   const [activeMenus, setActiveMenus] = useState([])
 
-  const menuConfig = useMemo(() => getMenuConfig(t, auth) || [], [t, auth])
+  const menuConfig = useMemo(() => getMenuConfig(auth) || [], [auth])
 
   const isMenuActive = useCallback((item, currentPath) => {
     if (!item?.to) return false
@@ -196,8 +195,7 @@ const SidebarContent = ({ t, onLinkClick }) => {
 }
 
 SidebarContent.propTypes = {
-  t: PropTypes.func.isRequired,
   onLinkClick: PropTypes.func.isRequired,
 }
 
-export default withTranslation()(React.memo(SidebarContent))
+export default React.memo(SidebarContent)

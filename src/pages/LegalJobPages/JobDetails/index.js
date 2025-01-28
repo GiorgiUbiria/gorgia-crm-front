@@ -8,7 +8,7 @@ import TaskActions from "./components/TaskActions"
 import TaskTimeline from "./components/TaskTimeline"
 import CommentSection from "./components/CommentSection"
 import useAuth from "hooks/useAuth"
-import Spinners from "../../../components/Common/Spinner"
+import CrmSpinner from "components/CrmSpinner"
 import { toast } from "store/zustand/toastStore"
 
 const JobDetails = () => {
@@ -71,7 +71,7 @@ const JobDetails = () => {
       <div className="page-content">
         <Container fluid>
           <div className="d-flex justify-content-center align-items-center min-vh-100">
-            <Spinners />
+            <CrmSpinner />
           </div>
         </Container>
       </div>

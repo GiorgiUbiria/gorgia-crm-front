@@ -6,7 +6,6 @@ const THEME_STORAGE_KEY = "app-theme-preference"
 export const useTheme = () => {
   const { isDarkMode, toggleTheme, setTheme } = useThemeStore()
 
-  // Handle system theme preference changes
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
 
@@ -18,7 +17,6 @@ export const useTheme = () => {
     return () => mediaQuery.removeEventListener("change", handleChange)
   }, [setTheme])
 
-  // Update theme when it changes
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.setAttribute("data-theme", "dark")

@@ -2,8 +2,7 @@ import React from "react"
 import { Link, useLocation } from "react-router-dom"
 import { ChevronRightIcon, HomeIcon } from "@heroicons/react/24/outline"
 import { getMenuConfig } from "./menuConfig"
-import { useTranslation } from "react-i18next"
-import { useSelector } from "react-redux"
+import useAuth from "hooks/useAuth"
 
 const AGREEMENT_TYPES = {
   purchase: "ნასყიდობის ხელშეკრულება",
@@ -117,14 +116,14 @@ const findBreadcrumbPath = (
   return false
 }
 
-const getBreadcrumbItems = (path, t, user) => {
-  const menuItems = getMenuConfig(t, user)
+const getBreadcrumbItems = (path, user) => {
+  const menuItems = getMenuConfig(user)
   const result = []
 
   if (path === "/tools/daily-results") {
     return [
       {
-        label: t("დეპარტამენტის დღის შედეგები"),
+        label: "დეპარტამენტის დღის შედეგები",
         path: path,
       },
     ]
@@ -132,7 +131,7 @@ const getBreadcrumbItems = (path, t, user) => {
   if (path === "/tools/inner-daily-results") {
     return [
       {
-        label: t("დღის შედეგები"),
+        label: "დღის შედეგები",
         path: path,
       },
     ]
@@ -141,11 +140,11 @@ const getBreadcrumbItems = (path, t, user) => {
   if (path === "/admin/dashboard") {
     return [
       {
-        label: t("სამართავი პანელი"),
+        label: "სამართავი პანელი",
         path: "/admin/dashboard",
       },
       {
-        label: t("მთავარი"),
+        label: "მთავარი",
         path: "/admin/dashboard",
       },
     ]
@@ -155,20 +154,20 @@ const getBreadcrumbItems = (path, t, user) => {
     const section = path.split("/").pop()
     return [
       {
-        label: t("HR დოკუმენტები"),
+        label: "HR დოკუმენტები",
         path: "/hr/documents",
       },
       {
         label:
           section === "approve"
-            ? t("ვიზირება")
+            ? "ვიზირება"
             : section === "archive"
-            ? t("არქივი")
+            ? "არქივი"
             : section === "my-requests"
-            ? t("ჩემი მოთხოვნები")
+            ? "ჩემი მოთხოვნები"
             : section === "new"
-            ? t("ახალი მოთხოვნა")
-            : t(section),
+            ? "ახალი მოთხოვნა"
+            : section,
         path: path,
       },
     ]
@@ -182,11 +181,11 @@ const getBreadcrumbItems = (path, t, user) => {
     if (AGREEMENT_TYPES[agreementType]) {
       const breadcrumbs = [
         {
-          label: t("ხელშეკრულებები"),
+          label: "ხელშეკრულებები",
           path: "/legal/contracts",
         },
         {
-          label: t(AGREEMENT_TYPES[agreementType]),
+          label: AGREEMENT_TYPES[agreementType],
           path: `/legal/contracts/${agreementType}`,
         },
       ]
@@ -195,14 +194,14 @@ const getBreadcrumbItems = (path, t, user) => {
         breadcrumbs.push({
           label:
             action === "approve"
-              ? t("ვიზირება")
+              ? "ვიზირება"
               : action === "archive"
-              ? t("არქივი")
+              ? "არქივი"
               : action === "my-requests"
-              ? t("გაგზავნილი")
+              ? "გაგზავნილი"
               : action === "new"
-              ? t("ახალი მოთხოვნა")
-              : t(action),
+              ? "ახალი მოთხოვნა"
+              : action,
           path: path,
         })
       }
@@ -217,15 +216,15 @@ const getBreadcrumbItems = (path, t, user) => {
     const action = parts[3]
 
     const applicationLabels = {
-      purchases: t("შიდა შესყიდვები"),
-      "business-trip": t("მივლინება"),
-      vacation: t("შვებულება"),
+      purchases: "შიდა შესყიდვები",
+      "business-trip": "მივლინება",
+      vacation: "შვებულება",
     }
 
     if (applicationLabels[applicationType]) {
       const breadcrumbs = [
         {
-          label: t("განცხადებები"),
+          label: "განცხადებები",
           path: "/applications",
         },
         {
@@ -238,13 +237,13 @@ const getBreadcrumbItems = (path, t, user) => {
         breadcrumbs.push({
           label:
             action === "approve"
-              ? t("ვიზირება")
+              ? "ვიზირება"
               : action === "archive"
-              ? t("არქივი")
+              ? "არქივი"
               : action === "my-requests"
-              ? t("გაგზავნილი")
+              ? "გაგზავნილი"
               : action === "new"
-              ? t("დამატება")
+              ? "დამატება"
               : t(action),
           path: path,
         })
@@ -259,15 +258,15 @@ const getBreadcrumbItems = (path, t, user) => {
   if (result.length === 0 && path.startsWith("/admin/")) {
     return [
       {
-        label: t("სამართავი პანელი"),
+        label: "სამართავი პანელი",
         path: "/admin/dashboard",
       },
       {
         label: path.includes("archive")
-          ? t("არქივი")
+          ? "არქივი"
           : path.includes("approvals")
-          ? t("ვიზირება")
-          : t("მთავარი"),
+          ? "ვიზირება"
+          : "მთავარი",
         path: path,
       },
     ]
@@ -282,9 +281,8 @@ const getBreadcrumbItems = (path, t, user) => {
 
 const Breadcrumbs = () => {
   const location = useLocation()
-  const { t } = useTranslation()
-  const user = useSelector(state => state.Profile.user)
-  const breadcrumbs = getBreadcrumbItems(location.pathname, t, user)
+  const { user } = useAuth()
+  const breadcrumbs = getBreadcrumbItems(location.pathname, user)
 
   if (breadcrumbs.length === 0) {
     return null
@@ -302,7 +300,7 @@ const Breadcrumbs = () => {
             className="inline-flex items-center text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 whitespace-nowrap"
           >
             <HomeIcon className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2 flex-shrink-0" />
-            <span className="hidden xs:inline">{t("მთავარი")}</span>
+            <span className="hidden xs:inline">მთავარი</span>
           </Link>
         </li>
         {breadcrumbs.map((item, index) => (
