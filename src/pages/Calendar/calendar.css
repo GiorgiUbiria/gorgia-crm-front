@@ -1,0 +1,102 @@
+.rbc-calendar {
+  @apply font-sans;
+}
+
+.rbc-calendar .rbc-toolbar button {
+  @apply rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+.rbc-calendar .rbc-toolbar button.rbc-active {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.dark .rbc-calendar .rbc-toolbar button {
+  @apply border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600;
+}
+
+.dark .rbc-calendar .rbc-toolbar button.rbc-active {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.rbc-calendar .rbc-event {
+  @apply rounded-md bg-blue-600 text-white;
+}
+
+.dark .rbc-calendar .rbc-event {
+  @apply bg-blue-500;
+}
+
+.rbc-calendar .rbc-today {
+  @apply bg-blue-50;
+}
+
+.dark .rbc-calendar .rbc-today {
+  @apply bg-gray-700;
+}
+
+.rbc-calendar .rbc-off-range-bg {
+  @apply bg-gray-50;
+}
+
+.dark .rbc-calendar .rbc-off-range-bg {
+  @apply bg-gray-900;
+}
+
+.rbc-calendar .rbc-header {
+  @apply border-gray-200 font-medium text-gray-900;
+}
+
+.dark .rbc-calendar .rbc-header {
+  @apply border-gray-700 text-gray-200;
+}
+
+.rbc-calendar .rbc-month-view,
+.rbc-calendar .rbc-time-view {
+  @apply border-gray-200;
+}
+
+.dark .rbc-calendar .rbc-month-view,
+.dark .rbc-calendar .rbc-time-view {
+  @apply border-gray-700;
+}
+
+/* Additional styles for better UI */
+.rbc-calendar .rbc-event {
+  @apply shadow-sm;
+}
+
+.rbc-calendar .rbc-toolbar {
+  @apply mb-4;
+}
+
+.rbc-calendar .rbc-toolbar-label {
+  @apply text-lg font-medium;
+}
+
+.dark .rbc-calendar .rbc-toolbar-label {
+  @apply text-gray-200;
+}
+
+.rbc-calendar .rbc-agenda-view table.rbc-agenda-table {
+  @apply border-gray-200;
+}
+
+.dark .rbc-calendar .rbc-agenda-view table.rbc-agenda-table {
+  @apply border-gray-700;
+}
+
+.rbc-calendar .rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  @apply border-gray-200;
+}
+
+.dark .rbc-calendar .rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  @apply border-gray-700;
+}
+
+.rbc-calendar .rbc-time-view .rbc-time-content {
+  @apply border-gray-200;
+}
+
+.dark .rbc-calendar .rbc-time-view .rbc-time-content {
+  @apply border-gray-700;
+} 

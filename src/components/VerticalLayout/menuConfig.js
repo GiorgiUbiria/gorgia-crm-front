@@ -380,6 +380,11 @@ const getMenuItems = can => {
       icon: LuMessageSquare,
       label: "ჩატი",
     },
+    // {
+    //   to: "/tools/calendar",
+    //   icon: LuCalendarDays,
+    //   label: "კალენდარი",
+    // },
   ]
 
   const filterMenuItems = items => {

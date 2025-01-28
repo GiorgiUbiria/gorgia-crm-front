@@ -64,7 +64,6 @@ import ArchivePage from "../pages/ArchivePage"
 import Login from "../pages/Authentication/Login"
 import Logout from "../pages/Authentication/Logout"
 import Register from "../pages/Authentication/Register"
-import Calendar from "../pages/Calendar/index"
 import Dashboard from "../pages/Dashboard/index"
 import TaskList from "../pages/JobPages/JobList"
 import VacationPageArchive from "pages/Applications/Vacation/VacationPageArchive"
@@ -72,7 +71,8 @@ import TripPageArchive from "pages/Applications/BusinessTrip/TripPageArchive"
 import HrPageArchive from "pages/HrDocuments/HrPageArchive"
 import CreateNote from "pages/NotesEditor/CreateNote"
 import EditNote from "pages/NotesEditor/EditNote"
-import ChatRoom from "../pages/ChatRoom"
+import Calendar from "pages/Calendar"
+import ChatRoom from "pages/ChatRoom"
 
 const withProtectedRoute = (component, permission = "") => (
   <ProtectedRoute permission={permission}>{component}</ProtectedRoute>
