@@ -10,6 +10,7 @@ import {
   removeEventGuest,
   completeEventTask,
   completeAllEventTasks,
+  downloadEventAttachment,
   getEventComments,
   createEventComment,
   updateEventComment,
@@ -20,14 +21,15 @@ export const calendarKeys = {
   all: ["calendar"],
   events: () => [...calendarKeys.all, "events"],
   event: id => [...calendarKeys.all, "event", id],
-  comments: eventId => [...calendarKeys.all, eventId, "comments"],
+  comments: eventId => [...calendarKeys.all, "event", eventId, "comments"],
+  attachments: eventId => [...calendarKeys.all, "event", eventId, "attachments"],
 }
 
 // Calendar Events
-export const useGetCalendarEvents = (options = {}) => {
+export const useGetCalendarEvents = (params = {}, options = {}) => {
   return useQuery({
-    queryKey: calendarKeys.events(),
-    queryFn: getCalendarEvents,
+    queryKey: [...calendarKeys.events(), params],
+    queryFn: () => getCalendarEvents(params),
     ...options,
   })
 }
@@ -132,6 +134,13 @@ export const useCompleteAllEventTasks = () => {
   })
 }
 
+// Attachments
+export const useDownloadEventAttachment = () => {
+  return useMutation({
+    mutationFn: ({ eventId, attachmentId }) => downloadEventAttachment(eventId, attachmentId),
+  })
+}
+
 // Comments
 export const useGetEventComments = (eventId, options = {}) => {
   return useQuery({
@@ -176,8 +185,8 @@ export const useDeleteEventComment = () => {
 }
 
 // Composite Hooks
-export const useCalendarQueries = (options = {}) => {
-  const { data: events = [], isLoading: isEventsLoading } = useGetCalendarEvents({
+export const useCalendarQueries = (params = {}, options = {}) => {
+  const { data: events = [], isLoading: isEventsLoading } = useGetCalendarEvents(params, {
     ...options,
     select: data => data || []
   })

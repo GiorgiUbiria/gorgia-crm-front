@@ -59,12 +59,13 @@ const Calendar = () => {
     setSelectedEvent(null)
   }
 
-  const calendarEvents = events?.map(event => ({
-    ...event,
-    start: new Date(event.start_time),
-    end: new Date(event.end_time),
-    title: event.title,
-  })) || []
+  const calendarEvents =
+    events?.map(event => ({
+      ...event,
+      start: new Date(event.start_time),
+      end: new Date(event.end_time),
+      title: event.title,
+    })) || []
 
   if (isEventsLoading) {
     return (

@@ -30,8 +30,10 @@ const recurrenceFrequencies = [
 ]
 
 const validationSchema = Yup.object().shape({
-  title: Yup.string().required("სათაური სავალდებულოა"),
-  description: Yup.string(),
+  title: Yup.string()
+    .required("სათაური სავალდებულოა")
+    .max(255, "სათაური არ უნდა აღემატებოდეს 255 სიმბოლოს"),
+  description: Yup.string().nullable(),
   start_time: Yup.date().required("დაწყების დრო სავალდებულოა"),
   end_time: Yup.date()
     .required("დასრულების დრო სავალდებულოა")
@@ -39,29 +41,56 @@ const validationSchema = Yup.object().shape({
       Yup.ref("start_time"),
       "დასრულების დრო უნდა იყოს დაწყების დროის შემდეგ"
     ),
-  event_type: Yup.string().required("ღონისძიების ტიპი სავალდებულოა"),
-  reminder_before: Yup.string().nullable(),
+  event_type: Yup.string()
+    .required("ღონისძიების ტიპი სავალდებულოა")
+    .oneOf(
+      ["single", "recurring"],
+      "ღონისძიების ტიპი უნდა იყოს ერთჯერადი ან განმეორებადი"
+    ),
+  reminder_before: Yup.string()
+    .nullable()
+    .oneOf(["15", "30", "60"], "შეხსენება უნდა იყოს 15, 30 ან 60 წუთით ადრე"),
   is_task_event: Yup.boolean(),
-  location: Yup.string(),
-  guests: Yup.array().of(Yup.number()),
+  location: Yup.string().nullable(),
+  guests: Yup.array()
+    .transform((value, originalValue) => {
+      if (originalValue && !Array.isArray(originalValue)) {
+        return [originalValue]
+      }
+      return value
+    })
+    .of(Yup.number().required())
+    .nullable(),
   attachments: Yup.array().of(
-    Yup.mixed().test("fileSize", "ფაილი ძალიან დიდია", value => {
+    Yup.mixed().test("fileSize", "ფაილი არ უნდა აღემატებოდეს 10MB-ს", value => {
       if (!value) return true
-      return value.size <= 5000000 // 5MB
+      return value.size <= 10 * 1024 * 1024 // 10MB
     })
   ),
   recurrence_rule: Yup.object().when("event_type", {
     is: "recurring",
     then: Yup.object().shape({
-      frequency: Yup.string().required("გამეორების სიხშირე სავალდებულოა"),
-      interval: Yup.number().min(1, "ინტერვალი უნდა იყოს მინიმუმ 1"),
-      until: Yup.date().nullable(),
+      frequency: Yup.string()
+        .required("გამეორების სიხშირე სავალდებულოა")
+        .oneOf(
+          ["daily", "weekly", "monthly", "yearly"],
+          "გამეორების სიხშირე უნდა იყოს დღიური, კვირეული, თვიური ან წლიური"
+        ),
+      interval: Yup.number()
+        .required("გამეორების ინტერვალი სავალდებულოა")
+        .min(1, "ინტერვალი უნდა იყოს მინიმუმ 1"),
+      until: Yup.date()
+        .nullable()
+        .min(
+          Yup.ref("start_time"),
+          "გამეორების დასრულების თარიღი უნდა იყოს დაწყების დროის შემდეგ"
+        ),
     }),
   }),
   tasks: Yup.array().of(
     Yup.object().shape({
       title: Yup.string().required("დავალების სათაური სავალდებულოა"),
-      description: Yup.string(),
+      description: Yup.string().nullable(),
     })
   ),
 })
@@ -93,30 +122,72 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
       tasks: [],
     },
     validationSchema,
+    validate: values => {
+      console.log('Validation running with values:', values)
+      console.log('Guests value:', values.guests)
+    },
     onSubmit: async values => {
+      console.log('Form submitting with values:', values)
+      console.log('Guests being submitted:', values.guests)
+      
       try {
         const formData = new FormData()
-        Object.keys(values).forEach(key => {
-          if (key === "attachments") {
-            values.attachments.forEach(file => {
-              formData.append("attachments[]", file)
-            })
-          } else if (key === "tasks") {
-            formData.append(
-              "tasks",
-              JSON.stringify(
-                tasks.map(task => ({
-                  title: task.title,
-                  description: task.description || "",
-                }))
+
+        // Handle basic fields
+        const basicFields = [
+          "title",
+          "description",
+          "start_time",
+          "end_time",
+          "event_type",
+          "reminder_before",
+          "is_task_event",
+          "location",
+        ]
+
+        basicFields.forEach(field => {
+          if (values[field] !== undefined) {
+            if (field === "start_time" || field === "end_time") {
+              formData.append(
+                field,
+                format(values[field], "yyyy-MM-dd'T'HH:mm:ss")
               )
-            )
-          } else if (key === "guests") {
-            formData.append("guests", JSON.stringify(values.guests))
-          } else {
-            formData.append(key, JSON.stringify(values[key]))
+            } else {
+              formData.append(field, values[field])
+            }
           }
         })
+
+        // Handle recurrence rule
+        if (values.event_type === "recurring" && values.recurrence_rule) {
+          formData.append(
+            "recurrence_rule",
+            JSON.stringify({
+              ...values.recurrence_rule,
+              until: values.recurrence_rule.until
+                ? format(values.recurrence_rule.until, "yyyy-MM-dd'T'HH:mm:ss")
+                : null,
+            })
+          )
+        }
+
+        // Handle guests
+        if (values.guests) {
+          const guestArray = Array.isArray(values.guests) ? values.guests : [values.guests]
+          formData.append("guests", JSON.stringify(guestArray))
+        }
+
+        // Handle tasks
+        if (tasks?.length) {
+          formData.append("tasks", JSON.stringify(tasks))
+        }
+
+        // Handle attachments
+        if (attachments?.length) {
+          attachments.forEach(file => {
+            formData.append("attachments[]", file)
+          })
+        }
 
         if (event) {
           await updateEvent.mutateAsync({
@@ -170,16 +241,27 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
     setTasks(newTasks)
   }
 
-  const handleFileChange = (e) => {
+  const handleFileChange = e => {
     const files = Array.from(e.target.files)
-    setAttachments([...attachments, ...files])
-    formik.setFieldValue("attachments", [...formik.values.attachments, ...files])
+    const validFiles = files.filter(file => file.size <= 10 * 1024 * 1024) // 10MB limit
+    setAttachments([...attachments, ...validFiles])
+    formik.setFieldValue("attachments", [
+      ...formik.values.attachments,
+      ...validFiles,
+    ])
   }
 
-  const handleRemoveFile = (index) => {
+  const handleRemoveFile = index => {
     const newAttachments = attachments.filter((_, i) => i !== index)
     setAttachments(newAttachments)
     formik.setFieldValue("attachments", newAttachments)
+  }
+
+  const handleGuestChange = (value) => {
+    console.log('Guest selection changed:', value)
+    // Ensure value is always an array
+    const guestArray = value ? (Array.isArray(value) ? value : [value]) : []
+    formik.setFieldValue("guests", guestArray)
   }
 
   return (
@@ -262,9 +344,18 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
               className={classNames(
                 "mt-1 block w-full rounded-md border px-3 py-2 text-sm",
                 "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
-                "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white",
+                {
+                  "border-red-500":
+                    formik.touched.start_time && formik.errors.start_time,
+                }
               )}
             />
+            {formik.touched.start_time && formik.errors.start_time && (
+              <div className="mt-1 text-sm text-red-500">
+                {formik.errors.start_time}
+              </div>
+            )}
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:!text-gray-300">
@@ -280,9 +371,18 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
               className={classNames(
                 "mt-1 block w-full rounded-md border px-3 py-2 text-sm",
                 "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
-                "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white",
+                {
+                  "border-red-500":
+                    formik.touched.end_time && formik.errors.end_time,
+                }
               )}
             />
+            {formik.touched.end_time && formik.errors.end_time && (
+              <div className="mt-1 text-sm text-red-500">
+                {formik.errors.end_time}
+              </div>
+            )}
           </div>
         </div>
 
@@ -312,6 +412,10 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
                 onChange={value =>
                   formik.setFieldValue("recurrence_rule.frequency", value)
                 }
+                error={
+                  formik.touched.recurrence_rule?.frequency &&
+                  formik.errors.recurrence_rule?.frequency
+                }
               />
             </div>
             <div>
@@ -327,9 +431,20 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
                 className={classNames(
                   "mt-1 block w-full rounded-md border px-3 py-2 text-sm",
                   "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
-                  "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                  "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white",
+                  {
+                    "border-red-500":
+                      formik.touched.recurrence_rule?.interval &&
+                      formik.errors.recurrence_rule?.interval,
+                  }
                 )}
               />
+              {formik.touched.recurrence_rule?.interval &&
+                formik.errors.recurrence_rule?.interval && (
+                  <div className="mt-1 text-sm text-red-500">
+                    {formik.errors.recurrence_rule.interval}
+                  </div>
+                )}
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 dark:!text-gray-300">
@@ -355,9 +470,20 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
                 className={classNames(
                   "mt-1 block w-full rounded-md border px-3 py-2 text-sm",
                   "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
-                  "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                  "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white",
+                  {
+                    "border-red-500":
+                      formik.touched.recurrence_rule?.until &&
+                      formik.errors.recurrence_rule?.until,
+                  }
                 )}
               />
+              {formik.touched.recurrence_rule?.until &&
+                formik.errors.recurrence_rule?.until && (
+                  <div className="mt-1 text-sm text-red-500">
+                    {formik.errors.recurrence_rule.until}
+                  </div>
+                )}
             </div>
           </div>
         )}
@@ -371,6 +497,9 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
             options={reminderOptions}
             value={formik.values.reminder_before}
             onChange={value => formik.setFieldValue("reminder_before", value)}
+            error={
+              formik.touched.reminder_before && formik.errors.reminder_before
+            }
           />
         </div>
 
@@ -400,13 +529,59 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
           <CrmSelect
             options={users.map(user => ({
               value: user.id,
-              label: user.name
+              label: user.name,
             }))}
             value={formik.values.guests}
-            onChange={value => formik.setFieldValue("guests", value)}
+            onChange={handleGuestChange}
             isMulti
+            isClearable
+            placeholder="აირჩიეთ მონაწილეები..."
+            noOptionsMessage={() => "მონაწილეები არ მოიძებნა"}
             className="dark:!bg-gray-700"
+            classNamePrefix="select"
+            styles={{
+              multiValue: (base) => ({
+                ...base,
+                backgroundColor: 'rgb(243 244 246)',
+                '.dark &': {
+                  backgroundColor: 'rgb(55 65 81)',
+                }
+              }),
+              multiValueLabel: (base) => ({
+                ...base,
+                color: 'rgb(17 24 39)',
+                '.dark &': {
+                  color: 'rgb(243 244 246)',
+                }
+              }),
+              multiValueRemove: (base) => ({
+                ...base,
+                color: 'rgb(107 114 128)',
+                ':hover': {
+                  backgroundColor: 'rgb(229 231 235)',
+                  color: 'rgb(31 41 55)',
+                },
+                '.dark &': {
+                  color: 'rgb(156 163 175)',
+                  ':hover': {
+                    backgroundColor: 'rgb(75 85 99)',
+                    color: 'rgb(243 244 246)',
+                  }
+                }
+              })
+            }}
           />
+          {formik.touched.guests && formik.errors.guests && (
+            <div className="mt-1 text-sm text-red-500">
+              {formik.errors.guests}
+            </div>
+          )}
+          {/* Debug info */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-1 text-xs text-gray-500">
+              Current guests value: {JSON.stringify(formik.values.guests)}
+            </div>
+          )}
         </div>
 
         {/* Attachments */}
@@ -421,6 +596,7 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
               onChange={handleFileChange}
               className="hidden"
               id="file-upload"
+              accept="*/*"
             />
             <label
               htmlFor="file-upload"
@@ -440,7 +616,9 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
                   key={index}
                   className="flex items-center justify-between rounded-md border p-2 dark:!border-gray-600"
                 >
-                  <span className="text-sm dark:!text-gray-300">{file.name}</span>
+                  <span className="text-sm dark:!text-gray-300">
+                    {file.name} ({Math.round(file.size / 1024)}KB)
+                  </span>
                   <DialogButton
                     actionType="delete"
                     size="sm"
@@ -448,6 +626,11 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
                   />
                 </div>
               ))}
+            </div>
+          )}
+          {formik.touched.attachments && formik.errors.attachments && (
+            <div className="mt-1 text-sm text-red-500">
+              {formik.errors.attachments}
             </div>
           )}
         </div>
@@ -462,26 +645,41 @@ const EventDialog = ({ isOpen, onClose, selectedSlot, event }) => {
           </div>
           <div className="mt-2 space-y-3">
             {tasks.map((task, index) => (
-              <div key={index} className="flex gap-2">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={task.title}
-                    onChange={e =>
-                      handleTaskChange(index, "title", e.target.value)
-                    }
-                    placeholder="დავალების სათაური"
-                    className={classNames(
-                      "block w-full rounded-md border px-3 py-2 text-sm",
-                      "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
-                      "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
-                    )}
+              <div key={index} className="space-y-2">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={task.title}
+                      onChange={e =>
+                        handleTaskChange(index, "title", e.target.value)
+                      }
+                      placeholder="დავალების სათაური"
+                      className={classNames(
+                        "block w-full rounded-md border px-3 py-2 text-sm",
+                        "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
+                        "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                      )}
+                    />
+                  </div>
+                  <DialogButton
+                    actionType="delete"
+                    size="sm"
+                    onClick={() => handleRemoveTask(index)}
                   />
                 </div>
-                <DialogButton
-                  actionType="delete"
-                  size="sm"
-                  onClick={() => handleRemoveTask(index)}
+                <textarea
+                  value={task.description || ""}
+                  onChange={e =>
+                    handleTaskChange(index, "description", e.target.value)
+                  }
+                  placeholder="დავალების აღწერა"
+                  rows={2}
+                  className={classNames(
+                    "block w-full rounded-md border px-3 py-2 text-sm",
+                    "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
+                    "dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                  )}
                 />
               </div>
             ))}

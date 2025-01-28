@@ -1,9 +1,9 @@
 import defaultInstance from "../plugins/axios"
 
 // Calendar Events
-export const getCalendarEvents = async () => {
+export const getCalendarEvents = async (params = {}) => {
   try {
-    const response = await defaultInstance.get("/api/calendar-events")
+    const response = await defaultInstance.get("/api/calendar-events", { params })
     return response.data.data || []
   } catch (error) {
     console.error("Error fetching calendar events:", error)
@@ -13,7 +13,53 @@ export const getCalendarEvents = async () => {
 
 export const createCalendarEvent = async data => {
   try {
-    const response = await defaultInstance.post("/api/calendar-events", data)
+    const formData = new FormData()
+    
+    // Handle basic fields
+    const basicFields = [
+      'title',
+      'description',
+      'start_time',
+      'end_time',
+      'event_type',
+      'reminder_before',
+      'is_task_event',
+      'location'
+    ]
+    
+    basicFields.forEach(field => {
+      if (data[field] !== undefined) {
+        formData.append(field, data[field])
+      }
+    })
+
+    // Handle recurrence rule
+    if (data.recurrence_rule) {
+      formData.append('recurrence_rule', JSON.stringify(data.recurrence_rule))
+    }
+
+    // Handle guests
+    if (data.guests?.length) {
+      formData.append('guests', JSON.stringify(data.guests))
+    }
+
+    // Handle tasks
+    if (data.tasks?.length) {
+      formData.append('tasks', JSON.stringify(data.tasks))
+    }
+
+    // Handle attachments
+    if (data.attachments?.length) {
+      data.attachments.forEach(file => {
+        formData.append('attachments[]', file)
+      })
+    }
+
+    const response = await defaultInstance.post("/api/calendar-events", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
     return response.data.data
   } catch (error) {
     console.error("Error creating calendar event:", error)
@@ -33,10 +79,35 @@ export const getCalendarEvent = async id => {
 
 export const updateCalendarEvent = async (id, data) => {
   try {
-    const response = await defaultInstance.put(
-      `/api/calendar-events/${id}`,
-      data
-    )
+    const formData = new FormData()
+    
+    // Handle basic fields
+    const basicFields = [
+      'title',
+      'description',
+      'start_time',
+      'end_time',
+      'event_type',
+      'reminder_before',
+      'location'
+    ]
+    
+    basicFields.forEach(field => {
+      if (data[field] !== undefined) {
+        formData.append(field, data[field])
+      }
+    })
+
+    // Handle recurrence rule
+    if (data.recurrence_rule) {
+      formData.append('recurrence_rule', JSON.stringify(data.recurrence_rule))
+    }
+
+    const response = await defaultInstance.post(`/api/calendar-events/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
     return response.data.data
   } catch (error) {
     console.error("Error updating calendar event:", error)
@@ -72,7 +143,7 @@ export const addEventGuests = async (eventId, data) => {
   try {
     const response = await defaultInstance.post(
       `/api/calendar-events/${eventId}/guests`,
-      data
+      { guests: data }
     )
     return response.data.data
   } catch (error) {
@@ -114,6 +185,20 @@ export const completeAllEventTasks = async eventId => {
     return response.data.data
   } catch (error) {
     console.error("Error completing all tasks:", error)
+    throw error
+  }
+}
+
+// Attachments
+export const downloadEventAttachment = async (eventId, attachmentId) => {
+  try {
+    const response = await defaultInstance.get(
+      `/api/calendar-events/${eventId}/attachments/${attachmentId}/download`,
+      { responseType: 'blob' }
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error downloading attachment:", error)
     throw error
   }
 }

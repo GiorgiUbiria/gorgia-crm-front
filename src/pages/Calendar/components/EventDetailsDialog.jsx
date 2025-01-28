@@ -10,6 +10,7 @@ import {
   useDeleteEventComment,
   useCompleteEventTask,
   useCompleteAllEventTasks,
+  useDownloadEventAttachment,
 } from "queries/calendar"
 import EventDialog from "./EventDialog"
 
@@ -26,6 +27,7 @@ const EventDetailsDialog = ({ isOpen, onClose, event }) => {
   const deleteComment = useDeleteEventComment()
   const completeTask = useCompleteEventTask()
   const completeAllTasks = useCompleteAllEventTasks()
+  const downloadAttachment = useDownloadEventAttachment()
 
   if (!event) return null
 
@@ -87,6 +89,28 @@ const EventDetailsDialog = ({ isOpen, onClose, event }) => {
       await completeAllTasks.mutateAsync(event.id)
     } catch (error) {
       console.error("Error completing all tasks:", error)
+    }
+  }
+
+  const handleDownloadAttachment = async attachmentId => {
+    try {
+      const blob = await downloadAttachment.mutateAsync({
+        eventId: event.id,
+        attachmentId,
+      })
+      const url = window.URL.createObjectURL(blob)
+      const attachment = event.attachments.find(a => a.id === attachmentId)
+
+      // Create a temporary link and trigger download
+      const link = document.createElement("a")
+      link.href = url
+      link.download = attachment.file_name
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Error downloading attachment:", error)
     }
   }
 
@@ -165,6 +189,80 @@ const EventDetailsDialog = ({ isOpen, onClose, event }) => {
               </p>
             </div>
           )}
+
+          {event.reminder_before && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 dark:!text-gray-400">
+                შეხსენება
+              </h3>
+              <p className="mt-1 text-sm text-gray-900 dark:!text-gray-100">
+                {event.reminder_before === "15" && "15 წუთით ადრე"}
+                {event.reminder_before === "30" && "30 წუთით ადრე"}
+                {event.reminder_before === "60" && "1 საათით ადრე"}
+              </p>
+            </div>
+          )}
+
+          {event.guests?.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 dark:!text-gray-400">
+                მონაწილეები
+              </h3>
+              <div className="mt-1 space-y-1">
+                {event.guests.map(guest => (
+                  <div
+                    key={guest.id}
+                    className="flex items-center justify-between rounded-md border border-gray-200 p-2 dark:!border-gray-700"
+                  >
+                    <span className="text-sm text-gray-900 dark:!text-gray-100">
+                      {guest.user.name}
+                    </span>
+                    <span
+                      className={classNames("text-xs", {
+                        "text-green-500": guest.status === "accepted",
+                        "text-red-500": guest.status === "declined",
+                        "text-yellow-500": guest.status === "pending",
+                      })}
+                    >
+                      {guest.status === "accepted" && "დათანხმდა"}
+                      {guest.status === "declined" && "უარი თქვა"}
+                      {guest.status === "pending" && "მოლოდინში"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {event.attachments?.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 dark:!text-gray-400">
+                დანართები
+              </h3>
+              <div className="mt-1 space-y-2">
+                {event.attachments.map(attachment => (
+                  <div
+                    key={attachment.id}
+                    className="flex items-center justify-between rounded-md border border-gray-200 p-2 dark:!border-gray-700"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm text-gray-900 dark:!text-gray-100">
+                        {attachment.file_name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {Math.round(attachment.file_size / 1024)}KB
+                      </span>
+                    </div>
+                    <DialogButton
+                      actionType="download"
+                      size="sm"
+                      onClick={() => handleDownloadAttachment(attachment.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tasks */}
@@ -184,23 +282,38 @@ const EventDetailsDialog = ({ isOpen, onClose, event }) => {
               {event.tasks.map(task => (
                 <div
                   key={task.id}
-                  className="flex items-center justify-between rounded-md border border-gray-200 p-2 dark:!border-gray-700"
+                  className="flex flex-col space-y-1 rounded-md border border-gray-200 p-2 dark:!border-gray-700"
                 >
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={task.completed}
-                      onChange={() => handleCompleteTask(task.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span
-                      className={classNames("text-sm", {
-                        "line-through": task.completed,
-                      })}
-                    >
-                      {task.title}
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={task.is_completed}
+                        onChange={() => handleCompleteTask(task.id)}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span
+                        className={classNames("text-sm", {
+                          "line-through": task.is_completed,
+                        })}
+                      >
+                        {task.title}
+                      </span>
+                    </div>
+                    {task.is_completed && task.completed_at && (
+                      <span className="text-xs text-gray-500">
+                        {format(
+                          new Date(task.completed_at),
+                          "dd/MM/yyyy HH:mm"
+                        )}
+                      </span>
+                    )}
                   </div>
+                  {task.description && (
+                    <p className="text-sm text-gray-500 dark:!text-gray-400">
+                      {task.description}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -229,6 +342,7 @@ const EventDetailsDialog = ({ isOpen, onClose, event }) => {
                 actionType="add"
                 size="sm"
                 onClick={handleAddComment}
+                disabled={!newComment.trim()}
               />
             </div>
 

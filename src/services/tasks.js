@@ -14,6 +14,7 @@ export const getTaskList = async () => {
 export const getMyTasks = async () => {
   try {
     const response = await defaultInstance.get("/api/tasks/my")
+    console.log(response.data)
     return response.data
   } catch (error) {
     console.error("Error fetching my tasks:", error)

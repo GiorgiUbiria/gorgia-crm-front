@@ -44,11 +44,8 @@ const TaskList = () => {
   const { users: allUsers, loading: usersLoading } = useFetchUsers()
   const usersList = allUsers?.filter(user => user.department_id === 5)
 
-  const hasEditPermission = useMemo(
-    () => isAdmin(),
-    [isAdmin]
-  )
-  const hasAssignPermission = useMemo(() => isITDepartment, [isITDepartment])
+  const hasEditPermission = useMemo(() => isAdmin(), [isAdmin])
+  const hasAssignPermission = useMemo(() => isITDepartment(), [isITDepartment])
 
   const {
     tasksList,
@@ -60,14 +57,21 @@ const TaskList = () => {
   } = useTaskQueries(isITDepartment)
 
   const sortedTasks = useMemo(() => {
-    const tasksToSort =
-      isITDepartment || hasEditPermission
-        ? activeTab === "all"
-          ? [...(tasksList?.data || [])]
-          : activeTab === "assigned"
-          ? [...(assignedTasksList?.data || [])]
-          : [...(tasksList?.data || [])]
-        : [...(myTasksList?.data || [])]
+    let tasksToSort = []
+
+    if (isITDepartment()) {
+      if (activeTab === "all") {
+        tasksToSort = tasksList?.data || []
+      } else if (activeTab === "assigned") {
+        tasksToSort = assignedTasksList?.data || []
+      } else if (activeTab === "completed") {
+        tasksToSort = tasksList?.data || []
+      }
+    } else if (hasEditPermission) {
+      tasksToSort = tasksList?.data || []
+    } else {
+      tasksToSort = myTasksList?.data || []
+    }
 
     const filteredTasks = tasksToSort.filter(task => {
       if (isITDepartment || hasEditPermission) {
@@ -87,19 +91,31 @@ const TaskList = () => {
     })
   }, [
     isITDepartment,
+    hasEditPermission,
     activeTab,
     tasksList?.data,
     assignedTasksList?.data,
     myTasksList?.data,
     sortConfig,
-    hasEditPermission,
   ])
 
-  const isLoading = isITDepartment
-    ? activeTab === "all"
-      ? isTasksListLoading
-      : isAssignedTasksLoading
-    : isMyTasksLoading
+  const isLoading = useMemo(() => {
+    if (isITDepartment) {
+      return activeTab === "all" || activeTab === "completed"
+        ? isTasksListLoading
+        : isAssignedTasksLoading
+    } else if (hasEditPermission) {
+      return isTasksListLoading
+    }
+    return isMyTasksLoading
+  }, [
+    isITDepartment,
+    hasEditPermission,
+    activeTab,
+    isTasksListLoading,
+    isAssignedTasksLoading,
+    isMyTasksLoading,
+  ])
 
   const createTaskMutation = useCreateTask()
   const updateTaskMutation = useUpdateTask()
@@ -229,7 +245,7 @@ const TaskList = () => {
                 <h5 className="text-xl font-medium mb-3 sm:mb-0 text-gray-900 dark:!text-gray-100">
                   ბილეთების სია
                 </h5>
-                {(isITDepartment || hasEditPermission) && (
+                {(isITDepartment() || hasEditPermission) && (
                   <div className="flex mt-3 sm:mt-2 border-b border-gray-200 dark:!border-gray-700">
                     <button
                       className={`px-4 py-2 text-sm font-medium ${
@@ -308,7 +324,6 @@ const TaskList = () => {
           </Col>
         </Row>
       )}
-      
     </div>
   )
 }

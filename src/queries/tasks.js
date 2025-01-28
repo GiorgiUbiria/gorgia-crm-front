@@ -176,15 +176,17 @@ export const useDeleteTaskComment = () => {
 export const useTaskQueries = isITDepartment => {
   const { data: tasksList = [], isLoading: isTasksListLoading } =
     useGetTaskList({
-      enabled: isITDepartment,
+      enabled: isITDepartment(),
     })
 
   const { data: myTasksList = [], isLoading: isMyTasksLoading } =
-    useGetMyTasks()
+    useGetMyTasks({
+      enabled: !isITDepartment(),
+    })
 
   const { data: assignedTasksList = [], isLoading: isAssignedTasksLoading } =
     useGetTasksAssignedToMe({
-      enabled: isITDepartment,
+      enabled: isITDepartment(),
     })
 
   return {
