@@ -60,11 +60,12 @@ export const useGetAdminUsers = (filters = {}) => {
   })
 }
 
-export const useGetListNames = () => {
+export const useGetListNames = (options = {}) => {
   return useQuery({
     queryKey: adminKeys.users.list_names(),
     queryFn: listUsers,
-    select: response => response.data.data
+    select: response => response.data.data,
+    ...options,
   })
 }
 

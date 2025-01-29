@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react"
 import { Modal, ModalHeader, ModalBody, Form, Button, Label } from "reactstrap"
 import useAuth from "hooks/useAuth"
-import useFetchUsers from "hooks/useFetchUsers"
 import CustomSelect from "components/Select"
 import { toast } from "store/zustand/toastStore"
 
-const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
+const AssignModal = ({ isOpen, toggle, onAssign, task, usersList }) => {
   const [selectedUsers, setSelectedUsers] = useState([])
   const { user, isAdmin, getUserDepartmentId, isDepartmentHead, isITSupport } =
     useAuth()
-  const { users: allUsers, loading: usersLoading } = useFetchUsers()
 
   const isITMember = getUserDepartmentId() === 5
 
@@ -25,7 +23,6 @@ const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
       setSelectedUsers(currentlyAssigned)
     }
   }, [task, isAdmin, isDepartmentHead, isITSupport, isITMember])
-  const usersList = allUsers?.filter(user => user.department_id === 5)
 
   const handleClose = () => {
     setSelectedUsers([])
@@ -60,12 +57,10 @@ const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
     }
   }
 
-  const userOptions = usersLoading
-    ? []
-    : usersList?.map(user => ({
-        value: user.id,
-        label: `${user.name} ${user.sur_name}`,
-      })) || []
+  const userOptions = usersList?.map(user => ({
+    value: user.id,
+    label: `${user.name} ${user.sur_name}`,
+  })) || []
 
   return (
     <Modal
@@ -95,7 +90,7 @@ const AssignModal = ({ isOpen, toggle, onAssign, task }) => {
               <Label className="form-label">პასუხისმგებელი პირები</Label>
               <CustomSelect
                 isMulti
-                isLoading={usersLoading}
+                isLoading={() => usersList.length === 0}
                 options={userOptions}
                 value={selectedUsers}
                 onChange={setSelectedUsers}

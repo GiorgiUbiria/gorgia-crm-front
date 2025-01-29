@@ -17,7 +17,8 @@ const TaskTable = ({
   activeTab,
 }) => {
   const navigate = useNavigate()
-  const { user, isLoading, getUserDepartmentId, isAdmin, isITSupport } = useAuth()
+  const { user, isLoading, getUserDepartmentId, isAdmin, isITSupport } =
+    useAuth()
 
   if (isLoading) {
     return (
@@ -39,10 +40,10 @@ const TaskTable = ({
     if (!task) return false
 
     return (
-      hasEditPermission || // Admin
-      task.user_id === user?.id || // Task creator
-      getUserDepartmentId() === 5 || // IT department
-      task.assigned_users?.some(user => user.id === user?.id) // Assigned user
+      hasEditPermission ||
+      task.user_id === user?.id ||
+      getUserDepartmentId() === 5 ||
+      task.assigned_users?.some(user => user.id === user?.id)
     )
   }
 
@@ -59,22 +60,17 @@ const TaskTable = ({
   }
 
   const canShowAssignButton = task => {
-    // Check if user is in IT department
     if (getUserDepartmentId() !== 5) return false
 
-    // Don't show for completed or cancelled tasks
     if (task.status === "Completed" || task.status === "Cancelled") return false
 
-    // Don't show in assigned tab
     if (activeTab === "assigned") return false
 
     const isAdminUser = isAdmin()
     const isITSupportUser = isITSupport()
 
-    // Always show for admin and IT support, regardless of assignment
     if (isAdminUser || isITSupportUser) return true
 
-    // For regular IT members, only show if they're not already assigned
     return !task.assigned_users?.some(user => user.id === user?.id)
   }
 

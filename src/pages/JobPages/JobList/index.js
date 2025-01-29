@@ -19,8 +19,8 @@ import {
   useStartTask,
   useFinishTask,
 } from "../../../queries/tasks"
+import { useGetListNames } from "../../../queries/admin"
 
-import useFetchUsers from "hooks/useFetchUsers"
 import useAuth from "hooks/useAuth"
 
 const TaskList = () => {
@@ -41,7 +41,11 @@ const TaskList = () => {
 
   const { user, isITDepartment, isAdmin } = useAuth()
 
-  const { users: allUsers, loading: usersLoading } = useFetchUsers()
+  const { data: allUsers, isLoading: usersLoading } = useGetListNames({
+    enabled: isITDepartment() || isAdmin(),
+  })
+
+  console.log("All users", allUsers)
   const usersList = allUsers?.filter(user => user.department_id === 5)
 
   const hasEditPermission = useMemo(() => isAdmin(), [isAdmin])
@@ -54,7 +58,7 @@ const TaskList = () => {
     isTasksListLoading,
     isMyTasksLoading,
     isAssignedTasksLoading,
-  } = useTaskQueries(isITDepartment)
+  } = useTaskQueries(isITDepartment, isAdmin)
 
   const sortedTasks = useMemo(() => {
     let tasksToSort = []
@@ -74,7 +78,7 @@ const TaskList = () => {
     }
 
     const filteredTasks = tasksToSort.filter(task => {
-      if (isITDepartment || hasEditPermission) {
+      if (isITDepartment() || hasEditPermission) {
         if (activeTab === "completed") {
           return task.status === "Completed"
         }
@@ -210,6 +214,8 @@ const TaskList = () => {
     }
   }
 
+  console.log("Users list", usersList)
+
   return (
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
       <DeleteModal
@@ -232,6 +238,7 @@ const TaskList = () => {
         isOpen={assignModal}
         toggle={setAssignModal}
         onAssign={handleAssignTask}
+        usersList={usersList}
         task={task}
       />
 

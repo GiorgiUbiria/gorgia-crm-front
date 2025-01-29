@@ -30,5 +30,7 @@ export const fetchUsers = async () => {
 }
 
 export const listUsers = async () => {
-  return defaultInstance.get("/api/list-users")
+  const response = await defaultInstance.get("/api/list-users")
+  console.log("List users response", response)
+  return response
 }

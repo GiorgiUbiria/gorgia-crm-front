@@ -83,9 +83,10 @@ const VacationPage = () => {
         "department_head",
         "security_manager",
         "department_head_assistant",
-      ])
+      ]) ||
+      user.id === 211
     )
-  }, [isAdmin, isHrMember, hasAnyRole])
+  }, [isAdmin, isHrMember, hasAnyRole, user])
 
   const toggleTab = useCallback(
     tab => {
