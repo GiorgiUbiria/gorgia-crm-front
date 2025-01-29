@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - GORGIA CRM</title>
+    <title>Offline - Gorgia CRM</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -16,56 +16,42 @@
             padding: 20px;
             text-align: center;
             background-color: #f8f9fa;
-            color: #343a40;
         }
         .container {
             max-width: 600px;
-            padding: 40px 20px;
+            padding: 40px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         h1 {
-            margin-bottom: 20px;
-            color: #105D8D;
+            color: #1a73e8;
+            margin-bottom: 16px;
         }
         p {
-            margin-bottom: 30px;
-            line-height: 1.6;
-            color: #6c757d;
+            color: #5f6368;
+            line-height: 1.5;
+            margin-bottom: 24px;
         }
         button {
-            background-color: #105D8D;
+            background: #1a73e8;
             color: white;
             border: none;
             padding: 12px 24px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.2s;
         }
         button:hover {
-            background-color: #0d4d74;
-        }
-        .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            color: #105D8D;
+            background: #1557b0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="icon">📡</div>
-        <h1>You're Offline</h1>
-        <p>It seems you've lost your internet connection. Please check your connection and try again.</p>
-        <button onclick="window.location.reload()">Try Again</button>
+        <h1>თქვენ ხართ ოფლაინ</h1>
+        <p>ინტერნეტთან კავშირი ვერ მყარდება. გთხოვთ, შეამოწმოთ თქვენი ინტერნეტ კავშირი და სცადოთ ხელახლა.</p>
+        <button onclick="window.location.reload()">ხელახლა ცდა</button>
     </div>
-    <script>
-        // Check for online status changes
-        window.addEventListener('online', () => {
-            window.location.reload();
-        });
-    </script>
 </body>
 </html> 

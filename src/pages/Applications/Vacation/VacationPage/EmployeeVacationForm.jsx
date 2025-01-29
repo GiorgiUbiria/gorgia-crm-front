@@ -169,6 +169,7 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
     formik.values.end_date,
     formik.values,
     calculateDuration,
+    formik,
   ])
 
   const handleCheckboxChange = useCallback(
@@ -354,24 +355,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
           <div className="mb-3">
             {isSubmitting && (
               <div className="text-danger">ფორმა იგზავნება...</div>
-            )}
-            {formik.dirty && !formik.isValid ? (
-              <>
-                <div className="text-danger">გთხოვთ გაასწოროთ შეცდომები:</div>
-                {Object.keys(formik.touched).length > 0 &&
-                  Object.keys(formik.errors).length > 0 && (
-                    <ul className="text-danger list-unstyled">
-                      {Object.entries(formik.errors).map(
-                        ([field, error]) =>
-                          formik.touched[field] && (
-                            <li key={field}>- {error}</li>
-                          )
-                      )}
-                    </ul>
-                  )}
-              </>
-            ) : (
-              <div className="text-danger">შეავსეთ ყველა ველი</div>
             )}
             {formik.values.vacation_type === "administrative_leave" &&
               formik.values.duration_days > 7 && (

@@ -84,7 +84,7 @@ const VacationPage = () => {
         "security_manager",
         "department_head_assistant",
       ]) ||
-      user.id === 211
+      (user?.id === 211)
     )
   }, [isAdmin, isHrMember, hasAnyRole, user])
 

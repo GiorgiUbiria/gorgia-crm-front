@@ -1,10 +1,17 @@
 import * as Yup from "yup"
+import { startOfDay } from "date-fns"
 
 export const myVacationSchema = Yup.object().shape({
   vacation_type: Yup.string().required("აუცილებელია შვებულების ტიპის არჩევა"),
   substitute_name: Yup.string().required("აუცილებელია შემცვლელის სახელი"),
   substitute_position: Yup.string().required("აუცილებელია შემცვლელის პოზიცია"),
-  start_date: Yup.date().required("შევატყობინოთ დაწყების თარიღი").nullable(),
+  start_date: Yup.date()
+    .required("შევატყობინოთ დაწყების თარიღი")
+    .nullable()
+    .min(
+      startOfDay(new Date()),
+      "დაწყების თარიღი უნდა იყოს დღეს ან დღეის შემდეგ"
+    ),
   end_date: Yup.date()
     .required("შევატყობინოთ დასრულების თარიღი")
     .nullable()
@@ -72,7 +79,10 @@ export const employeeVacationSchema = Yup.object().shape({
   start_date: Yup.date()
     .required("შევატყობინოთ დაწყების თარიღი")
     .nullable()
-    .min(new Date(), "დაწყების თარიღი უნდა იყოს დღეს ან დღეის შემდეგ"),
+    .min(
+      startOfDay(new Date()),
+      "დაწყების თარიღი უნდა იყოს დღეს ან დღეის შემდეგ"
+    ),
   end_date: Yup.date()
     .required("შევატყობინოთ დასრულების თარიღი")
     .nullable()
