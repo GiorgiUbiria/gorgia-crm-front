@@ -46,6 +46,9 @@ export const getVacationBalance = async () => {
 }
 
 export const cancelVacation = async (id, data) => {
+  if (!data?.cancellation_reason) {
+    throw new Error('Cancellation reason is required')
+  }
   return defaultInstance.post(`/api/vacation/${id}/cancel`, data)
 }
 

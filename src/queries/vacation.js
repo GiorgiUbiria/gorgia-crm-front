@@ -109,10 +109,54 @@ export const useCancelVacation = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }) => cancelVacation(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: vacationKeys.all })
+    mutationFn: ({ id, data }) => {
+      if (!data?.cancellation_reason?.trim()) {
+        throw new Error('Cancellation reason is required')
+      }
+      return cancelVacation(id, data)
     },
+    onMutate: async ({ id, data }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: vacationKeys.userVacations() })
+
+      // Snapshot the previous value
+      const previousVacations = queryClient.getQueryData(vacationKeys.userVacations())
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(vacationKeys.userVacations(), old => {
+        if (!old?.data?.data) return old
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            data: old.data.data.map(vacation =>
+              vacation.id === id
+                ? {
+                    ...vacation,
+                    status: 'cancelled',
+                    cancellation_reason: data.cancellation_reason,
+                    cancelled_at: new Date().toISOString()
+                  }
+                : vacation
+            )
+          }
+        }
+      })
+
+      // Return a context object with the snapshotted value
+      return { previousVacations }
+    },
+    onError: (err, variables, context) => {
+      console.error('Failed to cancel vacation:', err)
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousVacations) {
+        queryClient.setQueryData(vacationKeys.userVacations(), context.previousVacations)
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure cache is in sync with server
+      queryClient.invalidateQueries({ queryKey: vacationKeys.userVacations() })
+    }
   })
 }
 

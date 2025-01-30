@@ -88,7 +88,10 @@ const CrmDialog = ({
       <Dialog.Overlay className="fixed inset-0 bg-black/40 data-[state=open]:animate-overlayShow" />
       <Dialog.Content
         className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg focus:outline-none data-[state=open]:animate-contentShow dark:!bg-gray-800 flex flex-col overflow-hidden"
-        style={{ maxWidth }}
+        style={{ 
+          maxWidth,
+          zIndex: 1000
+        }}
       >
         <div className="flex-none p-6">
           {title && (

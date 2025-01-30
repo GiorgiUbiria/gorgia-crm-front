@@ -73,6 +73,7 @@ import CreateNote from "pages/NotesEditor/CreateNote"
 import EditNote from "pages/NotesEditor/EditNote"
 import Calendar from "pages/Calendar"
 import ChatRoom from "pages/ChatRoom"
+import TaskCharts from "pages/JobPages/JobCharts"
 
 const withProtectedRoute = (component, permission = "") => (
   <ProtectedRoute permission={permission}>{component}</ProtectedRoute>
@@ -369,6 +370,13 @@ const supportRoutes = {
     itTaskDetails: {
       path: "/support/it-tasks/:id",
       component: withProtectedRoute(<JobDetails />),
+    },
+    itTaskCharts: {
+      path: "/support/it-tasks/charts",
+      component: withProtectedRoute(
+        <TaskCharts />,
+        "role:admin|role:department_head,department:5"
+      ),
     },
     farmTasks: {
       path: "/support/farm-tasks",

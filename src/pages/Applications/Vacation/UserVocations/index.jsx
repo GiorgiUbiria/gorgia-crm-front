@@ -4,8 +4,11 @@ import MuiTable from "components/Mui/MuiTable"
 import VacationBalance from "components/Vacation/VacationBalance"
 import CancellationModal from "components/Vacation/CancellationModal"
 import { Tooltip } from "@mui/material"
-import { toast } from "store/zustand/toastStore"
-import { useUserVacations, useVacationBalance, useCancelVacation } from "../../../../queries/vacation"
+import {
+  useUserVacations,
+  useVacationBalance,
+  useCancelVacation,
+} from "../../../../queries/vacation"
 
 const statusMap = {
   pending: {
@@ -75,7 +78,6 @@ const ExpandedRowContent = ({ rowData }) => {
     },
   } = rowData
 
-  // Format reviewer name
   const reviewerName =
     reviewed_by && typeof reviewed_by === "object"
       ? `${reviewed_by.name || ""} ${reviewed_by.sur_name || ""}`.trim() || "-"
@@ -188,9 +190,11 @@ const ExpandedRowContent = ({ rowData }) => {
 const UserVocation = () => {
   document.title = "შვებულებები | Gorgia LLC"
 
-  const { data: vacationsData, isLoading: vacationsLoading } = useUserVacations()
-  const { data: vacationBalance, isLoading: balanceLoading } = useVacationBalance()
-  const { mutate: cancelVacationMutation } = useCancelVacation()
+  const { data: vacationsData, isLoading: vacationsLoading } =
+    useUserVacations()
+  const { data: vacationBalance, isLoading: balanceLoading } =
+    useVacationBalance()
+  const { mutate: cancelVacation } = useCancelVacation()
 
   const [selectedVacation, setSelectedVacation] = useState(null)
   const [showCancellationModal, setShowCancellationModal] = useState(false)
@@ -201,29 +205,38 @@ const UserVocation = () => {
   }
 
   const onCancellationSuccess = () => {
-    cancelVacationMutation(
-      { id: selectedVacation.id },
+    setShowCancellationModal(false)
+    setSelectedVacation(null)
+  }
+
+  const handleCancellation = (vacationId, cancellationReason) => {
+    cancelVacation(
+      { id: vacationId, data: { cancellation_reason: cancellationReason } },
       {
         onSuccess: () => {
-          setShowCancellationModal(false)
-          setSelectedVacation(null)
-          toast.success("შვებულება წარმატებით გაუქმდა", "შესრულდა", {
-            duration: 2000,
-            size: "small",
-          })
+          onCancellationSuccess()
         },
-        onError: (error) => {
-          toast.error(
-            error?.response?.data?.message ||
-              "შვებულების გაუქმება ვერ მოხერხდა",
-            "შეცდომა",
-            {
-              duration: 2000,
-              size: "small",
-            }
-          )
+        onError: error => {
+          console.error("Cancellation failed:", error)
         },
       }
+    )
+  }
+
+  const canCancel = vacation => {
+    if (!vacation) return false
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const startDate = new Date(vacation.start_date)
+    startDate.setHours(0, 0, 0, 0)
+
+    return (
+      (vacation.status === "pending" ||
+        vacation.status === "approved" ||
+        vacation.status === "auto_approved") &&
+      startDate >= today
     )
   }
 
@@ -314,20 +327,7 @@ const UserVocation = () => {
         disableSortBy: true,
         Cell: ({ row }) => {
           const vacation = row.original
-          const today = new Date()
-          today.setHours(0, 0, 0, 0)
-
-          const startDate = new Date(vacation.start_date)
-          startDate.setHours(0, 0, 0, 0)
-
-          const canCancel =
-            (vacation.status === "pending" ||
-             vacation.status === "approved" ||
-             vacation.status === "auto_approved") &&
-            startDate > today &&
-            vacation.can_be_cancelled
-
-          return canCancel ? (
+          return canCancel(vacation) ? (
             <Button
               color="danger"
               size="sm"
@@ -346,23 +346,45 @@ const UserVocation = () => {
 
   const transformedVacations = useMemo(() => {
     if (!vacationsData?.data?.data) return []
-    
+
     return vacationsData.data.data.map(vacation => ({
       ...vacation,
       id: vacation.id,
       status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
-      start_date: vacation.start_date ? new Date(vacation.start_date).toLocaleDateString("ka-GE") : "-",
-      end_date: vacation.end_date ? new Date(vacation.end_date).toLocaleDateString("ka-GE") : "-",
+      start_date: vacation.start_date
+        ? new Date(
+            new Date(vacation.start_date).getTime() + 24 * 60 * 60 * 1000
+          ).toLocaleDateString("ka-GE")
+        : "-",
+      end_date: vacation.end_date
+        ? new Date(
+            new Date(vacation.end_date).getTime() + 24 * 60 * 60 * 1000
+          ).toLocaleDateString("ka-GE")
+        : "-",
       duration: (vacation.duration_days ?? 0).toString() + " დღე",
-      type: vacation.type ? TYPE_MAPPING[vacation.type] || vacation.type : "უცნობი",
-      requested_by: vacation.user ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`.trim() || "უცნობი" : "უცნობი",
-      requested_at: vacation.created_at ? new Date(vacation.created_at).toLocaleDateString("ka-GE") : "-",
+      type: vacation.type
+        ? TYPE_MAPPING[vacation.type] || vacation.type
+        : "უცნობი",
+      requested_by: vacation.user
+        ? `${vacation.user?.name || ""} ${
+            vacation.user?.sur_name || ""
+          }`.trim() || "უცნობი"
+        : "უცნობი",
+      requested_at: vacation.created_at
+        ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
+        : "-",
       auto_approved: vacation.is_auto_approved,
-      auto_approved_at: vacation.auto_approved_at ? new Date(vacation.auto_approved_at).toLocaleDateString("ka-GE") : null,
+      auto_approved_at: vacation.auto_approved_at
+        ? new Date(vacation.auto_approved_at).toLocaleDateString("ka-GE")
+        : null,
       time_until_auto_approval: vacation.time_until_auto_approval,
       cancellation_reason: vacation.cancellation_reason,
-      cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : null,
-      requested_for: `${vacation.employee_name || ""} | ${vacation.position || ""} | ${vacation.department || ""}`,
+      cancelled_at: vacation.cancelled_at
+        ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+        : null,
+      requested_for: `${vacation.employee_name || ""} | ${
+        vacation.position || ""
+      } | ${vacation.department || ""}`,
       expanded: {
         holiday_days: vacation.holiday_days || {},
         substitute: {
@@ -371,12 +393,16 @@ const UserVocation = () => {
         },
         review: {
           reviewed_by: vacation.reviewed_by || "-",
-          reviewed_at: vacation.reviewed_at ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE") : "-",
+          reviewed_at: vacation.reviewed_at
+            ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+            : "-",
           rejection_reason: vacation.rejection_reason || "-",
         },
         cancellation: {
           cancellation_reason: vacation.cancellation_reason || "",
-          cancelled_at: vacation.cancelled_at ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE") : "",
+          cancelled_at: vacation.cancelled_at
+            ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+            : "",
         },
       },
     }))
@@ -414,11 +440,15 @@ const UserVocation = () => {
     )
   }
 
+  console.log(transformedVacations)
+
   return (
     <>
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
-          {vacationBalance && <VacationBalance balance={vacationBalance.data} />}
+          {vacationBalance && (
+            <VacationBalance balance={vacationBalance.data} />
+          )}
 
           <MuiTable
             data={transformedVacations}
@@ -435,9 +465,12 @@ const UserVocation = () => {
       {showCancellationModal && selectedVacation && (
         <CancellationModal
           isOpen={showCancellationModal}
-          toggle={() => setShowCancellationModal(false)}
+          toggle={() => {
+            setShowCancellationModal(false)
+            setSelectedVacation(null)
+          }}
           vacationId={selectedVacation.id}
-          onSuccess={onCancellationSuccess}
+          onSuccess={handleCancellation}
         />
       )}
     </>

@@ -45,7 +45,6 @@ const TaskList = () => {
     enabled: isITDepartment() || isAdmin(),
   })
 
-  console.log("All users", allUsers)
   const usersList = allUsers?.filter(user => user.department_id === 5)
 
   const hasEditPermission = useMemo(() => isAdmin(), [isAdmin])
@@ -59,6 +58,8 @@ const TaskList = () => {
     isMyTasksLoading,
     isAssignedTasksLoading,
   } = useTaskQueries(isITDepartment, isAdmin)
+
+  console.log("Tasks list", tasksList)
 
   const sortedTasks = useMemo(() => {
     let tasksToSort = []
@@ -299,6 +300,14 @@ const TaskList = () => {
                 >
                   ახალი ბილეთის გახსნა
                 </Link>
+                {(isAdmin() || isITDepartment()) && (
+                  <Link
+                    to="/support/it-tasks/charts"
+                    className="btn btn-secondary w-full sm:w-auto ml-2"
+                  >
+                    ანალიტიკა
+                  </Link>
+                )}
               </div>
             </div>
             {sortedTasks.length > 0 ? (
