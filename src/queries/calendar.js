@@ -9,12 +9,15 @@ import {
   addEventGuests,
   removeEventGuest,
   completeEventTask,
+  uncompleteEventTask,
   completeAllEventTasks,
   downloadEventAttachment,
+  removeEventAttachment,
   getEventComments,
   createEventComment,
   updateEventComment,
   deleteEventComment,
+  getInvitedEvents,
 } from "../services/calendar"
 
 export const calendarKeys = {
@@ -23,6 +26,7 @@ export const calendarKeys = {
   event: id => [...calendarKeys.all, "event", id],
   comments: eventId => [...calendarKeys.all, "event", eventId, "comments"],
   attachments: eventId => [...calendarKeys.all, "event", eventId, "attachments"],
+  invitedEvents: () => [...calendarKeys.all, "invited-events"],
 }
 
 // Calendar Events
@@ -82,9 +86,10 @@ export const useUpdateGuestStatus = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ eventId, data }) => updateGuestStatus(eventId, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: calendarKeys.event(variables.eventId) })
+    mutationFn: ({ eventId, status }) => updateGuestStatus(eventId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["invitedEvents"] })
+      queryClient.invalidateQueries({ queryKey: ["events"] })
     },
   })
 }
@@ -123,6 +128,17 @@ export const useCompleteEventTask = () => {
   })
 }
 
+export const useUncompleteEventTask = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ eventId, taskId }) => uncompleteEventTask(eventId, taskId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: calendarKeys.event(variables.eventId) })
+    },
+  })
+}
+
 export const useCompleteAllEventTasks = () => {
   const queryClient = useQueryClient()
 
@@ -138,6 +154,17 @@ export const useCompleteAllEventTasks = () => {
 export const useDownloadEventAttachment = () => {
   return useMutation({
     mutationFn: ({ eventId, attachmentId }) => downloadEventAttachment(eventId, attachmentId),
+  })
+}
+
+export const useRemoveEventAttachment = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ eventId, attachmentId }) => removeEventAttachment(eventId, attachmentId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: calendarKeys.event(variables.eventId) })
+    },
   })
 }
 
@@ -157,6 +184,7 @@ export const useCreateEventComment = () => {
     mutationFn: ({ eventId, data }) => createEventComment(eventId, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.comments(variables.eventId) })
+      queryClient.invalidateQueries({ queryKey: calendarKeys.event(variables.eventId) })
     },
   })
 }
@@ -169,6 +197,7 @@ export const useUpdateEventComment = () => {
       updateEventComment(eventId, commentId, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.comments(variables.eventId) })
+      queryClient.invalidateQueries({ queryKey: calendarKeys.event(variables.eventId) })
     },
   })
 }
@@ -180,6 +209,7 @@ export const useDeleteEventComment = () => {
     mutationFn: ({ eventId, commentId }) => deleteEventComment(eventId, commentId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.comments(variables.eventId) })
+      queryClient.invalidateQueries({ queryKey: calendarKeys.event(variables.eventId) })
     },
   })
 }
@@ -195,4 +225,11 @@ export const useCalendarQueries = (params = {}, options = {}) => {
     events,
     isEventsLoading,
   }
+}
+
+export const useGetInvitedEvents = (params = {}) => {
+  return useQuery({
+    queryKey: ["invitedEvents", params],
+    queryFn: () => getInvitedEvents(params),
+  })
 }

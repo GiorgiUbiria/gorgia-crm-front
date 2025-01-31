@@ -13,6 +13,17 @@ export const getCalendarEvents = async (params = {}) => {
 
 export const createCalendarEvent = async data => {
   try {
+    // If data is already FormData, use it directly
+    if (data instanceof FormData) {
+      const response = await defaultInstance.post("/api/calendar-events", data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      return response.data.data
+    }
+
+    // Otherwise, create a new FormData instance
     const formData = new FormData()
     
     // Handle basic fields
@@ -28,7 +39,7 @@ export const createCalendarEvent = async data => {
     ]
     
     basicFields.forEach(field => {
-      if (data[field] !== undefined) {
+      if (data[field] !== undefined && data[field] !== null) {
         formData.append(field, data[field])
       }
     })
@@ -79,28 +90,55 @@ export const getCalendarEvent = async id => {
 
 export const updateCalendarEvent = async (id, data) => {
   try {
-    const formData = new FormData()
-    
-    // Handle basic fields
-    const basicFields = [
-      'title',
-      'description',
-      'start_time',
-      'end_time',
-      'event_type',
-      'reminder_before',
-      'location'
-    ]
-    
-    basicFields.forEach(field => {
-      if (data[field] !== undefined) {
-        formData.append(field, data[field])
-      }
-    })
+    console.group("Calendar Event Update Debug")
+    console.log("Update Event - Request Data:", data)
 
-    // Handle recurrence rule
-    if (data.recurrence_rule) {
-      formData.append('recurrence_rule', JSON.stringify(data.recurrence_rule))
+    const formData = new FormData()
+
+    // Handle basic fields
+    if (data.title) formData.append('title', data.title)
+    if (data.description) formData.append('description', data.description)
+    if (data.start_time) formData.append('start_time', data.start_time)
+    if (data.end_time) formData.append('end_time', data.end_time)
+    if (data.reminder_before) formData.append('reminder_before', data.reminder_before)
+    if (data.location) formData.append('location', data.location)
+    formData.append('is_task_event', data.is_task_event)
+
+    // Handle tasks array
+    if (Array.isArray(data.tasks)) {
+      data.tasks.forEach((task, index) => {
+        if (task.title) {
+          formData.append(`tasks[${index}][title]`, task.title)
+        }
+        if (task.description) {
+          formData.append(`tasks[${index}][description]`, task.description)
+        }
+      })
+    }
+
+    // Handle guests array
+    if (Array.isArray(data.guests)) {
+      data.guests.forEach(guestId => {
+        formData.append('guests[]', guestId)
+      })
+    }
+
+    // Handle attachments
+    if (Array.isArray(data.attachments)) {
+      data.attachments.forEach(file => {
+        if (file instanceof File) {
+          if (file.size > 10 * 1024 * 1024) {
+            throw new Error("Files must not be larger than 10MB.")
+          }
+          formData.append('attachments[]', file)
+        }
+      })
+    }
+
+    // Log the final FormData contents
+    console.log("Final FormData Contents:")
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value)
     }
 
     const response = await defaultInstance.post(`/api/calendar-events/${id}`, formData, {
@@ -108,9 +146,15 @@ export const updateCalendarEvent = async (id, data) => {
         'Content-Type': 'multipart/form-data'
       }
     })
+    console.log("Update Response:", response.data)
+    console.groupEnd()
     return response.data.data
   } catch (error) {
     console.error("Error updating calendar event:", error)
+    if (error.response?.data) {
+      console.error("Server Error Response:", error.response.data)
+    }
+    console.groupEnd()
     throw error
   }
 }
@@ -126,13 +170,13 @@ export const deleteCalendarEvent = async id => {
 }
 
 // Guest Management
-export const updateGuestStatus = async (eventId, data) => {
+export const updateGuestStatus = async (eventId, status) => {
   try {
     const response = await defaultInstance.post(
       `/api/calendar-events/${eventId}/guest-status`,
-      data
+      { status }
     )
-    return response.data.data
+    return response.data
   } catch (error) {
     console.error("Error updating guest status:", error)
     throw error
@@ -177,6 +221,18 @@ export const completeEventTask = async (eventId, taskId) => {
   }
 }
 
+export const uncompleteEventTask = async (eventId, taskId) => {
+  try {
+    const response = await defaultInstance.put(
+      `/api/calendar-events/${eventId}/tasks/${taskId}/uncomplete`
+    )
+    return response.data.data
+  } catch (error) {
+    console.error("Error uncompleting task:", error)
+    throw error
+  }
+}
+
 export const completeAllEventTasks = async eventId => {
   try {
     const response = await defaultInstance.post(
@@ -199,6 +255,18 @@ export const downloadEventAttachment = async (eventId, attachmentId) => {
     return response.data
   } catch (error) {
     console.error("Error downloading attachment:", error)
+    throw error
+  }
+}
+
+export const removeEventAttachment = async (eventId, attachmentId) => {
+  try {
+    const response = await defaultInstance.delete(
+      `/api/calendar-events/${eventId}/attachments/${attachmentId}`
+    )
+    return response.data.data
+  } catch (error) {
+    console.error("Error removing attachment:", error)
     throw error
   }
 }
@@ -250,6 +318,16 @@ export const deleteEventComment = async (eventId, commentId) => {
     return response.data.data
   } catch (error) {
     console.error("Error deleting event comment:", error)
+    throw error
+  }
+}
+
+export const getInvitedEvents = async (params = {}) => {
+  try {
+    const response = await defaultInstance.get("/api/calendar-events/invited", { params })
+    return response.data.data || []
+  } catch (error) {
+    console.error("Error fetching invited events:", error)
     throw error
   }
 }

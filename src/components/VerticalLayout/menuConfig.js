@@ -16,6 +16,7 @@ import {
   LuPlus,
   LuNotebook,
   LuMessageSquare,
+  LuUser,
 } from "react-icons/lu"
 
 const getMenuItems = can => {
@@ -379,6 +380,12 @@ const getMenuItems = can => {
       to: "/communication/chat",
       icon: LuMessageSquare,
       label: "ჩატი",
+    },
+    {
+      to: "/tools/people-counting",
+      icon: LuUser,
+      label: "ვიზიტორების ფორმა",
+      show: () => can("role:admin|department:36|department:21|department:30"),
     },
     // {
     //   to: "/tools/calendar",

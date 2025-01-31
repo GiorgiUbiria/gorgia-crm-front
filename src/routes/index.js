@@ -55,6 +55,8 @@ import LocalAgreementApprove from "pages/Agreements/Local/LocalAgreementApprove"
 import LocalAgreementArchive from "pages/Agreements/Local/LocalAgreementArchive"
 import LocalAgreementUser from "pages/Agreements/Local/LocalAgreementUser"
 
+import PeopleCounting from "pages/PeopleCounting"
+
 import LeadsPage from "pages/LeadsPage/LeadsPage"
 import NotesPage from "pages/NotesPage"
 import ProfilePage from "pages/ProfilePage"
@@ -469,6 +471,13 @@ const toolsRoutes = {
     innerDailyResultDetails: {
       path: "/tools/inner-daily-results/:id",
       component: withProtectedRoute(<DailyInner />),
+    },
+    peopleCounting: {
+      path: "/tools/people-counting",
+      component: withProtectedRoute(
+        <PeopleCounting />,
+        "role:admin|department:36|department:21|department:30"
+      ),
     },
   },
 }

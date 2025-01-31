@@ -17,6 +17,7 @@ const branchOptions = [
   "წყალსადენი - საწყობი",
   "დსკ - საწყობი",
   "სარაჯიშვილი - საწყობი",
+  "ლუსონი",
 ]
 
 const categoryOptions = ["IT", "Marketing", "Security", "Network", "Farm"]
