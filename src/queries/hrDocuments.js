@@ -6,7 +6,11 @@ const queryKeys = {
   lists: () => [...queryKeys.all],
   list: () => [...queryKeys.lists()],
   current: () => [...queryKeys.all, "current"],
-
+  hrAdditionalDocuments: {
+    list: () => ["hr-additional-documents"],
+    lists: () => ["hr-additional-documents"],
+    current: () => ["hr-additional-documents", "current"]
+  }
 }
 
 export const useHrDocuments = (filters = {}) => {

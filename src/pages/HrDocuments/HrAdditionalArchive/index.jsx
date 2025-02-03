@@ -77,13 +77,20 @@ const HrAdditionalArchive = () => {
     }
 
     try {
-      updateOneCStatusMutation.mutate({
-        id,
-        data: {
-          stored_in_one_c: !currentStatus,
-          one_c_comment: "",
+      updateOneCStatusMutation.mutate(
+        {
+          id,
+          data: {
+            stored_in_one_c: !currentStatus,
+            one_c_comment: "",
+          },
         },
-      })
+        {
+          onSuccess: () => {
+            fetchDocuments()
+          },
+        }
+      )
     } catch (error) {
       console.error("Error updating 1C status:", error)
     }
@@ -93,17 +100,24 @@ const HrAdditionalArchive = () => {
     if (!selectedDocument) return
 
     try {
-      updateOneCStatusMutation.mutate({
-        id: selectedDocument.id,
-        data: {
-          stored_in_one_c: !selectedDocument.currentStatus,
-          one_c_comment:
-            comment || `Stored in 1C on ${new Date().toLocaleDateString()}`,
+      updateOneCStatusMutation.mutate(
+        {
+          id: selectedDocument.id,
+          data: {
+            stored_in_one_c: !selectedDocument.currentStatus,
+            one_c_comment:
+              comment || `Stored in 1C on ${new Date().toLocaleDateString()}`,
+          },
         },
-      })
-      setModalOpen(false)
-      setSelectedDocument(null)
-      setComment("")
+        {
+          onSuccess: () => {
+            fetchDocuments()
+            setModalOpen(false)
+            setSelectedDocument(null)
+            setComment("")
+          },
+        }
+      )
     } catch (error) {
       console.error("Error updating 1C status:", error)
     }

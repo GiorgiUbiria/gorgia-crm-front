@@ -17,6 +17,7 @@ import {
   LuNotebook,
   LuMessageSquare,
   LuUser,
+  LuBriefcase,
 } from "react-icons/lu"
 
 const getMenuItems = can => {
@@ -414,6 +415,33 @@ const getMenuItems = can => {
       to: "/tools/calendar",
       icon: LuCalendarDays,
       label: "კალენდარი",
+    },
+    {
+      key: "vacancy",
+      label: "ვაკანსიის მოთხოვნა",
+      icon: LuBriefcase,
+      disabled: true,
+      show: () => can("role:admin|department:8"),
+      submenu: [
+        {
+          to: "/vacancy-requests/create",
+          label: "მოთხოვნა",
+          icon: LuPlus,
+          show: () => can("role:admin|role:hr"),
+        },
+        {
+          to: "/vacancy-requests/my-requests",
+          label: "გაგზავნილი",
+          icon: LuFileText,
+          show: () => can("role:admin|role:hr"),
+        },
+        {
+          to: "/vacancy-requests/archive",
+          label: "არქივი",
+          icon: LuArchive,
+          show: () => can("role:admin|role:hr"),
+        },
+      ],
     },
   ]
 

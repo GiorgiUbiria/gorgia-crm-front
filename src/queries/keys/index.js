@@ -25,3 +25,5 @@ export const queryKeys = {
   chat: chatKeys,
   hrAdditionalDocuments: hrAdditionalDocumentsKeys,
 }
+
+export const VACANCY_REQUESTS = "vacancy-requests";

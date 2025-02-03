@@ -79,6 +79,10 @@ import EditNote from "pages/NotesEditor/EditNote"
 import Calendar from "pages/Calendar"
 import ChatRoom from "pages/ChatRoom"
 import TaskCharts from "pages/JobPages/JobCharts"
+import VacancyRequests from "pages/Vacancies/VacancyRequests"
+import VacancyRequestForm from "pages/Vacancies/VacancyRequestForm"
+import VacancyRequestDetails from "pages/Vacancies/VacancyRequestDetails"
+import MyVacancyRequests from "pages/Vacancies/MyVacancyRequests"
 
 const withProtectedRoute = (component, permission = "") => (
   <ProtectedRoute permission={permission}>{component}</ProtectedRoute>
@@ -534,6 +538,11 @@ const authProtectedRoutes = [
   ...flattenRoutes(communicationRoutes),
   ...flattenRoutes(leadsRoutes),
   ...flattenRoutes(toolsRoutes),
+  { path: "/vacancy-requests", component: withProtectedRoute(<VacancyRequests />, "role:admin|role:hr") },
+  { path: "/vacancy-requests/create", component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr") },
+  { path: "/vacancy-requests/my-requests", component: withProtectedRoute(<MyVacancyRequests />, "role:admin|role:hr") },
+  { path: "/vacancy-requests/:id", component: withProtectedRoute(<VacancyRequestDetails />, "role:admin|role:hr") },
+  { path: "/vacancy-requests/:id/edit", component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr") },
 ]
 
 const publicRoutes = [
