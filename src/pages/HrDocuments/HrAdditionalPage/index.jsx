@@ -57,20 +57,22 @@ const HrAdditionalPage = () => {
   const showEmployeeOption = isAdmin || isDepartmentHead
 
   return (
-    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 dark:!bg-gray-900 dark:!text-gray-100">
       <form.Field name="type">
         {field => (
-          <div className="mb-4">
-            <label className="block mb-2">დოკუმენტის ტიპი</label>
+          <div className="mb-6">
+            <label className="block mb-2 text-sm font-medium text-gray-700 dark:!text-gray-300">
+              დოკუმენტის ტიპი
+            </label>
             <select
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={e => field.handleChange(e.target.value)}
-              className="form-select"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:!bg-gray-800 dark:!border-gray-700 dark:!text-gray-100"
             >
               <option value="">აირჩიეთ ტიპი</option>
               {Object.entries(DOCUMENT_TYPES).map(([key, type]) => (
-                <option key={key} value={type}>
+                <option key={key} value={type} className="dark:!bg-gray-800">
                   {type === DOCUMENT_TYPES.BULLETIN
                     ? "ბიულეტენი"
                     : "ექიმის დოკუმენტი"}
@@ -82,15 +84,15 @@ const HrAdditionalPage = () => {
       </form.Field>
 
       {showEmployeeOption && (
-        <div className="mb-4">
-          <label className="flex items-center">
+        <div className="mb-6">
+          <label className="flex items-center text-sm text-gray-700 dark:!text-gray-300">
             <input
               type="checkbox"
               checked={isForEmployee}
               onChange={e => setIsForEmployee(e.target.checked)}
-              className="mr-2"
+              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:!bg-gray-800 dark:!border-gray-700"
             />
-            დოკუმენტი სხვა თანამშრომლისთვის
+            <span className="ml-2">დოკუმენტი სხვა თანამშრომლისთვის</span>
           </label>
         </div>
       )}
@@ -99,13 +101,15 @@ const HrAdditionalPage = () => {
         <>
           <form.Field name="employeeName">
             {field => (
-              <div className="mb-4">
-                <label className="block mb-2">თანამშრომლის სახელი</label>
+              <div className="mb-6">
+                <label className="block mb-2 text-sm font-medium text-gray-700 dark:!text-gray-300">
+                  თანამშრომლის სახელი
+                </label>
                 <input
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={e => field.handleChange(e.target.value)}
-                  className="form-input"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:!bg-gray-800 dark:!border-gray-700 dark:!text-gray-100"
                 />
               </div>
             )}
@@ -113,13 +117,15 @@ const HrAdditionalPage = () => {
 
           <form.Field name="employeeDepartment">
             {field => (
-              <div className="mb-4">
-                <label className="block mb-2">თანამშრომლის დეპარტამენტი</label>
+              <div className="mb-6">
+                <label className="block mb-2 text-sm font-medium text-gray-700 dark:!text-gray-300">
+                  თანამშრომლის დეპარტამენტი
+                </label>
                 <input
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={e => field.handleChange(e.target.value)}
-                  className="form-input"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:!bg-gray-800 dark:!border-gray-700 dark:!text-gray-100"
                   readOnly={isDepartmentHead}
                 />
               </div>
@@ -128,7 +134,7 @@ const HrAdditionalPage = () => {
         </>
       )}
 
-      <div className="mb-4">
+      <div className="mb-6">
         <FileUpload
           files={files}
           onChange={setFiles}
@@ -142,6 +148,7 @@ const HrAdditionalPage = () => {
         actionType="add"
         onClick={form.handleSubmit}
         disabled={files.length === 0}
+        className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:!bg-indigo-700 dark:!hover:bg-indigo-600"
       >
         გაგზავნა
       </DialogButton>
