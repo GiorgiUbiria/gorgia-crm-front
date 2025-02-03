@@ -69,6 +69,11 @@ const useAuthStore = create((set, get) => ({
     return user?.roles?.some(role => role.slug === "admin") || false
   },
 
+  isSuperAdmin: () => {
+    const { user } = get()
+    return user?.id === 1
+  },
+
   isDepartmentHead: () => {
     const { user } = get()
     console.log(user)

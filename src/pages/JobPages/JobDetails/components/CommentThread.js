@@ -98,8 +98,7 @@ const CommentThread = ({ comment, currentUser, taskId, depth = 0 }) => {
 
   const userName = comment.user?.name || "Unknown"
   const userSurName = comment.user?.sur_name || ""
-  const userAvatar =
-    comment.user?.avatar_url || "https://via.placeholder.com/40"
+  const userAvatar = "https://via.placeholder.com/40"
 
   return (
     <div className={`${depth > 0 ? "ml-8 border-l border-gray-200 pl-4" : ""}`}>

@@ -6,6 +6,7 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline"
 import ProfileMenu from "../CommonForBoth/TopbarDropdown/ProfileMenu"
 import ThemeSwitcher from "../CommonForBoth/TopbarDropdown/ThemeSwitcher"
 import NotificationDropdown from "../Notifications/NotificationDropdown"
+import SuperAdminAccess from "../CommonForBoth/TopbarDropdown/SuperAdminAccess"
 
 import logo from "../../assets/images/gorgia-logo-04.png"
 
@@ -42,6 +43,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
         <div className="flex items-center h-full">
           <NotificationDropdown />
           <ThemeSwitcher />
+          <SuperAdminAccess />
           <ProfileMenu />
         </div>
       </div>

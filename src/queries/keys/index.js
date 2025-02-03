@@ -7,6 +7,13 @@ import { leadsKeys } from "./leads"
 import { authKeys } from "./auth"
 import { chatKeys } from "./chat"
 
+const hrAdditionalDocumentsKeys = {
+  all: ["hr-additional-documents"],
+  lists: () => [...hrAdditionalDocumentsKeys.all],
+  list: () => [...hrAdditionalDocumentsKeys.lists()],
+  current: () => [...hrAdditionalDocumentsKeys.all, "current"],
+}
+
 export const queryKeys = {
   dailies: dailiesKeys,
   tasks: tasksKeys,
@@ -16,4 +23,5 @@ export const queryKeys = {
   leads: leadsKeys,
   auth: authKeys,
   chat: chatKeys,
+  hrAdditionalDocuments: hrAdditionalDocumentsKeys,
 }

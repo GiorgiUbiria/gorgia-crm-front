@@ -102,7 +102,7 @@ const SidebarContent = ({ onLinkClick }) => {
 
   const handleMenuClick = useCallback(
     item => {
-      if (!item) return
+      if (!item || item.disabled) return
 
       if (!item.submenu) {
         onLinkClick()
@@ -129,6 +129,7 @@ const SidebarContent = ({ onLinkClick }) => {
             isActive={activeMenus.includes(item.to)}
             onClick={() => handleMenuClick(item)}
             onLinkClick={onLinkClick}
+            disabled={item.disabled}
           >
             {item.submenu ? renderSubmenu(item.submenu) : null}
           </MenuItem>
@@ -153,6 +154,7 @@ const SidebarContent = ({ onLinkClick }) => {
             isActive={activeMenus.includes(item.to)}
             onClick={() => handleMenuClick(item)}
             onLinkClick={onLinkClick}
+            disabled={item.disabled}
           >
             {item.submenu && renderSubmenu(item.submenu)}
           </MenuItem>

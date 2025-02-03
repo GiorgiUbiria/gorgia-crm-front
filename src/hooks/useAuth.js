@@ -21,6 +21,7 @@ const useAuth = () => {
     // Permission checks
     can: store.can,
     isAdmin: store.isAdmin,
+    isSuperAdmin: store.isSuperAdmin,
     isDepartmentHead: store.isDepartmentHead,
     isDepartmentHeadAssistant: store.isDepartmentHeadAssistant,
     isHrMember: store.isHrMember,

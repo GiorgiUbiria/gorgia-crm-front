@@ -22,6 +22,9 @@ import HeadPage from "pages/HeadPage"
 import HrPage from "pages/HrDocuments/HrPage"
 import HrPageApprove from "pages/HrDocuments/HrPageApprove"
 import UserHrDocuments from "pages/HrDocuments/UserHrDocuments"
+import UserHrAdditionalDocuments from "pages/HrDocuments/UserHrAdditionalDocuments"
+import HrAdditionalPage from "pages/HrDocuments/HrAdditionalPage"
+import HrAdditionalArchive from "pages/HrDocuments/HrAdditionalArchive"
 import JobDetails from "pages/JobPages/JobDetails"
 import FarmTaskDetails from "pages/FarmJobPages/JobDetails"
 import FarmTaskList from "pages/FarmJobPages/JobList"
@@ -226,6 +229,18 @@ const hrRoutes = {
         myRequests: {
           path: "/hr/documents/my-requests",
           component: withProtectedRoute(<UserHrDocuments />),
+        },
+        additionalNew: {
+          path: "/hr/documents/additional/new",
+          component: withProtectedRoute(<HrAdditionalPage />),
+        },
+        additionalArchive: {
+          path: "/hr/documents/additional/archive",
+          component: withProtectedRoute(<HrAdditionalArchive />),
+        },
+        additionalMyRequests: {
+          path: "/hr/documents/additional/my-requests",
+          component: withProtectedRoute(<UserHrAdditionalDocuments />),
         },
       },
     },

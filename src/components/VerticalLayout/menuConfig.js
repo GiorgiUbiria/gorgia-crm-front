@@ -206,6 +206,29 @@ const getMenuItems = can => {
           label: "ჩემი მოთხოვნები",
           icon: LuFileText,
         },
+        {
+          key: "additionalHrDocs",
+          label: "დამატებითი მოთხოვნები",
+          icon: LuFileText,
+          submenu: [
+            {
+              to: "/hr/documents/additional/new",
+              label: "ექიმის ცნობის/ბიულეტენის მოთხოვნა",
+              icon: LuPlus,
+            },
+            {
+              to: "/hr/documents/additional/my-requests",
+              label: "ჩემი ცნობები",
+              icon: LuFileText,
+            },
+            {
+              to: "/hr/documents/additional/archive",
+              label: "ცნობების არქივი",
+              icon: LuArchive,
+              show: () => can("department:8"),
+            },
+          ],
+        },
       ],
     },
     {
@@ -387,11 +410,11 @@ const getMenuItems = can => {
       label: "ვიზიტორების ფორმა",
       show: () => can("role:admin|department:36|department:21|department:30"),
     },
-    // {
-    //   to: "/tools/calendar",
-    //   icon: LuCalendarDays,
-    //   label: "კალენდარი",
-    // },
+    {
+      to: "/tools/calendar",
+      icon: LuCalendarDays,
+      label: "კალენდარი",
+    },
   ]
 
   const filterMenuItems = items => {

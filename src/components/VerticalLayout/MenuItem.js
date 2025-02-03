@@ -15,26 +15,31 @@ const MenuItem = memo(
     children,
     isActive,
     onLinkClick,
+    disabled,
   }) => (
     <li className="mb-1 w-full">
       <Link
-        to={hasSubmenu ? "#!" : to}
+        to={hasSubmenu || disabled ? "#!" : to}
         className={`
           flex items-center gap-3 px-4 py-2.5 rounded-md transition-colors min-w-0
           ${
-            isActive
+            isActive && !disabled
               ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200"
+              : disabled
+              ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
               : "hover:bg-blue-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200"
           }
-          ${hasSubmenu ? "cursor-pointer" : ""}
+          ${hasSubmenu && !disabled ? "cursor-pointer" : ""}
         `}
         onClick={
-          hasSubmenu
+          disabled
+            ? e => e.preventDefault()
+            : hasSubmenu
             ? e => {
                 e.preventDefault()
                 onClick()
               }
-            : (e) => {
+            : e => {
                 if (onClick) onClick(e)
                 if (!hasSubmenu && onLinkClick) onLinkClick()
               }
@@ -48,14 +53,14 @@ const MenuItem = memo(
           {label}
         </span>
 
-        {hasSubmenu && (
+        {hasSubmenu && !disabled && (
           <div className="w-3 flex-shrink-0 flex items-center justify-center">
             {isExpanded ? <BsChevronUp /> : <BsChevronDown />}
           </div>
         )}
       </Link>
 
-      {hasSubmenu && (
+      {hasSubmenu && !disabled && (
         <ul
           className={`
             pl-6 mt-1 overflow-hidden transition-all duration-300
@@ -85,6 +90,7 @@ MenuItem.propTypes = {
   onClick: PropTypes.func,
   children: PropTypes.node,
   onLinkClick: PropTypes.func,
+  disabled: PropTypes.bool,
 }
 
 MenuItem.displayName = "MenuItem"
