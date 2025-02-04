@@ -15,7 +15,12 @@ const JobDetails = () => {
   document.title = "Legal Task Details | Gorgia LLC"
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user, isLoading: userLoading, getUserDepartmentId, isAdmin } = useAuth()
+  const {
+    user,
+    isLoading: userLoading,
+    getUserDepartmentId,
+    isAdmin,
+  } = useAuth()
 
   const {
     data: task,
@@ -54,7 +59,7 @@ const JobDetails = () => {
         task.data.assigned_users?.some(user => user.id === user?.id)) ||
       isAdmin()
     )
-  }, [task, isLegalDepartment])
+  }, [task, isAdmin, isLegalDepartment])
 
   const canAccessTask = useMemo(() => {
     if (!task || !user) return false
@@ -84,14 +89,14 @@ const JobDetails = () => {
   }
 
   return (
-    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="bg-white shadow rounded-lg mb-6">
+    <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+      <div className="bg-white dark:!bg-gray-800 shadow rounded-lg mb-4 sm:mb-6">
         <TaskHeader task={task} />
-        <div className="p-6 flex justify-between items-center border-b border-gray-200">
+        <div className="p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-gray-200 dark:!border-gray-700">
           <TaskStatus status={task.data.status} />
           <TaskActions task={task} canEdit={hasEditPermission} />
         </div>
-        <div className="p-6">
+        <div className="p-3 sm:p-4 md:p-6">
           <TaskTimeline task={task} />
         </div>
       </div>

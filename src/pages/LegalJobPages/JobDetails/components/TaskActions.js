@@ -12,7 +12,6 @@ const TaskActions = ({ task, canEdit }) => {
   if (!task) return null
   if (!canEdit) return null
 
-
   const canUpdateStatus =
     (user.department_id === 10 &&
       task.data.assigned_users?.some(user => user.id === user.id)) ||
@@ -59,19 +58,22 @@ const TaskActions = ({ task, canEdit }) => {
   }
 
   const statusColors = {
-    in_progress: "bg-[#105D8D] hover:bg-[#0D4D75]",
-    completed: "bg-emerald-600 hover:bg-emerald-700",
-    cancelled: "bg-red-600 hover:bg-red-700",
+    in_progress:
+      "bg-[#105D8D] hover:bg-[#0D4D75] dark:!bg-blue-700 dark:!hover:bg-blue-800",
+    completed:
+      "bg-emerald-600 hover:bg-emerald-700 dark:!bg-emerald-700 dark:!hover:bg-emerald-800",
+    cancelled:
+      "bg-red-600 hover:bg-red-700 dark:!bg-red-700 dark:!hover:bg-red-800",
   }
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-2 sm:gap-3">
       {canUpdateStatus && task.data.status === "Pending" && (
         <button
           onClick={handleStartTask}
-          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.in_progress}`}
+          className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-white rounded ${statusColors.in_progress}`}
         >
-          <Play size={16} />
+          <Play size={14} className="sm:size-[16px]" />
           დაწყება
         </button>
       )}
@@ -79,9 +81,9 @@ const TaskActions = ({ task, canEdit }) => {
       {canUpdateStatus && task.data.status === "In Progress" && (
         <button
           onClick={handleFinishTask}
-          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.completed}`}
+          className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-white rounded ${statusColors.completed}`}
         >
-          <CheckCircle size={16} />
+          <CheckCircle size={14} className="sm:size-[16px]" />
           დასრულება
         </button>
       )}

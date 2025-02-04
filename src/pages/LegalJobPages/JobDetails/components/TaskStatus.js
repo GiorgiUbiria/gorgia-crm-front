@@ -31,9 +31,9 @@ const TaskStatus = ({ status }) => {
 
   return (
     <div
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${config.classes}`}
+      className={`flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${config.classes}`}
     >
-      <Icon size={16} />
+      <Icon size={14} className="sm:size-[16px]" />
       <span>{config.label}</span>
     </div>
   )

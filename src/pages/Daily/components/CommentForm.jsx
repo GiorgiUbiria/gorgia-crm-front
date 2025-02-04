@@ -55,12 +55,12 @@ const CommentForm = ({
         placeholder={placeholder}
         disabled={isLoading}
       />
-      <div className="mt-3 flex justify-end gap-2">
+      <div className="mt-3 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:!text-gray-400 dark:!hover:text-gray-200"
+            className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:!text-gray-400 dark:!hover:text-gray-200 transition-colors"
           >
             გაუქმება
           </button>
@@ -68,7 +68,7 @@ const CommentForm = ({
         <button
           type="submit"
           disabled={isLoading}
-          className="px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:!bg-[#1A7AB8] dark:!hover:bg-[#1569A0]"
+          className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm bg-[#105D8D] hover:bg-[#0D4D75] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:!bg-[#1A7AB8] dark:!hover:bg-[#1569A0]"
         >
           {isLoading ? "იგზავნება..." : submitText}
         </button>

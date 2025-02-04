@@ -20,12 +20,12 @@ const ProfileHeader = ({ userData, onImageChange }) => {
     : NoAvatarIcon
 
   return (
-    <header className="relative bg-gradient-to-br from-blue-500 to-blue-700 dark:!from-blue-600 dark:!to-blue-900 rounded-2xl p-6 sm:p-8 shadow-xl overflow-hidden group">
+    <header className="relative bg-gradient-to-br from-blue-500 to-blue-700 dark:!from-blue-600 dark:!to-blue-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl overflow-hidden group">
       <div className="absolute inset-0 bg-white/5 opacity-50" />
 
-      <div className="relative flex flex-col sm:flex-row items-center gap-6 w-full">
+      <div className="relative flex flex-col items-center gap-4 sm:gap-6 w-full">
         <div className="relative group/photo">
-          <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden ring-4 ring-white/20 transition-all duration-300 group-hover/photo:ring-white/40 transform group-hover/photo:scale-[1.02]">
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-xl sm:rounded-2xl overflow-hidden ring-4 ring-white/20 transition-all duration-300 group-hover/photo:ring-white/40 transform group-hover/photo:scale-[1.02]">
             <img
               src={profileImageSrc}
               alt={`${userData?.name} ${userData?.sur_name}`}
@@ -63,18 +63,18 @@ const ProfileHeader = ({ userData, onImageChange }) => {
           </div>
         </div>
 
-        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 tracking-tight">
+        <div className="flex flex-col items-center text-center w-full">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-3 tracking-tight">
             {userData?.name} {userData?.sur_name}
           </h1>
-          <div className="flex flex-wrap justify-center sm:justify-start gap-2">
-            <span className="px-4 py-2 rounded-xl text-sm font-medium bg-white/20 text-white backdrop-blur-sm hover:bg-white/30 transition-all duration-200 shadow-inner-lg">
+          <div className="flex flex-wrap justify-center gap-2 max-w-full px-2">
+            <span className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium bg-white/20 text-white backdrop-blur-sm hover:bg-white/30 transition-all duration-200 shadow-inner-lg">
               {userData?.department?.name}
             </span>
             {userData?.roles?.map(role => (
               <span
                 key={role.id}
-                className="px-4 py-2 rounded-xl text-sm font-medium bg-blue-400/30 text-white backdrop-blur-sm hover:bg-blue-400/40 transition-all duration-200 shadow-inner-lg"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium bg-blue-400/30 text-white backdrop-blur-sm hover:bg-blue-400/40 transition-all duration-200 shadow-inner-lg"
               >
                 {roleNameMapping[role.slug] || role.name}
               </span>

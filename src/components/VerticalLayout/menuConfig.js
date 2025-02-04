@@ -113,6 +113,7 @@ const getMenuItems = can => {
           key: "business-trip",
           label: "მივლინება",
           icon: LuPlane,
+          disabled: true,
           to: "/applications/business-trip",
           submenu: [
             {

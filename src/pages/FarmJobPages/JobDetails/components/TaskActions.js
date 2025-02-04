@@ -64,24 +64,26 @@ const TaskActions = ({ task, canEdit }) => {
   }
 
   return (
-    <div className="flex gap-3">
+    <div className="flex flex-col gap-2 sm:gap-3 w-full sm:w-auto">
       {canUpdateStatus && task.data.status === "Pending" && (
         <button
           onClick={handleStartTask}
-          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.in_progress}`}
+          disabled={startTaskMutation.isPending}
+          className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm md:text-base text-white dark:!text-gray-100 rounded-lg w-full sm:w-40 ${statusColors.in_progress} dark:!bg-[#0D4D75] dark:!hover:bg-[#105D8D] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200`}
         >
-          <Play size={16} />
-          დაწყება
+          <Play size={14} className="shrink-0 sm:size-4" />
+          {startTaskMutation.isPending ? "მიმდინარეობს..." : "დაწყება"}
         </button>
       )}
 
       {canUpdateStatus && task.data.status === "In Progress" && (
         <button
           onClick={handleFinishTask}
-          className={`flex items-center gap-2 px-4 py-2 text-white rounded ${statusColors.completed}`}
+          disabled={finishTaskMutation.isPending}
+          className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm md:text-base text-white dark:!text-gray-100 rounded-lg w-full sm:w-40 ${statusColors.completed} dark:!bg-emerald-700 dark:!hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200`}
         >
-          <CheckCircle size={16} />
-          დასრულება
+          <CheckCircle size={14} className="shrink-0 sm:size-4" />
+          {finishTaskMutation.isPending ? "მიმდინარეობს..." : "დასრულება"}
         </button>
       )}
     </div>

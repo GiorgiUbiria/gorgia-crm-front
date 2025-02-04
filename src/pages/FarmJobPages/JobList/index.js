@@ -275,15 +275,15 @@ const TaskList = () => {
   }
 
   return (
-    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-      <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
+    <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-4">
+      <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row items-center justify-between mb-2 sm:mb-4">
         <div className="w-full sm:w-auto">
-          <h5 className="text-xl font-medium mb-3 sm:mb-0 text-gray-900 dark:!text-gray-100">
+          <h5 className="text-lg sm:text-xl font-medium mb-2 sm:mb-0 text-gray-900 dark:!text-gray-100">
             ბილეთების სია
           </h5>
-          <div className="flex mt-3 sm:mt-2 border-b border-gray-200 dark:!border-gray-700">
+          <div className="flex overflow-x-auto mt-2 sm:mt-1 border-b border-gray-200 dark:!border-gray-700">
             <button
-              className={`px-4 py-2 text-sm font-medium ${
+              className={`px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${
                 activeTab === "my"
                   ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
                   : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
@@ -295,7 +295,7 @@ const TaskList = () => {
             {check("role:admin|department:38").render(
               <>
                 <button
-                  className={`px-4 py-2 text-sm font-medium ${
+                  className={`px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${
                     activeTab === "all"
                       ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
                       : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
@@ -305,30 +305,30 @@ const TaskList = () => {
                   ყველა ბილეთი
                 </button>
                 <button
-                  className={`px-4 py-2 text-sm font-medium ${
+                  className={`px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${
                     activeTab === "assigned"
                       ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
                       : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
                   }`}
                   onClick={() => setActiveTab("assigned")}
                 >
-                  ჩემზე მიბმული ბილეთები
+                  ჩემზე მიბმული
                 </button>
                 <button
-                  className={`px-4 py-2 text-sm font-medium ${
+                  className={`px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap ${
                     activeTab === "completed"
                       ? "text-blue-600 dark:!text-blue-400 border-b-2 border-blue-600 dark:!border-blue-400"
                       : "text-gray-500 dark:!text-gray-400 hover:text-gray-700 dark:!hover:text-gray-300"
                   }`}
                   onClick={() => setActiveTab("completed")}
                 >
-                  დასრულებული ბილეთები
+                  დასრულებული
                 </button>
               </>
             )}
           </div>
         </div>
-        <div className="mt-3 sm:mt-0">
+        <div className="mt-2 sm:mt-0">
           <DialogButton
             actionType="add"
             size="sm"
@@ -388,11 +388,13 @@ const TaskList = () => {
         />
       </CrmDialog>
 
-      <CrmTable
-        data={transformedFarmTasks}
-        columns={columns}
-        onRowClick={handleRowClick}
-      />
+      <div className="overflow-x-auto">
+        <CrmTable
+          data={transformedFarmTasks}
+          columns={columns}
+          onRowClick={handleRowClick}
+        />
+      </div>
     </div>
   )
 }

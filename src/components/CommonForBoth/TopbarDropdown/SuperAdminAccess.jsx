@@ -18,7 +18,7 @@ const SuperAdminAccess = () => {
     try {
       setLoading(true)
       const { data } = await getSuperAdminAccess()
-      
+
       // Update the local state for the form
       setAccessData({
         availableRoles: data.all_roles || [],
@@ -75,7 +75,9 @@ const SuperAdminAccess = () => {
       await fetchAccessData()
     } catch (error) {
       console.error("Update roles error:", error)
-      toast.error(error.response?.data?.message || "როლების განახლება ვერ მოხერხდა")
+      toast.error(
+        error.response?.data?.message || "როლების განახლება ვერ მოხერხდა"
+      )
     } finally {
       setLoading(false)
     }
@@ -125,10 +127,10 @@ const SuperAdminAccess = () => {
     <>
       <button
         onClick={openModal}
-        className="p-2 hover:bg-blue-100 dark:!hover:bg-gray-800 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:!focus:ring-gray-700"
+        className="p-1.5 sm:p-2 hover:bg-blue-100 dark:!hover:bg-gray-800 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:!focus:ring-gray-700"
         title="სუპერ ადმინისტრატორის წვდომა"
       >
-        <Cog6ToothIcon className="w-6 h-6 text-gray-700 dark:!text-gray-200" />
+        <Cog6ToothIcon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:!text-gray-200" />
       </button>
 
       <div
@@ -143,8 +145,8 @@ const SuperAdminAccess = () => {
           onClick={() => setIsOpen(false)}
         ></div>
 
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <div className="w-full max-w-md p-6 overflow-hidden text-left align-middle bg-white dark:!bg-gray-800 shadow-xl rounded-2xl">
+        <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4">
+          <div className="w-full max-w-md mx-2 sm:mx-0 p-4 sm:p-6 overflow-hidden text-left align-middle bg-white dark:!bg-gray-800 shadow-xl rounded-lg sm:rounded-2xl">
             <h2
               className="text-lg font-medium mb-4 text-gray-900 dark:!text-gray-100"
               id="modal-title"

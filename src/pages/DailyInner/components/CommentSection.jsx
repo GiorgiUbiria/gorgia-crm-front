@@ -120,15 +120,13 @@ const CommentSection = ({ daily, canComment }) => {
 
   return (
     <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6 border-b border-gray-200 dark:!border-gray-700 pb-4">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 border-b border-gray-200 dark:!border-gray-700 pb-3 sm:pb-4">
           <CommentHeader count={rootComments.length} />
           {canComment && !showCommentForm && (
             <button
-              onClick={() => {
-                setShowCommentForm(true)
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] dark:!bg-[#1A7AB8] dark:!hover:bg-[#1569A0] text-white rounded-lg transition-colors"
+              onClick={() => setShowCommentForm(true)}
+              className="flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto px-3 sm:px-4 py-2 text-xs sm:text-sm bg-[#105D8D] hover:bg-[#0D4D75] dark:!bg-[#1A7AB8] dark:!hover:bg-[#1569A0] text-white rounded-lg transition-colors"
             >
               <Plus size={16} />
               <span>დაამატე კომენტარი</span>

@@ -45,7 +45,7 @@ export const AddDailyForm = ({ onSuccess }) => {
         e.stopPropagation()
         form.handleSubmit()
       }}
-      className="space-y-4"
+      className="space-y-3 sm:space-y-4"
     >
       <div>
         <form.Field
@@ -59,7 +59,7 @@ export const AddDailyForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+                className="block text-xs sm:text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 sm:mb-1.5"
               >
                 თარიღი
               </label>
@@ -70,7 +70,7 @@ export const AddDailyForm = ({ onSuccess }) => {
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg border border-gray-300 dark:!border-gray-600 bg-white dark:!bg-gray-700 text-gray-700 dark:!text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:!focus:ring-blue-400 dark:!focus:border-blue-400 transition-all duration-200"
               />
               <FieldInfo field={field} />
             </div>
@@ -94,7 +94,7 @@ export const AddDailyForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+                className="block text-xs sm:text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 sm:mb-1.5"
               >
                 საკითხი
               </label>
@@ -105,7 +105,7 @@ export const AddDailyForm = ({ onSuccess }) => {
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg border border-gray-300 dark:!border-gray-600 bg-white dark:!bg-gray-700 text-gray-700 dark:!text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:!focus:ring-blue-400 dark:!focus:border-blue-400 transition-all duration-200"
               />
               <FieldInfo field={field} />
             </div>
@@ -119,7 +119,7 @@ export const AddDailyForm = ({ onSuccess }) => {
             <div>
               <label
                 htmlFor={field.name}
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+                className="block text-xs sm:text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 sm:mb-1.5"
               >
                 აღწერა
               </label>
@@ -130,7 +130,7 @@ export const AddDailyForm = ({ onSuccess }) => {
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
                 rows={4}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg border border-gray-300 dark:!border-gray-600 bg-white dark:!bg-gray-700 text-gray-700 dark:!text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:!focus:ring-blue-400 dark:!focus:border-blue-400 transition-all duration-200"
               />
               <FieldInfo field={field} />
             </div>

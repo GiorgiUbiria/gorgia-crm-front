@@ -159,31 +159,36 @@ const DailiesInner = () => {
   }
 
   return (
-    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="p-4 sm:p-6">
-        <div className="mb-4 flex gap-3">
+    <div className="w-full mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
+      <div className="p-2 sm:p-3 md:p-4 lg:p-6">
+        <div className="mb-3 flex flex-col sm:flex-row gap-2 sm:gap-3">
           {isAdmin() && (
             <DialogButton
               actionType="downloadExcel"
               onClick={exportToExcel}
               label="Excel გადმოწერა"
+              className="w-full sm:w-auto"
             />
           )}
           <DialogButton
             actionType="add"
             onClick={() => setIsAddModalOpen(true)}
             label="დღის შედეგის დამატება"
+            className="w-full sm:w-auto"
           />
         </div>
 
-        <CrmTable
-          columns={columns}
-          size="lg"
-          data={transformedDailies}
-          renderSubComponent={renderSubComponent}
-          getRowCanExpand={() => true}
-          onRowClick={handleRowClick}
-        />
+        <div className="overflow-x-auto">
+          <CrmTable
+            columns={columns}
+            size="lg"
+            data={transformedDailies}
+            renderSubComponent={renderSubComponent}
+            getRowCanExpand={() => true}
+            onRowClick={handleRowClick}
+            className="min-w-[600px] sm:min-w-0"
+          />
+        </div>
       </div>
 
       <CrmDialog
@@ -192,19 +197,22 @@ const DailiesInner = () => {
         title="დღის შედეგის დამატება"
         description="შეავსეთ ფორმა დღის შედეგის დასამატებლად"
         footer={
-          <>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
             <DialogButton
               actionType="cancel"
               onClick={() => setIsAddModalOpen(false)}
               label="გაუქმება"
+              className="w-full sm:w-auto"
             />
             <DialogButton
               actionType="submit"
               form="dailyForm"
               label="დამატება"
+              className="w-full sm:w-auto"
             />
-          </>
+          </div>
         }
+        className="w-[95%] sm:w-[80%] md:w-[70%] lg:w-[60%]"
       >
         <AddDailyForm
           onSuccess={() => setIsAddModalOpen(false)}

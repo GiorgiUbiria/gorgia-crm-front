@@ -15,7 +15,12 @@ const JobDetails = () => {
   document.title = "Farm Task Details | Gorgia LLC"
   const { id } = useParams()
   const navigate = useNavigate()
-  const { isAdmin, user, getUserDepartmentId, isLoading: userLoading } = useAuth()
+  const {
+    isAdmin,
+    user,
+    getUserDepartmentId,
+    isLoading: userLoading,
+  } = useAuth()
 
   const {
     data: task,
@@ -30,10 +35,14 @@ const JobDetails = () => {
         })
         navigate("/support/farm-tasks")
       } else {
-        toast.error("დავალების ინფორმაციის ჩატვირთვის დროს დაფიქსირდა შეცდომა", "შეცდომა", {
-          duration: 2000,
-          size: "small",
-        })
+        toast.error(
+          "დავალების ინფორმაციის ჩატვირთვის დროს დაფიქსირდა შეცდომა",
+          "შეცდომა",
+          {
+            duration: 2000,
+            size: "small",
+          }
+        )
         console.error("Error fetching task details:", error)
       }
     },
@@ -48,7 +57,7 @@ const JobDetails = () => {
         task.data.assigned_users?.some(user => user.id === user?.id)) ||
       isAdmin()
     )
-  }, [task, isAdmin])
+  }, [task, isAdmin, getUserDepartmentId])
 
   const isFarmDepartment = getUserDepartmentId() === 38
 
@@ -81,9 +90,9 @@ const JobDetails = () => {
 
   return (
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="bg-white shadow rounded-lg mb-6">
+      <div className="bg-white dark:!bg-gray-800 shadow rounded-lg mb-6">
         <TaskHeader task={task} />
-        <div className="p-6 flex justify-between items-center border-b border-gray-200">
+        <div className="p-6 flex justify-between items-center border-b border-gray-200 dark:!border-gray-700">
           <TaskStatus status={task.data.status} />
           <TaskActions task={task} canEdit={hasEditPermission} />
         </div>
@@ -92,7 +101,6 @@ const JobDetails = () => {
         </div>
       </div>
       <CommentSection task={task} canComment={canAccessTask} />
-      
     </div>
   )
 }

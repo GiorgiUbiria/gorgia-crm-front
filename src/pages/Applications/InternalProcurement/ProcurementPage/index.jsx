@@ -23,7 +23,8 @@ const branchOptions = [
   "წყალსადენი - საწყობი",
   "დსკ - საწყობი",
   "სარაჯიშვილი - საწყობი",
-  "ლუსონი"
+  "ლუსონი",
+  "ანთა - სოფ. სარალი",
 ]
 
 const categoryOptions = ["IT", "Marketing", "Security", "Network", "Farm"]

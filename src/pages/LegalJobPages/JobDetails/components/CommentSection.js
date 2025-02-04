@@ -47,11 +47,10 @@ const CommentSection = ({ task, canComment }) => {
       )
     }
   }
-
   if (userLoading || commentsLoading) {
     return (
-      <div className="bg-white shadow rounded-lg">
-        <div className="p-6 flex justify-center">
+      <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
+        <div className="p-4 sm:p-6 flex justify-center">
           <Spinner color="primary" />
         </div>
       </div>
@@ -60,9 +59,9 @@ const CommentSection = ({ task, canComment }) => {
 
   if (error) {
     return (
-      <div className="bg-white shadow rounded-lg">
-        <div className="p-6">
-          <p className="text-center text-red-500">
+      <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
+        <div className="p-4 sm:p-6">
+          <p className="text-center text-red-500 dark:!text-red-400">
             კომენტარების ჩატვირთვის დროს დაფიქსირდა შეცდომა
           </p>
         </div>
@@ -71,27 +70,32 @@ const CommentSection = ({ task, canComment }) => {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <MessageSquare size={20} className="text-[#105D8D]" />
-          <h2 className="text-lg font-medium text-gray-900">კომენტარები</h2>
+    <div className="bg-white dark:!bg-gray-800 shadow rounded-lg">
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center gap-2 mb-4 sm:mb-6">
+          <MessageSquare
+            size={20}
+            className="text-[#105D8D] dark:!text-blue-400"
+          />
+          <h2 className="text-lg font-medium text-gray-900 dark:!text-gray-100">
+            კომენტარები
+          </h2>
         </div>
 
         {canComment && (
-          <form onSubmit={handleSubmitComment} className="mb-8">
+          <form onSubmit={handleSubmitComment} className="mb-6 sm:mb-8">
             <textarea
               value={newComment}
               onChange={e => setNewComment(e.target.value)}
               placeholder="დაწერე კომენტარი..."
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-[#105D8D] focus:ring-1 focus:ring-[#105D8D] focus:outline-none transition-colors resize-none"
-              rows={4}
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:!border-gray-700 focus:border-[#105D8D] dark:focus:!border-blue-400 focus:ring-1 focus:ring-[#105D8D] dark:focus:!ring-blue-400 focus:outline-none transition-colors resize-none bg-white dark:!bg-gray-800 text-gray-700 dark:!text-gray-300"
+              rows={3}
             />
-            <div className="mt-3 flex justify-end">
+            <div className="mt-2 sm:mt-3 flex justify-end">
               <button
                 type="submit"
                 disabled={createCommentMutation.isPending}
-                className="px-4 py-2 bg-[#105D8D] hover:bg-[#0D4D75] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-[#105D8D] dark:!bg-blue-600 hover:bg-[#0D4D75] dark:hover:!bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {createCommentMutation.isPending
                   ? "იგზავნება..."
@@ -101,7 +105,7 @@ const CommentSection = ({ task, canComment }) => {
           </form>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {comments?.data.length > 0 ? (
             comments.data.map(comment => (
               <CommentThread
@@ -113,7 +117,9 @@ const CommentSection = ({ task, canComment }) => {
               />
             ))
           ) : (
-            <p className="text-center text-gray-500">კომენტარები არ არის</p>
+            <p className="text-center text-gray-500 dark:!text-gray-400">
+              კომენტარები არ არის
+            </p>
           )}
         </div>
       </div>
