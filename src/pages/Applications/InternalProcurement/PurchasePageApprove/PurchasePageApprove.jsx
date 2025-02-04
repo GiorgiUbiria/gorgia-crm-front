@@ -149,17 +149,14 @@ const PurchasePageApprove = () => {
 
   const canApproveRequest = useCallback(
     purchase => {
-      // Completed or Rejected can't be changed
       if (purchase.status === "completed" || purchase.status === "rejected") {
         return false
       }
 
-      // Admin can always approve
       if (isAdmin()) {
         return true
       }
 
-      // Department head only
       if (!isDepartmentHead()) {
         return false
       }
@@ -169,8 +166,6 @@ const PurchasePageApprove = () => {
       const categoryDepartmentId = categoryDepartmentMap[purchaseCategory]
 
       if (requesterDepartmentId === categoryDepartmentId) {
-        // If requester's department head is also category's department head,
-        // only "pending department head" status is relevant for them
         return (
           purchase.status === "pending department head" &&
           getUserDepartmentId() === requesterDepartmentId
@@ -311,6 +306,17 @@ const PurchasePageApprove = () => {
             <small className="text-muted">
               {row.original.requester?.department?.name || "N/A"}
             </small>
+          </div>
+        ),
+      },
+      {
+        Header: "შესყიდვის ტიპი",
+        accessor: "procurement_type",
+        Cell: ({ value }) => (
+          <div>
+            <span className="badge bg-primary">
+              {value === "purchase" ? "შესყიდვა" : "ფასის მოკვლევა"}
+            </span>
           </div>
         ),
       },

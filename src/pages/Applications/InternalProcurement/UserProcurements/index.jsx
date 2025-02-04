@@ -88,6 +88,17 @@ const UserProcurements = () => {
         ),
       },
       {
+        Header: "შესყიდვის ტიპი",
+        accessor: "procurement_type",
+        Cell: ({ value }) => (
+          <div>
+            <span className="badge bg-primary">
+              {value === "purchase" ? "შესყიდვა" : "ფასის მოკვლევა"}
+            </span>
+          </div>
+        ),
+      },
+      {
         Header: "ფილიალი",
         accessor: "branch",
       },

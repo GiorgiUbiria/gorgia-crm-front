@@ -313,6 +313,7 @@ const ProcurementPage = () => {
 
   const formik = useFormik({
     initialValues: {
+      procurement_type: "",
       branch: "",
       category: "",
       purchase_purpose: "",
@@ -426,7 +427,6 @@ const ProcurementPage = () => {
             if (err?.response?.data?.errors) {
               const errorMessages = Object.entries(err.response.data.errors)
                 .map(([field, messages]) => {
-                  // Handle nested product errors
                   if (field.startsWith("products.")) {
                     const [, index, subField] =
                       field.match(/products\.(\d+)\.(.+)/) || []
@@ -476,14 +476,12 @@ const ProcurementPage = () => {
     },
   })
 
-  // Function to show all current validation errors with better formatting
   const showCurrentValidationErrors = () => {
     const errors = formik.errors
     if (Object.keys(errors).length > 0) {
       const errorMessages = Object.entries(errors)
         .map(([field, error]) => {
           if (field === "products" && typeof error === "object") {
-            // Handle product array errors
             if (Array.isArray(error)) {
               return error
                 .map((productError, index) => {
@@ -541,20 +539,34 @@ const ProcurementPage = () => {
 
   return (
     <div className="min-h-screen dark:!bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         <div className="bg-white dark:!bg-gray-800 shadow-lg rounded-xl">
-          <div className="p-6">
-            <form onSubmit={formik.handleSubmit} className="space-y-6">
+          <div className="p-3 sm:p-6">
+            <form
+              onSubmit={formik.handleSubmit}
+              className="space-y-4 sm:space-y-6"
+            >
               {generalError && (
-                <div className="p-4 rounded-lg bg-red-50 dark:!bg-red-900/30 border-2 border-red-200 dark:!border-red-800">
-                  <pre className="text-red-700 dark:!text-red-200 whitespace-pre-wrap text-sm">
+                <div className="p-3 sm:p-4 rounded-lg bg-red-50 dark:!bg-red-900/30 border-2 border-red-200 dark:!border-red-800">
+                  <pre className="text-red-700 dark:!text-red-200 whitespace-pre-wrap text-xs sm:text-sm">
                     {generalError}
                   </pre>
                 </div>
               )}
 
               <FormSection title="ძირითადი ინფორმაცია">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+                  <InputWithError
+                    formik={formik}
+                    name="procurement_type"
+                    label="შესყიდვის ტიპი"
+                    type="select"
+                  >
+                    <option value="">აირჩიეთ შესყიდვის ტიპი</option>
+                    <option value="purchase">შესყიდვა</option>
+                    <option value="price_inquiry">ფასის მოკვლევა</option>
+                  </InputWithError>
+
                   <InputWithError
                     formik={formik}
                     name="branch"
@@ -592,7 +604,7 @@ const ProcurementPage = () => {
               </FormSection>
 
               <FormSection title="შესყიდვის ინფორმაცია">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                   <InputWithError
                     formik={formik}
                     name="purchase_purpose"
@@ -611,12 +623,12 @@ const ProcurementPage = () => {
               </FormSection>
 
               <FormSection title="მარაგის ინფორმაცია">
-                <div className="space-y-4">
+                <div className="space-y-2 sm:space-y-4">
                   <div>
-                    <Label className="text-gray-700 dark:!text-gray-200">
+                    <Label className="text-sm sm:text-base text-gray-700 dark:!text-gray-200">
                       იქმნება მარაგი?
                     </Label>
-                    <div className="flex gap-4 mt-2">
+                    <div className="flex gap-2 sm:gap-4 mt-1 sm:mt-2">
                       <FormGroup check inline>
                         <Input
                           type="radio"
@@ -629,7 +641,7 @@ const ProcurementPage = () => {
                         />
                         <Label
                           check
-                          className="text-gray-700 dark:!text-gray-200"
+                          className="text-sm sm:text-base text-gray-700 dark:!text-gray-200"
                         >
                           დიახ
                         </Label>
@@ -646,7 +658,7 @@ const ProcurementPage = () => {
                         />
                         <Label
                           check
-                          className="text-gray-700 dark:!text-gray-200"
+                          className="text-sm sm:text-base text-gray-700 dark:!text-gray-200"
                         >
                           არა
                         </Label>
@@ -666,8 +678,8 @@ const ProcurementPage = () => {
               </FormSection>
 
               <FormSection title="მოთხოვნის ინფორმაცია">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                  <div className="space-y-2 sm:space-y-4">
                     <InputWithError
                       formik={formik}
                       name="requested_arrival_date"
@@ -693,7 +705,7 @@ const ProcurementPage = () => {
 
               {formik.values.category === "Marketing" && (
                 <FormSection title="მართვის ინფორმაცია">
-                  <div className="space-y-4">
+                  <div className="space-y-2 sm:space-y-4">
                     <InputWithError
                       formik={formik}
                       name="external_url"
@@ -713,7 +725,7 @@ const ProcurementPage = () => {
               {formik.values.category !== "Marketing" &&
                 formik.values.category !== "" && (
                   <FormSection title="მართვის ინფორმაცია">
-                    <div className="space-y-4">
+                    <div className="space-y-2 sm:space-y-4">
                       <InputWithError
                         formik={formik}
                         name="file"
@@ -726,7 +738,7 @@ const ProcurementPage = () => {
                 )}
 
               <FormSection title="პროდუქტების სია">
-                <div className="space-y-4">
+                <div className="space-y-2 sm:space-y-4">
                   {formik.values.products.map((product, index) => (
                     <ProductForm
                       key={index}
@@ -740,17 +752,22 @@ const ProcurementPage = () => {
                 </div>
               </FormSection>
 
-              <div>
-                <Button type="button" color="primary" onClick={addProduct}>
+              <div className="flex justify-center sm:justify-start">
+                <Button
+                  type="button"
+                  color="primary"
+                  onClick={addProduct}
+                  className="w-full sm:w-auto"
+                >
                   პროდუქტის დამატება
                 </Button>
               </div>
 
-              <div className="mt-8 flex justify-end gap-4">
+              <div className="mt-4 sm:mt-8 flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
                 <button
                   type="button"
                   onClick={showCurrentValidationErrors}
-                  className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 
+                  className="px-4 sm:px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 
                     hover:bg-gray-200 rounded-lg transition-colors
                     dark:!bg-gray-700 dark:!text-gray-300 dark:!hover:bg-gray-600"
                 >
@@ -796,7 +813,6 @@ const ProcurementPage = () => {
           </div>
         </div>
       </div>
-      
     </div>
   )
 }
