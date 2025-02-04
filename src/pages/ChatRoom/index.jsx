@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef, useCallback } from "react"
 import ChatRoomService from "../../services/chatroom"
 import echo from "../../plugins/echo"
 import classNames from "classnames"
@@ -8,56 +8,159 @@ import useAuth from "hooks/useAuth"
 import CrmDialog, { DialogButton } from "../../components/CrmDialogs/Dialog"
 import CrmSelect from "../../components/CrmSelect"
 import { useGetListNames } from "../../queries/admin"
+import useEmblaCarousel from "embla-carousel-react"
 
-// Enhanced Message component
-const Message = ({ message, currentUser, formatTime }) => {
+const Message = ({ message, currentUser, formatTime, messages }) => {
+  const [showImageViewer, setShowImageViewer] = useState(false)
   const isMyMessage = message.user?.id === currentUser?.id
 
   return (
-    <div
-      className={classNames("flex group", {
-        "justify-end": isMyMessage,
-      })}
-    >
+    <>
       <div
-        className={classNames(
-          "max-w-[70%] rounded-2xl p-3 break-words relative transition-all duration-200",
-          {
-            "bg-[#0095F6] text-white": isMyMessage,
-            "bg-[#262626] dark:!bg-[#363636] text-white": !isMyMessage,
-          }
-        )}
+        className={classNames("flex group", {
+          "justify-end": isMyMessage,
+        })}
       >
-        {message.type === "text" && (
-          <p className="text-sm leading-relaxed">{message.message}</p>
-        )}
-        {message.type === "image" && message.file_path && (
-          <img
-            src={`${process.env.REACT_APP_API_URL}/storage/${message.file_path}`}
-            alt="Uploaded"
-            className="max-w-full rounded-lg shadow-sm"
-          />
-        )}
-        {message.type === "file" && message.file_path && (
-          <a
-            href={`${process.env.ACT_APP_API_URL}/storage/${message.file_path}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 hover:text-blue-500 flex items-center gap-1"
-          >
-            <i className="bx bx-file" />
-            {message.file_name}
-          </a>
-        )}
-        <div className="text-xs opacity-70 mt-1">
-          {formatTime(message.created_at)}
+        <div
+          className={classNames(
+            "max-w-[70%] rounded-2xl p-3 break-words relative transition-all duration-200",
+            {
+              "bg-[#0095F6] text-white": isMyMessage,
+              "bg-[#262626] dark:!bg-[#363636] text-white": !isMyMessage,
+            }
+          )}
+        >
+          {message.type === "text" && (
+            <p className="text-sm leading-relaxed">{message.message}</p>
+          )}
+          {message.type === "image" && message.file_path && (
+            <img
+              src={`${process.env.REACT_APP_API_URL}/storage/${message.file_path}`}
+              alt="Uploaded"
+              className="max-w-full rounded-lg shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => setShowImageViewer(true)}
+            />
+          )}
+          {message.type === "file" && message.file_path && (
+            <a
+              href={`${process.env.REACT_APP_API_URL}/storage/${message.file_path}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-500 flex items-center gap-1"
+            >
+              <i className="bx bx-file" />
+              {message.file_name}
+            </a>
+          )}
+          <div className="text-xs opacity-70 mt-1">
+            {formatTime(message.created_at)}
+          </div>
         </div>
       </div>
+      {message.type === "image" && (
+        <ImageViewer
+          isOpen={showImageViewer}
+          onClose={() => setShowImageViewer(false)}
+          currentImage={message}
+          messages={messages}
+        />
+      )}
+    </>
+  )
+}
+
+const ImageViewer = ({ isOpen, onClose, currentImage, messages }) => {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
+  const imageMessages = messages.filter(msg => msg.type === "image")
+
+  useEffect(() => {
+    if (isOpen && currentImage && emblaApi) {
+      const index = imageMessages.findIndex(
+        msg => msg.type === "image" && msg.file_path === currentImage.file_path
+      )
+      emblaApi.scrollTo(index)
+    }
+  }, [isOpen, currentImage, imageMessages, emblaApi])
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev()
+  }, [emblaApi])
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext()
+  }, [emblaApi])
+
+  if (!isOpen || imageMessages.length === 0) return null
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex flex-col">
+      <div className="absolute top-4 right-4 z-50">
+        <button
+          onClick={onClose}
+          className="p-2 text-white hover:text-gray-300 transition-colors"
+        >
+          <i className="bx bx-x text-3xl" />
+        </button>
+      </div>
+      <div className="flex-1 flex items-center justify-center relative">
+        {imageMessages.length > 1 && (
+          <>
+            <button
+              onClick={scrollPrev}
+              className="absolute left-4 p-4 text-white hover:text-gray-300 transition-colors z-10"
+            >
+              <i className="bx bx-chevron-left text-4xl" />
+            </button>
+            <button
+              onClick={scrollNext}
+              className="absolute right-4 p-4 text-white hover:text-gray-300 transition-colors z-10"
+            >
+              <i className="bx bx-chevron-right text-4xl" />
+            </button>
+          </>
+        )}
+        <div className="w-full max-w-[80vw] overflow-hidden" ref={emblaRef}>
+          <div className="flex">
+            {imageMessages.map((msg, index) => (
+              <div
+                key={msg.id}
+                className="flex-[0_0_100%] min-w-0 relative flex items-center justify-center"
+              >
+                <img
+                  src={`${process.env.REACT_APP_API_URL}/storage/${msg.file_path}`}
+                  alt={`Image ${index + 1}`}
+                  className="max-h-[80vh] max-w-[80vw] object-contain"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {imageMessages.length > 1 && (
+        <div className="p-4 flex justify-center gap-2">
+          {imageMessages.map((msg, index) => (
+            <button
+              key={msg.id}
+              onClick={() => emblaApi?.scrollTo(index)}
+              className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                emblaApi?.selectedScrollSnap() === index
+                  ? "border-blue-500"
+                  : "border-transparent hover:border-gray-300"
+              }`}
+            >
+              <img
+                src={`${process.env.REACT_APP_API_URL}/storage/${msg.file_path}`}
+                alt={`Thumbnail ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
-// Enhanced MessageInput component
 const MessageInput = ({ onSendMessage }) => {
   const [message, setMessage] = useState("")
   const [file, setFile] = useState(null)
@@ -65,7 +168,7 @@ const MessageInput = ({ onSendMessage }) => {
   const textareaRef = useRef(null)
 
   const handleSubmit = async e => {
-    e.preventDefault()
+    e?.preventDefault()
     if (!message.trim() && !file) return
 
     try {
@@ -91,6 +194,16 @@ const MessageInput = ({ onSendMessage }) => {
     }
   }
 
+  const handleKeyDown = e => {
+    if (e.key === "Enter") {
+      if (e.shiftKey) {
+        return
+      }
+      e.preventDefault()
+      handleSubmit()
+    }
+  }
+
   const handleInputChange = e => {
     setMessage(e.target.value)
     if (textareaRef.current) {
@@ -110,7 +223,8 @@ const MessageInput = ({ onSendMessage }) => {
             ref={textareaRef}
             value={message}
             onChange={handleInputChange}
-            placeholder="შეიყვანეთ შეტყობინება..."
+            onKeyDown={handleKeyDown}
+            placeholder="შეიყვანეთ შეტყობინება... (Enter გასაგზავნად, Shift+Enter ახალი ხაზისთვის)"
             rows={1}
             className="w-full min-h-[48px] max-h-[200px] rounded-full border border-[#262626] dark:!border-[#363636] p-3 pl-4 pr-20 bg-white dark:!bg-[#121212] text-[#262626] dark:!text-white resize-none overflow-y-auto transition-all duration-200 focus:ring-1 focus:ring-[#0095F6] focus:border-[#0095F6] scrollbar-thin scrollbar-thumb-gray-300 dark:!scrollbar-thumb-gray-600 scrollbar-track-transparent"
           />
@@ -160,7 +274,6 @@ const MessageInput = ({ onSendMessage }) => {
   )
 }
 
-// Enhanced ChatRoomList component
 const ChatRoomList = ({
   rooms,
   setRooms,
@@ -200,35 +313,38 @@ const ChatRoomList = ({
     )
   }
 
-  // Function to update room's last message
-  const updateRoomLastMessage = (roomId, newMessage) => {
-    setRooms(prevRooms =>
-      prevRooms.map(room =>
-        room.id === roomId ? { ...room, last_message: newMessage } : room
+  const updateRoomLastMessage = useCallback(
+    (roomId, newMessage) => {
+      setRooms(prevRooms =>
+        prevRooms.map(room =>
+          room.id === roomId ? { ...room, last_message: newMessage } : room
+        )
       )
-    )
-  }
+    },
+    [setRooms]
+  )
 
-  // Function to mark last message as read
-  const markLastMessageAsRead = roomId => {
-    setRooms(prevRooms =>
-      prevRooms.map(room => {
-        if (room.id === roomId && room.last_message) {
-          return {
-            ...room,
-            last_message: {
-              ...room.last_message,
-              read_at: new Date().toISOString(),
-            },
-            unread_count: 0,
+  const markLastMessageAsRead = useCallback(
+    roomId => {
+      setRooms(prevRooms =>
+        prevRooms.map(room => {
+          if (room.id === roomId && room.last_message) {
+            return {
+              ...room,
+              last_message: {
+                ...room.last_message,
+                read_at: new Date().toISOString(),
+              },
+              unread_count: 0,
+            }
           }
-        }
-        return room
-      })
-    )
-  }
+          return room
+        })
+      )
+    },
+    [setRooms]
+  )
 
-  // Handle new messages from Echo
   useEffect(() => {
     const handleNewMessage = message => {
       updateRoomLastMessage(message.chat_room_id, message)
@@ -241,14 +357,13 @@ const ChatRoomList = ({
     return () => {
       echo.private(`user.${currentUser.id}`).stopListening(".new.chat.message")
     }
-  }, [currentUser.id])
+  }, [currentUser.id, updateRoomLastMessage])
 
-  // Mark messages as read when room is selected
   useEffect(() => {
     if (selectedRoom) {
       markLastMessageAsRead(selectedRoom.id)
     }
-  }, [selectedRoom])
+  }, [markLastMessageAsRead, selectedRoom])
 
   const listContent = (
     <div className="h-full flex flex-col bg-white dark:!bg-gray-800 rounded-l-md">
@@ -386,7 +501,6 @@ const ChatRoomList = ({
   )
 }
 
-// Enhanced NewChatModal component
 const NewChatModal = ({ onClose, onCreateRoom }) => {
   const [newChatType, setNewChatType] = useState("private")
   const [newChatName, setNewChatName] = useState("")
@@ -532,7 +646,6 @@ const NewChatModal = ({ onClose, onCreateRoom }) => {
   )
 }
 
-// SearchInConversation component
 const SearchInConversation = ({ messages, searchQuery, onClose }) => {
   const filteredMessages = messages.filter(msg =>
     msg.message?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -581,16 +694,13 @@ const SearchInConversation = ({ messages, searchQuery, onClose }) => {
   )
 }
 
-// MembersList component
 const MembersList = ({ room, onClose }) => {
   const members = [
-    // Include the current room owner/admin
     {
       ...room.pivot,
       id: room.created_by,
       role: "admin",
     },
-    // Add other participants
     ...(room.other_participants || []).map(member => ({
       ...member,
       role: member.pivot?.role || "member",
@@ -641,7 +751,6 @@ const MembersList = ({ room, onClose }) => {
   )
 }
 
-// Main ChatRoom component
 const ChatRoom = () => {
   const { user: currentUser } = useAuth()
   const [rooms, setRooms] = useState([])
@@ -658,7 +767,62 @@ const ChatRoom = () => {
   const dropdownRef = useRef(null)
   const [isMobileListOpen, setIsMobileListOpen] = useState(false)
 
-  // Echo connection handling
+  const markMessagesAsRead = useCallback(
+    async messageIds => {
+      try {
+        await ChatRoomService.markMessagesAsRead(selectedRoom?.id, messageIds)
+        setMessages(prev =>
+          prev.map(msg =>
+            messageIds.includes(msg.id) ? { ...msg, is_read: true } : msg
+          )
+        )
+      } catch (error) {
+        console.error("Failed to mark messages as read:", error)
+      }
+    },
+    [selectedRoom?.id, setMessages]
+  )
+
+  const handleNewMessage = useCallback(
+    async event => {
+      console.log("Handling new message:", event)
+
+      setMessages(prev => {
+        const filteredMessages = prev.filter(
+          msg => !msg.id.toString().includes("temp-")
+        )
+
+        const messageExists = filteredMessages.some(msg => msg.id === event.id)
+
+        if (messageExists) {
+          return filteredMessages
+        }
+
+        if (event.user?.id !== currentUser?.id) {
+          markMessagesAsRead([event.id])
+        }
+
+        return [...filteredMessages, event]
+      })
+
+      setRooms(prevRooms =>
+        prevRooms.map(room =>
+          room.id === event.chat_room_id
+            ? {
+                ...room,
+                last_message: event,
+                unread_count:
+                  event.user?.id !== currentUser?.id
+                    ? (room.unread_count || 0) + 1
+                    : room.unread_count,
+              }
+            : room
+        )
+      )
+    },
+    [currentUser?.id, markMessagesAsRead]
+  )
+
   useEffect(() => {
     echo.connector.pusher.connection.bind("connected", () => {
       console.log("Connected to Echo/Reverb")
@@ -679,7 +843,6 @@ const ChatRoom = () => {
     }
   }, [])
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = event => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -728,63 +891,7 @@ const ChatRoom = () => {
         echo.leave(`presence.chat.room.${selectedRoom.id}`)
       }
     }
-  }, [selectedRoom])
-
-  const markMessagesAsRead = async messageIds => {
-    try {
-      await ChatRoomService.markMessagesAsRead(selectedRoom.id, messageIds)
-      // Update local state to mark messages as read
-      setMessages(prev =>
-        prev.map(msg =>
-          messageIds.includes(msg.id) ? { ...msg, is_read: true } : msg
-        )
-      )
-    } catch (error) {
-      console.error("Failed to mark messages as read:", error)
-    }
-  }
-
-  const handleNewMessage = async event => {
-    console.log("Handling new message:", event)
-
-    // Update messages list
-    setMessages(prev => {
-      // Remove optimistic message if it exists
-      const filteredMessages = prev.filter(
-        msg => !msg.id.toString().includes("temp-")
-      )
-
-      // Check if message already exists to prevent duplicates
-      const messageExists = filteredMessages.some(msg => msg.id === event.id)
-
-      if (messageExists) {
-        return filteredMessages
-      }
-
-      // If it's a new message from another user, mark it as read
-      if (event.user?.id !== currentUser?.id) {
-        markMessagesAsRead([event.id])
-      }
-
-      return [...filteredMessages, event]
-    })
-
-    // Update last_message in rooms list
-    setRooms(prevRooms =>
-      prevRooms.map(room =>
-        room.id === event.chat_room_id
-          ? {
-              ...room,
-              last_message: event,
-              unread_count:
-                event.user?.id !== currentUser?.id
-                  ? (room.unread_count || 0) + 1
-                  : room.unread_count,
-            }
-          : room
-      )
-    )
-  }
+  }, [handleNewMessage, selectedRoom])
 
   useEffect(() => {
     scrollToBottom()
@@ -796,7 +903,6 @@ const ChatRoom = () => {
 
   const handleSendMessage = async messageData => {
     try {
-      // Optimistically add text messages
       if (messageData.type === "text") {
         const optimisticMessage = {
           id: "temp-" + Date.now(),
@@ -814,19 +920,20 @@ const ChatRoom = () => {
         messageData
       )
 
-      // For file uploads, add the message after successful upload
-      if (messageData.type === "file" || messageData.type === "image") {
-        setMessages(prev => {
-          // Remove any temporary messages
-          const filteredMessages = prev.filter(
-            msg => !msg.id.toString().includes("temp-")
-          )
-          return [...filteredMessages, response.data]
-        })
-      }
+      setMessages(prev => {
+        const filteredMessages = prev.filter(
+          msg => !msg.id.toString().includes("temp-")
+        )
+        const messageExists = filteredMessages.some(
+          msg => msg.id === response.data.id
+        )
+        if (messageExists) {
+          return filteredMessages
+        }
+        return [...filteredMessages, response.data]
+      })
     } catch (error) {
       console.error("Failed to send message:", error)
-      // Remove optimistic message if it failed
       setMessages(prev =>
         prev.filter(msg => !msg.id.toString().includes("temp-"))
       )
@@ -850,10 +957,8 @@ const ChatRoom = () => {
     }
   }
 
-  // Add useEffect to mark messages as read when the chat is opened
   useEffect(() => {
     if (selectedRoom) {
-      // Get unread messages
       const unreadMessages = messages.filter(
         msg => !msg.is_read && msg.user?.id !== currentUser?.id
       )
@@ -863,14 +968,13 @@ const ChatRoom = () => {
         markMessagesAsRead(unreadMessageIds)
       }
     }
-  }, [selectedRoom, messages])
+  }, [selectedRoom, messages, currentUser?.id, markMessagesAsRead])
 
   const handleSelectRoom = async room => {
     setSelectedRoom(room)
     await loadMessages(room.id)
   }
 
-  // Show members list
   const showMembersList = () => {
     if (!selectedRoom || selectedRoom.type !== "group") return
     setShowMembers(true)
@@ -879,7 +983,6 @@ const ChatRoom = () => {
 
   const handleSearch = query => {
     setSearchQuery(query)
-    // Filter rooms based on the search query
     if (query.trim()) {
       const filteredRooms = rooms.filter(room => {
         const roomName =
@@ -895,12 +998,10 @@ const ChatRoom = () => {
       })
       setRooms(filteredRooms)
     } else {
-      // If search query is empty, reload original rooms
       loadRooms()
     }
   }
 
-  // Add search functionality for messages within a conversation
   const searchInConversation = () => {
     if (!selectedRoom || !searchQuery.trim()) return
     setShowSearch(true)
@@ -934,9 +1035,7 @@ const ChatRoom = () => {
                   >
                     <i className="bx bx-menu text-xl" />
                   </button>
-                  <div className="w-10 h-10 rounded-full bg-gray-100 dark:!bg-gray-700 overflow-hidden">
-                    {/* Add avatar image here if available */}
-                  </div>
+                  <div className="w-10 h-10 rounded-full bg-gray-100 dark:!bg-gray-700 overflow-hidden"></div>
                   <div>
                     <h2 className="text-lg font-medium text-gray-900 dark:!text-gray-100">
                       {selectedRoom.type === "private"
@@ -997,6 +1096,7 @@ const ChatRoom = () => {
                   message={msg}
                   currentUser={currentUser}
                   formatTime={formatTime}
+                  messages={messages}
                 />
               ))}
               <div ref={messagesEndRef} />
