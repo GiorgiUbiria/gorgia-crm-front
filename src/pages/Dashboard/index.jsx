@@ -11,6 +11,7 @@ import {
   PlaneTakeoff,
   ArrowRight,
   CalendarDays,
+  FileArchive,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import useAuth from "hooks/useAuth"
@@ -87,6 +88,7 @@ const widgets = [
     buttonText: "მოითხოვე",
     link: "/applications/business-trip/new",
     color: "slate",
+    disabled: true,
   },
   {
     id: 9,
@@ -117,13 +119,12 @@ const widgets = [
   },
   {
     id: 12,
-    title: "...",
-    description: "მალე დაემატება",
-    icon: PlaneTakeoff,
-    buttonText: "მოითხოვე",
-    link: "/applications/business-trip/new",
-    color: "slate",
-    disabled: true,
+    title: "ვაკანსიის მოთხოვნის ფორმა",
+    description: "გადადი ბმულზე და მოითხოვე ახალი ვაკანსია",
+    icon: FileArchive,
+    buttonText: "გადასვლა",
+    link: "https://shorturl.at/shHhk",
+    color: "orange",
   },
 ]
 
@@ -279,7 +280,6 @@ function Dashboard() {
   return (
     <div className="min-h-screen dark:!from-gray-900 dark:!to-gray-800 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        {/* Welcome Card */}
         <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 dark:!from-blue-800 dark:!to-blue-900 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl overflow-hidden mb-6 sm:mb-8 animate-fade-in hover:shadow-xl sm:hover:shadow-3xl transition-all duration-500">
           <div className="absolute inset-0 bg-grid-white/[0.05] dark:!bg-grid-gray-900/[0.05] opacity-50" />
           <div className="absolute -inset-4 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -294,7 +294,6 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Widgets Grid */}
         <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {widgets.map((widget, index) => (
             <WidgetCard

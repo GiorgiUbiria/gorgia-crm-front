@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import {
-  Box,
-  IconButton,
-  Typography,
-  CircularProgress,
-} from "@mui/material"
-import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import { getNote, updateNote } from "../../services/note"
 import NoteForm from "./NoteForm"
+import { ArrowLeftIcon } from "@heroicons/react/24/outline"
 
 const EditNote = () => {
   const { id } = useParams()
@@ -33,7 +27,7 @@ const EditNote = () => {
     fetchNote()
   }, [id])
 
-  const handleSubmit = async (data) => {
+  const handleSubmit = async data => {
     setIsSubmitting(true)
     setError("")
     try {
@@ -60,64 +54,48 @@ const EditNote = () => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <CircularProgress />
-      </Box>
+      <div className="min-h-screen flex items-center justify-center dark:!bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
     )
   }
 
   if (!note && !isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <Typography color="error">ჩანაწერი ვერ მოიძებნა</Typography>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center dark:!bg-gray-900">
+        <p className="text-red-500 dark:!text-red-400">ჩანაწერი ვერ მოიძებნა</p>
+      </div>
     )
   }
 
   return (
-    <div className="page-content">
-      <div className="container-fluid">
-        <div className="notes-editor-container">
-          <Box
-            sx={{
-              width: "100%",
-              padding: "30px",
-              backgroundColor: "#ffffff",
-              borderRadius: "15px",
-              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-            }}
+    <div className="min-h-screen p-4 dark:!bg-gray-900">
+      <div className="max-w-4xl mx-auto bg-white dark:!bg-gray-800 rounded-lg shadow-lg p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <button
+            onClick={() => navigate("/tools/notes")}
+            className="text-blue-600 dark:!text-blue-400 hover:text-blue-700 dark:!hover:text-blue-300 p-2 rounded-full hover:bg-gray-100 dark:!hover:bg-gray-700 transition-colors"
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3,
-              }}
-            >
-              <IconButton
-                onClick={() => navigate("/tools/notes")}
-                sx={{ color: "#007dba" }}
-              >
-                <ArrowBackIcon />
-              </IconButton>
-              <Typography variant="h5">ჩანაწერის განახლება</Typography>
-            </Box>
+            <ArrowLeftIcon className="w-6 h-6" />
+          </button>
 
-            <NoteForm
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-              error={error}
-              initialValues={{
-                title: note?.title || "",
-                content: note?.content || "",
-              }}
-            />
-          </Box>
+          <h2 className="text-xl font-semibold text-gray-800 dark:!text-gray-200">
+            ჩანაწერის განახლება
+          </h2>
         </div>
+
+        <NoteForm
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={error}
+          initialValues={{
+            title: note?.title || "",
+            content: note?.content || "",
+          }}
+        />
       </div>
     </div>
   )
 }
 
-export default EditNote 
+export default EditNote

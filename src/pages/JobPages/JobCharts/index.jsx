@@ -296,13 +296,11 @@ const TaskCharts = () => {
 
     return Object.entries(typeCount)
       .map(([name, value]) => {
-        // Calculate assignee stats for this task type
         const tasksOfThisType = taskData.filter(
           task => task.task_title === name
         )
         const assigneeStats = {}
 
-        // First collect all unique assignees for this task type
         tasksOfThisType.forEach(task => {
           task.assigned_users?.forEach(user => {
             const userName = `${user.name} ${user.sur_name}`
@@ -312,7 +310,6 @@ const TaskCharts = () => {
           })
         })
 
-        // Then count tasks and completions for each assignee
         Object.keys(assigneeStats).forEach(userName => {
           tasksOfThisType.forEach(task => {
             const isAssignedToUser = task.assigned_users?.some(
@@ -347,14 +344,14 @@ const TaskCharts = () => {
   }
 
   return (
-    <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white dark:!bg-gray-900">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:!text-white">
+    <div className="max-w-full mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8 bg-white dark:!bg-gray-900">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:!text-white">
           დავალებების ანალიტიკა
         </h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <button
-            className={`px-4 py-2 rounded-lg transition-all ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-all ${
               timeRange === "week"
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 dark:!bg-gray-700 text-gray-700 dark:!text-gray-200 hover:bg-gray-300 dark:!hover:bg-gray-600"
@@ -364,7 +361,7 @@ const TaskCharts = () => {
             კვირა
           </button>
           <button
-            className={`px-4 py-2 rounded-lg transition-all ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-all ${
               timeRange === "month"
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 dark:!bg-gray-700 text-gray-700 dark:!text-gray-200 hover:bg-gray-300 dark:!hover:bg-gray-600"
@@ -374,7 +371,7 @@ const TaskCharts = () => {
             თვე
           </button>
           <button
-            className={`px-4 py-2 rounded-lg transition-all ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-all ${
               timeRange === "year"
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 dark:!bg-gray-700 text-gray-700 dark:!text-gray-200 hover:bg-gray-300 dark:!hover:bg-gray-600"
@@ -386,271 +383,289 @@ const TaskCharts = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
         {/* Task Creation Timeline */}
-        <div className="bg-white dark:!bg-gray-800 p-6 rounded-xl shadow-lg col-span-2">
-          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+        <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებების შექმნის დინამიკა
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={taskCompletionTrend}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                className="stroke-gray-300 dark:!stroke-gray-600"
-              />
-              <XAxis
-                dataKey="date"
-                angle={-45}
-                textAnchor="end"
-                height={100}
-                {...chartAxisStyle}
-              />
-              <YAxis {...chartAxisStyle} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: "currentColor" }} />
-              <Area
-                type="monotone"
-                dataKey="completionRate"
-                fill="#8884d8"
-                stroke="#8884d8"
-                fillOpacity={0.3}
-                name="დასრულების მაჩვენებელი"
-              />
-              <Line
-                type="monotone"
-                dataKey="completionRate"
-                stroke="#82ca9d"
-                name="ტრენდი"
-                dot={false}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <ComposedChart data={taskCompletionTrend}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  className="stroke-gray-300 dark:!stroke-gray-600"
+                />
+                <XAxis
+                  dataKey="date"
+                  angle={-45}
+                  textAnchor="end"
+                  height={100}
+                  {...chartAxisStyle}
+                />
+                <YAxis {...chartAxisStyle} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ color: "currentColor" }} />
+                <Area
+                  type="monotone"
+                  dataKey="completionRate"
+                  fill="#8884d8"
+                  stroke="#8884d8"
+                  fillOpacity={0.3}
+                  name="დასრულების მაჩვენებელი"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="completionRate"
+                  stroke="#82ca9d"
+                  name="ტრენდი"
+                  dot={false}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Task Status Distribution */}
-        <div className="bg-white dark:!bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+        <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებების სტატუსები
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <PieChart>
-              <Pie
-                data={tasksByStatus.map(item => ({
-                  ...item,
-                  name: STATUS_TRANSLATIONS[item.name] || item.name,
-                }))}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
-                label
-              >
-                {tasksByStatus.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: "currentColor" }} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={tasksByStatus.map(item => ({
+                    ...item,
+                    name: STATUS_TRANSLATIONS[item.name] || item.name,
+                  }))}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  label
+                >
+                  {tasksByStatus.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ color: "currentColor" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Tasks by Priority */}
-        <div className="bg-white dark:!bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+        <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები პრიორიტეტის მიხედვით
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <PieChart>
-              <Pie
-                data={tasksByPriority}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
-                label
-              >
-                {tasksByPriority.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: "currentColor" }} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={tasksByPriority}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  label
+                >
+                  {tasksByPriority.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ color: "currentColor" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Average Completion Time by Priority */}
-        <div className="bg-white dark:!bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+        <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             საშუალო შესრულების დრო პრიორიტეტის მიხედვით
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={averageCompletionTime}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                className="stroke-gray-300 dark:!stroke-gray-600"
-              />
-              <XAxis dataKey="priority" {...chartAxisStyle} />
-              <YAxis {...chartAxisStyle} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: "currentColor" }} />
-              <Bar dataKey="hours" name="საათები">
-                {averageCompletionTime.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <BarChart data={averageCompletionTime}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  className="stroke-gray-300 dark:!stroke-gray-600"
+                />
+                <XAxis dataKey="priority" {...chartAxisStyle} />
+                <YAxis {...chartAxisStyle} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ color: "currentColor" }} />
+                <Bar dataKey="hours" name="საათები">
+                  {averageCompletionTime.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Tasks by Due Range */}
-        <div className="bg-white dark:!bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+        <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები ვადების მიხედვით
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <PieChart>
-              <Pie
-                data={tasksByDueRange}
-                dataKey="count"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
-                label
-              >
-                {tasksByDueRange.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: "currentColor" }} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={tasksByDueRange}
+                  dataKey="count"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  label
+                >
+                  {tasksByDueRange.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ color: "currentColor" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Tasks by Type */}
-        <div className="bg-white dark:!bg-gray-800 p-6 rounded-xl shadow-lg col-span-2">
-          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+        <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები ტიპის მიხედვით
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <PieChart>
-              <Pie
-                data={tasksByType}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
-                label
-              >
-                {tasksByType.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: "currentColor" }} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={tasksByType}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  label
+                >
+                  {tasksByType.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ color: "currentColor" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Tasks by Department */}
-        <div className="bg-white dark:!bg-gray-800 p-6 rounded-xl shadow-lg col-span-2">
-          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+        <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები დეპარტამენტების მიხედვით
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={tasksByDepartment}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                className="stroke-gray-300 dark:!stroke-gray-600"
-              />
-              <XAxis
-                dataKey="name"
-                angle={-45}
-                textAnchor="end"
-                height={100}
-                {...chartAxisStyle}
-              />
-              <YAxis {...chartAxisStyle} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: "currentColor" }} />
-              <Bar
-                dataKey="count"
-                fill="#8884d8"
-                name="დავალებების რაოდენობა"
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <BarChart data={tasksByDepartment}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  className="stroke-gray-300 dark:!stroke-gray-600"
+                />
+                <XAxis
+                  dataKey="name"
+                  angle={-45}
+                  textAnchor="end"
+                  height={100}
+                  {...chartAxisStyle}
+                />
+                <YAxis {...chartAxisStyle} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ color: "currentColor" }} />
+                <Bar
+                  dataKey="count"
+                  fill="#8884d8"
+                  name="დავალებების რაოდენობა"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Tasks by Assignee */}
-        <div className="bg-white dark:!bg-gray-800 p-6 rounded-xl shadow-lg col-span-2">
-          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+        <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები თანამშრომლების მიხედვით
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={tasksByAssignee}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                className="stroke-gray-300 dark:!stroke-gray-600"
-              />
-              <XAxis
-                dataKey="name"
-                angle={-45}
-                textAnchor="end"
-                height={100}
-                {...chartAxisStyle}
-              />
-              <YAxis {...chartAxisStyle} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: "currentColor" }} />
-              <Bar dataKey="tasks" fill="#82ca9d" name="დავალებები" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <BarChart data={tasksByAssignee}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  className="stroke-gray-300 dark:!stroke-gray-600"
+                />
+                <XAxis
+                  dataKey="name"
+                  angle={-45}
+                  textAnchor="end"
+                  height={100}
+                  {...chartAxisStyle}
+                />
+                <YAxis {...chartAxisStyle} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ color: "currentColor" }} />
+                <Bar dataKey="tasks" fill="#82ca9d" name="დავალებები" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Most Commented Tasks */}
-        <div className="bg-white dark:!bg-gray-800 p-6 rounded-xl shadow-lg col-span-2">
-          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+        <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             ყველაზე აქტიური დავალებები (კომენტარების მიხედვით)
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={commentsActivity}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                className="stroke-gray-300 dark:!stroke-gray-600"
-              />
-              <XAxis
-                dataKey="taskTitle"
-                angle={-45}
-                textAnchor="end"
-                height={100}
-                {...chartAxisStyle}
-              />
-              <YAxis {...chartAxisStyle} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ color: "currentColor" }} />
-              <Bar
-                dataKey="commentCount"
-                fill="#8884d8"
-                name="კომენტარების რაოდენობა"
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[300px] sm:h-[400px] w-full">
+            <ResponsiveContainer>
+              <BarChart data={commentsActivity}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  className="stroke-gray-300 dark:!stroke-gray-600"
+                />
+                <XAxis
+                  dataKey="taskTitle"
+                  angle={-45}
+                  textAnchor="end"
+                  height={100}
+                  {...chartAxisStyle}
+                />
+                <YAxis {...chartAxisStyle} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ color: "currentColor" }} />
+                <Bar
+                  dataKey="commentCount"
+                  fill="#8884d8"
+                  name="კომენტარების რაოდენობა"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

@@ -1,10 +1,8 @@
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Box, IconButton, Typography } from "@mui/material"
-import ArrowBackIcon from "@mui/icons-material/ArrowBack"
-import "react-quill/dist/quill.snow.css"
 import { createNote } from "../../services/note"
 import NoteForm from "./NoteForm"
+import { ArrowLeftIcon } from "@heroicons/react/24/outline"
 
 const CreateNote = () => {
   const navigate = useNavigate()
@@ -37,43 +35,28 @@ const CreateNote = () => {
   }
 
   return (
-    <div className="page-content">
-      <div className="container-fluid">
-        <div className="notes-editor-container">
-          <Box
-            sx={{
-              width: "100%",
-              padding: "30px",
-              backgroundColor: "#ffffff",
-              borderRadius: "15px",
-              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-            }}
+    <div className="min-h-screen p-4 dark:!bg-gray-900">
+      <div className="max-w-4xl mx-auto bg-white dark:!bg-gray-800 rounded-lg shadow-lg p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <button
+            onClick={() => navigate("/tools/notes")}
+            className="text-blue-600 dark:!text-blue-400 hover:text-blue-700 dark:!hover:text-blue-300 p-2 rounded-full hover:bg-gray-100 dark:!hover:bg-gray-700 transition-colors"
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3,
-              }}
-            >
-              <IconButton
-                onClick={() => navigate("/tools/notes")}
-                sx={{ color: "#007dba" }}
-              >
-                <ArrowBackIcon />
-              </IconButton>
-              <Typography variant="h5">ახალი ჩანაწერის შექმნა</Typography>
-            </Box>
+            <ArrowLeftIcon className="w-6 h-6" />
+          </button>
 
-            <NoteForm
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-              error={error}
-              initialValues={{ title: "", content: "" }}
-            />
-          </Box>
+          <h2 className="text-xl font-semibold text-gray-800 dark:!text-gray-200">
+            ახალი ჩანაწერის შექმნა
+          </h2>
         </div>
+
+        <NoteForm
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={error}
+          initialValues={{ title: "", content: "" }}
+        />
       </div>
     </div>
   )

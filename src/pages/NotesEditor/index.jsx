@@ -1,14 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import {
-  Box,
-  TextField,
-  IconButton,
-  Button,
-  CircularProgress,
-  Typography,
-} from "@mui/material"
+import { CircularProgress } from "@mui/material"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
+
 import SaveIcon from "@mui/icons-material/Save"
 import ReactQuill from "react-quill"
 import "react-quill/dist/quill.snow.css"
@@ -50,7 +44,7 @@ const NotesEditor = () => {
           content: content || "",
         })
       } catch (err) {
-        setError("Failed to load note data.")
+        setError("დაფიქსირდა შეცდომა")
       } finally {
         setLoadingState(prev => ({ ...prev, isFetching: false }))
       }
@@ -70,7 +64,7 @@ const NotesEditor = () => {
         title: data.title.trim(),
         content: data.content.trim(),
       }
-      
+
       if (isNew) {
         await createNote(payload)
       } else {
@@ -84,9 +78,9 @@ const NotesEditor = () => {
           .flat()
           .filter(Boolean)
           .join(", ")
-        setError(errorMessages || "Failed to save note")
+        setError(errorMessages || "დაფიქსირდა შეცდომა")
       } else {
-        setError("Failed to save note. Please try again.")
+        setError("დაფიქსირდა შეცდომა")
       }
     } finally {
       setLoadingState(prev => ({ ...prev, isSaving: false }))
@@ -94,139 +88,107 @@ const NotesEditor = () => {
   }
 
   return (
-    <div className="page-content">
-      <div className="container-fluid">
-        <div className="notes-editor-container">
-          <Box
-            sx={{
-              width: "100%",
-              padding: "30px",
-              backgroundColor: "#ffffff",
-              borderRadius: "15px",
-              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-            }}
+    <div className="min-h-screen p-4 dark:!bg-gray-900">
+      <div className="max-w-4xl mx-auto bg-white dark:!bg-gray-800 rounded-lg shadow-lg p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate("/tools/notes")}
+            className="text-blue-600 dark:!text-blue-400 hover:text-blue-700 dark:!hover:text-blue-300 p-2 rounded-full hover:bg-gray-100 dark:!hover:bg-gray-700 transition-colors"
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3,
-              }}
-            >
-              {/* Back Button */}
-              <IconButton
-                onClick={() => navigate("/tools/notes")}
-                sx={{ color: "#007dba" }}
-              >
-                <ArrowBackIcon />
-              </IconButton>
+            <ArrowBackIcon className="w-6 h-6" />
+          </button>
 
-              {/* Save Button with Loading Indicator */}
-              <Button
-                variant="contained"
-                onClick={handleSubmit(onSubmit)}
-                disabled={loadingState.isSaving || !isDirty}
-                sx={{
-                  backgroundColor: "#007dba",
-                  color: "#ffffff",
-                  borderRadius: "25px",
-                  padding: "10px 20px",
-                  fontWeight: "bold",
-                  textTransform: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                {loadingState.isSaving ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  <SaveIcon />
-                )}
-                {loadingState.isSaving ? "Saving..." : "Save"}
-              </Button>
-            </Box>
-
-            {/* Title Input */}
-            <Controller
-              name="title"
-              control={control}
-              rules={{
-                required: "Title is required",
-                maxLength: {
-                  value: 255,
-                  message: "Title must not exceed 255 characters",
-                },
-              }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  variant="standard"
-                  placeholder="Note Title..."
-                  fullWidth
-                  error={!!errors.title}
-                  helperText={errors.title ? errors.title.message : ""}
-                  InputProps={{
-                    disableUnderline: true,
-                    sx: {
-                      fontSize: "24px",
-                      fontWeight: "bold",
-                      color: "#007dba",
-                    },
-                  }}
-                  sx={{ mb: 3 }}
-                />
-              )}
-            />
-
-            <Controller
-              name="content"
-              control={control}
-              rules={{ required: "Content is required" }}
-              render={({ field }) =>
-                loadingState.isFetching ? (
-                  <Box display="flex" justifyContent="center" py={4}>
-                    <CircularProgress />
-                  </Box>
-                ) : (
-                  <ReactQuill
-                    {...field}
-                    onChange={value => field.onChange(value)}
-                    placeholder="Type your note here..."
-                    theme="snow"
-                    style={{
-                      height: "300px",
-                      marginBottom: "50px",
-                      backgroundColor: "#f9f9f9",
-                      borderRadius: "10px",
-                      padding: "10px",
-                    }}
-                  />
-                )
-              }
-            />
-            {errors.content && (
-              <Typography color="error" variant="body2" sx={{ mb: 2 }}>
-                {errors.content.message}
-              </Typography>
+          {/* Save Button */}
+          <button
+            onClick={handleSubmit(onSubmit)}
+            disabled={loadingState.isSaving || !isDirty}
+            className="flex items-center gap-2 bg-blue-600 dark:!bg-blue-500 hover:bg-blue-700 dark:!hover:bg-blue-600 text-white px-6 py-2 rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loadingState.isSaving ? (
+              <div className="w-6 h-6 animate-spin">
+                <CircularProgress className="w-full h-full" color="inherit" />
+              </div>
+            ) : (
+              <SaveIcon className="w-5 h-5" />
             )}
-
-            {/* Error Message */}
-            {error && (
-              <Box
-                sx={{
-                  marginTop: "20px",
-                  padding: "10px",
-                  borderRadius: "5px",
-                  backgroundColor: "#ffefef",
-                }}
-              >
-                <Typography sx={{ color: "#d9534f" }}>{error}</Typography>
-              </Box>
-            )}
-          </Box>
+            {loadingState.isSaving ? "Saving..." : "Save"}
+          </button>
         </div>
+
+        {/* Title Input */}
+        <Controller
+          name="title"
+          control={control}
+          rules={{
+            required: "Title is required",
+            maxLength: {
+              value: 255,
+              message: "Title must not exceed 255 characters",
+            },
+          }}
+          render={({ field }) => (
+            <div className="mb-6">
+              <input
+                {...field}
+                type="text"
+                placeholder="Note Title..."
+                className="w-full text-2xl font-bold text-blue-600 dark:!text-blue-400 bg-transparent border-none focus:ring-0 placeholder-gray-400 dark:!placeholder-gray-500"
+              />
+              {errors.title && (
+                <p className="text-sm text-red-500 mt-1">
+                  {errors.title.message}
+                </p>
+              )}
+            </div>
+          )}
+        />
+
+        {/* Content Editor */}
+        <Controller
+          name="content"
+          control={control}
+          rules={{ required: "Content is required" }}
+          render={({ field }) =>
+            loadingState.isFetching ? (
+              <div className="flex justify-center py-8">
+                <CircularProgress className="w-8 h-8" />
+              </div>
+            ) : (
+              <div className="mb-8">
+                <ReactQuill
+                  {...field}
+                  onChange={value => field.onChange(value)}
+                  placeholder="Type your note here..."
+                  theme="snow"
+                  className="h-96 bg-gray-50 dark:!bg-gray-700 rounded-lg"
+                  modules={{
+                    toolbar: [
+                      [{ header: [1, 2, false] }],
+                      ["bold", "italic", "underline", "strike"],
+                      [{ list: "ordered" }, { list: "bullet" }],
+                      ["link", "image"],
+                      ["clean"],
+                    ],
+                  }}
+                />
+                {errors.content && (
+                  <p className="text-sm text-red-500 mt-2">
+                    {errors.content.message}
+                  </p>
+                )}
+              </div>
+            )
+          }
+        />
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-5 p-3 bg-red-50 dark:!bg-red-900/20 rounded-lg">
+            <p className="text-red-600 dark:!text-red-400">{error}</p>
+          </div>
+        )}
       </div>
     </div>
   )

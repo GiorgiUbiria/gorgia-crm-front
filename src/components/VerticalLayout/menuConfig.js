@@ -17,7 +17,7 @@ import {
   LuNotebook,
   LuMessageSquare,
   LuUser,
-  LuBriefcase,
+  // LuBriefcase,
 } from "react-icons/lu"
 
 const getMenuItems = can => {
@@ -417,33 +417,33 @@ const getMenuItems = can => {
       icon: LuCalendarDays,
       label: "კალენდარი",
     },
-    {
-      key: "vacancy",
-      label: "ვაკანსიის მოთხოვნა",
-      icon: LuBriefcase,
-      disabled: true,
-      show: () => can("role:admin|department:8"),
-      submenu: [
-        {
-          to: "/vacancy-requests/create",
-          label: "მოთხოვნა",
-          icon: LuPlus,
-          show: () => can("role:admin|role:hr"),
-        },
-        {
-          to: "/vacancy-requests/my-requests",
-          label: "გაგზავნილი",
-          icon: LuFileText,
-          show: () => can("role:admin|role:hr"),
-        },
-        {
-          to: "/vacancy-requests/archive",
-          label: "არქივი",
-          icon: LuArchive,
-          show: () => can("role:admin|role:hr"),
-        },
-      ],
-    },
+    // {
+    //   key: "vacancy",
+    //   label: "ვაკანსიის მოთხოვნა",
+    //   icon: LuBriefcase,
+    //   disabled: true,
+    //   show: () => can("role:admin|department:8"),
+    //   submenu: [
+    //     {
+    //       to: "/vacancy-requests/create",
+    //       label: "მოთხოვნა",
+    //       icon: LuPlus,
+    //       show: () => can("role:admin|role:hr"),
+    //     },
+    //     {
+    //       to: "/vacancy-requests/my-requests",
+    //       label: "გაგზავნილი",
+    //       icon: LuFileText,
+    //       show: () => can("role:admin|role:hr"),
+    //     },
+    //     {
+    //       to: "/vacancy-requests/archive",
+    //       label: "არქივი",
+    //       icon: LuArchive,
+    //       show: () => can("role:admin|role:hr"),
+    //     },
+    //   ],
+    // },
   ]
 
   const filterMenuItems = items => {
