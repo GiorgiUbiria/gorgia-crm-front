@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getPeopleCounting,
-  createPeopleCounting,
-  updatePeopleCounting,
-  deletePeopleCounting,
-  bulkDeletePeopleCounting,
+  uploadMonthlyReport,
+  uploadWeeklyReport,
+  getUploadedFiles,
   getCities,
   getBranches,
+  getEntrances,
 } from "../services/peopleCounting"
 import { toast } from "../store/zustand/toastStore"
 
@@ -14,14 +14,24 @@ export const peopleCountingKeys = {
   all: ["peopleCounting"],
   lists: () => [...peopleCountingKeys.all, "list"],
   list: filters => [...peopleCountingKeys.lists(), { filters }],
+  files: () => [...peopleCountingKeys.all, "files"],
+  filesList: filters => [...peopleCountingKeys.files(), { filters }],
   cities: () => [...peopleCountingKeys.all, "cities"],
   branches: city => [...peopleCountingKeys.all, "branches", city],
+  entrances: branch => [...peopleCountingKeys.all, "entrances", branch],
 }
 
 export const useGetPeopleCounting = (filters = {}) => {
   return useQuery({
     queryKey: peopleCountingKeys.list(filters),
     queryFn: () => getPeopleCounting(filters),
+  })
+}
+
+export const useGetUploadedFiles = (filters = {}) => {
+  return useQuery({
+    queryKey: peopleCountingKeys.filesList(filters),
+    queryFn: () => getUploadedFiles(filters),
   })
 }
 
@@ -40,14 +50,23 @@ export const useGetBranches = city => {
   })
 }
 
-export const useCreatePeopleCounting = () => {
+export const useGetEntrances = branch => {
+  return useQuery({
+    queryKey: peopleCountingKeys.entrances(branch),
+    queryFn: () => getEntrances(branch),
+    enabled: Boolean(branch),
+  })
+}
+
+export const useUploadMonthlyReport = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: createPeopleCounting,
+    mutationFn: ({ file, reportPeriod }) => uploadMonthlyReport(file, reportPeriod),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: peopleCountingKeys.lists() })
-      toast.success("ვიზიტორების რაოდენობა წარმატებით დაემატა")
+      queryClient.invalidateQueries({ queryKey: peopleCountingKeys.files() })
+      toast.success("თვიური რეპორტი წარმატებით აიტვირთა")
     },
     onError: error => {
       toast.error(error.message)
@@ -55,44 +74,15 @@ export const useCreatePeopleCounting = () => {
   })
 }
 
-export const useUpdatePeopleCounting = () => {
+export const useUploadWeeklyReport = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }) => updatePeopleCounting(id, data),
+    mutationFn: ({ file, reportPeriod }) => uploadWeeklyReport(file, reportPeriod),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: peopleCountingKeys.lists() })
-      toast.success("ვიზიტორების რაოდენობა წარმატებით განახლდა")
-    },
-    onError: error => {
-      toast.error(error.message)
-    },
-  })
-}
-
-export const useDeletePeopleCounting = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: deletePeopleCounting,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: peopleCountingKeys.lists() })
-      toast.success("ვიზიტორების რაოდენობა წარმატებით წაიშალა")
-    },
-    onError: error => {
-      toast.error(error.message)
-    },
-  })
-}
-
-export const useBulkDeletePeopleCounting = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: bulkDeletePeopleCounting,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: peopleCountingKeys.lists() })
-      toast.success("ვიზიტორების რაოდენობები წარმატებით წაიშალა")
+      queryClient.invalidateQueries({ queryKey: peopleCountingKeys.files() })
+      toast.success("კვირის რეპორტი წარმატებით აიტვირთა")
     },
     onError: error => {
       toast.error(error.message)

@@ -1,21 +1,18 @@
-import React, { useState, useMemo, useCallback } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import {
   useGetPeopleCounting,
   useGetCities,
   useGetBranches,
-  useDeletePeopleCounting,
-  useBulkDeletePeopleCounting,
+  useGetEntrances,
 } from "queries/peopleCounting"
 import { CrmTable } from "components/CrmTable"
 import { useForm } from "@tanstack/react-form"
-import AddPeopleCountingForm from "./components/add"
-import EditPeopleCountingForm from "./components/edit"
+import UploadPeopleCountingForm from "./components/upload"
+import UploadedFilesTable from "./components/files"
 import CrmSpinner from "components/CrmSpinner"
 import { format } from "date-fns"
 import useAuth from "hooks/useAuth"
 import { Filter } from "lucide-react"
-import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
-import useModalStore from "store/zustand/modalStore"
 import {
   BarChart,
   Bar,
@@ -59,34 +56,20 @@ const defaultFilters = {
   date_to: "",
   city: "",
   branch: "",
+  entrance: "",
+  report_type: "",
+  month: "",
+  year: "",
 }
 
 const PeopleCounting = () => {
   const { isAdmin, user } = useAuth()
   const [view, setView] = useState("table")
-  const [showAddForm, setShowAddForm] = useState(false)
+  const [showUploadForm, setShowUploadForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState(defaultFilters)
-  const [selectedRows, setSelectedRows] = useState([])
-  const { openModal, closeModal, isModalOpen, getModalData } = useModalStore()
-
-  const hasAccess = useMemo(() => {
-    const allowedDepartments = [36, 30, 21]
-    return isAdmin() || allowedDepartments.includes(user?.department_id)
-  }, [isAdmin, user?.department_id])
-
-  const canModifyRecord = useCallback(
-    record => {
-      return isAdmin() || record.user.id === user?.id
-    },
-    [isAdmin, user?.id]
-  )
-
-  const { data: peopleCountingData, isLoading } = useGetPeopleCounting(filters)
-  const { data: citiesData } = useGetCities()
-  const { data: branchesData } = useGetBranches(filters.city)
-  const deletePeopleCountingMutation = useDeletePeopleCounting()
-  const bulkDeletePeopleCountingMutation = useBulkDeletePeopleCounting()
+  const [selectedCity, setSelectedCity] = useState("")
+  const [selectedBranch, setSelectedBranch] = useState("")
 
   const form = useForm({
     defaultValues: defaultFilters,
@@ -99,6 +82,30 @@ const PeopleCounting = () => {
     },
   })
 
+  const hasAccess = useMemo(() => {
+    const allowedDepartments = [36, 30, 21]
+    return isAdmin() || allowedDepartments.includes(user?.department_id)
+  }, [isAdmin, user?.department_id])
+
+  const { data: peopleCountingData, isLoading } = useGetPeopleCounting(filters)
+  const { data: citiesData } = useGetCities()
+  const { data: branchesData } = useGetBranches(selectedCity)
+  const { data: entrancesData } = useGetEntrances(selectedBranch)
+
+  useEffect(() => {
+    if (!selectedCity) {
+      setSelectedBranch("")
+      form.setFieldValue("branch", "")
+      form.setFieldValue("entrance", "")
+    }
+  }, [selectedCity, form])
+
+  useEffect(() => {
+    if (!selectedBranch) {
+      form.setFieldValue("entrance", "")
+    }
+  }, [selectedBranch, form])
+
   const totalVisitors = useMemo(() => {
     if (!peopleCountingData?.data) return 0
     return peopleCountingData.data.reduce(
@@ -107,94 +114,51 @@ const PeopleCounting = () => {
     )
   }, [peopleCountingData?.data])
 
-  const handleDelete = useCallback(
-    async ids => {
-      if (!window.confirm("ნამდვილად გსურთ წაშლა?")) return
-
-      try {
-        if (Array.isArray(ids)) {
-          await bulkDeletePeopleCountingMutation.mutateAsync(ids)
-        } else {
-          await deletePeopleCountingMutation.mutateAsync(ids)
-        }
-        setSelectedRows([])
-      } catch (error) {
-        console.error("Error deleting records:", error)
-      }
-    },
-    [bulkDeletePeopleCountingMutation, deletePeopleCountingMutation]
-  )
-
   const columns = useMemo(
-    () =>
-      [
-        hasAccess && {
-          id: "select",
-          header: ({ table }) => (
-            <input
-              type="checkbox"
-              checked={table.getIsAllRowsSelected()}
-              onChange={table.getToggleAllRowsSelectedHandler()}
-              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700"
-            />
-          ),
-          cell: ({ row }) =>
-            canModifyRecord(row.original) && (
-              <input
-                type="checkbox"
-                checked={row.getIsSelected()}
-                onChange={row.getToggleSelectedHandler()}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700"
-              />
-            ),
-          enableSorting: false,
-          size: 40,
-        },
-        {
-          header: "თარიღი",
-          accessorKey: "date",
-          cell: info => format(new Date(info.getValue()), "dd/MM/yyyy"),
-        },
-        {
-          header: "ვიზიტორების რაოდენობა",
-          accessorKey: "visitor_count",
-        },
-        {
-          header: "ქალაქი",
-          accessorKey: "city",
-        },
-        {
-          header: "ფილიალი",
-          accessorKey: "branch",
-        },
-        {
-          header: "დამატებულია",
-          accessorKey: "user.name",
-        },
-        hasAccess && {
-          id: "actions",
-          header: "",
-          cell: ({ row }) =>
-            canModifyRecord(row.original) && (
-              <div className="flex gap-2">
-                <DialogButton
-                  actionType="edit"
-                  size="xs"
-                  onClick={() =>
-                    openModal("editPeopleCounting", { data: row.original })
-                  }
-                />
-                <DialogButton
-                  actionType="delete"
-                  size="xs"
-                  onClick={() => handleDelete(row.original.id)}
-                />
-              </div>
-            ),
-          size: 100,
-        },
-      ].filter(Boolean),
-    [handleDelete, hasAccess, canModifyRecord, openModal]
+    () => [
+      {
+        header: "თარიღი",
+        accessorKey: "date",
+        cell: info => format(new Date(info.getValue()), "dd/MM/yyyy"),
+        enableColumnFilter: false,
+      },
+      {
+        header: "ვიზიტორების რაოდენობა",
+        accessorKey: "visitor_count",
+        enableColumnFilter: false,
+      },
+      {
+        header: "ქალაქი",
+        accessorKey: "city",
+        enableColumnFilter: false,
+      },
+
+      {
+        header: "ფილიალი",
+        accessorKey: "branch",
+        enableColumnFilter: false,
+      },
+
+      {
+        header: "შესასვლელი",
+        accessorKey: "entrance",
+        enableColumnFilter: false,
+      },
+
+      {
+        header: "რეპორტის ტიპი",
+        accessorKey: "report_type",
+        cell: info => (info.getValue() === "monthly" ? "თვიური" : "კვირის"),
+        enableColumnFilter: false,
+      },
+
+      {
+        header: "დამატებულია",
+        accessorKey: "user.name",
+        enableColumnFilter: false,
+      },
+    ],
+    []
   )
 
   // Chart data transformations
@@ -272,22 +236,22 @@ const PeopleCounting = () => {
             {view === "table" ? "ანალიტიკა" : "ცხრილი"}
           </button>
           <button
-            onClick={() => setShowAddForm(!showAddForm)}
+            onClick={() => setShowUploadForm(!showUploadForm)}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            {showAddForm ? "დახურვა" : "დამატება"}
+            {showUploadForm ? "დახურვა" : "ატვირთვა"}
           </button>
         </div>
       </div>
 
-      {showAddForm && (
+      {showUploadForm && (
         <div className="mb-8 p-6 bg-white dark:!bg-gray-800 rounded-xl shadow-lg">
           <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
-            ვიზიტორების დამატება
+            რეპორტის ატვირთვა
           </h2>
-          <AddPeopleCountingForm
+          <UploadPeopleCountingForm
             onSuccess={() => {
-              setShowAddForm(false)
+              setShowUploadForm(false)
               setFilters(defaultFilters)
               form.reset(defaultFilters)
             }}
@@ -340,6 +304,53 @@ const PeopleCounting = () => {
               )}
             </form.Field>
 
+            <form.Field name="month">
+              {field => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                    თვე
+                  </label>
+                  <select
+                    value={field.state.value}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                  >
+                    <option value="">ყველა</option>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="year">
+              {field => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                    წელი
+                  </label>
+                  <select
+                    value={field.state.value}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                  >
+                    <option value="">ყველა</option>
+                    {Array.from(
+                      { length: 5 },
+                      (_, i) => new Date().getFullYear() - i
+                    ).map(year => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </form.Field>
+
             <form.Field name="city">
               {field => (
                 <div>
@@ -348,7 +359,14 @@ const PeopleCounting = () => {
                   </label>
                   <select
                     value={field.state.value}
-                    onChange={e => field.handleChange(e.target.value)}
+                    onChange={e => {
+                      const newCity = e.target.value
+                      field.handleChange(newCity)
+                      setSelectedCity(newCity)
+                      setSelectedBranch("")
+                      form.setFieldValue("branch", "")
+                      form.setFieldValue("entrance", "")
+                    }}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
                   >
                     <option value="">ყველა</option>
@@ -370,8 +388,13 @@ const PeopleCounting = () => {
                   </label>
                   <select
                     value={field.state.value}
-                    onChange={e => field.handleChange(e.target.value)}
-                    disabled={!filters.city}
+                    onChange={e => {
+                      const newBranch = e.target.value
+                      field.handleChange(newBranch)
+                      setSelectedBranch(newBranch)
+                      form.setFieldValue("entrance", "")
+                    }}
+                    disabled={!selectedCity}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">ყველა</option>
@@ -380,6 +403,48 @@ const PeopleCounting = () => {
                         {branch}
                       </option>
                     ))}
+                  </select>
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="entrance">
+              {field => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                    შესასვლელი
+                  </label>
+                  <select
+                    value={field.state.value}
+                    onChange={e => field.handleChange(e.target.value)}
+                    disabled={!selectedBranch}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">ყველა</option>
+                    {entrancesData?.entrances?.map(entrance => (
+                      <option key={entrance} value={entrance}>
+                        {entrance}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="report_type">
+              {field => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                    რეპორტის ტიპი
+                  </label>
+                  <select
+                    value={field.state.value}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                  >
+                    <option value="">ყველა</option>
+                    <option value="monthly">თვიური</option>
+                    <option value="weekly">კვირის</option>
                   </select>
                 </div>
               )}
@@ -408,29 +473,22 @@ const PeopleCounting = () => {
       )}
 
       {view === "table" ? (
-        <div className="bg-white dark:!bg-gray-800 rounded-xl shadow-lg">
-          {selectedRows.length > 0 && (
-            <div className="p-4 border-b border-gray-200 dark:!border-gray-700 flex justify-between items-center">
-              <span className="text-sm text-gray-700 dark:!text-gray-200">
-                არჩეულია {selectedRows.length} ჩანაწერი
-              </span>
-              <DialogButton
-                actionType="delete"
-                size="sm"
-                onClick={() => handleDelete(selectedRows)}
-              >
-                წაშლა
-              </DialogButton>
-            </div>
-          )}
-          <CrmTable
-            data={peopleCountingData?.data || []}
-            columns={columns}
-            size="lg"
-            enableRowSelection={hasAccess}
-            onRowSelectionChange={setSelectedRows}
-          />
-        </div>
+        <>
+          <div className="bg-white dark:!bg-gray-800 rounded-xl shadow-lg mb-8">
+            <CrmTable
+              data={peopleCountingData?.data || []}
+              columns={columns}
+              size="lg"
+            />
+          </div>
+
+          <div className="bg-white dark:!bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:!text-white">
+              ატვირთული ფაილები
+            </h2>
+            <UploadedFilesTable />
+          </div>
+        </>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Visitors by City */}
@@ -520,37 +578,6 @@ const PeopleCounting = () => {
           </div>
         </div>
       )}
-
-      <CrmDialog
-        isOpen={isModalOpen("editPeopleCounting")}
-        onOpenChange={open => !open && closeModal("editPeopleCounting")}
-        title="ვიზიტორების რაოდენობის რედაქტირება"
-        description="შეავსეთ ფორმა ვიზიტორების რაოდენობის რედაქტირებისთვის"
-        footer={
-          <>
-            <DialogButton
-              actionType="cancel"
-              onClick={() => closeModal("editPeopleCounting")}
-            >
-              გაუქმება
-            </DialogButton>
-            <DialogButton
-              actionType="edit"
-              type="submit"
-              form="editPeopleCountingForm"
-            >
-              შენახვა
-            </DialogButton>
-          </>
-        }
-      >
-        {getModalData("editPeopleCounting")?.data && (
-          <EditPeopleCountingForm
-            data={getModalData("editPeopleCounting").data}
-            onSuccess={() => closeModal("editPeopleCounting")}
-          />
-        )}
-      </CrmDialog>
     </div>
   )
 }

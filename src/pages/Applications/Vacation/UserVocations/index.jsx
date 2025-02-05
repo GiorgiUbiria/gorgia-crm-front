@@ -352,14 +352,10 @@ const UserVocation = () => {
       id: vacation.id,
       status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
       start_date: vacation.start_date
-        ? new Date(
-            new Date(vacation.start_date).getTime() + 24 * 60 * 60 * 1000
-          ).toLocaleDateString("ka-GE")
+        ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
         : "-",
       end_date: vacation.end_date
-        ? new Date(
-            new Date(vacation.end_date).getTime() + 24 * 60 * 60 * 1000
-          ).toLocaleDateString("ka-GE")
+        ? new Date(vacation.end_date).toLocaleDateString("ka-GE")
         : "-",
       duration: (vacation.duration_days ?? 0).toString() + " დღე",
       type: vacation.type

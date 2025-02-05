@@ -21,53 +21,71 @@ export const getPeopleCounting = async ({
   }
 }
 
-export const createPeopleCounting = async data => {
+export const uploadMonthlyReport = async (file, reportPeriod) => {
   try {
-    const response = await defaultInstance.post("/api/people-counting", data)
-    return response.data
-  } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to create people counting record"
-    )
-  }
-}
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('report_period', reportPeriod)
 
-export const updatePeopleCounting = async (id, data) => {
-  try {
-    const response = await defaultInstance.put(
-      `/api/people-counting/${id}`,
-      data
-    )
-    return response.data
-  } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to update people counting record"
-    )
-  }
-}
-
-export const deletePeopleCounting = async id => {
-  try {
-    const response = await defaultInstance.delete(`/api/people-counting/${id}`)
-    return response.data
-  } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to delete people counting record"
-    )
-  }
-}
-
-export const bulkDeletePeopleCounting = async ids => {
-  try {
     const response = await defaultInstance.post(
-      "/api/people-counting/bulk-delete",
-      { ids }
+      "/api/people-counting/upload/monthly",
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
     )
     return response.data
   } catch (error) {
     throw new Error(
-      error.response?.data?.message ||
-        "Failed to delete people counting records"
+      error.response?.data?.message || "Failed to upload monthly report"
+    )
+  }
+}
+
+export const uploadWeeklyReport = async (file, reportPeriod) => {
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('report_period', reportPeriod)
+
+    const response = await defaultInstance.post(
+      "/api/people-counting/upload/weekly",
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
+    return response.data
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to upload weekly report"
+    )
+  }
+}
+
+export const getUploadedFiles = async ({
+  page = 1,
+  limit = 15,
+  status,
+  report_type,
+} = {}) => {
+  try {
+    const response = await defaultInstance.get("/api/people-counting/files", {
+      params: {
+        page,
+        limit,
+        status,
+        report_type,
+      },
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch uploaded files"
     )
   }
 }
@@ -95,6 +113,21 @@ export const getBranches = async city => {
     return response.data
   } catch (error) {
     console.error("Error fetching branches:", error)
+    throw error
+  }
+}
+
+export const getEntrances = async branch => {
+  try {
+    const response = await defaultInstance.get(
+      `/api/people-counting/entrances/list`,
+      {
+        params: { branch },
+      }
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error fetching entrances:", error)
     throw error
   }
 }
