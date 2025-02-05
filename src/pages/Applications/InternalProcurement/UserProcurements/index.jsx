@@ -99,8 +99,17 @@ const UserProcurements = () => {
         ),
       },
       {
-        Header: "ფილიალი",
-        accessor: "branch",
+        Header: "ფილიალები",
+        accessor: "branches",
+        Cell: ({ value }) => (
+          <div>
+            {value?.map(branch => (
+              <span key={branch} className="badge bg-primary">
+                {branch}
+              </span>
+            ))}
+          </div>
+        ),
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -242,10 +251,11 @@ const UserProcurements = () => {
 
     const details = [
       {
-        label: "ფილიალი",
-        value: rowData?.branch || "N/A",
+        label: "ფილიალები",
+        value: rowData?.branches?.map(branch => branch).join(", ") || "N/A",
         icon: <BiBuilding className="text-primary" />,
       },
+
       {
         label: "მომთხოვნი",
         value: rowData?.requester.name + " " + rowData?.requester.sur_name,
@@ -493,6 +503,9 @@ const UserProcurements = () => {
                 <thead className="table-light">
                   <tr>
                     <th>
+                      <BiBuilding /> ფილიალი
+                    </th>
+                    <th>
                       <BiLabel /> სახელი
                     </th>
                     <th>
@@ -528,6 +541,7 @@ const UserProcurements = () => {
                 <tbody>
                   {rowData.products.map((product, idx) => (
                     <tr key={idx}>
+                      <td>{product?.branch || "N/A"}</td>
                       <td>{product?.name || "N/A"}</td>
                       <td>{product?.quantity || "N/A"}</td>
                       <td>{product?.dimensions || "N/A"}</td>
@@ -601,11 +615,19 @@ const UserProcurements = () => {
 
         {rowData?.comment && (
           <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="flex items-center gap-2 text-red-500 mb-2">
-              <BiMessageAltX size={24} />
-              <strong>უარყოფის მიზეზი:</strong>
-            </div>
-            <p className="text-gray-600 mb-0">{rowData.comment}</p>
+            {rowData?.status === "rejected" ? (
+              <div className="flex items-center gap-2 text-red-500 mb-2">
+                <BiMessageAltX size={24} />
+                <strong>უარყოფის მიზეზი:</strong>
+                <p className="mb-0">{rowData.comment}</p>
+              </div>
+            ) : (
+              <div className="d-flex align-items-center gap-2 text-success mb-2">
+                <BiCheckCircle size={24} />
+                <strong>დასრულების კომენტარი:</strong>
+                <p className="mb-0">{rowData.comment}</p>
+              </div>
+            )}
           </div>
         )}
 

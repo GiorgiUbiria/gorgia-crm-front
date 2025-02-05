@@ -145,7 +145,6 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:!bg-gray-900">
       <div className="max-w-2xl w-full space-y-8">
         <div className="bg-white dark:!bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-          {/* Header Section */}
           <div className="bg-primary-100 dark:!bg-primary-900 p-6">
             <div className="grid grid-cols-12">
               <div className="col-span-7">
@@ -280,8 +279,8 @@ const Register = () => {
             </Link>
           </p>
           <p className="text-sm text-gray-600 dark:!text-gray-400">
-            © {new Date().getFullYear()} Gorgia LLC. Crafted with{" "}
-            <span className="text-red-500">&hearts;</span> by GORGIA
+            © {new Date().getFullYear()} Gorgia LLC. სიყვარულით შექმნილია{" "}
+            <span className="text-red-500">&hearts;</span> GORGIA
           </p>
         </div>
       </div>

@@ -144,10 +144,18 @@ const ProcurementPageArchive = () => {
         ),
       },
       {
-        Header: "ფილიალი",
-        accessor: "branch",
+        Header: "ფილიალები",
+        accessor: "branches",
+        Cell: ({ value }) => (
+          <div>
+            {value?.map(branch => (
+              <span key={branch} className="badge bg-primary">
+                {branch}
+              </span>
+            ))}
+          </div>
+        ),
       },
-
       {
         Header: "მოთხოვნის თარიღი",
         accessor: "created_at",
@@ -297,10 +305,16 @@ const ProcurementPageArchive = () => {
 
     const details = [
       {
-        label: "ფილიალი",
-        value: rowData?.branch || "N/A",
+        label: "კომენტარი",
+        value: rowData?.comment || "N/A",
+        icon: <BiComment />,
+      },
+      {
+        label: "ფილიალები",
+        value: rowData?.branches?.map(branch => branch).join(", ") || "N/A",
         icon: <BiBuilding className="w-5 h-5 text-gray-500" />,
       },
+
       {
         label: "მომთხოვნი",
         value: rowData?.requester.name + " " + rowData?.requester.sur_name,
@@ -573,6 +587,9 @@ const ProcurementPageArchive = () => {
                 <thead className="table-light">
                   <tr>
                     <th>
+                      <BiBuilding /> ფილიალი
+                    </th>
+                    <th>
                       <BiLabel /> სახელი
                     </th>
                     <th>
@@ -608,6 +625,7 @@ const ProcurementPageArchive = () => {
                 <tbody>
                   {rowData.products.map((product, idx) => (
                     <tr key={idx}>
+                      <td>{product?.branch || "N/A"}</td>
                       <td>{product?.name || "N/A"}</td>
                       <td>{product?.quantity || "N/A"}</td>
                       <td>{product?.dimensions || "N/A"}</td>
@@ -683,11 +701,19 @@ const ProcurementPageArchive = () => {
         {rowData?.comment && (
           <Card className="mb-4 shadow-sm">
             <CardBody>
-              <div className="d-flex align-items-center gap-2 text-danger mb-2">
-                <BiMessageAltX size={24} />
-                <strong>უარყოფის მიზეზი:</strong>
-              </div>
-              <p className="mb-0">{rowData.comment}</p>
+              {rowData?.status === "rejected" ? (
+                <div className="d-flex align-items-center gap-2 text-danger mb-2">
+                  <BiMessageAltX size={24} />
+                  <strong>უარყოფის მიზეზი:</strong>
+                  <p className="mb-0">{rowData.comment}</p>
+                </div>
+              ) : (
+                <div className="d-flex align-items-center gap-2 text-success mb-2">
+                  <BiCheckCircle size={24} />
+                  <strong>დასრულების კომენტარი:</strong>
+                  <p className="mb-0">{rowData.comment}</p>
+                </div>
+              )}
             </CardBody>
           </Card>
         )}

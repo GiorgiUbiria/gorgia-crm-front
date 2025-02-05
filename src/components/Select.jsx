@@ -205,6 +205,5 @@ export const SearchableSelect = ({
   )
 }
 
-// For backward compatibility
 const CustomSelect = SearchableSelect
 export default CustomSelect

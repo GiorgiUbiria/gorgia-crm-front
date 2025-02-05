@@ -157,6 +157,13 @@ const PurchasePageApprove = () => {
         return true
       }
 
+      if (
+        getUserDepartmentId() === 7 &&
+        purchase.status === "pending products completion"
+      ) {
+        return true
+      }
+
       if (!isDepartmentHead()) {
         return false
       }
@@ -220,6 +227,18 @@ const PurchasePageApprove = () => {
 
   const handleConfirmAction = () => {
     const nextStatus = getNextStatus(selectedPurchase)
+
+    // If department 7 member is completing a no-product request, use the comment modal instead
+    if (
+      getUserDepartmentId() === 7 &&
+      nextStatus === "completed" &&
+      (!selectedPurchase.products || selectedPurchase.products.length === 0)
+    ) {
+      setConfirmModal(false)
+      setProductStatusModal(true)
+      return
+    }
+
     updatePurchaseStatus(
       { id: selectedPurchase.id, status: nextStatus },
       {
@@ -321,8 +340,17 @@ const PurchasePageApprove = () => {
         ),
       },
       {
-        Header: "ფილიალი",
-        accessor: "branch",
+        Header: "ფილიალები",
+        accessor: "branches",
+        Cell: ({ value }) => (
+          <div>
+            {value?.map(branch => (
+              <span key={branch} className="badge bg-primary">
+                {branch}
+              </span>
+            ))}
+          </div>
+        ),
       },
       {
         Header: "მოთხოვნის თარიღი",
@@ -485,8 +513,8 @@ const PurchasePageApprove = () => {
 
     const details = [
       {
-        label: "ფილიალი",
-        value: rowData?.branch || "N/A",
+        label: "ფილიალები",
+        value: rowData?.branches?.map(branch => branch).join(", ") || "N/A",
         icon: <BiBuilding />,
       },
       {
@@ -693,7 +721,38 @@ const PurchasePageApprove = () => {
     )
 
     const ProductsTable = () => {
-      if (!rowData?.products?.length) return null
+      if (!rowData?.products?.length) {
+        if (
+          getUserDepartmentId() === 7 &&
+          rowData.status === "pending products completion"
+        ) {
+          return (
+            <Card className="shadow-sm">
+              <CardBody>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex align-items-center gap-2">
+                    <BiPackage className="text-primary" size={24} />
+                    <h6 className="mb-0">პროდუქტები მითითებულია დანართში</h6>
+                  </div>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      setSelectedProduct(null)
+                      setSelectedPurchase(rowData)
+                      setProductStatusModal(true)
+                    }}
+                  >
+                    მოთხოვნის დასრულება
+                  </Button>
+                </div>
+              </CardBody>
+            </Card>
+          )
+        }
+        return null
+      }
+
       return (
         <Card className="shadow-sm">
           <CardBody>
@@ -723,6 +782,11 @@ const PurchasePageApprove = () => {
               <table className="table table-hover">
                 <thead className="table-light">
                   <tr>
+                    <th>
+                      <div className="d-flex align-items-center gap-2">
+                        <BiBuilding /> <span>ფილიალი</span>
+                      </div>
+                    </th>
                     <th>
                       <div className="d-flex align-items-center gap-2">
                         <BiLabel /> <span>სახელი</span>
@@ -785,6 +849,7 @@ const PurchasePageApprove = () => {
                 <tbody>
                   {rowData.products.map((product, idx) => (
                     <tr key={idx}>
+                      <td>{product?.branch || "N/A"}</td>
                       <td>{product?.name || "N/A"}</td>
                       <td>{product?.quantity || "N/A"}</td>
                       <td>{product?.dimensions || "N/A"}</td>
@@ -865,11 +930,19 @@ const PurchasePageApprove = () => {
         {rowData?.comment && (
           <Card className="mb-4 shadow-sm">
             <CardBody>
-              <div className="d-flex align-items-center gap-2 text-danger mb-2">
-                <BiMessageAltX size={24} />
-                <strong>უარყოფის მიზეზი:</strong>
-              </div>
-              <p className="mb-0">{rowData.comment}</p>
+              {rowData?.status === "rejected" ? (
+                <div className="d-flex align-items-center gap-2 text-danger mb-2">
+                  <BiMessageAltX size={24} />
+                  <strong>უარყოფის მიზეზი:</strong>
+                  <p className="mb-0">{rowData.comment}</p>
+                </div>
+              ) : (
+                <div className="d-flex align-items-center gap-2 text-success mb-2">
+                  <BiCheckCircle size={24} />
+                  <strong>დასრულების კომენტარი:</strong>
+                  <p className="mb-0">{rowData.comment}</p>
+                </div>
+              )}
             </CardBody>
           </Card>
         )}
@@ -1007,65 +1080,120 @@ const PurchasePageApprove = () => {
       >
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="p-4 border-b border-gray-200">
-            <h5 className="text-lg font-medium">პროდუქტის სტატუსის შეცვლა</h5>
+            <h5 className="text-lg font-medium">
+              {selectedProduct
+                ? "პროდუქტის სტატუსის შეცვლა"
+                : "მოთხოვნის დასრულება"}
+            </h5>
           </div>
           <div className="p-4">
             <Form>
               <FormGroup>
-                <Label for="productComment">კომენტარი</Label>
+                <Label for="productComment">
+                  {selectedProduct
+                    ? "კომენტარი"
+                    : "დასრულების კომენტარი (სავალდებულო)"}
+                </Label>
                 <Input
                   type="textarea"
                   id="productComment"
                   value={productComment}
                   onChange={e => setProductComment(e.target.value)}
-                  placeholder="შეიყვანეთ კომენტარი..."
+                  placeholder={
+                    selectedProduct
+                      ? "შეიყვანეთ კომენტარი..."
+                      : "მიუთითეთ დასრულების კომენტარი..."
+                  }
                   rows={4}
                   required
-                  disabled={isProductUpdateLoading}
+                  disabled={isProductUpdateLoading || isStatusUpdateLoading}
                 />
               </FormGroup>
 
-              <FormGroup>
-                <Label for="fileUpload">ატვირთეთ ფაილი</Label>
-                <Input
-                  type="file"
-                  id="fileUpload"
-                  onChange={e => {
-                    const file = e.target.files[0]
-                    if (file && file.size > 10 * 1024 * 1024) {
-                      alert("ფაილის ზომა არ უნდა აღემატებოდეს 10MB-ს")
-                      e.target.value = ""
-                      setSelectedFile(null)
-                      return
-                    }
-                    setSelectedFile(file)
-                  }}
-                  disabled={isProductUpdateLoading}
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                  required={true}
-                />
-                <small className="text-muted">
-                  მაქსიმალური ზომა: 10MB. დაშვებული ფორმატები: PDF, DOC, DOCX,
-                  XLS, XLSX, JPG, JPEG, PNG
-                </small>
-              </FormGroup>
+              {selectedProduct && (
+                <FormGroup>
+                  <Label for="fileUpload">ატვირთეთ ფაილი</Label>
+                  <Input
+                    type="file"
+                    id="fileUpload"
+                    onChange={e => {
+                      const file = e.target.files[0]
+                      if (file && file.size > 10 * 1024 * 1024) {
+                        alert("ფაილის ზომა არ უნდა აღემატებოდეს 10MB-ს")
+                        e.target.value = ""
+                        setSelectedFile(null)
+                        return
+                      }
+                      setSelectedFile(file)
+                    }}
+                    disabled={isProductUpdateLoading}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                    required={true}
+                  />
+                  <small className="text-muted">
+                    მაქსიმალური ზომა: 10MB. დაშვებული ფორმატები: PDF, DOC, DOCX,
+                    XLS, XLSX, JPG, JPEG, PNG
+                  </small>
+                </FormGroup>
+              )}
 
               <div className="flex justify-end gap-3 mt-4">
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={() =>
-                    handleProductStatusChange(selectedProduct?.id, "completed")
-                  }
-                  disabled={
-                    !productComment.trim() ||
-                    isProductUpdateLoading ||
-                    !selectedFile
-                  }
-                  className="px-4 py-2"
-                >
-                  {isProductUpdateLoading ? "მიმდინარეობს..." : "დასრულება"}
-                </Button>
+                {selectedProduct ? (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() =>
+                      handleProductStatusChange(
+                        selectedProduct?.id,
+                        "completed"
+                      )
+                    }
+                    disabled={
+                      !productComment.trim() ||
+                      isProductUpdateLoading ||
+                      !selectedFile
+                    }
+                    className="px-4 py-2"
+                  >
+                    {isProductUpdateLoading ? "მიმდინარეობს..." : "დასრულება"}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => {
+                      if (!productComment.trim()) {
+                        alert("კომენტარი სავალდებულოა")
+                        return
+                      }
+                      updatePurchaseStatus(
+                        {
+                          id: selectedPurchase.id,
+                          status: "completed",
+                          comment: productComment,
+                        },
+                        {
+                          onSuccess: () => {
+                            setProductStatusModal(false)
+                            setProductComment("")
+                            setSelectedPurchase(null)
+                          },
+                          onError: err => {
+                            console.error("Error completing request:", err)
+                            alert(
+                              err.response?.data?.message ||
+                                "შეცდომა მოთხოვნის დასრულებისას"
+                            )
+                          },
+                        }
+                      )
+                    }}
+                    disabled={!productComment.trim() || isStatusUpdateLoading}
+                    className="px-4 py-2"
+                  >
+                    {isStatusUpdateLoading ? "მიმდინარეობს..." : "დასრულება"}
+                  </Button>
+                )}
 
                 <Button
                   variant="outlined"

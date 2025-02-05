@@ -56,6 +56,7 @@ const InputWithError = ({
   label,
   type = "text",
   children,
+  multiple = false,
   ...props
 }) => {
   // Get nested field error
@@ -97,9 +98,14 @@ const InputWithError = ({
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values[name]}
-            className={`${baseInputStyles} cursor-pointer appearance-none bg-no-repeat bg-right pr-10`}
+            multiple={multiple}
+            className={`${baseInputStyles} cursor-pointer appearance-none bg-no-repeat bg-right pr-10 ${
+              multiple ? "min-h-[120px]" : ""
+            }`}
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+              backgroundImage: multiple
+                ? "none"
+                : `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
               backgroundSize: "1.5em 1.5em",
             }}
             {...props}
@@ -225,6 +231,21 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
               label="ვინ ანაზღაურებს თანხას?"
             />
           </div>
+          <div className="mt-4">
+            <InputWithError
+              formik={formik}
+              name={`products.${index}.branch`}
+              label="ფილიალი"
+              type="select"
+            >
+              <option value="">აირჩიეთ ფილიალი</option>
+              {formik.values.branches.map(branch => (
+                <option key={branch} value={branch}>
+                  {branch}
+                </option>
+              ))}
+            </InputWithError>
+          </div>
         </FormSection>
 
         <FormSection title="დამატებითი ინფორმაცია">
@@ -314,7 +335,7 @@ const ProcurementPage = () => {
   const formik = useFormik({
     initialValues: {
       procurement_type: "",
-      branch: "",
+      branches: [],
       category: "",
       purchase_purpose: "",
       requested_arrival_date: "",
@@ -325,18 +346,7 @@ const ProcurementPage = () => {
       delivery_address: "",
       external_url: "",
       file: null,
-      products: [
-        {
-          name: "",
-          quantity: "",
-          dimensions: "",
-          description: "",
-          search_variant: "",
-          similar_purchase_planned: "",
-          in_stock_explanation: null,
-          payer: "",
-        },
-      ],
+      products: [],
     },
     validationSchema: procurementSchema,
     validateOnMount: true,
@@ -367,14 +377,15 @@ const ProcurementPage = () => {
           ...values,
           creates_stock: Boolean(values.creates_stock),
           stock_purpose: values.creates_stock ? values.stock_purpose : null,
-          products: values.products.map(product => ({
-            ...product,
-            quantity: parseInt(product.quantity, 10),
-            in_stock_explanation:
-              values.category === "IT" || values.category === "Marketing"
-                ? null
-                : product.in_stock_explanation,
-          })),
+          products:
+            values.products?.map(product => ({
+              ...product,
+              quantity: parseInt(product.quantity, 10),
+              in_stock_explanation:
+                values.category === "IT" || values.category === "Marketing"
+                  ? null
+                  : product.in_stock_explanation,
+            })) || [],
           file: file,
         }
 
@@ -525,6 +536,7 @@ const ProcurementPage = () => {
         similar_purchase_planned: "",
         in_stock_explanation: "",
         payer: "",
+        branch: "",
       },
     ])
     setExpandedProducts(prev => [...prev, newProductIndex])
@@ -569,11 +581,11 @@ const ProcurementPage = () => {
 
                   <InputWithError
                     formik={formik}
-                    name="branch"
-                    label="ფილიალი"
+                    name="branches"
+                    label="ფილიალები"
                     type="select"
+                    multiple={true}
                   >
-                    <option value="">აირჩიეთ ფილიალი</option>
                     {branchOptions.map(branch => (
                       <option key={branch} value={branch}>
                         {branch}

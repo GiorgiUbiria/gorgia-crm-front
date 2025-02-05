@@ -18,7 +18,7 @@ const Logout = () => {
         sessionStorage.clear()
 
         if (res?.status === 200) {
-          toast.success(res.data.message, "წარმატება", {
+          toast.success("წარმატებით გამოხვედი", "წარმატება", {
             duration: 2000,
             size: "small",
           })
@@ -27,7 +27,7 @@ const Logout = () => {
         navigate("/auth/login", { replace: true })
       } catch (err) {
         console.error("Logout failed:", err)
-        toast.error("Failed to logout properly", "შეცდომა", {
+        toast.error("გამოსვლის დროს დაფიქსირდა შეცდომა", "შეცდომა", {
           duration: 2000,
           size: "small",
         })

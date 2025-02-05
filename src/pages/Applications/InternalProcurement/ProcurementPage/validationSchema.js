@@ -57,6 +57,24 @@ const productSchema = Yup.object().shape({
   payer: Yup.string()
     .required("გადამხდელის მითითება სავალდებულოა")
     .max(255, "მაქსიმუმ 255 სიმბოლო"),
+
+  branch: Yup.string()
+    .required("ფილიალის მითითება სავალდებულოა")
+    .oneOf(branchOptions, "არასწორი ფილიალი")
+    .test(
+      "branch-in-parent",
+      "ფილიალი უნდა იყოს არჩეული ფილიალებიდან",
+      function (value) {
+        console.log("this", this)
+        const parentBranches = this.from[1]?.value?.branches || []
+        console.log("Validating branch:", {
+          value,
+          parentBranches,
+          isValid: parentBranches.includes(value),
+        })
+        return parentBranches.includes(value)
+      }
+    ),
 })
 
 export const procurementSchema = Yup.object()
@@ -65,10 +83,10 @@ export const procurementSchema = Yup.object()
       .required("შესყიდვის ტიპის არჩევა სავალდებულოა")
       .oneOf(["purchase", "price_inquiry"], "არასწორი შესყიდვის ტიპი"),
 
-    branch: Yup.string()
-      .required("ფილიალის არჩევა სავალდებულოა")
-
-      .oneOf(branchOptions, "არასწორი ფილიალი"),
+    branches: Yup.array()
+      .of(Yup.string().oneOf(branchOptions, "არასწორი ფილიალი"))
+      .min(1, "მინიმუმ ერთი ფილიალი სავალდებულოა")
+      .required("ფილიალების არჩევა სავალდებულოა"),
 
     category: Yup.string()
       .required("კატეგორიის არჩევა სავალდებულოა")
@@ -122,8 +140,15 @@ export const procurementSchema = Yup.object()
 
     products: Yup.array()
       .of(productSchema)
-      .min(1, "მინიმუმ ერთი პროდუქტი სავალდებულოა")
-      .required("პროდუქტების მითითება სავალდებულოა"),
+      .nullable()
+      .test(
+        "products-branch-consistency",
+        "ყველა პროდუქტს უნდა ჰქონდეს მითითებული ფილიალი",
+        function (value) {
+          if (!value || value.length === 0) return true
+          return value.every(product => product.branch)
+        }
+      ),
 
     external_url: Yup.string().nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
   })
