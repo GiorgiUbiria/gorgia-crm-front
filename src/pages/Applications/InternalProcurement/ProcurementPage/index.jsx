@@ -662,7 +662,7 @@ const ProcurementPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:!from-gray-900 dark:!to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br dark:!from-gray-900 dark:!to-gray-800">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="space-y-6">
           <form onSubmit={formik.handleSubmit} className="space-y-6">
@@ -928,35 +928,6 @@ const ProcurementPage = () => {
           </form>
         </div>
       </div>
-
-      <style>{`
-        ::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
-        }
-
-        /* Dark mode scrollbar */
-        .dark ::-webkit-scrollbar-thumb {
-          background: #475569;
-        }
-
-        .dark ::-webkit-scrollbar-thumb:hover {
-          background: #64748b;
-        }
-      `}</style>
     </div>
   )
 }

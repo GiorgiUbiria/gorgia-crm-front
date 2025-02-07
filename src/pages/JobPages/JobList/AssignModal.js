@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { Modal, ModalHeader, ModalBody, Form, Button, Label } from "reactstrap"
 import useAuth from "hooks/useAuth"
 import CustomSelect from "components/Select"
@@ -32,10 +32,12 @@ const AssignModal = ({ isOpen, toggle, onAssign, task, usersList }) => {
   const handleSubmit = async e => {
     e.preventDefault()
     try {
-      const assignedUserIds =
-        isAdmin() || isDepartmentHead() || isITSupport()
-          ? selectedUsers.map(user => user.value)
-          : [user.id]
+      let assignedUserIds
+      if (isAdmin() || isDepartmentHead() || isITSupport()) {
+        assignedUserIds = selectedUsers.map(user => user.value)
+      } else {
+        assignedUserIds = [user.id]
+      }
 
       await onAssign(assignedUserIds)
       toast.success("დავალება მიღებულია", "წარმატება", {
@@ -57,10 +59,22 @@ const AssignModal = ({ isOpen, toggle, onAssign, task, usersList }) => {
     }
   }
 
-  const userOptions = usersList?.map(user => ({
-    value: user.id,
-    label: `${user.name} ${user.sur_name}`,
-  })) || []
+  const userOptions = useMemo(() => {
+    const options =
+      usersList?.map(user => ({
+        value: user.id,
+        label: `${user.name} ${user.sur_name}`,
+      })) || []
+
+    if (isITSupport() && !options.some(option => option.value === user.id)) {
+      options.push({
+        value: user.id,
+        label: `${user.name} ${user.sur_name}`,
+      })
+    }
+
+    return options
+  }, [usersList, isITSupport, user])
 
   return (
     <Modal
