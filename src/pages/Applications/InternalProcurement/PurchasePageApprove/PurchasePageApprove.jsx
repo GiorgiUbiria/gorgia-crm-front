@@ -31,7 +31,6 @@ import {
   BiWallet,
   BiStore,
   BiFlag,
-  BiCog,
   BiComment,
   BiMessageAltX,
   BiLink,
@@ -135,17 +134,6 @@ const PurchasePageApprove = () => {
 
   const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
     useUpdateProductStatus()
-
-  const canManageProducts = useCallback(
-    purchase => {
-      return (
-        isAdmin() ||
-        (getUserDepartmentId() === 7 &&
-          purchase.status === "pending products completion")
-      )
-    },
-    [isAdmin, getUserDepartmentId]
-  )
 
   const canApproveRequest = useCallback(
     purchase => {
@@ -415,7 +403,8 @@ const PurchasePageApprove = () => {
         Header: "მოქმედებები",
         Cell: ({ row }) => {
           const purchase = row.original
-          if (!canApproveRequest(purchase)) return null
+          if (!canApproveRequest(purchase) || getUserDepartmentId() === 7)
+            return null
 
           return (
             <div className="d-flex gap-2">
@@ -610,6 +599,15 @@ const PurchasePageApprove = () => {
         ),
         icon: <BiDownload />,
       },
+      {
+        label: "პროდუქტების სია დანართში",
+        value: rowData?.has_products_attachment ? (
+          <span className="badge bg-info">დიახ</span>
+        ) : (
+          <span className="badge bg-secondary">არა</span>
+        ),
+        icon: <BiPackage />,
+      },
     ]
 
     const completedProductsCount =
@@ -645,11 +643,19 @@ const PurchasePageApprove = () => {
             </span>
 
             {rowData.status === "pending products completion" && (
-              <span className="text-muted">
-                <BiPackage className="me-1" />
-                {completedProductsCount}/{totalProductsCount} პროდუქტი
-                დასრულებული
-              </span>
+              <>
+                <span className="text-muted">
+                  <BiPackage className="me-1" />
+                  {completedProductsCount}/{totalProductsCount} პროდუქტი
+                  დასრულებული
+                </span>
+                {rowData.has_products_attachment && (
+                  <span className="badge bg-warning text-dark">
+                    <BiInfoCircle className="me-1" />
+                    დანართში მითითებული პროდუქტების დამუშავება მიმდინარეობს
+                  </span>
+                )}
+              </>
             )}
           </div>
 
@@ -680,15 +686,28 @@ const PurchasePageApprove = () => {
           </div>
 
           {totalProductsCount > 0 && (
-            <div className="progress mt-3" style={{ height: "10px" }}>
-              <div
-                className="progress-bar bg-success"
-                role="progressbar"
-                style={{ width: `${progressPercentage}%` }}
-                aria-valuenow={progressPercentage}
-                aria-valuemin="0"
-                aria-valuemax="100"
-              />
+            <div className="mt-3">
+              <div className="progress" style={{ height: "10px" }}>
+                <div
+                  className="progress-bar bg-success"
+                  role="progressbar"
+                  style={{ width: `${progressPercentage}%` }}
+                  aria-valuenow={progressPercentage}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                />
+              </div>
+              {rowData.has_products_attachment &&
+                rowData.products.every(p => p.status === "completed") &&
+                rowData.status === "pending products completion" && (
+                  <div className="mt-2 text-warning">
+                    <small>
+                      <BiInfoCircle className="me-1" />
+                      სასწრაფო პროდუქტები დასრულებულია. გთხოვთ დაასრულოთ
+                      დანართში მითითებული პროდუქტების დამუშავება.
+                    </small>
+                  </div>
+                )}
             </div>
           )}
         </CardBody>
@@ -732,7 +751,11 @@ const PurchasePageApprove = () => {
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center gap-2">
                     <BiPackage className="text-primary" size={24} />
-                    <h6 className="mb-0">პროდუქტები მითითებულია დანართში</h6>
+                    <h6 className="mb-0">
+                      {rowData.has_products_attachment
+                        ? "პროდუქტები მითითებულია დანართში"
+                        : "პროდუქტების სია ცარიელია"}
+                    </h6>
                   </div>
                   <Button
                     variant="contained"
@@ -753,30 +776,87 @@ const PurchasePageApprove = () => {
         return null
       }
 
+      const showActions =
+        getUserDepartmentId() === 7 &&
+        rowData.status === "pending products completion"
+
       return (
         <Card className="shadow-sm">
           <CardBody>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <div className="d-flex align-items-center gap-2">
                 <BiPackage className="text-primary" size={24} />
-                <h6 className="mb-0">პროდუქტები</h6>
+                <h6 className="mb-0">
+                  {rowData.has_products_attachment
+                    ? "სასწრაფო პროდუქტები (დამატებითი პროდუქტები მითითებულია დანართში)"
+                    : "პროდუქტები"}
+                </h6>
               </div>
 
               {rowData.status === "pending products completion" && (
-                <div style={{ width: "200px" }}>
-                  <div className="progress" style={{ height: "10px" }}>
-                    <div
-                      className="progress-bar bg-success"
-                      role="progressbar"
-                      style={{ width: `${progressPercentage}%` }}
-                      aria-valuenow={progressPercentage}
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                    />
+                <div className="d-flex align-items-center gap-3">
+                  {rowData.has_products_attachment && (
+                    <div className="text-warning d-flex align-items-center gap-2">
+                      <BiInfoCircle size={20} />
+                      <small>
+                        დასრულებისთვის საჭიროა დანართში მითითებული ყველა
+                        პროდუქტის დამუშავება
+                      </small>
+                    </div>
+                  )}
+                  <div style={{ width: "200px" }}>
+                    <div className="progress" style={{ height: "10px" }}>
+                      <div
+                        className="progress-bar bg-success"
+                        role="progressbar"
+                        style={{ width: `${progressPercentage}%` }}
+                        aria-valuenow={progressPercentage}
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
             </div>
+
+            {showActions && (
+              <div className="mb-3">
+                <div className="d-flex flex-wrap gap-2">
+                  {rowData.products
+                    .filter(product => product.status !== "completed")
+                    .map((product, index) => (
+                      <Button
+                        key={index}
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => {
+                          setSelectedProduct(product)
+                          setSelectedPurchase(rowData)
+                          setProductStatusModal(true)
+                        }}
+                      >
+                        დაასრულე: {product.name}
+                      </Button>
+                    ))}
+                  {rowData.has_products_attachment &&
+                    rowData.products.every(p => p.status === "completed") && (
+                      <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => {
+                          setSelectedProduct(null)
+                          setSelectedPurchase(rowData)
+                          setProductStatusModal(true)
+                        }}
+                      >
+                        მოთხოვნის დასრულება
+                      </Button>
+                    )}
+                </div>
+              </div>
+            )}
 
             <div className="table-responsive">
               <table className="table table-hover">
@@ -837,13 +917,6 @@ const PurchasePageApprove = () => {
                         <BiComment /> <span>კომენტარი</span>
                       </div>
                     </th>
-                    {canManageProducts(rowData) && (
-                      <th>
-                        <div className="d-flex align-items-center gap-2">
-                          <BiCog /> <span>მოქმედებები</span>
-                        </div>
-                      </th>
-                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -896,24 +969,6 @@ const PurchasePageApprove = () => {
                           <span className="text-muted">-</span>
                         )}
                       </td>
-                      {canManageProducts(rowData) && (
-                        <td>
-                          {product.status !== "completed" && (
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              size="small"
-                              onClick={() => {
-                                setSelectedProduct(product)
-                                setSelectedPurchase(rowData)
-                                setProductStatusModal(true)
-                              }}
-                            >
-                              დასრულება
-                            </Button>
-                          )}
-                        </td>
-                      )}
                     </tr>
                   ))}
                 </tbody>
