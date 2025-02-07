@@ -1,74 +1,35 @@
 import React from "react"
 import RichTextEditor from "./RichTextEditor"
-import { toast } from "store/zustand/toastStore"
+
 const CommentForm = ({
-  onSubmit,
   value,
   onChange,
+  onSubmit,
   onCancel,
   isLoading,
   placeholder = "დაწერე კომენტარი...",
   submitText = "კომენტარის დამატება",
-  className = "mb-8",
 }) => {
-  const handleSubmit = async e => {
-    e.preventDefault()
-    if (!value.trim()) return
-
-    try {
-      console.log("Submitting comment:", { value })
-      let commentData
-      try {
-        // Try to parse the value as JSON first
-        commentData = JSON.parse(value)
-        console.log("Parsed value as JSON:", commentData)
-      } catch (e) {
-        // If parsing fails, treat as plain text
-        console.log("Using plain text format")
-        commentData = {
-          text: value,
-          format: {
-            bold: false,
-            italic: false,
-            color: "black",
-            fontSize: "normal",
-          },
-        }
-      }
-
-      console.log("Comment data to submit:", commentData)
-      await onSubmit(e)
-    } catch (error) {
-      console.error("❌ Comment submission failed:", error)
-      toast.error("კომენტარის დამატების დროს დაფიქსირდა შეცდომა", "შეცდომა", {
-        duration: 2000,
-        size: "small",
-      })
-    }
-  }
-
   return (
-    <form onSubmit={handleSubmit} className={className}>
+    <form onSubmit={onSubmit} className="space-y-3 sm:space-y-4">
       <RichTextEditor
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         disabled={isLoading}
       />
-      <div className="mt-3 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:!text-gray-400 dark:!hover:text-gray-200 transition-colors"
-          >
-            გაუქმება
-          </button>
-        )}
+      <div className="flex items-center justify-end gap-2 sm:gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 dark:!text-gray-200 hover:text-gray-900 dark:!hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#105D8D] dark:!focus:ring-offset-gray-800 rounded-lg"
+        >
+          გაუქმება
+        </button>
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm bg-[#105D8D] hover:bg-[#0D4D75] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:!bg-[#1A7AB8] dark:!hover:bg-[#1569A0]"
+          className="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-[#105D8D] hover:bg-[#0D4D75] dark:!bg-[#1A7AB8] dark:!hover:bg-[#1569A0] rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#105D8D] dark:!focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "იგზავნება..." : submitText}
         </button>
@@ -77,12 +38,4 @@ const CommentForm = ({
   )
 }
 
-CommentForm.defaultProps = {
-  placeholder: "დაწერე კომენტარი...",
-  submitText: "კომენტარის დამატება",
-  className: "mb-8",
-  isLoading: false,
-  onCancel: null,
-}
-
-export default React.memo(CommentForm)
+export default CommentForm

@@ -6,6 +6,13 @@ import {
 import { formatDistanceToNow } from "../../../utils/dateUtils"
 import CommentForm from "./CommentForm"
 import { toast } from "store/zustand/toastStore"
+import { useEditor, EditorContent } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import TextStyle from "@tiptap/extension-text-style"
+import Color from "@tiptap/extension-color"
+import Highlight from "@tiptap/extension-highlight"
+import Link from "@tiptap/extension-link"
+import Underline from "@tiptap/extension-underline"
 
 const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
   const [isReplying, setIsReplying] = useState(false)
@@ -13,6 +20,51 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
 
   const createCommentMutation = useCreateDailyComment()
   const deleteCommentMutation = useDeleteDailyComment()
+
+  const commentEditor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2],
+        },
+      }),
+      TextStyle,
+      Color,
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: "text-blue-500 hover:text-blue-700 underline",
+        },
+      }),
+      Underline,
+    ],
+    content: null,
+    editable: false,
+  })
+
+  // Update editor content when comment changes
+  React.useEffect(() => {
+    if (commentEditor && comment?.comment) {
+      try {
+        let content = comment.comment
+        if (typeof content === "string") {
+          const parsed = JSON.parse(content)
+          if (parsed.text) {
+            content = JSON.parse(parsed.text)
+          } else {
+            content = parsed
+          }
+        }
+        commentEditor.commands.setContent(content)
+      } catch (e) {
+        console.warn("Failed to parse comment content:", e)
+        commentEditor.commands.setContent(String(comment.comment))
+      }
+    }
+  }, [comment?.comment, commentEditor])
 
   if (!comment) {
     console.warn("⚠️ Received null/undefined comment")
@@ -24,31 +76,10 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
     if (!replyContent.trim()) return
 
     try {
-      console.log("Submitting reply:", { replyContent })
-      let commentData
-      try {
-        // Try to parse the value as JSON first
-        commentData = JSON.parse(replyContent)
-        console.log("Parsed reply as JSON:", commentData)
-      } catch (e) {
-        // If parsing fails, treat as plain text
-        console.log("Using plain text format")
-        commentData = {
-          text: replyContent,
-          format: {
-            bold: false,
-            italic: false,
-            color: "black",
-            fontSize: "normal",
-          },
-        }
-      }
-
-      console.log("Reply data to submit:", commentData)
       await createCommentMutation.mutateAsync({
         dailyId,
         data: {
-          comment: JSON.stringify(commentData),
+          comment: replyContent,
           parent_id: comment.id,
         },
       })
@@ -93,156 +124,6 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
   const { user = {}, created_at, replies = [] } = comment
   const { name = "", sur_name = "", id: userId } = user
 
-  const renderComment = () => {
-    console.log("Rendering comment:", { comment })
-    if (!comment?.comment) {
-      console.log("No comment content to render")
-      return ""
-    }
-
-    try {
-      let segments = []
-      try {
-        console.log("Parsing comment content:", {
-          content: comment.comment,
-          type: typeof comment.comment,
-        })
-        // First parse
-        let parsed =
-          typeof comment.comment === "string"
-            ? JSON.parse(comment.comment)
-            : comment.comment
-        console.log("First parse result:", parsed)
-
-        // Handle double-stringified JSON
-        if (parsed.text && typeof parsed.text === "string") {
-          try {
-            console.log("Attempting to parse inner text:", parsed.text)
-            const innerParsed = JSON.parse(parsed.text)
-            console.log("Inner parse result:", innerParsed)
-
-            // Handle array format
-            if (Array.isArray(innerParsed)) {
-              console.log("Using inner array format")
-              segments = innerParsed
-            }
-            // Handle object format
-            else if (innerParsed.text && innerParsed.format) {
-              console.log("Using inner object format")
-              segments = [
-                {
-                  text: innerParsed.text,
-                  format: innerParsed.format,
-                },
-              ]
-            }
-            // Handle plain text
-            else {
-              console.log("Using inner plain text format")
-              segments = [
-                {
-                  text: String(innerParsed),
-                  format: parsed.format || {
-                    bold: false,
-                    italic: false,
-                    color: "black",
-                    fontSize: "normal",
-                  },
-                },
-              ]
-            }
-          } catch (e) {
-            console.warn("Failed to parse inner text:", e)
-            segments = [
-              {
-                text: parsed.text,
-                format: parsed.format || {
-                  bold: false,
-                  italic: false,
-                  color: "black",
-                  fontSize: "normal",
-                },
-              },
-            ]
-          }
-        }
-        // Handle array format
-        else if (Array.isArray(parsed)) {
-          console.log("Using array format")
-          segments = parsed
-        }
-        // Handle object format
-        else if (parsed.text) {
-          console.log("Using object format")
-          segments = [
-            {
-              text: parsed.text,
-              format: parsed.format || {
-                bold: false,
-                italic: false,
-                color: "black",
-                fontSize: "normal",
-              },
-            },
-          ]
-        }
-        // Handle plain text
-        else {
-          console.log("Using plain text format")
-          segments = [
-            {
-              text: String(parsed),
-              format: {
-                bold: false,
-                italic: false,
-                color: "black",
-                fontSize: "normal",
-              },
-            },
-          ]
-        }
-        console.log("Final segments:", segments)
-      } catch (e) {
-        console.warn("Failed to parse comment segments:", e, {
-          content: comment.comment,
-        })
-        segments = [
-          {
-            text: String(comment.comment),
-            format: {
-              bold: false,
-              italic: false,
-              color: "black",
-              fontSize: "normal",
-            },
-          },
-        ]
-      }
-
-      return (
-        <div>
-          {segments.map((segment, index) => {
-            const style = {
-              fontWeight: segment.format.bold ? "bold" : "normal",
-              fontStyle: segment.format.italic ? "italic" : "normal",
-              color: segment.format.color || "black",
-              fontSize: segment.format.fontSize === "large" ? "1.2em" : "1em",
-            }
-            console.log(`Rendering segment ${index}:`, { segment, style })
-            return (
-              <span key={index} style={style}>
-                {segment.text}
-              </span>
-            )
-          })}
-        </div>
-      )
-    } catch (e) {
-      console.warn("Failed to render comment:", e)
-      return String(comment.comment)
-    }
-  }
-
   return (
     <div
       className={`${
@@ -265,8 +146,8 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
                 {formatDistanceToNow(created_at)}
               </span>
             </div>
-            <div className="mt-2 sm:mt-3 text-sm sm:text-base text-gray-700 dark:!text-gray-200 break-words">
-              {renderComment()}
+            <div className="mt-2 sm:mt-3 text-sm sm:text-base text-gray-700 dark:!text-gray-200 break-words prose dark:prose-invert max-w-none">
+              {commentEditor && <EditorContent editor={commentEditor} />}
             </div>
             <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-3 sm:gap-4">
               <button
