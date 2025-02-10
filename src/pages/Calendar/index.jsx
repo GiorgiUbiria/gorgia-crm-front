@@ -195,7 +195,7 @@ const Calendar = () => {
             right: "dayGridMonth,timeGridWeek,timeGridDay",
           }}
           locale={kaLocale}
-          timeZone="Asia/Tbilisi"
+          timeZone="UTC"
           eventClick={info => {
             setSelectedEventId(info.event.id)
             openModal("viewCalendarEvent")
@@ -215,6 +215,13 @@ const Calendar = () => {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
+            meridiem: false,
+          }}
+          slotLabelFormat={{
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            meridiem: false,
           }}
           eventDisplay="block"
           eventClassNames="dark:!bg-opacity-80"

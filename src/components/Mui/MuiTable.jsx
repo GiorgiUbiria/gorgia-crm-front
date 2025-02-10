@@ -34,7 +34,7 @@ import LastPageIcon from "@mui/icons-material/LastPage"
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft"
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight"
 import TableSortLabel from "@mui/material/TableSortLabel"
-import { alpha } from "@mui/material/styles"
+import { useTheme } from "../../hooks/useTheme"
 
 const CustomPaginationActions = React.memo(function CustomPaginationActions(
   props
@@ -119,6 +119,7 @@ const MuiTable = ({
   const [selectedSearchField, setSelectedSearchField] = useState(
     searchableFields[0] || ""
   )
+  const { isDarkMode } = useTheme()
 
   const memoizedData = useMemo(() => data, [data])
   const memoizedColumns = useMemo(() => columns, [columns])
@@ -272,20 +273,28 @@ const MuiTable = ({
       sx={{
         borderRadius: 2,
         overflow: "hidden",
-        backgroundColor: "background.paper",
-        color: "text.primary",
-        border: theme => `1px solid ${theme.palette.divider}`,
+        backgroundColor: isDarkMode
+          ? "#111827" // Tailwind's gray-900
+          : "#fff",
+        color: isDarkMode ? "#f3f4f6" : "rgba(0, 0, 0, 0.87)", // Brighter text
+        border: `1px solid ${
+          isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"
+        }`,
       }}
     >
       {(enableSearch || filterOptions.length > 0) && (
         <Box
           sx={{
             p: 2,
-            borderBottom: theme => `1px solid ${theme.palette.divider}`,
+            borderBottom: `1px solid ${
+              isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"
+            }`,
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             gap: 2,
-            backgroundColor: "background.default",
+            backgroundColor: isDarkMode
+              ? "#1f2937" // Tailwind's gray-800
+              : "#fff",
           }}
         >
           {enableSearch && searchableFields.length > 0 && (
@@ -302,7 +311,13 @@ const MuiTable = ({
                   size="small"
                   sx={{ minWidth: { xs: "100%", sm: 200 } }}
                 >
-                  <InputLabel sx={{ color: "text.secondary" }}>
+                  <InputLabel
+                    sx={{
+                      color: isDarkMode
+                        ? "#f3f4f6" // Brighter text
+                        : "rgba(0, 0, 0, 0.6)",
+                    }}
+                  >
                     საძიებო ველი
                   </InputLabel>
                   <Select
@@ -310,12 +325,25 @@ const MuiTable = ({
                     onChange={e => setSelectedSearchField(e.target.value)}
                     label="საძიებო ველი"
                     sx={{
-                      "& .MuiSelect-icon": { color: "text.secondary" },
+                      "& .MuiSelect-icon": {
+                        color: isDarkMode
+                          ? "#f3f4f6" // Brighter text
+                          : "rgba(0, 0, 0, 0.54)",
+                      },
                       "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "divider",
+                        borderColor: isDarkMode
+                          ? "rgba(255, 255, 255, 0.23)"
+                          : "rgba(0, 0, 0, 0.23)",
                       },
                       "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "primary.main",
+                        borderColor: isDarkMode
+                          ? "#f3f4f6" // Brighter text
+                          : "rgba(0, 0, 0, 0.87)",
+                      },
+                      "& .MuiSelect-select": {
+                        color: isDarkMode
+                          ? "#f3f4f6" // Brighter text
+                          : "rgba(0, 0, 0, 0.87)",
                       },
                     }}
                   >
@@ -393,37 +421,37 @@ const MuiTable = ({
               </FormControl>
               {filterField && (
                 <FormControl
-                  size="small"
-                  sx={{ minWidth: { xs: "100%", sm: 140 } }}
+                size="small"
+                sx={{ minWidth: { xs: "100%", sm: 140 } }}
+              >
+                <InputLabel sx={{ color: "text.secondary" }}>
+                  ფილტრი
+                </InputLabel>
+                <Select
+                  name="value"
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  label="მნიშვნელობა"
+                  sx={{
+                    "& .MuiSelect-icon": { color: "text.secondary" },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "divider",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "primary.main",
+                    },
+                  }}
                 >
-                  <InputLabel sx={{ color: "text.secondary" }}>
-                    ფილტრი
-                  </InputLabel>
-                  <Select
-                    name="value"
-                    value={filterValue}
-                    onChange={handleFilterChange}
-                    label="მნიშვნელობა"
-                    sx={{
-                      "& .MuiSelect-icon": { color: "text.secondary" },
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "divider",
-                      },
-                      "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "primary.main",
-                      },
-                    }}
-                  >
-                    <MenuItem value="">
-                      <em>ყველა</em>
+                  <MenuItem value="">
+                    <em>ყველა</em>
+                  </MenuItem>
+                  {getFilterValues().map(({ value, label }) => (
+                    <MenuItem key={value} value={value}>
+                      {label}
                     </MenuItem>
-                    {getFilterValues().map(({ value, label }) => (
-                      <MenuItem key={value} value={value}>
-                        {label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                  ))}
+                </Select>
+              </FormControl>
               )}
             </Box>
           )}
@@ -434,33 +462,45 @@ const MuiTable = ({
           {...tableInstance.getTableProps()}
           sx={{
             minWidth: 650,
-            backgroundColor: "background.paper",
+            backgroundColor: isDarkMode ? "#111827" : "#fff",
             borderCollapse: "collapse",
             "& .MuiTableCell-head": {
-              backgroundColor: theme => theme.palette.mode === 'dark' ? 'primary.dark' : '#105d8d',
-              color: "primary.contrastText",
+              backgroundColor: isDarkMode ? "#1f2937" : "#1976d2",
+              color: isDarkMode ? "#f3f4f6" : "#fff",
               fontWeight: 700,
-              borderRight: theme => `1px solid ${theme.palette.divider}`,
-              borderBottom: theme => `1px solid ${theme.palette.divider}`,
+              borderRight: `1px solid ${
+                isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"
+              }`,
+              borderBottom: `1px solid ${
+                isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"
+              }`,
               "&:last-child": {
                 borderRight: "none",
               },
             },
             "& .MuiTableCell-body": {
-              borderRight: theme => `1px solid ${theme.palette.divider}`,
-              borderBottom: theme => `1px solid ${theme.palette.divider}`,
+              borderRight: `1px solid ${
+                isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"
+              }`,
+              borderBottom: `1px solid ${
+                isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"
+              }`,
+              color: isDarkMode
+                ? "#f3f4f6" // Brighter text
+                : "rgba(0, 0, 0, 0.87)",
               "&:last-child": {
                 borderRight: "none",
               },
             },
             "& .MuiTableRow-root:nth-of-type(even)": {
-              backgroundColor: theme => 
-                theme.palette.mode === 'dark' 
-                  ? alpha(theme.palette.primary.main, 0.05)
-                  : 'action.hover',
+              backgroundColor: isDarkMode
+                ? "rgba(255, 255, 255, 0.02)"
+                : "rgba(0, 0, 0, 0.02)",
             },
             "& .MuiTableRow-hover:hover": {
-              backgroundColor: "action.selected",
+              backgroundColor: isDarkMode
+                ? "rgba(255, 255, 255, 0.08)"
+                : "rgba(0, 0, 0, 0.04)",
             },
           }}
         >
@@ -566,14 +606,13 @@ const MuiTable = ({
                         colSpan={columns.length + 1}
                       >
                         <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                          <Box 
-                            sx={{ 
-                              py: 2, 
+                          <Box
+                            sx={{
+                              py: 2,
                               px: 3,
-                              backgroundColor: theme => 
-                                theme.palette.mode === 'dark' 
-                                  ? 'background.paper' 
-                                  : 'inherit'
+                              backgroundColor: isDarkMode
+                                ? "#1e1e1e"
+                                : "inherit",
                             }}
                           >
                             {renderRowDetails(row.original)}
@@ -594,8 +633,10 @@ const MuiTable = ({
           display: "flex",
           justifyContent: "flex-end",
           alignItems: "center",
-          borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-          backgroundColor: "background.default",
+          borderTop: `1px solid ${
+            isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"
+          }`,
+          backgroundColor: isDarkMode ? "#1e1e1e" : "#fff",
         }}
       >
         <TablePagination
@@ -622,18 +663,24 @@ const MuiTable = ({
               margin: 0,
               display: "flex",
               alignItems: "center",
-              color: "text.secondary",
+              color: isDarkMode
+                ? "rgba(255, 255, 255, 0.7)"
+                : "rgba(0, 0, 0, 0.54)",
             },
             ".MuiTablePagination-displayedRows": {
               margin: 0,
               display: "flex",
               alignItems: "center",
-              color: "text.secondary",
+              color: isDarkMode
+                ? "rgba(255, 255, 255, 0.7)"
+                : "rgba(0, 0, 0, 0.54)",
             },
             ".MuiTablePagination-select": {
               paddingTop: 0,
               paddingBottom: 0,
-              color: "text.primary",
+              color: isDarkMode
+                ? "rgba(255, 255, 255, 0.87)"
+                : "rgba(0, 0, 0, 0.87)",
             },
             ".MuiTablePagination-actions": {
               marginLeft: 2,

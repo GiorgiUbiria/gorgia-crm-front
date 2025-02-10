@@ -44,15 +44,15 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
   const formatDateTimeForInput = date => {
     if (!date) return ""
     const d = new Date(date)
-    const tzOffset = d.getTimezoneOffset() * 60000
-    const localDate = new Date(d.getTime() - tzOffset)
-    return localDate.toISOString().slice(0, 16)
+    // Convert UTC+4 to local time for input
+    const localTime = new Date(d.getTime() - 4 * 60 * 60 * 1000)
+    return localTime.toISOString().slice(0, 16)
   }
+
   const parseDateTimeFromInput = value => {
     if (!value) return null
-    const d = new Date(value)
-    const tzOffset = d.getTimezoneOffset() * 60000
-    return new Date(d.getTime() + tzOffset)
+    // Input time is already in local timezone, no need for conversion
+    return new Date(value)
   }
 
   const form = useForm({
@@ -96,21 +96,29 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
           value,
           tasks,
           guests,
-          files
+          files,
         })
+
+        const startTime = new Date(value.start_time)
+        const startTimeUTC4 = new Date(startTime.getTime() + 4 * 60 * 60 * 1000)
+        const endTimeUTC4 = value.end_time
+          ? new Date(new Date(value.end_time).getTime() + 4 * 60 * 60 * 1000)
+          : null
 
         const data = {
           title: value.title?.trim(),
-          start_time: value.start_time ? new Date(value.start_time).toISOString() : null,
-          end_time: value.end_time ? new Date(value.end_time).toISOString() : null,
+          start_time: startTimeUTC4.toISOString(),
+          end_time: endTimeUTC4?.toISOString() || null,
           is_task_event: tasks.length > 0 ? "1" : "0",
           description: value.description?.trim() || null,
           reminder_before: value.reminder_before || null,
           location: value.location?.trim() || null,
-          tasks: tasks.map(task => ({
-            title: task.title?.trim(),
-            description: task.description?.trim() || ""
-          })).filter(task => task.title),
+          tasks: tasks
+            .map(task => ({
+              title: task.title?.trim(),
+              description: task.description?.trim() || "",
+            }))
+            .filter(task => task.title),
           guests: guests || [],
           attachments: Array.from(files || []),
         }
@@ -119,7 +127,7 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
 
         await updateCalendarEventMutation.mutateAsync({
           id: eventId,
-          data
+          data,
         })
         onSuccess?.()
       } catch (error) {
@@ -385,7 +393,7 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm dark:!text-gray-200 truncate">
-                  {user.name}
+                  {user.name} {user.sur_name}
                 </span>
               </label>
             ))}
@@ -422,9 +430,7 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
 
         <div className="relative">
           <div className="flex items-center justify-center w-full">
-            <label
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:!bg-gray-700 hover:bg-gray-100 dark:hover:!bg-gray-600 dark:!border-gray-600"
-            >
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:!bg-gray-700 hover:bg-gray-100 dark:hover:!bg-gray-600 dark:!border-gray-600">
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 <svg
                   className="w-8 h-8 mb-4 text-gray-500 dark:!text-gray-400"
@@ -442,7 +448,9 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
                   />
                 </svg>
                 <p className="mb-2 text-sm text-gray-500 dark:!text-gray-400">
-                  <span className="font-semibold">დააჭირეთ ფაილის ასატვირთად</span>{" "}
+                  <span className="font-semibold">
+                    დააჭირეთ ფაილის ასატვირთად
+                  </span>{" "}
                   ან ჩააგდეთ
                 </p>
                 <p className="text-xs text-gray-500 dark:!text-gray-400">
@@ -495,19 +503,19 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
       )}
 
       <form.Subscribe selector={state => [state.canSubmit, state.isSubmitting]}>
-          {([canSubmit, isSubmitting]) => (
-            <div className="hidden">
-              <button
-                type="submit"
-                disabled={
-                  !canSubmit ||
-                  isSubmitting ||
-                  updateCalendarEventMutation.isLoading
-                }
-              />
-            </div>
-          )}
-        </form.Subscribe>
+        {([canSubmit, isSubmitting]) => (
+          <div className="hidden">
+            <button
+              type="submit"
+              disabled={
+                !canSubmit ||
+                isSubmitting ||
+                updateCalendarEventMutation.isLoading
+              }
+            />
+          </div>
+        )}
+      </form.Subscribe>
     </form>
   )
 }
