@@ -266,13 +266,11 @@ const HrPage = () => {
         />
       </div>
 
-      {/* User Info */}
       <div className="row g-3 mb-4 mt-2">
         {renderUserInfo(user, "პირადი ნომერი", "id_number", isAdmin)}
         {renderUserInfo(user, "პოზიცია", "position", isAdmin)}
       </div>
 
-      {/* Purpose field for paid documents */}
       {isPaidDocument(values.documentType) && (
         <div className="mb-4">
           <Label className="form-label">მიზანი</Label>
@@ -368,7 +366,6 @@ const HrPage = () => {
             </div>
           </Col>
         </Row>
-        
       </div>
     </>
   )

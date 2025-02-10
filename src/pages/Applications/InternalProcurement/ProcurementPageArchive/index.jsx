@@ -294,7 +294,6 @@ const ProcurementPageArchive = () => {
         document.body.appendChild(link)
         link.click()
 
-        // Cleanup
         link.parentNode.removeChild(link)
         window.URL.revokeObjectURL(url)
       } catch (error) {
@@ -548,7 +547,6 @@ const ProcurementPageArchive = () => {
           document.body.appendChild(link)
           link.click()
 
-          // Cleanup
           link.parentNode.removeChild(link)
           window.URL.revokeObjectURL(url)
         } catch (error) {

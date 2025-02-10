@@ -20,11 +20,9 @@ const CommentForm = ({
       console.log("Submitting comment:", { value })
       let commentData
       try {
-        // Try to parse the value as JSON first
         commentData = JSON.parse(value)
         console.log("Parsed value as JSON:", commentData)
       } catch (e) {
-        // If parsing fails, treat as plain text
         console.log("Using plain text format")
         commentData = {
           text: value,

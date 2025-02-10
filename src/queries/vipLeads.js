@@ -4,7 +4,6 @@ import * as vipLeadRequestsService from "../services/vipLeadRequestsService"
 import * as leadRequestCommentsService from "../services/leadRequestCommentsService"
 import { queryKeys } from "./keys"
 
-// VIP Leads
 export const useVipLeads = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.vipLeads.list(filters),
@@ -73,7 +72,6 @@ export const useDeleteVipLead = () => {
   })
 }
 
-// VIP Lead Requests
 export const useVipLeadRequests = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.vipLeads.requests.list(filters),
@@ -144,7 +142,6 @@ export const useDeleteVipLeadRequest = () => {
   })
 }
 
-// Lead Request Comments
 export const useLeadRequestComments = (requestId) => {
   return useQuery({
     queryKey: queryKeys.vipLeads.requests.comments(requestId),

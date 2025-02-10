@@ -18,23 +18,26 @@ const StandardAgreementUser = () => {
   document.title = "ჩემი ხელშეკრულებები | Gorgia LLC"
   const [agreements, setAgreements] = useState([])
 
-  const statusMap = {
-    pending: {
-      label: "განხილვაში",
-      icon: "bx-time",
-      color: "#e65100",
-    },
-    rejected: {
-      label: "უარყოფილი",
-      icon: "bx-x-circle",
-      color: "#c62828",
-    },
-    approved: {
-      label: "დამტკიცებული",
-      icon: "bx-check-circle",
-      color: "#2e7d32",
-    },
-  }
+  const statusMap = useMemo(
+    () => ({
+      pending: {
+        label: "განხილვაში",
+        icon: "bx-time",
+        color: "#e65100",
+      },
+      rejected: {
+        label: "უარყოფილი",
+        icon: "bx-x-circle",
+        color: "#c62828",
+      },
+      approved: {
+        label: "დამტკიცებული",
+        icon: "bx-check-circle",
+        color: "#2e7d32",
+      },
+    }),
+    []
+  )
 
   const fetchAgreements = async () => {
     try {
@@ -62,9 +65,14 @@ const StandardAgreementUser = () => {
       contract_initiator_name: agreement.contract_initiator_name,
       created_at: new Date(agreement.created_at).toLocaleDateString(),
       status: agreement.status,
-      status_date: agreement.status === 'approved' ? 
-        (agreement.accepted_at ? new Date(agreement.accepted_at).toLocaleString() : '-') :
-        (agreement.rejected_at ? new Date(agreement.rejected_at).toLocaleString() : '-'),
+      status_date:
+        agreement.status === "approved"
+          ? agreement.accepted_at
+            ? new Date(agreement.accepted_at).toLocaleString()
+            : "-"
+          : agreement.rejected_at
+          ? new Date(agreement.rejected_at).toLocaleString()
+          : "-",
       expanded: {
         ...agreement,
         products: agreement.products || [],
@@ -141,7 +149,7 @@ const StandardAgreementUser = () => {
         },
       },
     ],
-    []
+    [statusMap]
   )
 
   const filterOptions = [
@@ -156,7 +164,7 @@ const StandardAgreementUser = () => {
     },
   ]
 
-  const handleDownload = async agreementId => {
+  const handleDownload = useCallback(async agreementId => {
     try {
       await downloadAgreementService(agreementId)
       toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა", "შესრულდა", {
@@ -174,241 +182,254 @@ const StandardAgreementUser = () => {
         }
       )
     }
-  }
+  }, [])
 
-  const renderRowDetails = useCallback(row => {
-    if (!row) return null
+  const renderRowDetails = useCallback(
+    row => {
+      if (!row) return null
 
-    return (
-      <div className="p-4 bg-light rounded">
-        {/* Status Banner */}
-        {row.expanded.rejection_reason && (
-          <div className="alert alert-danger d-flex align-items-center mb-4">
-            <i className="bx bx-error-circle me-2 fs-5"></i>
-            <div>
-              <strong>უარყოფის მიზეზი:</strong> {row.expanded.rejection_reason}
+      return (
+        <div className="p-4 bg-light rounded">
+          {row.expanded.rejection_reason && (
+            <div className="alert alert-danger d-flex align-items-center mb-4">
+              <i className="bx bx-error-circle me-2 fs-5"></i>
+              <div>
+                <strong>უარყოფის მიზეზი:</strong>{" "}
+                {row.expanded.rejection_reason}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Requester Info */}
-        {row.expanded.user && (
-          <div className="d-flex align-items-center mb-4 gap-2 text-muted">
-            <BsPerson className="fs-3 text-primary" />
-            <strong>მოითხოვა:</strong>
-            <span className="ms-2">{`${row.expanded.user.name} ${row.expanded.user.sur_name || ''}`}</span>
-          </div>
-        )}
+          {row.expanded.user && (
+            <div className="d-flex align-items-center mb-4 gap-2 text-muted">
+              <BsPerson className="fs-3 text-primary" />
+              <strong>მოითხოვა:</strong>
+              <span className="ms-2">{`${row.expanded.user.name} ${
+                row.expanded.user.sur_name || ""
+              }`}</span>
+            </div>
+          )}
 
-        {/* Details Grid */}
-        <div className="border rounded p-4 bg-white mb-4">
-          <Row className="g-4">
-            {/* Payment Terms Section */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCreditCard className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">
-                    გადახდის განსხვავებული პირობები
-                  </div>
-                  <div className="fw-medium">
-                    {row.expanded.payment_different_terms ? "კი" : "არა"}
-                  </div>
-                </div>
-              </div>
-            </Col>
-            {row.expanded.payment_different_terms && (
-              <>
-                <Col md={6}>
-                  <div className="d-flex align-items-center gap-2">
-                    <i className="bx bx-dollar fs-7 text-primary"></i>
-                    <div>
-                      <div className="text-muted small">ავანსის პროცენტი</div>
-                      <div className="fw-medium">
-                        {row.expanded.advance_payment_percentage}%
-                      </div>
+          <div className="border rounded p-4 bg-white mb-4">
+            <Row className="g-4">
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <BsCreditCard className="fs-7 text-primary" />
+                  <div>
+                    <div className="text-muted small">
+                      გადახდის განსხვავებული პირობები
+                    </div>
+                    <div className="fw-medium">
+                      {row.expanded.payment_different_terms ? "კი" : "არა"}
                     </div>
                   </div>
-                </Col>
-                <Col md={6}>
-                  <div className="d-flex align-items-center gap-2">
-                    <i className="bx bx-dollar fs-7 text-primary"></i>
-                    <div>
-                      <div className="text-muted small">დარჩენილი თანხის პროცენტი</div>
-                      <div className="fw-medium">
-                        {row.expanded.remaining_payment_percentage}%
+                </div>
+              </Col>
+              {row.expanded.payment_different_terms && (
+                <>
+                  <Col md={6}>
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bx bx-dollar fs-7 text-primary"></i>
+                      <div>
+                        <div className="text-muted small">ავანსის პროცენტი</div>
+                        <div className="fw-medium">
+                          {row.expanded.advance_payment_percentage}%
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Col>
-              </>
-            )}
+                  </Col>
+                  <Col md={6}>
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bx bx-dollar fs-7 text-primary"></i>
+                      <div>
+                        <div className="text-muted small">
+                          დარჩენილი თანხის პროცენტი
+                        </div>
+                        <div className="fw-medium">
+                          {row.expanded.remaining_payment_percentage}%
+                        </div>
+                      </div>
+                    </div>
+                  </Col>
+                </>
+              )}
 
-            {/* Contract Details */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsVoicemail className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">
-                    ხელშეკრულების ინიციატორი
-                  </div>
-                  <div className="fw-medium">
-                    {row.expanded.contract_initiator_name}
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">კონსიგნაციის ვადა</div>
-                  <div className="fw-medium">
-                    {row.expanded.conscription_term} დღე
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <BsVoicemail className="fs-7 text-primary" />
+                  <div>
+                    <div className="text-muted small">
+                      ხელშეკრულების ინიციატორი
+                    </div>
+                    <div className="fw-medium">
+                      {row.expanded.contract_initiator_name}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsMap className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">მიწოდების მისამართი</div>
-                  <div className="fw-medium">
-                    {row.expanded.product_delivery_address}
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <BsCalendar className="fs-7 text-primary" />
+                  <div>
+                    <div className="text-muted small">კონსიგნაციის ვადა</div>
+                    <div className="fw-medium">
+                      {row.expanded.conscription_term} დღე
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsCalendar className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">გადახდის ვადა</div>
-                  <div className="fw-medium">
-                    {row.expanded.product_payment_term} დღე
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <BsMap className="fs-7 text-primary" />
+                  <div>
+                    <div className="text-muted small">მიწოდების მისამართი</div>
+                    <div className="fw-medium">
+                      {row.expanded.product_delivery_address}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <BsBank className="fs-7 text-primary" />
-                <div>
-                  <div className="text-muted small">საბანკო ანგარიში</div>
-                  <div className="fw-medium">{row.expanded.bank_account}</div>
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <BsCalendar className="fs-7 text-primary" />
+                  <div>
+                    <div className="text-muted small">გადახდის ვადა</div>
+                    <div className="fw-medium">
+                      {row.expanded.product_payment_term} დღე
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <i className="bx bx-dollar fs-7 text-primary"></i>
-                <div>
-                  <div className="text-muted small">პროდუქციის ღირებულება</div>
-                  <div className="fw-medium">{row.expanded.product_cost} ₾</div>
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <BsBank className="fs-7 text-primary" />
+                  <div>
+                    <div className="text-muted small">საბანკო ანგარიში</div>
+                    <div className="fw-medium">{row.expanded.bank_account}</div>
+                  </div>
                 </div>
-              </div>
-            </Col>
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bx bx-dollar fs-7 text-primary"></i>
+                  <div>
+                    <div className="text-muted small">
+                      პროდუქციის ღირებულება
+                    </div>
+                    <div className="fw-medium">
+                      {row.expanded.product_cost} ₾
+                    </div>
+                  </div>
+                </div>
+              </Col>
 
-            {/* Products Section */}
-            <Col md={12}>
-              <div className="mt-4">
-                <h6 className="mb-3">პროდუქტები</h6>
-                <div className="table-responsive">
-                  <table className="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th>დასახელება</th>
-                        <th>სპეციფიკაცია</th>
-                        <th>რაოდენობა</th>
-                        <th>ფასი</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {row.expanded.products?.map((product, index) => (
-                        <tr key={index}>
-                          <td>{product.product_name}</td>
-                          <td>{product.specification}</td>
-                          <td>{product.product_quantity}</td>
-                          <td>{product.product_price} ₾</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </Col>
-
-            {/* Contragent Details */}
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <i className="bx bx-building fs-7 text-primary"></i>
-                <div>
-                  <div className="text-muted small">კონტრაგენტის მისამართი</div>
-                  <div className="fw-medium">
-                    {row.expanded.contragent_address}
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <i className="bx bx-phone fs-7 text-primary"></i>
-                <div>
-                  <div className="text-muted small">კონტრაგენტის ტელეფონი</div>
-                  <div className="fw-medium">
-                    {row.expanded.contragent_phone_number}
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <i className="bx bx-envelope fs-7 text-primary"></i>
-                <div>
-                  <div className="text-muted small">კონტრაგენტის ელფოსტა</div>
-                  <div className="fw-medium">
-                    {row.expanded.contragent_email}
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <i className="bx bx-user fs-7 text-primary"></i>
-                <div>
-                  <div className="text-muted small">დირექტორის სახელი</div>
-                  <div className="fw-medium">{row.expanded.contragent_director_name}</div>
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center gap-2">
-                <i className="bx bx-phone-call fs-7 text-primary"></i>
-                <div>
-                  <div className="text-muted small">დირექტორის ტელეფონი</div>
-                  <div className="fw-medium">{row.expanded.contragent_director_phone_number}</div>
-                </div>
-              </div>
-            </Col>
-          </Row>
-          {row.expanded.status === "approved" && (
-            <Row className="mt-4">
               <Col md={12}>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => handleDownload(row.expanded.id)}
-                >
-                  <i className="bx bx-download me-2"></i>
-                  ხელშეკრულების ჩამოტვირთვა
-                </button>
+                <div className="mt-4">
+                  <h6 className="mb-3">პროდუქტები</h6>
+                  <div className="table-responsive">
+                    <table className="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>დასახელება</th>
+                          <th>სპეციფიკაცია</th>
+                          <th>რაოდენობა</th>
+                          <th>ფასი</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {row.expanded.products?.map((product, index) => (
+                          <tr key={index}>
+                            <td>{product.product_name}</td>
+                            <td>{product.specification}</td>
+                            <td>{product.product_quantity}</td>
+                            <td>{product.product_price} ₾</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </Col>
+
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bx bx-building fs-7 text-primary"></i>
+                  <div>
+                    <div className="text-muted small">
+                      კონტრაგენტის მისამართი
+                    </div>
+                    <div className="fw-medium">
+                      {row.expanded.contragent_address}
+                    </div>
+                  </div>
+                </div>
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bx bx-phone fs-7 text-primary"></i>
+                  <div>
+                    <div className="text-muted small">
+                      კონტრაგენტის ტელეფონი
+                    </div>
+                    <div className="fw-medium">
+                      {row.expanded.contragent_phone_number}
+                    </div>
+                  </div>
+                </div>
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bx bx-envelope fs-7 text-primary"></i>
+                  <div>
+                    <div className="text-muted small">კონტრაგენტის ელფოსტა</div>
+                    <div className="fw-medium">
+                      {row.expanded.contragent_email}
+                    </div>
+                  </div>
+                </div>
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bx bx-user fs-7 text-primary"></i>
+                  <div>
+                    <div className="text-muted small">დირექტორის სახელი</div>
+                    <div className="fw-medium">
+                      {row.expanded.contragent_director_name}
+                    </div>
+                  </div>
+                </div>
+              </Col>
+              <Col md={6}>
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bx bx-phone-call fs-7 text-primary"></i>
+                  <div>
+                    <div className="text-muted small">დირექტორის ტელეფონი</div>
+                    <div className="fw-medium">
+                      {row.expanded.contragent_director_phone_number}
+                    </div>
+                  </div>
+                </div>
               </Col>
             </Row>
-          )}
+            {row.expanded.status === "approved" && (
+              <Row className="mt-4">
+                <Col md={12}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleDownload(row.expanded.id)}
+                  >
+                    <i className="bx bx-download me-2"></i>
+                    ხელშეკრულების ჩამოტვირთვა
+                  </button>
+                </Col>
+              </Row>
+            )}
+          </div>
         </div>
-      </div>
-    )
-  }, [handleDownload])
+      )
+    },
+    [handleDownload]
+  )
 
   return (
     <>
@@ -424,7 +445,6 @@ const StandardAgreementUser = () => {
           renderRowDetails={renderRowDetails}
         />
       </div>
-      
     </>
   )
 }

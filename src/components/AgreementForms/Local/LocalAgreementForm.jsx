@@ -384,7 +384,6 @@ const LocalAgreementForm = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* Tab 1: Executor Information */}
       <div className={classnames("w-full", { hidden: activeTab !== 1 })}>
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -579,7 +578,6 @@ const LocalAgreementForm = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* Tab 2: Bank Information */}
       <div className={classnames("w-full", { hidden: activeTab !== 2 })}>
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -744,7 +742,6 @@ const LocalAgreementForm = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* Tab 3: Agreement Details */}
       <div className={classnames("w-full", { hidden: activeTab !== 3 })}>
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -859,7 +856,6 @@ const LocalAgreementForm = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* Tab 4: Success Message */}
       <div className={classnames("w-full", { hidden: activeTab !== 4 })}>
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
@@ -874,7 +870,6 @@ const LocalAgreementForm = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* Navigation buttons */}
       <div className="flex justify-between mt-8">
         <button
           className={classnames(

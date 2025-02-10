@@ -16,7 +16,6 @@ import {
 } from "../services/admin/department"
 import { listUsers } from "../services/user"
 
-// Query keys
 export const adminKeys = {
   all: ["admin"],
   departments: () => [...adminKeys.all, "departments"],
@@ -37,10 +36,10 @@ export const adminKeys = {
   },
 }
 
-// Queries
 export const useGetDepartments = (options = {}) => {
   return useQuery({
     queryKey: adminKeys.departments(),
+
     queryFn: getDepartments,
     select: response => response.data.data,
     refetchOnWindowFocus: true,
@@ -54,7 +53,7 @@ export const useGetAdminUsers = (filters = {}) => {
     queryKey: adminKeys.users.list(filters),
     queryFn: getUsers,
     select: response => response.data.data,
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    staleTime: 30 * 1000,
     keepPreviousData: true,
     refetchOnWindowFocus: true,
   })
@@ -78,7 +77,6 @@ export const useGetDepartmentMembers = (departmentId, options = {}) => {
   })
 }
 
-// Mutations
 export const useCreateDepartment = () => {
   const queryClient = useQueryClient()
 
@@ -152,16 +150,13 @@ export const useUpdateUser = () => {
   return useMutation({
     mutationFn: ({ id, data }) => updateUserById(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel outgoing refetches for all possible user queries
       await queryClient.cancelQueries({ queryKey: adminKeys.users.all() })
 
-      // Get all existing user queries
       const existingQueries = queryClient.getQueriesData({
         queryKey: adminKeys.users.lists(),
       })
       const previousQueries = new Map(existingQueries)
 
-      // Format the optimistic update
       const updatedUserData = {
         ...data,
         department: data.department_id ? { id: data.department_id } : null,
@@ -172,7 +167,6 @@ export const useUpdateUser = () => {
           : [],
       }
 
-      // Update all matching queries
       existingQueries.forEach(([queryKey]) => {
         queryClient.setQueryData(queryKey, old => {
           if (!old?.data?.data) return old
@@ -191,7 +185,6 @@ export const useUpdateUser = () => {
       return { previousQueries }
     },
     onError: (err, _, context) => {
-      // Restore all queries on error
       if (context?.previousQueries) {
         context.previousQueries.forEach((value, queryKey) => {
           queryClient.setQueryData(queryKey, value)
@@ -199,7 +192,6 @@ export const useUpdateUser = () => {
       }
     },
     onSuccess: () => {
-      // Invalidate all user-related queries
       queryClient.invalidateQueries({ queryKey: adminKeys.users.all() })
       queryClient.invalidateQueries({
         queryKey: adminKeys.departmentMembers.all(),
@@ -214,14 +206,11 @@ export const useCreateUser = () => {
   return useMutation({
     mutationFn: data => createUser(data),
     onMutate: async newUser => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: adminKeys.users.lists() })
       await queryClient.cancelQueries({ queryKey: adminKeys.users.all() })
 
-      // Snapshot for rollback
       const previousUsers = queryClient.getQueryData(adminKeys.users.list())
 
-      // Optimistically update
       const optimisticUser = {
         id: Date.now(),
         name: newUser.name,
@@ -235,7 +224,6 @@ export const useCreateUser = () => {
         created_at: new Date().toISOString(),
       }
 
-      // Update all possible user list queries
       queryClient.setQueriesData({ queryKey: adminKeys.users.lists() }, old => {
         if (!old) return { data: { data: [optimisticUser] } }
         return {
@@ -250,7 +238,6 @@ export const useCreateUser = () => {
       return { previousUsers }
     },
     onError: (err, newUser, context) => {
-      // Rollback on error
       if (context?.previousUsers) {
         queryClient.setQueriesData(
           { queryKey: adminKeys.users.lists() },
@@ -259,7 +246,6 @@ export const useCreateUser = () => {
       }
     },
     onSuccess: () => {
-      // Invalidate and refetch all user-related queries
       queryClient.invalidateQueries({ queryKey: adminKeys.users.all() })
       queryClient.invalidateQueries({
         queryKey: adminKeys.departmentMembers.all(),
@@ -287,7 +273,6 @@ export const useApproveDepartmentMember = () => {
         adminKeys.departmentMembers.byDepartment(departmentId)
       )
 
-      // Update user status optimistically
       queryClient.setQueryData(adminKeys.users.lists(), old => ({
         ...old,
         users: old?.users?.map(user =>
@@ -336,7 +321,6 @@ export const useRejectDepartmentMember = () => {
         adminKeys.departmentMembers.byDepartment(departmentId)
       )
 
-      // Update user status optimistically
       queryClient.setQueryData(adminKeys.users.lists(), old => ({
         ...old,
         users: old?.users?.map(user =>

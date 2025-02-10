@@ -49,7 +49,6 @@ export const EditUserForm = ({
     onSubmit: async ({ value }) => {
       const dataToUpdate = { ...value }
       
-      // Convert roles to array of IDs
       if (Array.isArray(dataToUpdate.roles)) {
         dataToUpdate.roles = dataToUpdate.roles.map(roleId => 
           typeof roleId === 'object' ? roleId.id : parseInt(roleId)

@@ -1,6 +1,5 @@
 import defaultInstance from "../plugins/axios"
 
-// Get list of comments for a specific task
 export const getTaskComments = async (
   taskId,
   page = 1,
@@ -20,7 +19,7 @@ export const getTaskComments = async (
         },
       }
     )
-    return response.data // Ensure you're returning the actual data
+    return response.data
   } catch (error) {
     console.error(
       "Error fetching task comments:",
@@ -30,11 +29,10 @@ export const getTaskComments = async (
   }
 }
 
-// Get a specific comment
 export const getTaskComment = async commentId => {
   try {
     const response = await defaultInstance.get(`/api/comments/${commentId}`)
-    return response.data // Ensure you're returning the actual data
+    return response.data
   } catch (error) {
     console.error(
       "Error fetching task comment:",
@@ -44,7 +42,6 @@ export const getTaskComment = async commentId => {
   }
 }
 
-// Create a new comment for a specific task
 export const createTaskComment = async (taskId, data) => {
   try {
     const response = await defaultInstance.post(
@@ -61,7 +58,6 @@ export const createTaskComment = async (taskId, data) => {
   }
 }
 
-// Delete a comment
 export const deleteTaskComment = async commentId => {
   try {
     const response = await defaultInstance.delete(`/api/comments/${commentId}`)

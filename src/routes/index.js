@@ -30,30 +30,24 @@ import FarmTaskDetails from "pages/FarmJobPages/JobDetails"
 import FarmTaskList from "pages/FarmJobPages/JobList"
 import LegalTaskList from "pages/LegalJobPages/JobList"
 import LegalTaskDetails from "pages/LegalJobPages/JobDetails"
-// Request Agreement
 import AgreementRequest from "pages/Agreements/AgreementRequest"
 
-// Standard Agreements
 import StandardAgreementApprove from "pages/Agreements/Standard/StandardAgreementApprove"
 import StandardAgreementArchive from "pages/Agreements/Standard/StandardAgreementArchive"
 import StandardAgreementUser from "pages/Agreements/Standard/StandardAgreementUser"
 
-// Delivery Agreements
 import DeliveryAgreementArchive from "pages/Agreements/Delivery/DeliveryAgreementArchive"
 import DeliveryAgreementUser from "pages/Agreements/Delivery/DeliveryAgreementUser"
 import DeliveryAgreementApprove from "pages/Agreements/Delivery/DeliveryAgreementApprove"
 
-// Marketing Agreements
 import MarketingAgreementApprove from "pages/Agreements/Marketing/MarketingAgreementApprove"
 import MarketingAgreementArchive from "pages/Agreements/Marketing/MarketingAgreementArchive"
 import MarketingAgreementUser from "pages/Agreements/Marketing/MarketingAgreementUser"
 
-// Service Agreements
 import ServiceAgreementApprove from "pages/Agreements/Service/ServiceAgreementApprove"
 import ServiceAgreementArchive from "pages/Agreements/Service/ServiceAgreementArchive"
 import ServiceAgreementUser from "pages/Agreements/Service/ServiceAgreementUser"
 
-// Local Agreements
 import LocalAgreementApprove from "pages/Agreements/Local/LocalAgreementApprove"
 import LocalAgreementArchive from "pages/Agreements/Local/LocalAgreementArchive"
 import LocalAgreementUser from "pages/Agreements/Local/LocalAgreementUser"

@@ -16,7 +16,7 @@ const NotificationDropdown = () => {
   } = useNotifications()
   const [previousCount, setPreviousCount] = useState(unreadCount)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const notificationAudio = new Audio(notificationSound)
+  const notificationAudio = React.useMemo(() => new Audio(notificationSound), [])
 
   const toggle = () => {
     setIsOpen(!isOpen)
@@ -79,7 +79,6 @@ const NotificationDropdown = () => {
   useEffect(() => {
     if (unreadCount > previousCount && hasInteracted) {
       notificationAudio.play().catch(error => {
-        // Only log errors other than autoplay restrictions
         if (error.name !== "NotAllowedError") {
           console.error("Audio playback failed:", error)
         }
@@ -171,7 +170,6 @@ const NotificationDropdown = () => {
 
       {isOpen && (
         <>
-          {/* Mobile bottom sheet */}
           <div
             className="fixed inset-0 bg-black/30 z-50 md:hidden"
             onClick={toggle}
@@ -223,7 +221,6 @@ const NotificationDropdown = () => {
             </div>
           </div>
 
-          {/* Desktop dropdown */}
           <div className="hidden md:block absolute right-0 mt-2 w-[420px] rounded-lg shadow-lg transform opacity-100 scale-100 transition-all duration-200">
             <div className="rounded-lg ring-1 ring-black/5 bg-white dark:!bg-gray-800/95 backdrop-blur-sm">
               <div className="border-b border-gray-100 dark:!border-gray-700/50 px-4 py-3">

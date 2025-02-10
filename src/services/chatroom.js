@@ -8,7 +8,6 @@ const handleError = error => {
 }
 
 const ChatRoomService = {
-  // Get all chat rooms
   getChatRooms: async () => {
     try {
       const response = await defaultInstance.get("/api/chat/rooms")
@@ -18,7 +17,6 @@ const ChatRoomService = {
     }
   },
 
-  // Create a new chat room
   createChatRoom: async data => {
     try {
       const response = await defaultInstance.post("/api/chat/rooms", data)
@@ -28,7 +26,6 @@ const ChatRoomService = {
     }
   },
 
-  // Get a specific chat room
   getChatRoom: async roomId => {
     try {
       const response = await defaultInstance.get(`/api/chat/rooms/${roomId}`)
@@ -38,17 +35,18 @@ const ChatRoomService = {
     }
   },
 
-  // Update a chat room (group only)
   updateChatRoom: async (roomId, data) => {
     try {
-      const response = await defaultInstance.put(`/api/chat/rooms/${roomId}`, data)
+      const response = await defaultInstance.put(
+        `/api/chat/rooms/${roomId}`,
+        data
+      )
       return response.data
     } catch (error) {
       handleError(error)
     }
   },
 
-  // Add participants to a chat room (group only)
   addParticipants: async (roomId, data) => {
     try {
       const response = await defaultInstance.post(
@@ -61,7 +59,6 @@ const ChatRoomService = {
     }
   },
 
-  // Remove a participant from a chat room (group only)
   removeParticipant: async (roomId, userId) => {
     try {
       const response = await defaultInstance.delete(
@@ -73,7 +70,6 @@ const ChatRoomService = {
     }
   },
 
-  // Get messages for a chat room
   getMessages: async (roomId, before = null) => {
     try {
       const params = before ? { before } : {}
@@ -87,7 +83,6 @@ const ChatRoomService = {
     }
   },
 
-  // Send a message
   sendMessage: async (roomId, data) => {
     try {
       const formData = new FormData()
@@ -118,7 +113,6 @@ const ChatRoomService = {
     }
   },
 
-  // Mark messages as read
   markMessagesAsRead: async (roomId, messageIds) => {
     try {
       const response = await defaultInstance.post(
@@ -133,7 +127,6 @@ const ChatRoomService = {
     }
   },
 
-  // Delete a message
   deleteMessage: async (roomId, messageId) => {
     try {
       const response = await defaultInstance.delete(

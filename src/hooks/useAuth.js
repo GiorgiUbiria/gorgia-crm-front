@@ -3,22 +3,18 @@ import useAuthStore from "../store/zustand/authStore"
 const useAuth = () => {
   const store = useAuthStore()
 
-  // Ensure the store is initialized
   if (!store.isInitialized) {
     store.initialize()
   }
 
   return {
-    // Basic auth state
     user: store.user,
     isInitialized: store.isInitialized,
 
-    // Auth actions
     setUser: store.setUser,
     clearUser: store.clearUser,
     initialize: store.initialize,
 
-    // Permission checks
     can: store.can,
     isAdmin: store.isAdmin,
     isSuperAdmin: store.isSuperAdmin,
@@ -29,37 +25,30 @@ const useAuth = () => {
     isITDepartment: store.isITDepartment,
     isITSupport: store.isITSupport,
 
-    // Role checks
     hasAnyRole: store.hasAnyRole,
     hasAllRoles: store.hasAllRoles,
 
-    // Department checks
     isInDepartment: store.isInDepartment,
     getUserDepartmentId: store.getUserDepartmentId,
     getUserDepartment: store.getUserDepartment,
 
-    // Complex checks
     canManageInDepartment: store.canManageInDepartment,
     canApproveForDepartment: store.canApproveForDepartment,
 
-    // Admin panel permissions
     hasAdminPanelAccess: store.hasAdminPanelAccess,
     canManageRoles: store.canManageRoles,
     canDeleteUsers: store.canDeleteUsers,
     canViewAllUsers: store.canViewAllUsers,
     canAccessDepartmentsTab: store.canAccessDepartmentsTab,
 
-    // Helper to check multiple permissions (any)
     canAny: permissions => {
       return permissions.some(permission => store.can(permission))
     },
 
-    // Helper to check multiple permissions (all)
     canAll: permissions => {
       return permissions.every(permission => store.can(permission))
     },
 
-    // Helper for conditional rendering
     check: permission => ({
       isAllowed: store.can(permission),
       render: component => (store.can(permission) ? component : null),

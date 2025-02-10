@@ -14,7 +14,6 @@ import {
   updateProductStatus,
 } from "../services/purchase"
 
-// Query keys
 export const purchaseKeys = {
   all: ["purchases"],
   list: filters => [...purchaseKeys.all, "list", filters],
@@ -33,7 +32,6 @@ export const purchaseKeys = {
   products: purchaseId => [...purchaseKeys.all, "products", purchaseId],
 }
 
-// Queries
 export const useGetPurchaseList = (filters = {}, options = {}) => {
   return useQuery({
     queryKey: purchaseKeys.list(filters),
@@ -69,14 +67,12 @@ export const useGetPurchaseProducts = (purchaseId, page = 1, perPage = 15) => {
   })
 }
 
-// Mutations
 export const useCreatePurchase = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: data => createPurchase(data),
     onSuccess: () => {
-      // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: purchaseKeys.all })
     },
   })

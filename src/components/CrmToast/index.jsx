@@ -104,7 +104,6 @@ export const CrmToast = ({
   )
 }
 
-// Keyframes for animations
 const style = document.createElement("style")
 style.textContent = `
   @keyframes slideIn {

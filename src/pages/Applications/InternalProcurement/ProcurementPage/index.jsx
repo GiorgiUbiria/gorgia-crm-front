@@ -579,7 +579,6 @@ const ProcurementPage = () => {
         if (err.inner) {
           const errorMessages = err.inner
             .map(error => {
-              // Handle nested product errors
               if (error.path.startsWith("products.")) {
                 const [, index, subField] =
                   error.path.match(/products\.(\d+)\.(.+)/) || []

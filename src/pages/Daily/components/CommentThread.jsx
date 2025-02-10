@@ -45,7 +45,6 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
     editable: false,
   })
 
-  // Update editor content when comment changes
   React.useEffect(() => {
     if (commentEditor && comment?.comment) {
       try {

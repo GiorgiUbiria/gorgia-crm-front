@@ -175,7 +175,6 @@ const MyVacationForm = ({ user }) => {
     if (newDuration !== formik.values.duration_days) {
       formik.setFieldValue("duration_days", newDuration)
 
-      // Show warnings for duration limits
       if (formik.values.vacation_type === "paid_leave") {
         if (newDuration > vacationBalance?.remaining_days) {
           toast.warning(
@@ -216,7 +215,6 @@ const MyVacationForm = ({ user }) => {
     [formik]
   )
 
-  // Define shouldShowVacationBalance
   const shouldShowVacationBalance = useMemo(() => {
     return formik.values.vacation_type === "paid_leave"
   }, [formik.values.vacation_type])
@@ -252,7 +250,6 @@ const MyVacationForm = ({ user }) => {
       )}
 
       <Form onSubmit={formik.handleSubmit}>
-        {/* Employee Information Section */}
         <h5 className="mb-3 text-lg font-semibold">თანამშრომლის ინფორმაცია</h5>
         <div className="row">
           <div className="col-md-6">
@@ -284,7 +281,6 @@ const MyVacationForm = ({ user }) => {
           </div>
         </div>
 
-        {/* Substitute Information Section */}
         <h5 className="mb-3 text-lg font-semibold">შემცვლელის ინფორმაცია</h5>
         <div className="row">
           <div className="col-md-6">
@@ -303,7 +299,6 @@ const MyVacationForm = ({ user }) => {
           </div>
         </div>
 
-        {/* Vacation Details Section */}
         <h5 className="mb-3 text-lg font-semibold">შვებულების დეტალები</h5>
         <div className="row">
           <div className="col-md-6">
@@ -369,7 +364,6 @@ const MyVacationForm = ({ user }) => {
           </div>
         </div>
 
-        {/* Rest Days Section */}
         <div className="row">
           <div className="col-12">
             <RestDaysCheckbox
@@ -388,7 +382,6 @@ const MyVacationForm = ({ user }) => {
           </div>
         </div>
 
-        {/* Duration Section */}
         <div className="row">
           <div className="col-12">
             <div className="mb-3">
@@ -405,7 +398,6 @@ const MyVacationForm = ({ user }) => {
           </div>
         </div>
 
-        {/* Submit Button */}
         <div className="d-flex justify-content-end">
           <Button
             type="submit"

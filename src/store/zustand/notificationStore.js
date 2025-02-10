@@ -8,17 +8,14 @@ import {
 } from "../../services/notification"
 
 const useNotificationStore = create((set, get) => ({
-  // State
   notifications: [],
   isLoading: false,
   error: null,
 
-  // Actions
   initialize: async () => {
     set({ isLoading: true })
     try {
       const response = await getNotifications()
-      // Ensure we have an array of notifications
       const notifications = Array.isArray(response.data) ? response.data : []
       set({ notifications, isLoading: false })
     } catch (error) {
@@ -28,22 +25,19 @@ const useNotificationStore = create((set, get) => ({
   },
 
   addNotification: notification => {
-    // Ensure we have the required notification structure
     if (!notification) {
       console.error("Invalid notification:", notification)
       return
     }
 
     set(state => {
-      // Check if notification already exists
       const exists = state.notifications.some(n => n.id === notification.id)
       if (exists) return state
 
-      // Create a properly structured notification object
       const newNotification = {
         id: notification.id,
         type: notification.type,
-        read_at: null, // New notifications are unread by default
+        read_at: null,
         created_at: notification.data?.created_at || new Date().toISOString(),
         data: {
           message: notification.message || notification.data?.message,
@@ -98,15 +92,13 @@ const useNotificationStore = create((set, get) => ({
     }
   },
 
-  // Computed values
   getUnreadCount: () => {
     const { notifications } = get()
-    return Array.isArray(notifications) 
-      ? notifications.filter(n => !n.read_at).length 
+    return Array.isArray(notifications)
+      ? notifications.filter(n => !n.read_at).length
       : 0
   },
 
-  // Echo listeners
   setupEchoListeners: userId => {
     if (!userId) return
 
@@ -116,7 +108,6 @@ const useNotificationStore = create((set, get) => ({
     })
   },
 
-  // Cleanup
   cleanup: () => {
     if (echo) {
       const { notifications } = get()

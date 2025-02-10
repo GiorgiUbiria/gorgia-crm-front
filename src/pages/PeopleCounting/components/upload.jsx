@@ -54,7 +54,6 @@ const UploadPeopleCountingForm = ({ onSuccess }) => {
           value={reportType}
           onChange={e => {
             setReportType(e.target.value)
-            // Reset the report period when changing type
             form.setFieldValue("report_period", "")
           }}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"

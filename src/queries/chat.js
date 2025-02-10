@@ -6,7 +6,7 @@ export const useChatMessages = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.chat.messages(filters),
     queryFn: () => chatService.getMessages(filters),
-    staleTime: 0, // No stale time for real-time chat
+    staleTime: 0,
   })
 }
 

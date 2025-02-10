@@ -457,7 +457,6 @@ const HrPageApprove = () => {
                             </div>
                           </div>
 
-                          {/* User Info */}
                           <div className="row g-3 mb-4">
                             <div className="col-md-6">
                               <Label className="form-label">
@@ -488,7 +487,6 @@ const HrPageApprove = () => {
                                 <Label className="form-label">
                                   დაწყების თარიღი
                                 </Label>
-                                {/* date! */}
                                 <DatePicker
                                   startDate={formData?.started_date}
                                   handleStartedDate={setFormData}
@@ -581,7 +579,6 @@ const HrPageApprove = () => {
                             )}
                           </div>
 
-                          {/* User Info */}
                           <div className="row g-3 mb-4">
                             <div className="col-md-6">
                               <Label className="form-label">
@@ -631,7 +628,6 @@ const HrPageApprove = () => {
                               />
                             </div>
                           </div>
-                          {/* Purpose field for paid documents */}
                           {isPaidDocument(values.documentType) && (
                             <>
                               <div className="row g-3 mb-4">

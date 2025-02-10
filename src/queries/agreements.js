@@ -6,7 +6,6 @@ import * as marketingAgreementService from "../services/marketingAgreement"
 import * as deliveryAgreementService from "../services/deliveryAgreement"
 import { queryKeys } from "./keys"
 
-// Generic Agreements
 export const useAgreements = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.agreements.list(filters),
@@ -15,7 +14,7 @@ export const useAgreements = (filters = {}) => {
   })
 }
 
-export const useAgreement = (id) => {
+export const useAgreement = id => {
   return useQuery({
     queryKey: queryKeys.agreements.detail(id),
     queryFn: () => agreementService.getAgreement(id),
@@ -23,7 +22,6 @@ export const useAgreement = (id) => {
   })
 }
 
-// Service Agreements
 export const useServiceAgreements = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.agreements.service.list(filters),
@@ -32,7 +30,7 @@ export const useServiceAgreements = (filters = {}) => {
   })
 }
 
-export const useServiceAgreement = (id) => {
+export const useServiceAgreement = id => {
   return useQuery({
     queryKey: queryKeys.agreements.service.detail(id),
     queryFn: () => serviceAgreementService.getServiceAgreement(id),
@@ -44,7 +42,7 @@ export const useCreateServiceAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data) => serviceAgreementService.createServiceAgreement(data),
+    mutationFn: data => serviceAgreementService.createServiceAgreement(data),
     onSuccess: () => {
       queryClient.invalidateQueries(queryKeys.agreements.service.lists())
       queryClient.invalidateQueries(queryKeys.agreements.lists())
@@ -56,7 +54,8 @@ export const useUpdateServiceAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }) => serviceAgreementService.updateServiceAgreement(id, data),
+    mutationFn: ({ id, data }) =>
+      serviceAgreementService.updateServiceAgreement(id, data),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries(queryKeys.agreements.service.detail(id))
 
@@ -89,7 +88,7 @@ export const useDeleteServiceAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => serviceAgreementService.deleteServiceAgreement(id),
+    mutationFn: id => serviceAgreementService.deleteServiceAgreement(id),
     onSuccess: () => {
       queryClient.invalidateQueries(queryKeys.agreements.service.lists())
       queryClient.invalidateQueries(queryKeys.agreements.lists())
@@ -97,7 +96,6 @@ export const useDeleteServiceAgreement = () => {
   })
 }
 
-// Local Agreements
 export const useLocalAgreements = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.agreements.local.list(filters),
@@ -106,7 +104,7 @@ export const useLocalAgreements = (filters = {}) => {
   })
 }
 
-export const useLocalAgreement = (id) => {
+export const useLocalAgreement = id => {
   return useQuery({
     queryKey: queryKeys.agreements.local.detail(id),
     queryFn: () => localAgreementService.getLocalAgreement(id),
@@ -118,7 +116,7 @@ export const useCreateLocalAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data) => localAgreementService.createLocalAgreement(data),
+    mutationFn: data => localAgreementService.createLocalAgreement(data),
     onSuccess: () => {
       queryClient.invalidateQueries(queryKeys.agreements.local.lists())
       queryClient.invalidateQueries(queryKeys.agreements.lists())
@@ -130,7 +128,8 @@ export const useUpdateLocalAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }) => localAgreementService.updateLocalAgreement(id, data),
+    mutationFn: ({ id, data }) =>
+      localAgreementService.updateLocalAgreement(id, data),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries(queryKeys.agreements.local.detail(id))
 
@@ -138,10 +137,10 @@ export const useUpdateLocalAgreement = () => {
         queryKeys.agreements.local.detail(id)
       )
 
-      queryClient.setQueryData(
-        queryKeys.agreements.local.detail(id),
-        old => ({ ...old, ...data })
-      )
+      queryClient.setQueryData(queryKeys.agreements.local.detail(id), old => ({
+        ...old,
+        ...data,
+      }))
 
       return { previousAgreement }
     },
@@ -163,7 +162,7 @@ export const useDeleteLocalAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => localAgreementService.deleteLocalAgreement(id),
+    mutationFn: id => localAgreementService.deleteLocalAgreement(id),
     onSuccess: () => {
       queryClient.invalidateQueries(queryKeys.agreements.local.lists())
       queryClient.invalidateQueries(queryKeys.agreements.lists())
@@ -171,7 +170,6 @@ export const useDeleteLocalAgreement = () => {
   })
 }
 
-// Marketing Agreements
 export const useMarketingAgreements = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.agreements.marketing.list(filters),
@@ -180,7 +178,7 @@ export const useMarketingAgreements = (filters = {}) => {
   })
 }
 
-export const useMarketingAgreement = (id) => {
+export const useMarketingAgreement = id => {
   return useQuery({
     queryKey: queryKeys.agreements.marketing.detail(id),
     queryFn: () => marketingAgreementService.getMarketingAgreement(id),
@@ -192,7 +190,8 @@ export const useCreateMarketingAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data) => marketingAgreementService.createMarketingAgreement(data),
+    mutationFn: data =>
+      marketingAgreementService.createMarketingAgreement(data),
     onSuccess: () => {
       queryClient.invalidateQueries(queryKeys.agreements.marketing.lists())
       queryClient.invalidateQueries(queryKeys.agreements.lists())
@@ -204,7 +203,8 @@ export const useUpdateMarketingAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }) => marketingAgreementService.updateMarketingAgreement(id, data),
+    mutationFn: ({ id, data }) =>
+      marketingAgreementService.updateMarketingAgreement(id, data),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries(queryKeys.agreements.marketing.detail(id))
 
@@ -237,7 +237,7 @@ export const useDeleteMarketingAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => marketingAgreementService.deleteMarketingAgreement(id),
+    mutationFn: id => marketingAgreementService.deleteMarketingAgreement(id),
     onSuccess: () => {
       queryClient.invalidateQueries(queryKeys.agreements.marketing.lists())
       queryClient.invalidateQueries(queryKeys.agreements.lists())
@@ -245,7 +245,6 @@ export const useDeleteMarketingAgreement = () => {
   })
 }
 
-// Delivery Agreements
 export const useDeliveryAgreements = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.agreements.delivery.list(filters),
@@ -254,7 +253,7 @@ export const useDeliveryAgreements = (filters = {}) => {
   })
 }
 
-export const useDeliveryAgreement = (id) => {
+export const useDeliveryAgreement = id => {
   return useQuery({
     queryKey: queryKeys.agreements.delivery.detail(id),
     queryFn: () => deliveryAgreementService.getDeliveryAgreement(id),
@@ -266,7 +265,7 @@ export const useCreateDeliveryAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data) => deliveryAgreementService.createDeliveryAgreement(data),
+    mutationFn: data => deliveryAgreementService.createDeliveryAgreement(data),
     onSuccess: () => {
       queryClient.invalidateQueries(queryKeys.agreements.delivery.lists())
       queryClient.invalidateQueries(queryKeys.agreements.lists())
@@ -278,7 +277,8 @@ export const useUpdateDeliveryAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }) => deliveryAgreementService.updateDeliveryAgreement(id, data),
+    mutationFn: ({ id, data }) =>
+      deliveryAgreementService.updateDeliveryAgreement(id, data),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries(queryKeys.agreements.delivery.detail(id))
 
@@ -311,10 +311,10 @@ export const useDeleteDeliveryAgreement = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id) => deliveryAgreementService.deleteDeliveryAgreement(id),
+    mutationFn: id => deliveryAgreementService.deleteDeliveryAgreement(id),
     onSuccess: () => {
       queryClient.invalidateQueries(queryKeys.agreements.delivery.lists())
       queryClient.invalidateQueries(queryKeys.agreements.lists())
     },
   })
-} 
+}

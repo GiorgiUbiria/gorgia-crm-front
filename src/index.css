@@ -2,44 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Safari-specific fixes */
 @supports (-webkit-touch-callout: none) {
   .min-h-screen {
     min-height: -webkit-fill-available;
   }
-  
+
   .h-screen {
     height: -webkit-fill-available;
   }
 }
 
-/* Fix for Safari momentum scrolling */
 * {
   -webkit-overflow-scrolling: touch;
 }
 
 @layer utilities {
-  /* Hide scrollbar for Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
     width: 0 !important;
   }
-  
-  /* Hide scrollbar for IE, Edge and Firefox */
+
   .no-scrollbar {
-    -ms-overflow-style: none !important; /* IE and Edge */
-    scrollbar-width: none !important; /* Firefox */
-    overflow: -moz-scrollbars-none; /* Firefox */
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+    overflow: -moz-scrollbars-none;
   }
 
-  /* Safari-specific smooth scrolling */
   .smooth-scroll {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
 }
 
-/* Global scrollbar styling with Safari fixes */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -61,7 +55,6 @@
   background: #94a3b8;
 }
 
-/* Dark mode scrollbar with Safari support */
 .dark ::-webkit-scrollbar-thumb {
   background: #475569;
 }
@@ -70,7 +63,6 @@
   background: #64748b;
 }
 
-/* Fix for Safari rubber-band scroll effect */
 html {
   height: 100%;
   overflow: hidden;

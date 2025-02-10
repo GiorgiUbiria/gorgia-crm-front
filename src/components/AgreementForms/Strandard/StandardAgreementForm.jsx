@@ -160,13 +160,10 @@ const StandardAgreementForm = ({ onSuccess }) => {
         }
         break
       case "file_path":
-        // Optional field, no validation needed
         break
       case "status":
-        // System-managed field, no validation needed
         break
       case "payment_different_terms":
-        // Boolean field, no validation needed
         break
       case "product_payment_term":
         if (!formData.payment_different_terms && !value && value !== 0)

@@ -91,7 +91,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
           aria-label="Text formatting"
           className="flex gap-1"
         >
-          {/* Text Formatting */}
           <Toolbar.ToggleItem
             className={`inline-flex h-8 w-8 items-center justify-center rounded hover:bg-gray-200 dark:!hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#105D8D] ${
               editor.isActive("bold") ? "bg-[#105D8D] text-white" : ""
@@ -126,7 +125,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
 
         <Toolbar.Separator className="mx-2 w-px bg-gray-300 dark:!bg-gray-600" />
 
-        {/* Colors */}
         <select
           className="h-8 rounded border border-gray-300 dark:!border-gray-600 bg-white dark:!bg-gray-700 dark:!text-gray-200 px-2 focus:outline-none focus:ring-2 focus:ring-[#105D8D]"
           value={editor.getAttributes("textStyle").color || "black"}
@@ -141,7 +139,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
 
         <Toolbar.Separator className="mx-2 w-px bg-gray-300 dark:!bg-gray-600" />
 
-        {/* Highlight Colors */}
         <select
           className="h-8 rounded border border-gray-300 dark:!border-gray-600 bg-white dark:!bg-gray-700 dark:!text-gray-200 px-2 focus:outline-none focus:ring-2 focus:ring-[#105D8D]"
           value={editor.getAttributes("highlight").color || ""}
@@ -163,7 +160,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
 
         <Toolbar.Separator className="mx-2 w-px bg-gray-300 dark:!bg-gray-600" />
 
-        {/* Link */}
         <Toolbar.Button
           className={`inline-flex h-8 w-8 items-center justify-center rounded hover:bg-gray-200 dark:!hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#105D8D] ${
             editor.isActive("link") ? "bg-[#105D8D] text-white" : ""
@@ -176,7 +172,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
 
         <Toolbar.Separator className="mx-2 w-px bg-gray-300 dark:!bg-gray-600" />
 
-        {/* Headings */}
         <Toolbar.ToggleGroup type="single" aria-label="Heading">
           <Toolbar.ToggleItem
             className={`inline-flex h-8 w-8 items-center justify-center rounded hover:bg-gray-200 dark:!hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#105D8D] ${
@@ -210,7 +205,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
 
         <Toolbar.Separator className="mx-2 w-px bg-gray-300 dark:!bg-gray-600" />
 
-        {/* List */}
         <Toolbar.Button
           className={`inline-flex h-8 w-8 items-center justify-center rounded hover:bg-gray-200 dark:!hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#105D8D] ${
             editor.isActive("bulletList") ? "bg-[#105D8D] text-white" : ""
@@ -223,7 +217,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
 
         <Toolbar.Separator className="mx-2 w-px bg-gray-300 dark:!bg-gray-600" />
 
-        {/* Horizontal Rule */}
         <Toolbar.Button
           className="inline-flex h-8 w-8 items-center justify-center rounded hover:bg-gray-200 dark:!hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#105D8D]"
           onClick={() => editor.chain().focus().setHorizontalRule().run()}

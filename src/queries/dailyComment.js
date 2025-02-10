@@ -32,19 +32,16 @@ export const useCreateDailyComment = () => {
       return response
     },
     onMutate: async ({ dailyId, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: dailyCommentKeys.byDaily(dailyId),
       })
 
-      // Snapshot the previous value
       const previousComments = queryClient.getQueryData(
         dailyCommentKeys.byDaily(dailyId)
       )
 
-      // Optimistically update the cache
       const optimisticComment = {
-        id: Date.now(), // Temporary ID
+        id: Date.now(),
         comment: data.comment,
         parent_id: data.parent_id,
         created_at: new Date().toISOString(),
@@ -71,7 +68,6 @@ export const useCreateDailyComment = () => {
       }
     },
     onSettled: (data, error, { dailyId }) => {
-      // Always refetch after error or success to sync with server
       queryClient.invalidateQueries({
         queryKey: dailyCommentKeys.byDaily(dailyId),
       })
@@ -108,7 +104,6 @@ export const useDeleteDailyComment = () => {
         dailyCommentKeys.byDaily(dailyId)
       )
 
-      // Optimistically remove the comment
       queryClient.setQueryData(dailyCommentKeys.byDaily(dailyId), old => {
         const comments = old?.data || []
         return { data: comments.filter(comment => comment.id !== commentId) }

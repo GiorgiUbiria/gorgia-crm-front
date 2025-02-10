@@ -1,4 +1,3 @@
-// Query key factory functions
 export const queryKeys = {
   tasks: {
     all: () => ["tasks"],

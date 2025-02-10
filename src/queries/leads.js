@@ -3,7 +3,6 @@ import * as leadsService from "../services/leadsService"
 import * as leadRequestCommentsService from "../services/leadRequestCommentsService"
 import { queryKeys } from "./keys"
 
-// Leads
 export const useLeads = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.leads.list(filters),
@@ -72,7 +71,6 @@ export const useDeleteLead = () => {
   })
 }
 
-// Lead Comments
 export const useLeadComments = (leadId, filters = {}) => {
   return useQuery({
     queryKey: queryKeys.leads.comments.byLead(leadId),

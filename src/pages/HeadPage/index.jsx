@@ -215,7 +215,6 @@ const HeadPage = () => {
         </div>
       </div>
 
-      {/* Modal */}
       <Dialog
         open={modalIsOpen}
         onClose={closeModal}
@@ -234,9 +233,7 @@ const HeadPage = () => {
             <form
               className="w-full max-w-sm sm:max-w-md md:max-w-lg"
               onSubmit={vacationSubmit}
-            >
-              {/* Form Fields Based on chosenApproval Data */}
-            </form>
+            ></form>
           </DialogContentText>
         </DialogContent>
       </Dialog>

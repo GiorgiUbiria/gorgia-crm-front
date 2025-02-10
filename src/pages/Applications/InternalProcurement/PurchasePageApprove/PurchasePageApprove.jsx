@@ -216,7 +216,6 @@ const PurchasePageApprove = () => {
   const handleConfirmAction = () => {
     const nextStatus = getNextStatus(selectedPurchase)
 
-    // If department 7 member is completing a no-product request, use the comment modal instead
     if (
       getUserDepartmentId() === 7 &&
       nextStatus === "completed" &&
@@ -429,7 +428,7 @@ const PurchasePageApprove = () => {
         },
       },
     ],
-    [canApproveRequest]
+    [canApproveRequest, getUserDepartmentId]
   )
 
   const filterOptions = [
@@ -491,7 +490,6 @@ const PurchasePageApprove = () => {
         document.body.appendChild(link)
         link.click()
 
-        // Cleanup
         link.parentNode.removeChild(link)
         window.URL.revokeObjectURL(url)
       } catch (error) {
@@ -1048,7 +1046,6 @@ const PurchasePageApprove = () => {
         </div>
       </div>
 
-      {/* Modals */}
       <Modal
         isOpen={rejectionModal}
         toggle={() => setRejectionModal(false)}

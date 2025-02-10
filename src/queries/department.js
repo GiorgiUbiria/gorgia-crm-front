@@ -12,7 +12,6 @@ import {
   updateDepartmentMember,
 } from "../services/admin/department"
 
-// Query keys
 export const departmentKeys = {
   all: ["departments"],
   list: () => [...departmentKeys.all, "list"],
@@ -21,7 +20,6 @@ export const departmentKeys = {
   detail: id => [...departmentKeys.all, "detail", id],
 }
 
-// Queries
 export const useGetDepartments = (options = {}) => {
   return useQuery({
     queryKey: departmentKeys.list(),
@@ -50,7 +48,6 @@ export const useGetDepartmentMembers = (departmentId, options = {}) => {
   })
 }
 
-// Mutations
 export const useCreateDepartment = () => {
   const queryClient = useQueryClient()
 

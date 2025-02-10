@@ -240,7 +240,6 @@ const UserProcurements = () => {
         document.body.appendChild(link)
         link.click()
 
-        // Cleanup
         link.parentNode.removeChild(link)
         window.URL.revokeObjectURL(url)
       } catch (error) {

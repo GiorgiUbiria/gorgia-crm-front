@@ -53,7 +53,6 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const data = payload[0]
 
-    // For Tasks by Type chart with assignee details
     if (data.payload.assigneeStats) {
       return (
         <div className="bg-white dark:!bg-gray-800 p-3 border border-gray-200 dark:!border-gray-700 rounded-lg shadow-lg">
@@ -77,7 +76,6 @@ const CustomTooltip = ({ active, payload, label }) => {
       )
     }
 
-    // For other charts
     return (
       <div className="bg-white dark:!bg-gray-800 p-3 border border-gray-200 dark:!border-gray-700 rounded-lg shadow-lg">
         <p className="text-gray-900 dark:!text-gray-100 font-medium">
@@ -384,7 +382,6 @@ const TaskCharts = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
-        {/* Task Creation Timeline */}
         <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებების შექმნის დინამიკა
@@ -426,7 +423,6 @@ const TaskCharts = () => {
           </div>
         </div>
 
-        {/* Task Status Distribution */}
         <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებების სტატუსები
@@ -460,7 +456,6 @@ const TaskCharts = () => {
           </div>
         </div>
 
-        {/* Tasks by Priority */}
         <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები პრიორიტეტის მიხედვით
@@ -488,7 +483,6 @@ const TaskCharts = () => {
           </div>
         </div>
 
-        {/* Average Completion Time by Priority */}
         <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             საშუალო შესრულების დრო პრიორიტეტის მიხედვით
@@ -514,7 +508,6 @@ const TaskCharts = () => {
           </div>
         </div>
 
-        {/* Tasks by Due Range */}
         <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები ვადების მიხედვით
@@ -545,7 +538,6 @@ const TaskCharts = () => {
           </div>
         </div>
 
-        {/* Tasks by Type */}
         <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები ტიპის მიხედვით
@@ -576,7 +568,6 @@ const TaskCharts = () => {
           </div>
         </div>
 
-        {/* Tasks by Department */}
         <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები დეპარტამენტების მიხედვით
@@ -608,7 +599,6 @@ const TaskCharts = () => {
           </div>
         </div>
 
-        {/* Tasks by Assignee */}
         <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             დავალებები თანამშრომლების მიხედვით
@@ -636,7 +626,6 @@ const TaskCharts = () => {
           </div>
         </div>
 
-        {/* Most Commented Tasks */}
         <div className="bg-white dark:!bg-gray-800 p-3 sm:p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900 dark:!text-white">
             ყველაზე აქტიური დავალებები (კომენტარების მიხედვით)

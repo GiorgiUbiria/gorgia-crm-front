@@ -1,6 +1,5 @@
 import defaultInstance from "../plugins/axios"
 
-// Task List Operations
 export const getTaskList = async () => {
   try {
     const response = await defaultInstance.get("/api/tasks")

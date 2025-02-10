@@ -19,7 +19,11 @@ function FieldInfo({ field }) {
   )
 }
 
-export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTime }) => {
+export const AddCalendarEventForm = ({
+  onSuccess,
+  defaultStartTime,
+  defaultEndTime,
+}) => {
   const { data: users } = useGetUsers()
   const createCalendarEventMutation = useCreateCalendarEvent()
   const [files, setFiles] = useState([])
@@ -46,7 +50,9 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
     defaultValues: {
       title: "",
       description: "",
-      start_time: defaultStartTime ? formatDateTimeForInput(defaultStartTime) : formatDateTimeForInput(new Date()),
+      start_time: defaultStartTime
+        ? formatDateTimeForInput(defaultStartTime)
+        : formatDateTimeForInput(new Date()),
       end_time: defaultEndTime ? formatDateTimeForInput(defaultEndTime) : "",
       reminder_before: "",
       location: "",
@@ -82,17 +88,14 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
 
         const formData = new FormData()
 
-        // Add basic fields
         formData.append("title", value.title.trim())
         formData.append("start_time", new Date(value.start_time).toISOString())
         if (value.end_time) {
           formData.append("end_time", new Date(value.end_time).toISOString())
         }
-        
-        // Set is_task_event based on tasks presence
+
         formData.append("is_task_event", tasks.length > 0 ? "1" : "0")
 
-        // Add optional fields
         if (value.description?.trim()) {
           formData.append("description", value.description.trim())
         }
@@ -103,20 +106,20 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
           formData.append("location", value.location.trim())
         }
 
-        // Add tasks
         tasks.forEach((task, index) => {
           formData.append(`tasks[${index}][title]`, task.title.trim())
-          formData.append(`tasks[${index}][description]`, task.description?.trim() || "")
+          formData.append(
+            `tasks[${index}][description]`,
+            task.description?.trim() || ""
+          )
         })
 
-        // Add guests if any
         if (guests?.length > 0) {
           guests.forEach(guestId => {
             formData.append("guests[]", guestId)
           })
         }
 
-        // Add files if any
         if (files?.length > 0) {
           files.forEach(file => {
             if (file.size > 10 * 1024 * 1024) {
@@ -176,7 +179,6 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
           ძირითადი ინფორმაცია
         </h3>
 
-        {/* Title */}
         <form.Field name="title">
           {field => (
             <div>
@@ -196,7 +198,6 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
           )}
         </form.Field>
 
-        {/* Description */}
         <form.Field name="description">
           {field => (
             <div>
@@ -215,7 +216,6 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
           )}
         </form.Field>
 
-        {/* Location */}
         <form.Field name="location">
           {field => (
             <div>
@@ -234,7 +234,6 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
           )}
         </form.Field>
 
-        {/* Start Time */}
         <form.Field name="start_time">
           {field => (
             <div>
@@ -244,7 +243,7 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
               <input
                 type="datetime-local"
                 required
-                step="900" // 15-minute intervals
+                step="900"
                 className="w-full rounded-md border px-3 py-2 text-sm dark:!bg-gray-700 dark:!border-gray-600 dark:!text-gray-200"
                 value={field.state.value}
                 onChange={e => {
@@ -258,7 +257,6 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
           )}
         </form.Field>
 
-        {/* End Time */}
         <form.Field name="end_time">
           {field => (
             <div>
@@ -270,7 +268,7 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
               </label>
               <input
                 type="datetime-local"
-                step="900" // 15-minute intervals
+                step="900"
                 className="w-full rounded-md border px-3 py-2 text-sm dark:!bg-gray-700 dark:!border-gray-600 dark:!text-gray-200"
                 value={field.state.value}
                 onChange={e => {
@@ -284,7 +282,6 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
           )}
         </form.Field>
 
-        {/* Reminder */}
         <form.Field name="reminder_before">
           {field => (
             <div>
@@ -310,7 +307,6 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
         </form.Field>
       </div>
 
-      {/* Tasks Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium dark:!text-gray-200">
@@ -361,7 +357,6 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
         </div>
       </div>
 
-      {/* Guests Section */}
       {users?.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium dark:!text-gray-200">სტუმრები</h3>
@@ -392,18 +387,14 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
         </div>
       )}
 
-      {/* Attachments Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium dark:!text-gray-200">
           მიმაგრებული ფაილები
         </h3>
 
-        {/* New Attachments */}
         <div className="relative">
           <div className="flex items-center justify-center w-full">
-            <label
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:!bg-gray-700 hover:bg-gray-100 dark:hover:!bg-gray-600 dark:!border-gray-600"
-            >
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:!bg-gray-700 hover:bg-gray-100 dark:hover:!bg-gray-600 dark:!border-gray-600">
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 <svg
                   className="w-8 h-8 mb-4 text-gray-500 dark:!text-gray-400"
@@ -421,7 +412,9 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
                   />
                 </svg>
                 <p className="mb-2 text-sm text-gray-500 dark:!text-gray-400">
-                  <span className="font-semibold">დააჭირეთ ფაილის ასატვირთად</span>{" "}
+                  <span className="font-semibold">
+                    დააჭირეთ ფაილის ასატვირთად
+                  </span>{" "}
                   ან ჩააგდეთ
                 </p>
                 <p className="text-xs text-gray-500 dark:!text-gray-400">
@@ -467,14 +460,12 @@ export const AddCalendarEventForm = ({ onSuccess, defaultStartTime, defaultEndTi
         </div>
       </div>
 
-      {/* Error message */}
       {submitError && (
         <div className="p-3 rounded-md bg-red-50 dark:!bg-red-900/20 text-red-600 dark:!text-red-400 text-sm">
           {submitError}
         </div>
       )}
 
-      {/* Submit handling */}
       <form.Subscribe selector={state => [state.canSubmit, state.isSubmitting]}>
         {([canSubmit, isSubmitting]) => (
           <div className="hidden">

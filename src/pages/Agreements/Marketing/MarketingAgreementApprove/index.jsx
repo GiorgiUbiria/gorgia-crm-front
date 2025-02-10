@@ -292,7 +292,6 @@ const MarketingAgreementApprove = () => {
 
     return (
       <div className="p-4 bg-light rounded">
-        {/* Rejection reason banner */}
         {row.expanded.rejection_reason && (
           <div className="alert alert-danger d-flex align-items-center mb-4">
             <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -302,17 +301,14 @@ const MarketingAgreementApprove = () => {
           </div>
         )}
 
-        {/* Requester info */}
         <div className="d-flex align-items-center mb-4 gap-2 text-muted">
           <BsPerson className="fs-3 text-primary" />
           <strong>მოითხოვა:</strong>
           <span className="ms-2">{row.expanded.requested_by}</span>
         </div>
 
-        {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            {/* Executor Firm Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -325,7 +321,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Marketing Service Type */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -338,20 +333,24 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Marketing Service Term */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">სერვისის ვადა</div>
                   <div className="fw-medium">
-                    {new Date(row.expanded.marketing_service_start_date).toLocaleDateString()} - {new Date(row.expanded.marketing_service_end_date).toLocaleDateString()}
+                    {new Date(
+                      row.expanded.marketing_service_start_date
+                    ).toLocaleDateString()}{" "}
+                    -{" "}
+                    {new Date(
+                      row.expanded.marketing_service_end_date
+                    ).toLocaleDateString()}
                   </div>
                 </div>
               </div>
             </Col>
 
-            {/* Service Cost */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -362,7 +361,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor ID Number */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -377,7 +375,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Home Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -390,7 +387,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Full Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -405,7 +401,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Position */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -418,7 +413,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Account */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -433,7 +427,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -448,7 +441,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Factual Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -461,7 +453,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Swift */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -474,7 +465,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Director Info */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -488,7 +478,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Payment Details */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -501,7 +490,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Service Active Term */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
@@ -516,7 +504,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Created Date */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />

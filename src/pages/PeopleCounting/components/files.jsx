@@ -18,24 +18,19 @@ const UploadedFilesTable = () => {
         }
       )
 
-      // Create a blob from the response data
       const blob = new Blob([response.data], {
         type: response.headers["content-type"],
       })
 
-      // Create a temporary URL for the blob
       const url = window.URL.createObjectURL(blob)
 
-      // Create a temporary link element
       const link = document.createElement("a")
       link.href = url
       link.download = fileName
       document.body.appendChild(link)
 
-      // Trigger the download
       link.click()
 
-      // Clean up
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
 

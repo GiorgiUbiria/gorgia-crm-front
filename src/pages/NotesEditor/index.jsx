@@ -90,9 +90,7 @@ const NotesEditor = () => {
   return (
     <div className="min-h-screen p-4 dark:!bg-gray-900">
       <div className="max-w-4xl mx-auto bg-white dark:!bg-gray-800 rounded-lg shadow-lg p-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-          {/* Back Button */}
           <button
             onClick={() => navigate("/tools/notes")}
             className="text-blue-600 dark:!text-blue-400 hover:text-blue-700 dark:!hover:text-blue-300 p-2 rounded-full hover:bg-gray-100 dark:!hover:bg-gray-700 transition-colors"
@@ -100,7 +98,6 @@ const NotesEditor = () => {
             <ArrowBackIcon className="w-6 h-6" />
           </button>
 
-          {/* Save Button */}
           <button
             onClick={handleSubmit(onSubmit)}
             disabled={loadingState.isSaving || !isDirty}
@@ -117,7 +114,6 @@ const NotesEditor = () => {
           </button>
         </div>
 
-        {/* Title Input */}
         <Controller
           name="title"
           control={control}
@@ -145,7 +141,6 @@ const NotesEditor = () => {
           )}
         />
 
-        {/* Content Editor */}
         <Controller
           name="content"
           control={control}
@@ -183,7 +178,6 @@ const NotesEditor = () => {
           }
         />
 
-        {/* Error Message */}
         {error && (
           <div className="mt-5 p-3 bg-red-50 dark:!bg-red-900/20 rounded-lg">
             <p className="text-red-600 dark:!text-red-400">{error}</p>

@@ -27,11 +27,9 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
       console.log("Submitting reply:", { replyContent })
       let commentData
       try {
-        // Try to parse the value as JSON first
         commentData = JSON.parse(replyContent)
         console.log("Parsed reply as JSON:", commentData)
       } catch (e) {
-        // If parsing fails, treat as plain text
         console.log("Using plain text format")
         commentData = {
           text: replyContent,
@@ -107,28 +105,26 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
           content: comment.comment,
           type: typeof comment.comment,
         })
-        // First parse
         let parsed =
           typeof comment.comment === "string"
             ? JSON.parse(comment.comment)
             : comment.comment
         console.log("First parse result:", parsed)
 
-        // Handle double-stringified JSON
         if (parsed.text && typeof parsed.text === "string") {
           try {
             console.log("Attempting to parse inner text:", parsed.text)
             const innerParsed = JSON.parse(parsed.text)
             console.log("Inner parse result:", innerParsed)
 
-            // Handle array format
             if (Array.isArray(innerParsed)) {
               console.log("Using inner array format")
               segments = innerParsed
             }
-            // Handle object format
+
             else if (innerParsed.text && innerParsed.format) {
               console.log("Using inner object format")
+
               segments = [
                 {
                   text: innerParsed.text,
@@ -136,7 +132,6 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
                 },
               ]
             }
-            // Handle plain text
             else {
               console.log("Using inner plain text format")
               segments = [
@@ -166,12 +161,10 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
             ]
           }
         }
-        // Handle array format
         else if (Array.isArray(parsed)) {
           console.log("Using array format")
           segments = parsed
         }
-        // Handle object format
         else if (parsed.text) {
           console.log("Using object format")
           segments = [
@@ -186,7 +179,6 @@ const CommentThread = ({ comment, currentUser, dailyId, depth = 0 }) => {
             },
           ]
         }
-        // Handle plain text
         else {
           console.log("Using plain text format")
           segments = [

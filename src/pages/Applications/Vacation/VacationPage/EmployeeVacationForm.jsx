@@ -35,7 +35,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        // Validate administrative leave duration
         if (
           values.vacation_type === "administrative_leave" &&
           values.duration_days > 7
@@ -150,7 +149,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
     if (newDuration !== formik.values.duration_days) {
       formik.setFieldValue("duration_days", newDuration)
 
-      // Show warnings for duration limits
       if (formik.values.vacation_type === "administrative_leave") {
         if (newDuration > 7) {
           toast.warning(
@@ -179,7 +177,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
     [formik]
   )
 
-  // Define shouldShowVacationBalance
   const shouldShowVacationBalance = useMemo(() => {
     return formik.values.vacation_type === "paid_leave"
   }, [formik.values.vacation_type])
@@ -207,7 +204,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
       )}
 
       <Form onSubmit={formik.handleSubmit}>
-        {/* Employee Information Section */}
         <h5 className="mb-3 text-lg font-semibold">თანამშრომლის ინფორმაცია</h5>
         <div className="row">
           <div className="col-md-6">
@@ -249,7 +245,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
           </div>
         </div>
 
-        {/* Substitute Information Section */}
         <h5 className="mb-3 text-lg font-semibold">შემცვლელის ინფორმაცია</h5>
         <div className="row">
           <div className="col-md-6">
@@ -268,7 +263,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
           </div>
         </div>
 
-        {/* Vacation Details Section */}
         <h5 className="mb-3 text-lg font-semibold">შვებულების დეტალები</h5>
         <div className="row">
           <div className="col-md-6">
@@ -320,7 +314,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
           </div>
         </div>
 
-        {/* Rest Days Section */}
         <div className="row">
           <div className="col-12">
             <RestDaysCheckbox
@@ -339,7 +332,6 @@ const EmployeeVacationForm = ({ departments, navigate }) => {
           </div>
         </div>
 
-        {/* Duration Section */}
         <div className="row">
           <div className="col-12">
             <div className="mb-3">

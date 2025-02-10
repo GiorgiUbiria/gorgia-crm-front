@@ -10,8 +10,8 @@ const useToastStore = create((set, get) => ({
     variant = "info",
     action,
     actionAltText,
-    duration = 5000, // default duration
-    size = "default", // default size
+    duration = 5000,
+    size = "default",
   }) => {
     const id = nanoid()
     const toast = {
@@ -44,7 +44,6 @@ const useToastStore = create((set, get) => ({
   clearAllToasts: () => set({ toasts: [] }),
 }))
 
-// Direct API for non-hook usage
 export const toast = {
   success: (message, title, options = {}) =>
     useToastStore.getState().addToast({
@@ -73,7 +72,6 @@ export const toast = {
   custom: options => useToastStore.getState().addToast(options),
 }
 
-// Hook for component usage
 export const useToast = () => {
   const { addToast } = useToastStore()
 

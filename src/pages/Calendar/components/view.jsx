@@ -134,7 +134,7 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
     }
   }
 
-  const handleStatusUpdate = async (status) => {
+  const handleStatusUpdate = async status => {
     try {
       await updateStatusMutation.mutateAsync({ eventId, status })
       onClose()
@@ -157,7 +157,6 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
 
   return (
     <div className="space-y-8">
-      {/* Header Section */}
       <div className="flex items-start justify-between">
         <h2 className="text-2xl font-semibold mb-2 dark:!text-gray-200">
           {event.title}
@@ -184,7 +183,6 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
         )}
       </div>
 
-      {/* Time and Location Section */}
       <div className="space-y-4">
         <div className="flex items-start gap-3">
           <Clock className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
@@ -216,7 +214,6 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
         )}
       </div>
 
-      {/* Tasks Section */}
       {event.is_task_event && event.tasks?.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -274,7 +271,6 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
         </div>
       )}
 
-      {/* Guests Section */}
       {event.guests?.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -305,7 +301,6 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
         </div>
       )}
 
-      {/* Attachments Section */}
       {event.attachments?.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -338,16 +333,15 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
         </div>
       )}
 
-      {/* Comments Section */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-indigo-500" />
           <h3 className="text-lg font-medium dark:!text-gray-200">
-            კომენტარები {event.comments?.length > 0 && `(${event.comments.length})`}
+            კომენტარები{" "}
+            {event.comments?.length > 0 && `(${event.comments.length})`}
           </h3>
         </div>
         <div className="pl-8 space-y-4">
-          {/* Add Comment Form */}
           <form onSubmit={handleAddComment} className="space-y-2">
             <textarea
               value={newComment}
@@ -361,11 +355,12 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
               disabled={!newComment.trim() || addCommentMutation.isLoading}
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {addCommentMutation.isLoading ? "იგზავნება..." : "კომენტარის დამატება"}
+              {addCommentMutation.isLoading
+                ? "იგზავნება..."
+                : "კომენტარის დამატება"}
             </button>
           </form>
 
-          {/* Comments List */}
           <div className="space-y-4">
             {event.comments?.map(comment => (
               <div
@@ -415,7 +410,9 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
                             disabled={updateCommentMutation.isLoading}
                             className="px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
                           >
-                            {updateCommentMutation.isLoading ? "ინახება..." : "შენახვა"}
+                            {updateCommentMutation.isLoading
+                              ? "ინახება..."
+                              : "შენახვა"}
                           </button>
                           <button
                             type="button"
@@ -466,7 +463,9 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
                               } flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600`}
                             >
                               <Trash2 className="w-4 h-4" />
-                              {deleteCommentMutation.isLoading ? "იშლება..." : "წაშლა"}
+                              {deleteCommentMutation.isLoading
+                                ? "იშლება..."
+                                : "წაშლა"}
                             </button>
                           )}
                         </Menu.Item>

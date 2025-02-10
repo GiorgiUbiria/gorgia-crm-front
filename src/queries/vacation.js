@@ -12,7 +12,6 @@ import {
 } from "../services/admin/vacation"
 import { getCurrentUserVocations } from "../services/vacation"
 
-// Query keys
 export const vacationKeys = {
   all: ["vacations"],
   lists: filters => [...vacationKeys.all, "list", filters],
@@ -22,7 +21,6 @@ export const vacationKeys = {
   userVacations: () => [...vacationKeys.all, "user"],
 }
 
-// Queries
 export const useVacationBalance = () => {
   return useQuery({
     queryKey: vacationKeys.balance(),
@@ -70,7 +68,6 @@ export const useVacationDetails = id => {
   })
 }
 
-// Mutations
 export const useCreateVacation = () => {
   const queryClient = useQueryClient()
 
@@ -116,13 +113,10 @@ export const useCancelVacation = () => {
       return cancelVacation(id, data)
     },
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: vacationKeys.userVacations() })
 
-      // Snapshot the previous value
       const previousVacations = queryClient.getQueryData(vacationKeys.userVacations())
 
-      // Optimistically update to the new value
       queryClient.setQueryData(vacationKeys.userVacations(), old => {
         if (!old?.data?.data) return old
         return {
@@ -143,18 +137,15 @@ export const useCancelVacation = () => {
         }
       })
 
-      // Return a context object with the snapshotted value
       return { previousVacations }
     },
     onError: (err, variables, context) => {
       console.error('Failed to cancel vacation:', err)
-      // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousVacations) {
         queryClient.setQueryData(vacationKeys.userVacations(), context.previousVacations)
       }
     },
     onSettled: () => {
-      // Always refetch after error or success to ensure cache is in sync with server
       queryClient.invalidateQueries({ queryKey: vacationKeys.userVacations() })
     }
   })
@@ -171,7 +162,6 @@ export const useUpdateOneCStatus = () => {
   })
 }
 
-// Optimistic updates helper
 export const getOptimisticVacation = (newData, queryClient, queryKey) => {
   const previousVacations = queryClient.getQueryData(queryKey)
 

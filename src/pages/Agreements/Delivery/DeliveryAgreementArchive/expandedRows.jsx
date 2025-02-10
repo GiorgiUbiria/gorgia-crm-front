@@ -23,7 +23,6 @@ export const expandedRows = row => {
 
   return (
     <div className="p-4 bg-light rounded">
-      {/* Rejection reason banner */}
       {row.expanded.rejection_reason && (
         <div className="alert alert-danger d-flex align-items-center mb-4">
           <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -33,17 +32,14 @@ export const expandedRows = row => {
         </div>
       )}
 
-      {/* Requester info */}
       <div className="d-flex align-items-center mb-4 gap-2 text-muted">
         <BsPerson className="fs-3 text-primary" />
         <strong>მოითხოვა:</strong>
         <span className="ms-2">{row.expanded.requested_by}</span>
       </div>
 
-      {/* Agreement details */}
       <div className="border rounded p-4 bg-white mb-4">
         <Row className="g-4">
-          {/* Jurisdictional Unit */}
           <Col md={6}>
             <div className="d-flex align-items-center gap-2">
               <BsCalendar className="fs-7 text-primary" />
@@ -57,7 +53,6 @@ export const expandedRows = row => {
             </div>
           </Col>
 
-          {/* Address */}
           <Col md={6}>
             <div className="d-flex align-items-center gap-2">
               <BsMap className="fs-7 text-primary" />
@@ -70,7 +65,6 @@ export const expandedRows = row => {
             </div>
           </Col>
 
-          {/* Agreement Type */}
           <Col md={6}>
             <div className="d-flex align-items-center gap-2">
               <BsCreditCard className="fs-7 text-primary" />
@@ -81,7 +75,6 @@ export const expandedRows = row => {
             </div>
           </Col>
 
-          {/* Cost */}
           <Col md={6}>
             <div className="d-flex align-items-center gap-2">
               <BsVoicemail className="fs-7 text-primary" />
@@ -94,7 +87,6 @@ export const expandedRows = row => {
             </div>
           </Col>
 
-          {/* Director */}
           <Col md={6}>
             <div className="d-flex align-items-center gap-2">
               <BsCalendar className="fs-7 text-primary" />
@@ -107,7 +99,6 @@ export const expandedRows = row => {
             </div>
           </Col>
 
-          {/* Created Date */}
           <Col md={6}>
             <div className="d-flex align-items-center gap-2">
               <BsBank className="fs-7 text-primary" />
@@ -120,7 +111,6 @@ export const expandedRows = row => {
             </div>
           </Col>
 
-          {/* Action Act */}
           <Col md={6}>
             <div className="d-flex align-items-center gap-2">
               <i className="bx bx-notepad fs-7 text-primary"></i>
@@ -131,7 +121,6 @@ export const expandedRows = row => {
             </div>
           </Col>
 
-          {/* Price */}
           <Col md={6}>
             <div className="d-flex align-items-center gap-2">
               <i className="bx bx-dollar fs-7 text-primary"></i>

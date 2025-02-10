@@ -426,7 +426,6 @@ const ChatRoomList = ({
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <div className="w-12 h-12 rounded-full bg-gray-100 dark:!bg-gray-700 overflow-hidden">
-                          {/* Add avatar image here if available */}
                         </div>
                         <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-400 border-2 border-white dark:!border-gray-800" />
                       </div>
@@ -468,12 +467,10 @@ const ChatRoomList = ({
 
   return (
     <>
-      {/* Desktop view */}
       <div className="hidden lg:block w-[360px] border-r border-gray-200 dark:!border-gray-700 overflow-y-auto rounded-l-md">
         {listContent}
       </div>
 
-      {/* Mobile view */}
       <div
         className={classNames(
           "lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity",
@@ -726,9 +723,7 @@ const MembersList = ({ room, onClose }) => {
             key={member.id}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F5F5F5] dark:!hover:bg-[#262626] transition-colors"
           >
-            <div className="w-10 h-10 rounded-full bg-[#F5F5F5] dark:!bg-[#363636] overflow-hidden">
-              {/* Add avatar image here if available */}
-            </div>
+            <div className="w-10 h-10 rounded-full bg-[#F5F5F5] dark:!bg-[#363636] overflow-hidden"></div>
             <div className="flex-1 min-w-0">
               <h4 className="font-medium text-[#262626] dark:!text-white">
                 {member.name} {member.sur_name}

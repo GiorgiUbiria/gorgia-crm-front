@@ -88,9 +88,9 @@ const CrmDialog = ({
       <Dialog.Overlay className="fixed inset-0 bg-black/40 data-[state=open]:animate-overlayShow" />
       <Dialog.Content
         className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg focus:outline-none data-[state=open]:animate-contentShow dark:!bg-gray-800 flex flex-col overflow-hidden"
-        style={{ 
+        style={{
           maxWidth,
-          zIndex: 1000
+          zIndex: 1000,
         }}
       >
         <div className="flex-none p-6">
@@ -135,10 +135,8 @@ export const DialogButton = ({
   size = "md",
   ...props
 }) => {
-  // If actionType is provided, use predefined styles
   const actionConfig = actionType ? actionTypes[actionType] : null
 
-  // Use either the action config or provided props
   const buttonVariant = variant || (actionConfig?.variant ?? "primary")
   const Icon = CustomIcon || (actionConfig?.icon ?? null)
   const buttonLabel = label || (actionConfig?.label ?? "")

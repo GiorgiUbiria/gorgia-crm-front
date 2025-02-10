@@ -5,9 +5,6 @@ const formatDateToMySQLDateTime = date => {
   return date.toISOString().slice(0, 19).replace("T", " ")
 }
 
-/**
- * Calendar View Endpoints
- */
 export const getCalendarView = async () => {
   try {
     const response = await defaultInstance.get("/api/meetings/calendar")
@@ -33,9 +30,6 @@ export const getByDateRange = async (startDate, endDate) => {
   }
 }
 
-/**
- * User-specific Meeting Views
- */
 export const getMyMeetings = async () => {
   try {
     const response = await defaultInstance.get("/api/meetings/my")
@@ -66,9 +60,6 @@ export const getAttendingMeetings = async () => {
   }
 }
 
-/**
- * Basic CRUD Operations
- */
 export const getMeetings = async () => {
   try {
     const response = await defaultInstance.get("/api/meetings")
@@ -150,9 +141,6 @@ export const deleteMeeting = async id => {
   }
 }
 
-/**
- * Recurring Meeting Operations
- */
 export const updateRecurringMeeting = async (id, data) => {
   try {
     const formattedData = {
@@ -189,9 +177,6 @@ export const deleteRecurringMeeting = async id => {
   }
 }
 
-/**
- * Status Management
- */
 export const updateMeetingStatus = async (meetingId, status) => {
   try {
     const response = await defaultInstance.post(
@@ -222,9 +207,6 @@ export const updateAttendeeStatus = async (meetingId, status) => {
   }
 }
 
-/**
- * Comment Management
- */
 export const getComments = async meetingId => {
   try {
     const response = await defaultInstance.get(
@@ -279,9 +261,6 @@ export const deleteComment = async (meetingId, commentId) => {
   }
 }
 
-/**
- * Attendee Management
- */
 export const getAttendees = async meetingId => {
   try {
     const response = await defaultInstance.get(

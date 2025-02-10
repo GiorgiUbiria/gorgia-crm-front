@@ -37,7 +37,6 @@ const CreateNote = () => {
   return (
     <div className="min-h-screen p-4 dark:!bg-gray-900">
       <div className="max-w-4xl mx-auto bg-white dark:!bg-gray-800 rounded-lg shadow-lg p-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <button
             onClick={() => navigate("/tools/notes")}

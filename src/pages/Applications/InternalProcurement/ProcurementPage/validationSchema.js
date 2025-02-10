@@ -48,7 +48,7 @@ const productSchema = Yup.object().shape({
           .typeError("რაოდენობა უნდა იყოს რიცხვი")
           .min(1, "მინიმალური რაოდენობა არის 1")
           .max(999999999, "რაოდენობა ძალიან დიდია"),
-      otherwise: schema => schema.nullable().transform(() => null), // Force null when Excel file is present
+      otherwise: schema => schema.nullable().transform(() => null), 
     }),
 
   dimensions: Yup.string().when(["$file"], {

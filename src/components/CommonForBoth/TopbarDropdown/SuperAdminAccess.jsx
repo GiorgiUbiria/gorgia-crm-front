@@ -19,7 +19,6 @@ const SuperAdminAccess = () => {
       setLoading(true)
       const { data } = await getSuperAdminAccess()
 
-      // Update the local state for the form
       setAccessData({
         availableRoles: data.all_roles || [],
         currentRoles: (data.roles || []).map(role => role.id),
@@ -27,7 +26,6 @@ const SuperAdminAccess = () => {
         currentDepartment: data.department?.id || null,
       })
 
-      // Also update the user data to ensure it stays in sync
       const updatedUser = {
         ...user,
         roles: data.roles || user.roles,
@@ -35,7 +33,6 @@ const SuperAdminAccess = () => {
         department_id: data.department?.id || user.department_id,
       }
 
-      // Ensure roles array exists
       if (!updatedUser.roles) {
         updatedUser.roles = []
       }
@@ -55,7 +52,6 @@ const SuperAdminAccess = () => {
       setLoading(true)
       const { data } = await updateSuperAdminRoles(roleIds)
 
-      // Keep all existing user data and update only what's changed
       const updatedUser = {
         ...user,
         roles: data.roles || user.roles,
@@ -63,7 +59,6 @@ const SuperAdminAccess = () => {
         department_id: data.department?.id || user.department_id,
       }
 
-      // Ensure roles array exists
       if (!updatedUser.roles) {
         updatedUser.roles = []
       }
@@ -88,7 +83,6 @@ const SuperAdminAccess = () => {
       setLoading(true)
       const { data } = await updateSuperAdminDepartment(departmentId)
 
-      // Keep all existing user data and update only what's changed
       const updatedUser = {
         ...user,
         department: data.department || user.department,
@@ -96,7 +90,6 @@ const SuperAdminAccess = () => {
         roles: data.roles || user.roles,
       }
 
-      // Ensure roles array exists
       if (!updatedUser.roles) {
         updatedUser.roles = []
       }

@@ -44,7 +44,6 @@ const CommentSection = ({ daily, canComment }) => {
     if (!newComment.trim()) return
 
     try {
-      // Convert HTML to our JSON format if needed
       let commentData
       if (newComment.includes("<div style=")) {
         const tempDiv = document.createElement("div")

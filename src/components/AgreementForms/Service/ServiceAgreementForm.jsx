@@ -386,7 +386,6 @@ const ServiceAgreementForm = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* Tab 1: Executor Information */}
       <div className={classnames("w-full", { hidden: activeTab !== 1 })}>
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -581,7 +580,6 @@ const ServiceAgreementForm = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* Tab 2: Bank Details */}
       <div className={classnames("w-full", { hidden: activeTab !== 2 })}>
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -746,7 +744,6 @@ const ServiceAgreementForm = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* Tab 3: Service Details */}
       <div className={classnames("w-full", { hidden: activeTab !== 3 })}>
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -943,7 +940,6 @@ const ServiceAgreementForm = ({ onSuccess }) => {
         </div>
       </div>
 
-      {/* Tab 4: Success Message */}
       <div className={classnames("w-full", { hidden: activeTab !== 4 })}>
         <div className="flex justify-center">
           <div className="text-center max-w-lg">

@@ -463,7 +463,6 @@ const VacationPageApprove = () => {
   )
 
   const transformedVacations = useMemo(() => {
-    // For department heads/assistants
     if (
       (isDepartmentHead() || isDepartmentHeadAssistant()) &&
       departmentVacationData?.data
@@ -530,7 +529,6 @@ const VacationPageApprove = () => {
       }))
     }
 
-    // For admins
     if (isAdmin() && vacationsData?.data?.data) {
       return vacationsData.data.data.map(vacation => ({
         id: vacation.id,
@@ -628,16 +626,14 @@ const VacationPageApprove = () => {
 
   const expandedRow = row => <ExpandedRowContent rowData={row} />
 
-  // Combine loading states
   const isLoading = vacationsLoading || departmentVacationsLoading
 
-  // Update data ready check to match the correct data structure
   const isDataReady = useMemo(() => {
     if (isAdmin()) {
       return Boolean(vacationsData?.data?.data)
     }
     if (isDepartmentHead() || isDepartmentHeadAssistant()) {
-      return Boolean(departmentVacationData?.data) // Changed from departmentVacationData?.data?.data
+      return Boolean(departmentVacationData?.data)
     }
     return false
   }, [
@@ -648,7 +644,6 @@ const VacationPageApprove = () => {
     isDepartmentHeadAssistant,
   ])
 
-  // Show loading state while data is being fetched
   if (isLoading || !isDataReady) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -678,7 +673,6 @@ const VacationPageApprove = () => {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
       <Modal isOpen={confirmModal} toggle={() => setConfirmModal(false)}>
         <ModalHeader toggle={() => setConfirmModal(false)}>
           დაადასტურეთ მოქმედება
@@ -710,7 +704,6 @@ const VacationPageApprove = () => {
         </ModalBody>
       </Modal>
 
-      {/* Rejection Modal */}
       <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
         <ModalHeader toggle={() => setRejectionModal(false)}>
           <BiXCircle className="text-danger me-2" size={24} />
@@ -757,7 +750,6 @@ const VacationPageApprove = () => {
         </ModalBody>
       </Modal>
 
-      {/* Cancellation Modal */}
       <CancellationModal
         isOpen={cancellationModal}
         toggle={() => setCancellationModal(false)}

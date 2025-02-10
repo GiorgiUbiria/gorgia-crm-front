@@ -235,7 +235,6 @@ const StandardAgreementArchive = () => {
 
     return (
       <div className="p-4 bg-light rounded">
-        {/* Status Banner */}
         {row.expanded.rejection_reason && (
           <div className="alert alert-danger d-flex align-items-center mb-4">
             <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -245,14 +244,12 @@ const StandardAgreementArchive = () => {
           </div>
         )}
 
-        {/* Requester Info */}
         <div className="d-flex align-items-center mb-4 gap-2 text-muted">
           <BsPerson className="fs-3 text-primary" />
           <strong>მოითხოვა:</strong>
           <span className="ms-2">{row.expanded.requested_by}</span>
         </div>
 
-        {/* Details Grid */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
             <Col md={6}>
@@ -323,7 +320,6 @@ const StandardAgreementArchive = () => {
                 </div>
               </div>
             </Col>
-            {/* Additional Fields */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <i className="bx bx-dollar fs-7 text-primary"></i>
@@ -418,7 +414,6 @@ const StandardAgreementArchive = () => {
           renderRowDetails={renderRowDetails}
         />
       </div>
-      
     </>
   )
 }

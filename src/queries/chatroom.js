@@ -1,22 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import ChatRoomService from "../services/chatroom"
 
-// Query keys
 export const chatKeys = {
   all: ["chat"],
   rooms: () => [...chatKeys.all, "rooms"],
+
   room: id => [...chatKeys.rooms(), id],
   messages: roomId => [...chatKeys.room(roomId), "messages"],
-  messageList: (roomId, filters) => [...chatKeys.messages(roomId), { ...filters }],
+  messageList: (roomId, filters) => [
+    ...chatKeys.messages(roomId),
+    { ...filters },
+  ],
 }
 
-// Queries
 export const useChatRooms = (options = {}) => {
   return useQuery({
     queryKey: chatKeys.rooms(),
     queryFn: () => ChatRoomService.getChatRooms(),
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
-    refetchInterval: 30 * 1000, // Refetch every 30 seconds
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
     retry: 3,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     ...options,
@@ -40,16 +42,16 @@ export const useChatMessages = (roomId, options = {}) => {
   return useQuery({
     queryKey: chatKeys.messages(roomId),
     queryFn: () => ChatRoomService.getMessages(roomId),
-    staleTime: 5 * 1000, // Messages considered fresh for 5 seconds
-    refetchInterval: 5 * 1000, // Refetch messages every 5 seconds
+    staleTime: 5 * 1000,
+    refetchInterval: 5 * 1000,
     enabled: !!roomId,
     retry: 3,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     ...options,
+
   })
 }
 
-// Mutations
 export const useCreateChatRoom = () => {
   const queryClient = useQueryClient()
 
@@ -59,10 +61,10 @@ export const useCreateChatRoom = () => {
       await queryClient.cancelQueries({ queryKey: chatKeys.rooms() })
       const previousRooms = queryClient.getQueryData(chatKeys.rooms())
 
-      // Optimistically update rooms list
       if (previousRooms?.data) {
         queryClient.setQueryData(chatKeys.rooms(), {
           ...previousRooms,
+
           data: [
             {
               id: Date.now(),
@@ -139,13 +141,13 @@ export const useSendMessage = roomId => {
       )
 
       if (previousMessages?.data) {
-        // Optimistically add new message
         const optimisticMessage = {
           id: Date.now(),
           chat_room_id: roomId,
           message: newMessage.message,
           type: newMessage.type || "text",
           file_path: null,
+
           file_name: newMessage.file?.name,
           created_at: new Date().toISOString(),
           user: queryClient.getQueryData(["auth"])?.user,
@@ -177,7 +179,8 @@ export const useMarkMessagesAsRead = roomId => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: messageIds => ChatRoomService.markMessagesAsRead(roomId, messageIds),
+    mutationFn: messageIds =>
+      ChatRoomService.markMessagesAsRead(roomId, messageIds),
     onMutate: async messageIds => {
       await queryClient.cancelQueries({
         queryKey: chatKeys.messages(roomId),
@@ -188,7 +191,6 @@ export const useMarkMessagesAsRead = roomId => {
       )
 
       if (previousMessages?.data) {
-        // Optimistically mark messages as read
         queryClient.setQueryData(chatKeys.messageList(roomId, {}), {
           ...previousMessages,
           data: previousMessages.data.map(msg =>
@@ -231,7 +233,6 @@ export const useDeleteMessage = roomId => {
       )
 
       if (previousMessages?.data) {
-        // Optimistically remove message
         queryClient.setQueryData(chatKeys.messageList(roomId, {}), {
           ...previousMessages,
           data: previousMessages.data.filter(msg => msg.id !== messageId),

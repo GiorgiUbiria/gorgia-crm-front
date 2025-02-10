@@ -1,19 +1,12 @@
 import { create } from "zustand"
 
-/**
- * Permission checker that evaluates complex permission strings
- * Format: "role:admin|department:8,role:department_head|user:123"
- * Supports AND (,) and OR (|) operations
- */
 const checkPermission = (user, permissionString) => {
   if (!permissionString || !user) return true
   if (!user) return false
 
-  // Split by OR operator
   const orConditions = permissionString.split("|")
 
   return orConditions.some(orCondition => {
-    // Split by AND operator
     const andConditions = orCondition.split(",")
 
     return andConditions.every(condition => {
@@ -37,11 +30,9 @@ const checkPermission = (user, permissionString) => {
 }
 
 const useAuthStore = create((set, get) => ({
-  // State
   user: JSON.parse(sessionStorage.getItem("authUser")) || null,
   isInitialized: false,
 
-  // Actions
   initialize: () => {
     const user = JSON.parse(sessionStorage.getItem("authUser"))
     set({ user, isInitialized: true })
@@ -57,13 +48,11 @@ const useAuthStore = create((set, get) => ({
     set({ user: null })
   },
 
-  // Permission Checks
   can: permission => {
     const { user } = get()
     return checkPermission(user, permission)
   },
 
-  // Common Permission Helpers
   isAdmin: () => {
     const { user } = get()
     return user?.roles?.some(role => role.slug === "admin") || false
@@ -113,7 +102,6 @@ const useAuthStore = create((set, get) => ({
     return user?.roles?.some(role => role.slug === "security_manager")
   },
 
-  // Compound Permission Checks
   hasAnyRole: roles => {
     const { user } = get()
     return roles.some(role => user?.roles?.some(r => r.slug === role))
@@ -124,13 +112,11 @@ const useAuthStore = create((set, get) => ({
     return roles.every(role => user?.roles?.some(r => r.slug === role))
   },
 
-  // Department Checks
   isInDepartment: departmentId => {
     const { user } = get()
     return user?.department_id === departmentId
   },
 
-  // User Info
   getUserDepartmentId: () => {
     const { user } = get()
     return user?.department_id
@@ -141,7 +127,6 @@ const useAuthStore = create((set, get) => ({
     return user?.department?.name
   },
 
-  // Complex Permission Checks
   canManageInDepartment: departmentId => {
     const { user } = get()
     return (
@@ -167,13 +152,12 @@ const useAuthStore = create((set, get) => ({
     )
   },
 
-  // Admin panel specific permissions
   hasAdminPanelAccess: () => {
     const { user } = get()
     return (
       user?.roles?.some(role => role.slug === "admin") ||
       user?.roles?.some(role => role.slug === "department_head") ||
-      user?.department_id === 8 // HR department
+      user?.department_id === 8
     )
   },
 
@@ -186,7 +170,7 @@ const useAuthStore = create((set, get) => ({
     const { user } = get()
     return (
       user?.roles?.some(role => role.slug === "admin") ||
-      user?.department_id === 8 // HR department
+      user?.department_id === 8
     )
   },
 
@@ -195,7 +179,7 @@ const useAuthStore = create((set, get) => ({
     return (
       user?.roles?.some(role => role.slug === "admin") ||
       (user?.department_id === 8 &&
-        user?.roles?.some(role => role.slug === "department_head_assistant")) // HR department
+        user?.roles?.some(role => role.slug === "department_head_assistant"))
     )
   },
 

@@ -225,7 +225,6 @@ const BusinessPage = () => {
       return 0
     }
 
-    // Calculate fuel for round trip (distance * 2) and convert to litres per 100km
     return (distance * 2 * values.fuel_consumption_per_100) / 100
   }, [])
 
@@ -792,7 +791,6 @@ const BusinessPage = () => {
         </div>
 
         <div className="d-flex justify-content-between align-items-start mt-4">
-          {/* Error List */}
           {!formik.isValid && Object.keys(formik.errors).length > 0 && (
             <div className="text-danger">
               <p className="mb-2 fw-bold">გთხოვთ შეავსოთ შემდეგი ველები:</p>
@@ -806,7 +804,6 @@ const BusinessPage = () => {
             </div>
           )}
 
-          {/* Submit Button */}
           <Button
             type="submit"
             color="primary"

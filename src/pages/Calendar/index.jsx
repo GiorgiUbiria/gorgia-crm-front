@@ -114,7 +114,6 @@ const Calendar = () => {
     }
   }
 
-  // Combine and transform both created and invited events
   const allEvents = [...(events || []), ...(invitedEvents || [])]
   const calendarEvents = allEvents.map(transformEvent)
 

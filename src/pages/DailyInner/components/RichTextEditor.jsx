@@ -17,7 +17,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
   const [selection, setSelection] = useState(null)
   const skipNextUpdate = useRef(false)
 
-  // Update content when value prop changes
   useEffect(() => {
     if (skipNextUpdate.current) {
       skipNextUpdate.current = false
@@ -89,12 +88,10 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
     const segments = []
     let currentPosition = 0
 
-    // Reconstruct segments based on the new text
     content.forEach(segment => {
       const segmentLength = segment.text.length
       if (currentPosition >= newText.length) return
 
-      // Get the portion of new text that corresponds to this segment
       const newSegmentText = newText.slice(
         currentPosition,
         currentPosition + segmentLength
@@ -110,7 +107,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
       currentPosition += segmentLength
     })
 
-    // If there's remaining text, add it as a new segment
     if (currentPosition < newText.length) {
       segments.push({
         text: newText.slice(currentPosition),
@@ -123,7 +119,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
       })
     }
 
-    // If no segments were created, create one with the entire text
     if (segments.length === 0) {
       segments.push({
         text: newText,
@@ -151,7 +146,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
       return
     }
 
-    // Find segments that contain the selection
     let currentPosition = 0
     let selectionSegments = []
 
@@ -189,20 +183,16 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
       const segmentStart = currentPosition
       const segmentEnd = currentPosition + segment.text.length
 
-      // If segment is outside selection, keep it as is
       if (segmentEnd <= selection.start || segmentStart >= selection.end) {
         newContent.push(segment)
       } else {
-        // Split segment if needed
         if (segmentStart < selection.start) {
-          // Add prefix (before selection)
           newContent.push({
             text: segment.text.slice(0, selection.start - segmentStart),
             format: { ...segment.format },
           })
         }
 
-        // Add selected part with new format
         newContent.push({
           text: segment.text.slice(
             Math.max(0, selection.start - segmentStart),
@@ -215,7 +205,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
         })
 
         if (segmentEnd > selection.end) {
-          // Add suffix (after selection)
           newContent.push({
             text: segment.text.slice(selection.end - segmentStart),
             format: { ...segment.format },
@@ -231,7 +220,6 @@ const RichTextEditor = ({ value, onChange, placeholder, disabled }) => {
     onChange({ target: { value: JSON.stringify(newContent) } })
   }
 
-  // Combine segments for display
   const displayText = content.map(segment => segment.text).join("")
 
   return (

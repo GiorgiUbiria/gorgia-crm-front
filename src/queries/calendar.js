@@ -29,7 +29,6 @@ export const calendarKeys = {
   invitedEvents: () => [...calendarKeys.all, "invited-events"],
 }
 
-// Calendar Events
 export const useGetCalendarEvents = (params = {}, options = {}) => {
   return useQuery({
     queryKey: [...calendarKeys.events(), params],
@@ -81,7 +80,6 @@ export const useDeleteCalendarEvent = () => {
   })
 }
 
-// Guest Management
 export const useUpdateGuestStatus = () => {
   const queryClient = useQueryClient()
 
@@ -116,7 +114,6 @@ export const useRemoveEventGuest = () => {
   })
 }
 
-// Task Management
 export const useCompleteEventTask = () => {
   const queryClient = useQueryClient()
 
@@ -150,7 +147,6 @@ export const useCompleteAllEventTasks = () => {
   })
 }
 
-// Attachments
 export const useDownloadEventAttachment = () => {
   return useMutation({
     mutationFn: ({ eventId, attachmentId }) => downloadEventAttachment(eventId, attachmentId),
@@ -168,7 +164,6 @@ export const useRemoveEventAttachment = () => {
   })
 }
 
-// Comments
 export const useGetEventComments = (eventId, options = {}) => {
   return useQuery({
     queryKey: calendarKeys.comments(eventId),
@@ -214,7 +209,6 @@ export const useDeleteEventComment = () => {
   })
 }
 
-// Composite Hooks
 export const useCalendarQueries = (params = {}, options = {}) => {
   const { data: events = [], isLoading: isEventsLoading } = useGetCalendarEvents(params, {
     ...options,

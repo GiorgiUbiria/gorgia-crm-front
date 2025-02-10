@@ -8,14 +8,12 @@ import {
   fetchUsers,
 } from "../services/user"
 
-// Query keys
 export const userKeys = {
   all: ["user"],
   profile: () => [...userKeys.all, "profile"],
   users: () => [...userKeys.all, "list"],
 }
 
-// Queries
 export const useGetUser = (options = {}) => {
   return useQuery({
     queryKey: userKeys.profile(),
@@ -34,7 +32,6 @@ export const useGetUsers = (options = {}) => {
   })
 }
 
-// Mutations
 export const useChangePassword = () => {
   return useMutation({
     mutationFn: data => changePassword(data),

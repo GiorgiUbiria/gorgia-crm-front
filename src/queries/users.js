@@ -3,7 +3,6 @@ import * as userService from "../services/user"
 import * as userRolesService from "../services/userRoles"
 import { queryKeys } from "./keys"
 
-// Users
 export const useUsers = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.users.list(filters),
@@ -72,7 +71,6 @@ export const useDeleteUser = () => {
   })
 }
 
-// User Roles
 export const useUserRoles = (filters = {}) => {
   return useQuery({
     queryKey: queryKeys.users.roles.list(filters),

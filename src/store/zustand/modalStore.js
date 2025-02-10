@@ -1,10 +1,8 @@
 import { create } from "zustand"
 
 const useModalStore = create((set, get) => ({
-  // State
   modals: {},
 
-  // Actions
   openModal: (modalId, data = {}) =>
     set(state => ({
       modals: {
@@ -35,7 +33,6 @@ const useModalStore = create((set, get) => ({
       },
     })),
 
-  // Getters
   getModal: modalId => get().modals[modalId] || { isOpen: false },
   isModalOpen: modalId => get().modals[modalId]?.isOpen || false,
   getModalData: modalId => {

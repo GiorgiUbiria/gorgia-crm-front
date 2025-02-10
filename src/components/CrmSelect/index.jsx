@@ -26,29 +26,22 @@ const CrmSelect = forwardRef(
     const triggerRef = useRef(null)
     const dropdownRef = useRef(null)
 
-    // Add new ref for dropdown portal container
     const portalContainerRef = useRef(null)
 
-    // Normalize value to handle both string and object values
     const value = propValue?.value || propValue || ""
-
-    // Find selected option
     const selectedOption = options.find(option => {
       const optionValue = option.value?.toString() || option.value
       const compareValue = value?.toString() || value
       return optionValue === compareValue
     })
 
-    // Forward the ref to the trigger input
     React.useImperativeHandle(ref, () => ({
       focus: () => triggerRef.current?.focus(),
       blur: () => triggerRef.current?.blur(),
     }))
 
-    // Close dropdown when clicking outside
     useEffect(() => {
       const handleClickOutside = event => {
-        // Get the portal element
         const portalElement = document.querySelector("[data-select-dropdown]")
 
         if (
@@ -59,7 +52,6 @@ const CrmSelect = forwardRef(
         ) {
           setIsOpen(false)
           setIsFocused(false)
-          // Restore selected option's label when clicking outside
           if (selectedOption) {
             setSearchQuery(selectedOption.label)
           } else {
@@ -72,7 +64,6 @@ const CrmSelect = forwardRef(
       return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [selectedOption])
 
-    // Set initial search query when component mounts or selected option changes
     useEffect(() => {
       if (selectedOption && !isFocused) {
         setSearchQuery(selectedOption.label)
@@ -86,7 +77,6 @@ const CrmSelect = forwardRef(
           )
         : options
 
-    // Always ensure selected option is at the top of filtered results if it exists
     const sortedOptions = selectedOption
       ? [
           selectedOption,
@@ -146,18 +136,15 @@ const CrmSelect = forwardRef(
       }
     }
 
-    // Determine what to display in the input
     const displayValue = searchable
       ? isFocused
         ? searchQuery
         : selectedOption?.label || ""
       : selectedOption?.label || ""
 
-    // Add this effect after other useEffects
     useEffect(() => {
       if (isOpen) {
         const updatePosition = () => {
-          // Force a re-render to update dropdown position
           setIsOpen(true)
         }
 
@@ -171,15 +158,12 @@ const CrmSelect = forwardRef(
       }
     }, [isOpen])
 
-    // Add function to check if component is inside a dialog
     const isInsideDialog = () => {
       return !!dropdownRef.current?.closest('[role="dialog"]')
     }
 
-    // Add function to get portal container
     const getPortalContainer = () => {
       if (isInsideDialog()) {
-        // If inside dialog, create/use a container div inside the dialog
         if (!portalContainerRef.current) {
           portalContainerRef.current = document.createElement("div")
           portalContainerRef.current.style.position = "relative"
@@ -190,7 +174,6 @@ const CrmSelect = forwardRef(
       return document.body
     }
 
-    // Clean up portal container on unmount
     useEffect(() => {
       return () => {
         if (portalContainerRef.current) {
@@ -199,7 +182,6 @@ const CrmSelect = forwardRef(
       }
     }, [])
 
-    // Modify dropdown positioning logic
     const getDropdownStyles = () => {
       if (isInsideDialog()) {
         return {

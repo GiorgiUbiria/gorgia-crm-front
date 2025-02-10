@@ -99,7 +99,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
           files
         })
 
-        // Prepare the data object
         const data = {
           title: value.title?.trim(),
           start_time: value.start_time ? new Date(value.start_time).toISOString() : null,
@@ -186,7 +185,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
           ძირითადი ინფორმაცია
         </h3>
 
-        {/* Title */}
         <form.Field name="title">
           {field => (
             <div>
@@ -206,7 +204,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
           )}
         </form.Field>
 
-        {/* Description */}
         <form.Field name="description">
           {field => (
             <div>
@@ -225,7 +222,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
           )}
         </form.Field>
 
-        {/* Location */}
         <form.Field name="location">
           {field => (
             <div>
@@ -244,7 +240,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
           )}
         </form.Field>
 
-        {/* Start Time */}
         <form.Field name="start_time">
           {field => (
             <div>
@@ -254,7 +249,7 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
               <input
                 type="datetime-local"
                 required
-                step="900" // 15-minute intervals
+                step="900"
                 className="w-full rounded-md border px-3 py-2 text-sm dark:!bg-gray-700 dark:!border-gray-600 dark:!text-gray-200"
                 value={field.state.value}
                 onChange={e => {
@@ -268,7 +263,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
           )}
         </form.Field>
 
-        {/* End Time */}
         <form.Field name="end_time">
           {field => (
             <div>
@@ -280,7 +274,7 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
               </label>
               <input
                 type="datetime-local"
-                step="900" // 15-minute intervals
+                step="900"
                 className="w-full rounded-md border px-3 py-2 text-sm dark:!bg-gray-700 dark:!border-gray-600 dark:!text-gray-200"
                 value={field.state.value}
                 onChange={e => {
@@ -294,7 +288,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
           )}
         </form.Field>
 
-        {/* Reminder */}
         <form.Field name="reminder_before">
           {field => (
             <div>
@@ -320,7 +313,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
         </form.Field>
       </div>
 
-      {/* Tasks Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium dark:!text-gray-200">
@@ -371,7 +363,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
         </div>
       </div>
 
-      {/* Guests Section */}
       {users?.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium dark:!text-gray-200">სტუმრები</h3>
@@ -402,13 +393,11 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
         </div>
       )}
 
-      {/* Attachments Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium dark:!text-gray-200">
           მიმაგრებული ფაილები
         </h3>
 
-        {/* Existing Attachments */}
         {eventData?.attachments?.length > 0 && (
           <div className="space-y-2">
             {eventData.attachments.map(attachment => (
@@ -431,7 +420,6 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
           </div>
         )}
 
-        {/* New Attachments */}
         <div className="relative">
           <div className="flex items-center justify-center w-full">
             <label
@@ -500,14 +488,12 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
         </div>
       </div>
 
-      {/* Error message */}
       {submitError && (
         <div className="p-3 rounded-md bg-red-50 dark:!bg-red-900/20 text-red-600 dark:!text-red-400 text-sm">
           {submitError}
         </div>
       )}
 
-      {/* Submit handling */}
       <form.Subscribe selector={state => [state.canSubmit, state.isSubmitting]}>
           {([canSubmit, isSubmitting]) => (
             <div className="hidden">

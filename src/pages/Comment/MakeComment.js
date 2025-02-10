@@ -317,7 +317,6 @@ const MakeComment = () => {
             style={{ height: "80vh", overflowY: "auto" }}
           >
             {" "}
-            {/* Scrollable section */}
             <CardBody>
               <h5 className="text-center text-primary mb-4">
                 დამფუძნებლის კომენტარი

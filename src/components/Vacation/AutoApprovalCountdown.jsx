@@ -8,7 +8,7 @@ const AutoApprovalCountdown = ({ createdAt }) => {
   useEffect(() => {
     const calculateTimeLeft = () => {
       const created = new Date(createdAt)
-      const deadline = new Date(created.getTime() + 24 * 60 * 60 * 1000) // 24 hours
+      const deadline = new Date(created.getTime() + 24 * 60 * 60 * 1000)
       const now = new Date()
       const difference = deadline - now
 
@@ -20,12 +20,12 @@ const AutoApprovalCountdown = ({ createdAt }) => {
       const hours = Math.floor(difference / (1000 * 60 * 60))
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
 
-      setIsWarning(hours < 2) // Warning when less than 2 hours left
+      setIsWarning(hours < 2)
       setTimeLeft(`${hours}სთ ${minutes}წთ`)
     }
 
-    const timer = setInterval(calculateTimeLeft, 60000) // Update every minute
-    calculateTimeLeft() // Initial calculation
+    const timer = setInterval(calculateTimeLeft, 60000)
+    calculateTimeLeft()
 
     return () => clearInterval(timer)
   }, [createdAt])
@@ -33,9 +33,7 @@ const AutoApprovalCountdown = ({ createdAt }) => {
   return (
     <Tooltip title="ავტომატური დამტკიცების დრომდე დარჩენილია" arrow>
       <span
-        className={`badge ${
-          isWarning ? "bg-warning" : "bg-info"
-        } font-size-12`}
+        className={`badge ${isWarning ? "bg-warning" : "bg-info"} font-size-12`}
       >
         {timeLeft}
       </span>
@@ -43,4 +41,4 @@ const AutoApprovalCountdown = ({ createdAt }) => {
   )
 }
 
-export default AutoApprovalCountdown 
+export default AutoApprovalCountdown

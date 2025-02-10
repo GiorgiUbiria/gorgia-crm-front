@@ -32,7 +32,6 @@ const VacationPage = () => {
   const [vacationBalance, setVacationBalance] = useState(null)
   const [balanceLoading, setBalanceLoading] = useState(false)
 
-  // Fetch vacation balance
   useEffect(() => {
     const fetchVacationBalance = async () => {
       setBalanceLoading(true)
@@ -53,7 +52,6 @@ const VacationPage = () => {
     fetchVacationBalance()
   }, [])
 
-  // Fetch departments
   useEffect(() => {
     const fetchDepartments = async () => {
       setDepartmentsLoading(true)
@@ -117,7 +115,6 @@ const VacationPage = () => {
     <>
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="p-4 sm:p-6">
-          {/* Tab Navigation */}
           {canManageOthers && (
             <Nav tabs className="mb-3">
               <NavItem>
@@ -141,10 +138,8 @@ const VacationPage = () => {
             </Nav>
           )}
 
-          {/* Redirect to "My Vacation" if user cannot manage others and is on wrong tab */}
           {!canManageOthers && activeTab !== "1" && toggleTab("1")}
 
-          {/* Tab Content */}
           <TabContent activeTab={activeTab}>
             <TabPane tabId="1">
               <Card>

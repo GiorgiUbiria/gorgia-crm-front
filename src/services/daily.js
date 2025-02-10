@@ -1,14 +1,13 @@
 import defaultInstance from "../plugins/axios"
 
-// Department Head Dailies
 export const getDepartmentHeadDailies = async (params = {}) => {
   try {
     const response = await defaultInstance.get(`/api/department-head-dailies`, {
       params: {
         limit: params.limit || 10,
         page: params.page || 1,
-        sortBy: params.sortBy || 'created_at',
-        order: params.order || 'desc',
+        sortBy: params.sortBy || "created_at",
+        order: params.order || "desc",
         ...params,
       },
     })
@@ -21,15 +20,18 @@ export const getDepartmentHeadDailies = async (params = {}) => {
 
 export const getMyDepartmentHeadDailies = async (params = {}) => {
   try {
-    const response = await defaultInstance.get(`/api/department-head-dailies/my`, {
-      params: {
-        limit: params.limit || 10,
-        page: params.page || 1,
-        sortBy: params.sortBy || 'created_at',
-        order: params.order || 'desc',
-        ...params,
-      },
-    })
+    const response = await defaultInstance.get(
+      `/api/department-head-dailies/my`,
+      {
+        params: {
+          limit: params.limit || 10,
+          page: params.page || 1,
+          sortBy: params.sortBy || "created_at",
+          order: params.order || "desc",
+          ...params,
+        },
+      }
+    )
     return response.data
   } catch (error) {
     console.error("Error fetching My Department Head Dailies:", error)
@@ -39,7 +41,9 @@ export const getMyDepartmentHeadDailies = async (params = {}) => {
 
 export const getDepartmentHeadDaily = async id => {
   try {
-    const response = await defaultInstance.get(`/api/department-head-dailies/${id}`)
+    const response = await defaultInstance.get(
+      `/api/department-head-dailies/${id}`
+    )
     return response.data
   } catch (error) {
     console.error(`Error fetching Department Head Daily with ID ${id}:`, error)
@@ -55,11 +59,15 @@ export const createDepartmentHeadDaily = async data => {
         formData.append(key, data[key])
       }
     })
-    const response = await defaultInstance.post("/api/department-head-dailies", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
+    const response = await defaultInstance.post(
+      "/api/department-head-dailies",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    )
     return response.data
   } catch (error) {
     console.error("Error creating Department Head Daily:", error)
@@ -75,11 +83,15 @@ export const updateDepartmentHeadDaily = async (id, data) => {
         formData.append(key, data[key])
       }
     })
-    const response = await defaultInstance.put(`/api/department-head-dailies/${id}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
+    const response = await defaultInstance.put(
+      `/api/department-head-dailies/${id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    )
     return response.data
   } catch (error) {
     console.error(`Error updating Department Head Daily with ID ${id}:`, error)
@@ -89,7 +101,9 @@ export const updateDepartmentHeadDaily = async (id, data) => {
 
 export const deleteDepartmentHeadDaily = async id => {
   try {
-    const response = await defaultInstance.delete(`/api/department-head-dailies/${id}`)
+    const response = await defaultInstance.delete(
+      `/api/department-head-dailies/${id}`
+    )
     return response.data
   } catch (error) {
     console.error(`Error deleting Department Head Daily with ID ${id}:`, error)
@@ -97,15 +111,14 @@ export const deleteDepartmentHeadDaily = async id => {
   }
 }
 
-// Regular Dailies
 export const getRegularDailies = async (params = {}) => {
   try {
     const response = await defaultInstance.get(`/api/regular-dailies`, {
       params: {
         limit: params.limit || 10,
         page: params.page || 1,
-        sortBy: params.sortBy || 'created_at',
-        order: params.order || 'desc',
+        sortBy: params.sortBy || "created_at",
+        order: params.order || "desc",
         ...params,
       },
     })
@@ -122,8 +135,8 @@ export const getMyRegularDailies = async (params = {}) => {
       params: {
         limit: params.limit || 10,
         page: params.page || 1,
-        sortBy: params.sortBy || 'created_at',
-        order: params.order || 'desc',
+        sortBy: params.sortBy || "created_at",
+        order: params.order || "desc",
         ...params,
       },
     })
@@ -142,11 +155,15 @@ export const createRegularDaily = async data => {
         formData.append(key, data[key])
       }
     })
-    const response = await defaultInstance.post("/api/regular-dailies", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
+    const response = await defaultInstance.post(
+      "/api/regular-dailies",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    )
     return response.data
   } catch (error) {
     console.error("Error creating Regular Daily:", error)
@@ -162,11 +179,15 @@ export const updateRegularDaily = async (id, data) => {
         formData.append(key, data[key])
       }
     })
-    const response = await defaultInstance.put(`/api/regular-dailies/${id}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
+    const response = await defaultInstance.put(
+      `/api/regular-dailies/${id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    )
     return response.data
   } catch (error) {
     console.error(`Error updating Regular Daily with ID ${id}:`, error)
@@ -184,15 +205,14 @@ export const deleteRegularDaily = async id => {
   }
 }
 
-// Get all dailies based on user role
 export const getAllDailies = async (params = {}) => {
   try {
     const response = await defaultInstance.get(`/api/dailies`, {
       params: {
         limit: params.limit || 10,
         page: params.page || 1,
-        sortBy: params.sortBy || 'created_at',
-        order: params.order || 'desc',
+        sortBy: params.sortBy || "created_at",
+        order: params.order || "desc",
         ...params,
       },
     })
