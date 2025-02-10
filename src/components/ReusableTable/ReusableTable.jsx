@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import {
   Table,
   Button,
   Row,
   Col,
   Modal,
+
   ModalHeader,
   ModalBody,
   ModalFooter,
@@ -12,24 +13,6 @@ import {
 } from "reactstrap"
 import PropTypes from "prop-types"
 import styles from "./ReusableTable.module.scss"
-
-const statusMap = {
-  in_progress: {
-    label: "განხილვაში",
-    icon: "bx-time",
-    color: "#FFA500",
-  },
-  approved: {
-    label: "დამტკიცებული",
-    icon: "bx-check-circle",
-    color: "#28a745",
-  },
-  rejected: {
-    label: "უარყოფილი",
-    icon: "bx-x-circle",
-    color: "#dc3545",
-  },
-}
 
 const ReusableTable = ({
   documents,
@@ -46,7 +29,6 @@ const ReusableTable = ({
   const [salaryText, setSalaryText] = useState("")
   const [isRejection, setIsRejection] = useState(false)
   const [comment, setComment] = useState("")
-  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[1])
   const [sortDirection, setSortDirection] = useState("desc")
@@ -122,7 +104,7 @@ const ReusableTable = ({
 
   const handleItemsPerPageChange = value => {
     setItemsPerPage(value)
-    setCurrentPage(1) // Reset to first page when changing items per page
+    setCurrentPage(1)
   }
 
   return (
@@ -149,7 +131,7 @@ const ReusableTable = ({
         <Table className={`table-modern ${styles.tableModern}`}>
           <thead>
             <tr>
-              {columns.map((column, index) => (
+              {columns.map(column => (
                 <th
                   key={column.accessor}
                   style={column.sortable ? { cursor: "pointer" } : {}}

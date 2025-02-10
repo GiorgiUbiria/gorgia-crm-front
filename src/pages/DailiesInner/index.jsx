@@ -1,156 +1,135 @@
-import React, { useState, useMemo, useEffect } from "react"
+import React from "react"
 import { useNavigate } from "react-router-dom"
-import { getRegularDailies, getMyRegularDailies } from "services/daily"
-import { getDepartments } from "services/auth"
-import Button from "@mui/material/Button"
-import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
-import { Row, Col } from "reactstrap"
-import AddDailyModal from "./AddDailyModal"
-import Breadcrumbs from "components/Common/Breadcrumb"
-import useUserRoles from "hooks/useUserRoles"
+import { CrmTable } from "components/CrmTable"
+import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
+import CrmSpinner from "components/CrmSpinner"
+import { useGetRegularDailies, useGetMyRegularDailies } from "queries/daily"
+import { AddDailyForm } from "./components/form"
+import { renderSubComponent } from "./components/subComponent"
 import * as XLSX from "xlsx"
-
-const INITIAL_STATE = {
-  currentPage: 1,
-  pageSize: 10,
-  dailiesData: { data: [], total: 0 },
-  departments: [],
-  isLoading: false,
-  addDailyModal: false,
-}
-
-const PAGE_SIZE_OPTIONS = [5, 10, 15, 20]
+import useAuth from "hooks/useAuth"
 
 const DailiesInner = () => {
+  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
   const navigate = useNavigate()
-  const isAdmin = useIsAdmin()
-  const user = JSON.parse(sessionStorage.getItem("authUser"))
-  const userRoles = useUserRoles()
 
-  const [state, setState] = useState(INITIAL_STATE)
-  const {
-    currentPage,
-    pageSize,
-    dailiesData,
-    departments,
-    isLoading,
-    addDailyModal,
-  } = state
+  const { user, isAdmin, isDepartmentHead } = useAuth()
 
-  const updateState = newState => {
-    setState(prev => ({ ...prev, ...newState }))
-  }
+  const { data: adminDailiesData, isLoading: adminIsLoading } =
+    useGetRegularDailies({
+      enabled: isAdmin() || isDepartmentHead(),
+      staleTime: 5 * 60 * 1000,
+      keepPreviousData: true,
+      refetchOnWindowFocus: true,
+    })
 
-  const fetchDailies = async () => {
-    try {
-      updateState({ isLoading: true })
-      const params = { page: currentPage, limit: pageSize }
+  const { data: userDailiesData, isLoading: userIsLoading } =
+    useGetMyRegularDailies({
+      enabled: !isAdmin() && !isDepartmentHead(),
+      staleTime: 5 * 60 * 1000,
+      keepPreviousData: true,
+      refetchOnWindowFocus: true,
+    })
 
-      let dailiesResponse
+  const dailiesData =
+    isAdmin() || isDepartmentHead() ? adminDailiesData : userDailiesData
+  const isLoading =
+    isAdmin() || isDepartmentHead() ? adminIsLoading : userIsLoading
 
-      if (userRoles.includes("admin") || userRoles.includes("department_head")) {
-        dailiesResponse = await getRegularDailies(params)
-      } else {
-        dailiesResponse = await getMyRegularDailies(params)
-      }
-      updateState({
-        dailiesData: {
-          data: dailiesResponse.dailies,
-          total: dailiesResponse.dailies.length,
-        },
-      })
-    } catch (error) {
-      console.error("Error fetching department head dailies:", error)
-    } finally {
-      updateState({ isLoading: false })
-    }
-  }
+  const handleRowClick = React.useCallback(
+    row => {
+      navigate(`/tools/inner-daily-results/${row.original.id}`)
+    },
+    [navigate]
+  )
 
-  const fetchDepartments = async () => {
-    try {
-      const response = await getDepartments()
-      updateState({ departments: response.data.departments })
-    } catch (error) {
-      console.error("Error fetching departments:", error)
-    }
-  }
-
-  useEffect(() => {
-    fetchDailies()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize])
-
-  useEffect(() => {
-    fetchDepartments()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const handleRowClick = row => {
-    navigate(`/tools/inner-daily-results/${row.id}`)
-  }
-
-  const transformedDailies = useMemo(() => {
-    return dailiesData.data.map(daily => ({
-      ...daily,
-      user_full_name: `${daily.user.name} ${daily.user.sur_name}`,
-    }))
+  const transformedDailies = React.useMemo(() => {
+    return (
+      dailiesData?.dailies?.map(daily => ({
+        ...daily,
+        user_full_name: `${daily.user.name} ${daily.user.sur_name}`,
+      })) || []
+    )
   }, [dailiesData])
 
-  const columns = useMemo(
+  const columns = React.useMemo(
     () => [
       {
-        Header: "საკითხის ნომერი",
-        accessor: "id",
+        id: "expander",
+        header: () => null,
+        cell: ({ row }) => {
+          return row.getCanExpand() ? (
+            <button
+              {...{
+                onClick: e => {
+                  e.stopPropagation()
+                  row.getToggleExpandedHandler()(e)
+                },
+                style: { cursor: "pointer" },
+              }}
+            >
+              {row.getIsExpanded() ? "👇" : "👉"}
+            </button>
+          ) : (
+            "🔵"
+          )
+        },
+        enableColumnFilter: false,
+        enableSorting: false,
       },
       {
-        Header: "თარიღი",
-        accessor: "date",
-        Cell: ({ value }) => (
-          <div className="date-wrapper">
-            <i className="bx bx-calendar me-2"></i>
-            {new Date(value).toLocaleDateString()}
+        accessorFn: row => row.id,
+        id: "id",
+        cell: info => info.getValue(),
+        header: () => <span>საკითხის ნომერი</span>,
+        enableColumnFilter: false,
+        sortingFn: "basic",
+        sortDescFirst: true,
+      },
+      {
+        accessorKey: "date",
+        header: () => "თარიღი",
+        cell: info => (
+          <div className="flex items-center gap-2">
+            <span className="i-bx-calendar" />
+            {new Date(info.getValue()).toLocaleDateString()}
           </div>
         ),
+        enableColumnFilter: false,
+        sortingFn: "datetime",
+        sortDescFirst: true,
       },
       {
-        Header: "საკითხი",
-        accessor: "name",
-        disableSortBy: true,
+        accessorKey: "name",
+        header: () => <span>საკითხი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
       },
       {
-        Header: "დეპარტამენტი",
-        accessor: "department.name",
-        disableSortBy: true,
+        accessorFn: row => row.department.name,
+        id: "department",
+        header: "დეპარტამენტი",
+        meta: {
+          filterVariant: "select",
+        },
+        enableSorting: false,
       },
       {
-        Header: "სახელი/გვარი",
-        accessor: "user_full_name",
-        disableSortBy: true,
+        accessorFn: row => row.user_full_name,
+        id: "user_full_name",
+        header: () => <span>სახელი/გვარი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
       },
     ],
     []
   )
 
-  const filterOptions = useMemo(() => {
-    const departmentOptions = departments
-      .filter(dept => dept.type === "department")
-      .map(department => ({
-        value: department.name,
-        label: department.name,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label))
-
-    return [
-      {
-        field: "department.name",
-        label: "დეპარტამენტი",
-        options: [{ value: "", label: "ყველა" }, ...departmentOptions],
-      },
-    ]
-  }, [departments])
-
-  const exportToExcel = () => {
+  const exportToExcel = React.useCallback(() => {
     const headers = [
       "დეპარტამენტი",
       "საკითხის ნომერი",
@@ -165,92 +144,82 @@ const DailiesInner = () => {
         daily.id,
         daily.date,
         daily.description,
-        (daily.user && `${daily.user.name} ${daily.user.sur_name}`) || "-",
+        daily.user_full_name || "-",
       ]),
     ]
 
     const ws = XLSX.utils.aoa_to_sheet(data)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "Department Head Dailies")
-    XLSX.writeFile(wb, "Department_Head_Dailies.xlsx")
+    XLSX.utils.book_append_sheet(wb, ws, "Regular Dailies")
+    XLSX.writeFile(wb, "Regular_Dailies.xlsx")
+  }, [transformedDailies])
+
+  if (isLoading) {
+    return <CrmSpinner />
   }
 
-  const renderExpandedRow = row => (
-    <div className="p-4 bg-white rounded shadow-sm">
-      <div className="d-flex flex-column">
-        <h5 className="mb-2 text-primary">საკითხის დეტალები</h5>
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <span className="fw-bold text-secondary">საკითხი:</span>
-          <span className="text-dark">{row.description}</span>
-        </div>
-        <div className="d-flex justify-content-between align-items-center">
-          <span className="fw-bold text-secondary">თარიღი:</span>
-          <span className="text-dark">
-            {new Date(row.date).toLocaleDateString()}
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-
   return (
-    <div className="page-content bg-gray-100">
-      <div className="container-fluid max-w-7xl mx-auto px-4 py-8">
-        <Breadcrumbs title="დღიური შეფასება" breadcrumbItem="დეპარტამენტის დღის შედეგები" />
-
-        <div className="bg-white rounded-xl shadow p-6">
-          <Row className="mb-3">
-            <Col className="d-flex justify-content-between align-items-center">
-              <div style={{ display: "flex", gap: "1rem" }}>
-                {isAdmin && (
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={exportToExcel}
-                  >
-                    <i className="bx bx-export me-1"></i>
-                    Excel გადმოწერა
-                  </Button>
-                )}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => updateState({ addDailyModal: true })}
-                >
-                  <i className="bx bx-plus me-1"></i>
-                  შეფასების დამატება
-                </Button>
-              </div>
-            </Col>
-          </Row>
-
-          <MuiTable
-            columns={columns}
-            data={transformedDailies}
-            filterOptions={filterOptions}
-            searchableFields={["name", "department.name"]}
-            enableSearch={true}
-            initialPageSize={pageSize}
-            pageSizeOptions={PAGE_SIZE_OPTIONS}
-            currentPage={currentPage}
-            totalItems={dailiesData.total}
-            onPageChange={page => updateState({ currentPage: page })}
-            onPageSizeChange={size => updateState({ pageSize: size })}
-            isLoading={isLoading}
-            onRowClick={handleRowClick}
-            renderRowDetails={renderExpandedRow}
-            rowClassName="cursor-pointer hover:bg-gray-50"
+    <div className="w-full mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
+      <div className="p-2 sm:p-3 md:p-4 lg:p-6">
+        <div className="mb-3 flex flex-col sm:flex-row gap-2 sm:gap-3">
+          {isAdmin() && (
+            <DialogButton
+              actionType="downloadExcel"
+              onClick={exportToExcel}
+              label="Excel გადმოწერა"
+              className="w-full sm:w-auto"
+            />
+          )}
+          <DialogButton
+            actionType="add"
+            onClick={() => setIsAddModalOpen(true)}
+            label="დღის შედეგის დამატება"
+            className="w-full sm:w-auto"
           />
         </div>
 
-        <AddDailyModal
-          isOpen={addDailyModal}
-          toggle={() => updateState({ addDailyModal: false })}
-          onDailyAdded={fetchDailies}
-          departmentId={user.department_id}
-          type="department_head"
-        />
+        <div className="overflow-x-auto">
+          <CrmTable
+            columns={columns}
+            size="lg"
+            data={transformedDailies}
+            renderSubComponent={renderSubComponent}
+            getRowCanExpand={() => true}
+            onRowClick={handleRowClick}
+            className="min-w-[600px] sm:min-w-0"
+          />
+        </div>
       </div>
+
+      <CrmDialog
+        isOpen={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+        title="დღის შედეგის დამატება"
+        description="შეავსეთ ფორმა დღის შედეგის დასამატებლად"
+        footer={
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
+            <DialogButton
+              actionType="cancel"
+              onClick={() => setIsAddModalOpen(false)}
+              label="გაუქმება"
+              className="w-full sm:w-auto"
+            />
+            <DialogButton
+              actionType="submit"
+              form="dailyForm"
+              label="დამატება"
+              className="w-full sm:w-auto"
+            />
+          </div>
+        }
+        className="w-[95%] sm:w-[80%] md:w-[70%] lg:w-[60%]"
+      >
+        <AddDailyForm
+          onSuccess={() => setIsAddModalOpen(false)}
+          departmentId={user.department_id}
+          type="regular"
+        />
+      </CrmDialog>
     </div>
   )
 }

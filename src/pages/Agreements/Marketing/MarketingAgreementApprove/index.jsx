@@ -6,12 +6,9 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Card,
-  CardBody,
   Spinner,
 } from "reactstrap"
 import Button from "@mui/material/Button"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import {
   getDepartmentAgreements,
   updateAgreementStatus,
@@ -24,7 +21,6 @@ import {
   BsPerson,
 } from "react-icons/bs"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { ToastContainer } from "react-toastify"
 
 const statusMap = {
   pending: {
@@ -64,7 +60,6 @@ const MarketingAgreementApprove = () => {
   const fetchAgreements = async () => {
     try {
       const response = await getDepartmentAgreements()
-      console.log(response)
       setAgreements(response.data.data)
     } catch (err) {
       console.error("Error fetching agreements:", err)
@@ -150,7 +145,8 @@ const MarketingAgreementApprove = () => {
         expanded: {
           executor_firm_name: agreement.executor_firm_name,
           marketing_service_type: agreement.marketing_service_type,
-          marketing_service_term: agreement.marketing_service_term,
+          marketing_service_start_date: agreement.marketing_service_start_date,
+          marketing_service_end_date: agreement.marketing_service_end_date,
           service_cost: agreement.service_cost,
           executor_id_number: agreement.executor_id_number,
           executor_home_address: agreement.executor_home_address,
@@ -180,7 +176,7 @@ const MarketingAgreementApprove = () => {
       {
         Header: "მოითხოვა",
         accessor: "requested_by",
-        disableSortBy: true,  
+        disableSortBy: true,
       },
       {
         Header: "სახელწოდება (საფირმო)",
@@ -296,7 +292,6 @@ const MarketingAgreementApprove = () => {
 
     return (
       <div className="p-4 bg-light rounded">
-        {/* Rejection reason banner */}
         {row.expanded.rejection_reason && (
           <div className="alert alert-danger d-flex align-items-center mb-4">
             <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -306,17 +301,14 @@ const MarketingAgreementApprove = () => {
           </div>
         )}
 
-        {/* Requester info */}
         <div className="d-flex align-items-center mb-4 gap-2 text-muted">
           <BsPerson className="fs-3 text-primary" />
           <strong>მოითხოვა:</strong>
           <span className="ms-2">{row.expanded.requested_by}</span>
         </div>
 
-        {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            {/* Executor Firm Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -329,7 +321,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Marketing Service Type */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -342,20 +333,24 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Marketing Service Term */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">სერვისის ვადა</div>
                   <div className="fw-medium">
-                    {row.expanded.marketing_service_term}
+                    {new Date(
+                      row.expanded.marketing_service_start_date
+                    ).toLocaleDateString()}{" "}
+                    -{" "}
+                    {new Date(
+                      row.expanded.marketing_service_end_date
+                    ).toLocaleDateString()}
                   </div>
                 </div>
               </div>
             </Col>
 
-            {/* Service Cost */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -366,7 +361,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor ID Number */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -381,7 +375,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Home Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -394,7 +387,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Full Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -409,7 +401,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Position */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -422,7 +413,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Account */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -437,7 +427,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -452,7 +441,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Factual Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -465,7 +453,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Swift */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -478,7 +465,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Director Info */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -492,7 +478,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Payment Details */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -505,7 +490,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Service Active Term */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
@@ -520,7 +504,6 @@ const MarketingAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Created Date */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
@@ -537,37 +520,19 @@ const MarketingAgreementApprove = () => {
   }, [])
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ხელშეკრულებების ვიზირება"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={["executor_firm_name", "requested_by"]}
-                    filterOptions={filterOptions}
-                    onRowClick={() => {}}
-                    renderRowDetails={renderRowDetails}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </div>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["executor_firm_name", "requested_by"]}
+          filterOptions={filterOptions}
+          onRowClick={() => {}}
+          renderRowDetails={renderRowDetails}
+        />
       </div>
 
       <Modal isOpen={confirmModal.isOpen} toggle={handleModalClose}>
@@ -620,9 +585,7 @@ const MarketingAgreementApprove = () => {
           </Button>
         </ModalFooter>
       </Modal>
-
-      <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

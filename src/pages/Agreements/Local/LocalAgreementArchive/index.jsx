@@ -1,9 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react"
-import { Row, Col, Card, CardBody } from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import { getDepartmentAgreements } from "services/localAgreement"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { ToastContainer } from "react-toastify"
 import { expandedRows } from "./expandedRows"
 
 const statusMap = {
@@ -71,9 +68,10 @@ const LocalAgreementArchive = () => {
           executor_position: agreement.executor_position,
           executor_bank_account: agreement.executor_bank_account,
           executor_bank_name: agreement.executor_bank_name,
-          agreement_automatic_renewal:
-            agreement.agreement_automatic_renewal === 1 ? "კი" : "არა",
-          exclusivity: agreement.exclusivity === 1 ? "კი" : "არა",
+          agreement_automatic_renewal: agreement.agreement_automatic_renewal
+            ? "კი"
+            : "არა",
+          exclusivity: agreement.exclusivity ? "კი" : "არა",
           agreement_active_term: agreement.agreement_active_term,
           exclusive_placement: agreement.exclusive_placement,
           executor_bank_swift: agreement.executor_bank_swift,
@@ -181,40 +179,21 @@ const LocalAgreementArchive = () => {
   ]
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ხელშეკრულებების არქივი"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={["executor_firm_name", "requested_by"]}
-                    filterOptions={filterOptions}
-                    onRowClick={() => {}}
-                    renderRowDetails={expandedRows}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </div>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["executor_firm_name", "requested_by"]}
+          filterOptions={filterOptions}
+          onRowClick={() => {}}
+          renderRowDetails={expandedRows}
+        />
       </div>
-      <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

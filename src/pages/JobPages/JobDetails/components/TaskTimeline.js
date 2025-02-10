@@ -2,7 +2,9 @@ import React from "react"
 import { Clock, CheckCircle, XCircle } from "lucide-react"
 import { formatDate, getTimeElapsed } from "../../../../utils/dateUtils"
 
-const TaskTimeline = ({ task }) => {
+const TaskTimeline = ({ taskData }) => {
+  if (!taskData) return null
+
   const getTimelineIcon = status => {
     switch (status) {
       case "Completed":
@@ -23,34 +25,36 @@ const TaskTimeline = ({ task }) => {
           <div>
             <p className="text-sm font-medium text-gray-900">შეიქმნა</p>
             <p className="text-sm text-gray-500">
-              {formatDate(task.created_at)}
+              {formatDate(taskData.created_at)}
             </p>
           </div>
         </div>
 
-        {task.status === "In Progress" && (
+        {taskData.status === "In Progress" && (
           <div className="flex items-center gap-3">
             <Clock size={20} className="text-[#105D8D]" />
             <div>
               <p className="text-sm font-medium text-gray-900">დაიწყო</p>
               <p className="text-sm text-gray-500">
-                {formatDate(task.updated_at)}
+                {formatDate(taskData.updated_at)}
               </p>
             </div>
           </div>
         )}
 
-        {(task.status === "Completed" || task.status === "Cancelled") && (
+        {(taskData.status === "Completed" ||
+          taskData.status === "Cancelled") && (
           <div className="flex items-center gap-3">
-            {getTimelineIcon(task.status)}
+            {getTimelineIcon(taskData.status)}
             <div>
               <p className="text-sm font-medium text-gray-900">
-                {task.status === "Completed" ? "დასრულდა" : "გაუქმდა"}
+                {taskData.status === "Completed" ? "დასრულდა" : "გაუქმდა"}
               </p>
               <p className="text-sm text-gray-500">
-                {formatDate(task.updated_at)}
+                {formatDate(taskData.updated_at)}
                 <span className="ml-2 text-[#105D8D]">
-                  (Duration: {getTimeElapsed(task.created_at, task.updated_at)})
+                  (დრო:{" "}
+                  {getTimeElapsed(taskData.created_at, taskData.updated_at)})
                 </span>
               </p>
             </div>

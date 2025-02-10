@@ -1,116 +1,23 @@
-import React, { useState, useMemo } from "react"
-import { deleteDepartment } from "services/admin/department"
-import Button from "@mui/material/Button"
-import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
-import Dialog from "@mui/material/Dialog"
-import DialogActions from "@mui/material/DialogActions"
-import DialogContent from "@mui/material/DialogContent"
-import DialogContentText from "@mui/material/DialogContentText"
-import DialogTitle from "@mui/material/DialogTitle"
+import React, { useMemo } from "react"
+import { CrmTable } from "components/CrmTable"
+import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
+import { AssignDepartmentHeadForm } from "./components/department/assign"
+import { AddDepartmentForm } from "./components/department/add"
+import { EditDepartmentForm } from "./components/department/edit"
+import { DeleteDepartmentForm } from "./components/department/delete"
+import useModalStore from "store/zustand/modalStore"
 import * as XLSX from "xlsx"
-import { Row, Col } from "reactstrap"
-import AddDepartmentModal from "./AddDepartmentModal"
-import EditDepartmentModal from "./EditDepartmentModal"
+import CrmSpinner from "components/CrmSpinner"
+import useAuth from "hooks/useAuth"
+import { useGetAdminUsers } from "queries/admin"
 
-const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
-  const isAdmin = useIsAdmin()
-  const [confirmModal, setConfirmModal] = useState({
-    isOpen: false,
-    type: null,
-    departmentId: null,
+const DepartmentsTab = ({ departments = [] }) => {
+  const { openModal, closeModal, isModalOpen, getModalData } = useModalStore()
+  const { canViewAllUsers, isDepartmentHead } = useAuth()
+
+  const { data: allUsers = [], isLoading } = useGetAdminUsers({
+    enabled: canViewAllUsers() && !isDepartmentHead(),
   })
-  const [addDepartmentModal, setAddDepartmentModal] = useState(false)
-  const [editDepartmentModal, setEditDepartmentModal] = useState({
-    isOpen: false,
-    department: null,
-  })
-
-  const handleModalOpen = (type, departmentId) => {
-    setConfirmModal({
-      isOpen: true,
-      type,
-      departmentId,
-    })
-  }
-
-  const handleModalClose = () => {
-    setConfirmModal({
-      isOpen: false,
-      type: null,
-      departmentId: null,
-    })
-  }
-
-  const handleConfirmAction = async () => {
-    const { departmentId } = confirmModal
-    try {
-      await deleteDepartment(departmentId)
-      onDepartmentDeleted()
-      handleModalClose()
-    } catch (error) {
-      console.error("Error deleting department:", error)
-      alert("დეპარტამენტის წაშლა ვერ მოხერხდა")
-    }
-  }
-
-  const handleAddDepartmentClick = () => {
-    setAddDepartmentModal(true)
-  }
-
-  const columns = useMemo(
-    () => [
-      {
-        Header: "#",
-        accessor: "id",
-      },
-      {
-        Header: "სახელი",
-        accessor: "name",
-        disableSortBy: true,
-        Cell: ({ value }) => (
-          <div className="d-flex align-items-center">
-            <span className="user-name">{value}</span>
-          </div>
-        ),
-      },
-      {
-        Header: "დეპარტამენტის უფროსი",
-        accessor: "department_head",
-        disableSortBy: true,
-      },
-      {
-        Header: "მოქმედებები",
-        accessor: "actions",
-        disableSortBy: true,
-        Cell: ({ row }) =>
-          isAdmin && (
-            <div className="d-flex gap-2">
-              <Button
-                onClick={() =>
-                  setEditDepartmentModal({
-                    isOpen: true,
-                    department: row.original,
-                  })
-                }
-                color="primary"
-                variant="contained"
-              >
-                რედაქტირება
-              </Button>
-              <Button
-                onClick={() => handleModalOpen("delete", row.original.id)}
-                color="error"
-                variant="contained"
-              >
-                წაშლა
-              </Button>
-            </div>
-          ),
-      },
-    ],
-    []
-  )
 
   const transformedDepartments = useMemo(() => {
     if (!Array.isArray(departments)) return []
@@ -118,24 +25,97 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
     return departments.map(department => ({
       id: department.id,
       name: department.name,
-      department_head: department.head
-        ? `${department.head.name || ""} ${
-            department.head.sur_name || ""
-          }`.trim() || "არ არის მითითებული"
+      description: department.description || "არ არის მითითებული",
+      department_head: department.department_head
+        ? department.department_head?.name ||
+          "" + " " + department.department_head?.sur_name ||
+          ""
         : "არ არის მითითებული",
+      department_head_id: department.department_head_id,
     }))
   }, [departments])
 
-  const filterOptions = [
-    {
-      field: "name",
-      label: "სახელი",
-    },
-    {
-      field: "department_head",
-      label: "დეპარტამენტის უფროსი",
-    },
-  ]
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "id",
+        accessorFn: row => row.id,
+        cell: info => info.getValue(),
+        header: () => <span>#</span>,
+        enableColumnFilter: false,
+        sortingFn: "basic",
+        sortDescFirst: true,
+      },
+      {
+        id: "name",
+        accessorFn: row => row.name,
+        cell: info => info.getValue(),
+        header: () => <span>დეპარტამენტის დასახელება</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "description",
+        accessorKey: "description",
+        header: () => <span>აღწერა</span>,
+        enableColumnFilter: false,
+        enableSorting: false,
+      },
+      {
+        id: "department_head",
+        accessorKey: "department_head",
+        header: () => <span>დეპარტამენტის ხელმძღვანელი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "actions",
+        enableColumnFilter: false,
+        enableSorting: false,
+        header: "მოქმედებები",
+        cell: ({ row }) => {
+          return (
+            <div className="flex items-center gap-x-1 max-w-full">
+              <DialogButton
+                actionType="assign"
+                size="sm"
+                label="მიბმა"
+                onClick={() =>
+                  openModal("assignHead", {
+                    departmentId: row.original.id,
+                    currentHeadId: row.original.department_head_id,
+                  })
+                }
+              />
+              <DialogButton
+                actionType="edit"
+                size="sm"
+                onClick={() =>
+                  openModal("editDepartment", {
+                    department: row.original,
+                  })
+                }
+              />
+              <DialogButton
+                actionType="delete"
+                size="sm"
+                onClick={() =>
+                  openModal("deleteDepartment", {
+                    department_id: row.original.id,
+                  })
+                }
+              />
+            </div>
+          )
+        },
+      },
+    ],
+    [openModal]
+  )
 
   const exportToExcel = () => {
     const data = [
@@ -152,76 +132,137 @@ const DepartmentsTab = ({ departments = [], onDepartmentDeleted, users }) => {
     XLSX.writeFile(wb, "დეპარტამენტები.xlsx")
   }
 
+  if (isLoading) {
+    return <CrmSpinner size="lg" />
+  }
+
   return (
-    <div>
-      <Row className="mb-3">
-        <Col className="d-flex justify-content-end gap-2">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddDepartmentClick}
-          >
-            <i className="bx bx-plus me-1"></i>
-            დეპარტამენტის დამატება
-          </Button>
-          <Button variant="outlined" color="primary" onClick={exportToExcel}>
-            <i className="bx bx-download me-1"></i>
-            ექსპორტი Excel-ში
-          </Button>
-        </Col>
-      </Row>
-
-      <MuiTable
-        columns={columns}
-        data={transformedDepartments}
-        filterOptions={filterOptions}
-        searchableFields={["name"]}
-        enableSearch={true}
-        initialPageSize={10}
-        pageSizeOptions={[5, 10, 15, 20]}
-      />
-
-      <Dialog
-        open={confirmModal.isOpen}
-        onClose={handleModalClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"დეპარტამენტის წაშლა"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            დარწმულებული ხართ, რომ გსურთ დეპარტამენტის წაშლა?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleModalClose} color="primary">
-            გაუქმება
-          </Button>
-          <Button onClick={handleConfirmAction} color="error" autoFocus>
-            წაშლა
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <AddDepartmentModal
-        isOpen={addDepartmentModal}
-        toggle={() => setAddDepartmentModal(false)}
-        onDepartmentAdded={onDepartmentDeleted}
-        users={users}
-      />
-
-      <EditDepartmentModal
-        isOpen={editDepartmentModal.isOpen}
-        department={editDepartmentModal.department}
-        toggle={() =>
-          setEditDepartmentModal({ isOpen: false, department: null })
+    <>
+      <div className="mb-4 flex gap-x-2">
+        <DialogButton
+          actionType="add"
+          size="sm"
+          onClick={() => openModal("addDepartment")}
+        />
+        <DialogButton
+          actionType="downloadExcel"
+          size="sm"
+          onClick={exportToExcel}
+        />
+      </div>
+      <CrmDialog
+        isOpen={isModalOpen("addDepartment")}
+        onOpenChange={open => !open && closeModal("addDepartment")}
+        title="დღის შედეგის დამატება"
+        description="შეავსეთ ფორმა დღის შედეგის დასამატებლად"
+        footer={
+          <>
+            <DialogButton
+              variant="secondary"
+              onClick={() => closeModal("addDepartment")}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton type="submit" form="addDepartmentForm">
+              დამატება
+            </DialogButton>
+          </>
         }
-        onDepartmentUpdated={onDepartmentDeleted}
-        users={users}
-      />
-    </div>
+      >
+        <AddDepartmentForm onSuccess={() => closeModal("addDepartment")} />
+      </CrmDialog>
+
+      <CrmDialog
+        isOpen={isModalOpen("assignHead")}
+        onOpenChange={open => !open && closeModal("assignHead")}
+        title="ხელმძღვანელის მიბმა"
+        description="აირჩიეთ დეპარტამენტის ხელმძღვანელი"
+        footer={
+          <>
+            <DialogButton
+              actionType="cancel"
+              onClick={() => closeModal("assignHead")}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton
+              type="submit"
+              actionType="assign"
+              form="assignHeadForm"
+            >
+              ხელმძღვანელის მიბმა
+            </DialogButton>
+          </>
+        }
+      >
+        <AssignDepartmentHeadForm
+          onSuccess={() => closeModal("assignHead")}
+          users={allUsers}
+          department_id={getModalData("assignHead")?.departmentId}
+          currentHeadId={getModalData("assignHead")?.currentHeadId}
+        />
+      </CrmDialog>
+
+      <CrmDialog
+        isOpen={isModalOpen("editDepartment")}
+        onOpenChange={open => !open && closeModal("editDepartment")}
+        title="დეპარტამენტის რედაქტირება"
+        description="შეცვალეთ დეპარტამენტის საბაზისო ინფორმაცია"
+        footer={
+          <>
+            <DialogButton
+              actionType="cancel"
+              onClick={() => closeModal("editDepartment")}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton
+              type="submit"
+              actionType="edit"
+              form="editDepartmentForm"
+            >
+              რედაქტირება
+            </DialogButton>
+          </>
+        }
+      >
+        <EditDepartmentForm
+          onSuccess={() => closeModal("editDepartment")}
+          department={getModalData("editDepartment")?.department}
+        />
+      </CrmDialog>
+
+      <CrmDialog
+        isOpen={isModalOpen("deleteDepartment")}
+        onOpenChange={open => !open && closeModal("deleteDepartment")}
+        title="დეპარტამენტის წაშლა"
+        description="დარწმუნებული ხართ, რომ გსურთ დეპარტამენტის წაშლა?"
+        footer={
+          <>
+            <DialogButton
+              actionType="cancel"
+              onClick={() => closeModal("deleteDepartment")}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton
+              type="submit"
+              actionType="delete"
+              form="deleteDepartmentForm"
+            >
+              წაშლა
+            </DialogButton>
+          </>
+        }
+      >
+        <DeleteDepartmentForm
+          onSuccess={() => closeModal("deleteDepartment")}
+          department_id={getModalData("deleteDepartment")?.department_id}
+        />
+      </CrmDialog>
+
+      <CrmTable columns={columns} data={transformedDepartments} />
+    </>
   )
 }
 

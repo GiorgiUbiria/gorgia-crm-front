@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
-import { Row, Col, Card, CardBody } from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
+import { Row, Col } from "reactstrap"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { getUserAgreemnets, downloadAgreement } from "services/marketingAgreement"
+import {
+  getUserAgreemnets,
+  downloadAgreement,
+} from "services/marketingAgreement"
 import {
   BsBank,
   BsCalendar,
@@ -10,7 +12,6 @@ import {
   BsMap,
   BsPerson,
 } from "react-icons/bs"
-import { toast, ToastContainer } from "react-toastify"
 
 const statusMap = {
   pending: {
@@ -39,10 +40,20 @@ const STATUS_MAPPING = {
 const handleDownload = async agreementId => {
   try {
     await downloadAgreement(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
+    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა", "შესრულდა", {
+      duration: 2000,
+      size: "small",
+    })
   } catch (error) {
     console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
+    toast.error(
+      error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად",
+      "შეცდომა",
+      {
+        duration: 2000,
+        size: "small",
+      }
+    )
   }
 }
 
@@ -58,7 +69,10 @@ const MarketingAgreementUser = () => {
       }
     } catch (err) {
       console.error("Error fetching agreements:", err)
-      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა")
+      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 
@@ -85,7 +99,8 @@ const MarketingAgreementUser = () => {
         expanded: {
           executor_firm_name: agreement.executor_firm_name,
           marketing_service_type: agreement.marketing_service_type,
-          marketing_service_term: agreement.marketing_service_term,
+          marketing_service_start_date: agreement.marketing_service_start_date,
+          marketing_service_end_date: agreement.marketing_service_end_date,
           service_cost: agreement.service_cost,
           executor_id_number: agreement.executor_id_number,
           executor_home_address: agreement.executor_home_address,
@@ -200,7 +215,6 @@ const MarketingAgreementUser = () => {
 
     return (
       <div className="p-4 bg-light rounded">
-        {/* Rejection reason banner */}
         {row.expanded.rejection_reason && (
           <div className="alert alert-danger d-flex align-items-center mb-4">
             <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -210,17 +224,14 @@ const MarketingAgreementUser = () => {
           </div>
         )}
 
-        {/* Requester info */}
         <div className="d-flex align-items-center mb-4 gap-2 text-muted">
           <BsPerson className="fs-3 text-primary" />
           <strong>მოითხოვა:</strong>
           <span className="ms-2">{row.expanded.requested_by}</span>
         </div>
 
-        {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            {/* Executor Firm Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -233,7 +244,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Marketing Service Type */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -246,20 +256,24 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Marketing Service Term */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
                 <div>
                   <div className="text-muted small">სერვისის ვადა</div>
                   <div className="fw-medium">
-                    {row.expanded.marketing_service_term}
+                    {new Date(
+                      row.expanded.marketing_service_start_date
+                    ).toLocaleDateString()}{" "}
+                    -{" "}
+                    {new Date(
+                      row.expanded.marketing_service_end_date
+                    ).toLocaleDateString()}
                   </div>
                 </div>
               </div>
             </Col>
 
-            {/* Service Cost */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -270,7 +284,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Executor ID Number */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -285,7 +298,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Executor Home Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -298,7 +310,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Executor Full Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -313,7 +324,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Executor Position */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -326,7 +336,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Account */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -341,7 +350,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -356,7 +364,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Executor Factual Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -369,7 +376,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Swift */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -382,7 +388,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Director Info */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -396,7 +401,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Payment Details */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -409,7 +413,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Service Active Term */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
@@ -424,7 +427,6 @@ const MarketingAgreementUser = () => {
               </div>
             </Col>
 
-            {/* Created Date */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
@@ -454,39 +456,20 @@ const MarketingAgreementUser = () => {
   }, [])
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ჩემი ხელშეკრულებები"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={["executor_firm_name"]}
-                    filterOptions={filterOptions}
-                    renderRowDetails={renderRowDetails}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </div>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["executor_firm_name"]}
+          filterOptions={filterOptions}
+          renderRowDetails={renderRowDetails}
+        />
       </div>
-      <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

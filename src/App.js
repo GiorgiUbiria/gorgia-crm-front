@@ -1,27 +1,18 @@
-import PropTypes from "prop-types"
 import React from "react"
 import { Routes, Route } from "react-router-dom"
 import { authProtectedRoutes, publicRoutes } from "./routes"
-
-import Authmiddleware from "./routes/route"
 import VerticalLayout from "./components/VerticalLayout/"
 import NonAuthLayout from "./components/NonAuthLayout"
-
+import AuthInitializer from "./components/AuthInitializer"
+import ToastContainer from "./components/CrmToast/ToastContainer"
 import "./assets/scss/theme.scss"
-import DataProvider from "components/hoc/DataProvider"
-import "boxicons/css/boxicons.min.css"
-import "./index.css"
-
-const getLayout = () => {
-  let Layout = VerticalLayout
-  return Layout
-}
 
 const App = () => {
-  const Layout = getLayout()
+  const Layout = VerticalLayout
 
   return (
-    <DataProvider>
+    <>
+      <AuthInitializer />
       <Routes>
         {publicRoutes.map((route, idx) => (
           <Route
@@ -34,25 +25,15 @@ const App = () => {
         {authProtectedRoutes.map((route, idx) => (
           <Route
             path={route.path}
-            element={
-              <Authmiddleware
-                permission={route.permission}
-                departmentId={route.departmentId}
-              >
-                <Layout>{route.component}</Layout>
-              </Authmiddleware>
-            }
+            element={<Layout>{route.component}</Layout>}
             key={idx}
             exact={true}
           />
         ))}
       </Routes>
-    </DataProvider>
+      <ToastContainer />
+    </>
   )
-}
-
-App.propTypes = {
-  layout: PropTypes.any,
 }
 
 export default App

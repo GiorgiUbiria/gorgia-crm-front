@@ -6,12 +6,9 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Card,
-  CardBody,
   Spinner,
 } from "reactstrap"
 import Button from "@mui/material/Button"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import {
   getDepartmentAgreements,
   updateAgreementStatus,
@@ -24,7 +21,6 @@ import {
   BsPerson,
 } from "react-icons/bs"
 import MuiTable from "../../../../components/Mui/MuiTable"
-import { ToastContainer } from "react-toastify"
 
 const statusMap = {
   pending: {
@@ -299,7 +295,6 @@ const ServiceAgreementApprove = () => {
 
     return (
       <div className="p-4 bg-light rounded">
-        {/* Rejection reason banner */}
         {row.expanded.rejection_reason && (
           <div className="alert alert-danger d-flex align-items-center mb-4">
             <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -309,17 +304,14 @@ const ServiceAgreementApprove = () => {
           </div>
         )}
 
-        {/* Requester info */}
         <div className="d-flex align-items-center mb-4 gap-2 text-muted">
           <BsPerson className="fs-3 text-primary" />
           <strong>მოითხოვა:</strong>
           <span className="ms-2">{row.expanded.requested_by}</span>
         </div>
 
-        {/* Agreement details */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
-            {/* ფაქტიური მისამართი */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -332,7 +324,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* SWIFT კოდი */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -345,7 +336,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* დირექტორის ინფორმაცია */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -359,7 +349,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* მომსახურების ადგილი */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsMap className="fs-7 text-primary" />
@@ -370,7 +359,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* გადახდის დეტალები */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -383,7 +371,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* მომსახურების აქტიური ვადა */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
@@ -398,7 +385,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor ID Number */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -413,7 +399,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Home Address */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -426,7 +411,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Full Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -441,7 +425,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Position */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsPerson className="fs-7 text-primary" />
@@ -454,7 +437,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Account */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -469,7 +451,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Executor Bank Name */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsBank className="fs-7 text-primary" />
@@ -484,7 +465,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Service Cost */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCreditCard className="fs-7 text-primary" />
@@ -497,7 +477,6 @@ const ServiceAgreementApprove = () => {
               </div>
             </Col>
 
-            {/* Service Term */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <BsCalendar className="fs-7 text-primary" />
@@ -516,37 +495,19 @@ const ServiceAgreementApprove = () => {
   }, [])
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ხელშეკრულებების ვიზირება"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={["executor_firm_name", "requested_by"]}
-                    filterOptions={filterOptions}
-                    onRowClick={() => {}}
-                    renderRowDetails={renderRowDetails}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </div>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["executor_firm_name", "requested_by"]}
+          filterOptions={filterOptions}
+          onRowClick={() => {}}
+          renderRowDetails={renderRowDetails}
+        />
       </div>
 
       <Modal isOpen={confirmModal.isOpen} toggle={handleModalClose}>
@@ -599,9 +560,7 @@ const ServiceAgreementApprove = () => {
           </Button>
         </ModalFooter>
       </Modal>
-
-      <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

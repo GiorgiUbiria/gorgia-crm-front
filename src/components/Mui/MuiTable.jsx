@@ -34,6 +34,7 @@ import LastPageIcon from "@mui/icons-material/LastPage"
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft"
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight"
 import TableSortLabel from "@mui/material/TableSortLabel"
+import { alpha } from "@mui/material/styles"
 
 const CustomPaginationActions = React.memo(function CustomPaginationActions(
   props
@@ -108,6 +109,7 @@ const MuiTable = ({
   searchableFields = [],
   renderRowDetails,
   filterOptions = [],
+  customSearchFunction,
 }) => {
   const [openRows, setOpenRows] = useState({})
   const [filterField, setFilterField] = useState("")
@@ -121,7 +123,7 @@ const MuiTable = ({
   const memoizedData = useMemo(() => data, [data])
   const memoizedColumns = useMemo(() => columns, [columns])
 
-  const customGlobalFilter = useCallback(
+  const defaultGlobalFilter = useCallback(
     (rows, columnIds, filterValue) => {
       if (!filterValue || !selectedSearchField) return rows
 
@@ -153,7 +155,7 @@ const MuiTable = ({
           },
         ],
       },
-      globalFilter: customGlobalFilter,
+      globalFilter: customSearchFunction || defaultGlobalFilter,
       autoResetPage: false,
       autoResetFilters: false,
       autoResetGlobalFilter: false,
@@ -272,13 +274,14 @@ const MuiTable = ({
         overflow: "hidden",
         backgroundColor: "background.paper",
         color: "text.primary",
+        border: theme => `1px solid ${theme.palette.divider}`,
       }}
     >
       {(enableSearch || filterOptions.length > 0) && (
         <Box
           sx={{
             p: 2,
-            borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
+            borderBottom: theme => `1px solid ${theme.palette.divider}`,
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             gap: 2,
@@ -294,42 +297,44 @@ const MuiTable = ({
                 flex: 1,
               }}
             >
-              <FormControl
-                size="small"
-                sx={{ minWidth: { xs: "100%", sm: 200 } }}
-              >
-                <InputLabel sx={{ color: "text.secondary" }}>
-                  საძიებო ველი
-                </InputLabel>
-                <Select
-                  value={selectedSearchField}
-                  onChange={e => setSelectedSearchField(e.target.value)}
-                  label="საძიებო ველი"
-                  sx={{
-                    "& .MuiSelect-icon": { color: "text.secondary" },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "divider",
-                    },
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "primary.main",
-                    },
-                  }}
+              {!customSearchFunction && (
+                <FormControl
+                  size="small"
+                  sx={{ minWidth: { xs: "100%", sm: 200 } }}
                 >
-                  {searchableFields.map(field => (
-                    <MenuItem key={field} value={field}>
-                      {columns.find(col => col.accessor === field)?.Header ||
-                        field}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  <InputLabel sx={{ color: "text.secondary" }}>
+                    საძიებო ველი
+                  </InputLabel>
+                  <Select
+                    value={selectedSearchField}
+                    onChange={e => setSelectedSearchField(e.target.value)}
+                    label="საძიებო ველი"
+                    sx={{
+                      "& .MuiSelect-icon": { color: "text.secondary" },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "divider",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "primary.main",
+                      },
+                    }}
+                  >
+                    {searchableFields.map(field => (
+                      <MenuItem key={field} value={field}>
+                        {columns.find(col => col.accessor === field)?.Header ||
+                          field}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
               <TextField
                 size="small"
                 variant="outlined"
                 value={searchTerm}
                 onChange={e => handleSearch(e.target.value)}
                 placeholder="ძიება..."
-                disabled={!selectedSearchField}
+                disabled={!customSearchFunction && !selectedSearchField}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -432,24 +437,27 @@ const MuiTable = ({
             backgroundColor: "background.paper",
             borderCollapse: "collapse",
             "& .MuiTableCell-head": {
-              backgroundColor: "#105d8d",
+              backgroundColor: theme => theme.palette.mode === 'dark' ? 'primary.dark' : '#105d8d',
               color: "primary.contrastText",
               fontWeight: 700,
-              borderRight: "1px solid rgba(224, 224, 224, 0.4)",
-              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              borderRight: theme => `1px solid ${theme.palette.divider}`,
+              borderBottom: theme => `1px solid ${theme.palette.divider}`,
               "&:last-child": {
                 borderRight: "none",
               },
             },
             "& .MuiTableCell-body": {
-              borderRight: "1px solid rgba(224, 224, 224, 0.4)",
-              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              borderRight: theme => `1px solid ${theme.palette.divider}`,
+              borderBottom: theme => `1px solid ${theme.palette.divider}`,
               "&:last-child": {
                 borderRight: "none",
               },
             },
             "& .MuiTableRow-root:nth-of-type(even)": {
-              backgroundColor: "action.hover",
+              backgroundColor: theme => 
+                theme.palette.mode === 'dark' 
+                  ? alpha(theme.palette.primary.main, 0.05)
+                  : 'action.hover',
             },
             "& .MuiTableRow-hover:hover": {
               backgroundColor: "action.selected",
@@ -558,7 +566,16 @@ const MuiTable = ({
                         colSpan={columns.length + 1}
                       >
                         <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                          <Box sx={{ py: 2, px: 3 }}>
+                          <Box 
+                            sx={{ 
+                              py: 2, 
+                              px: 3,
+                              backgroundColor: theme => 
+                                theme.palette.mode === 'dark' 
+                                  ? 'background.paper' 
+                                  : 'inherit'
+                            }}
+                          >
                             {renderRowDetails(row.original)}
                           </Box>
                         </Collapse>
@@ -646,6 +663,7 @@ MuiTable.propTypes = {
       valueLabels: PropTypes.object,
     })
   ),
+  customSearchFunction: PropTypes.func,
 }
 
 export default React.memo(MuiTable)

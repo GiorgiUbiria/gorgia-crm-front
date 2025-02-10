@@ -106,8 +106,7 @@ const MakeComment = () => {
   useEffect(() => {
     if (window.Echo) {
       const channel = window.Echo.channel(`user.${userId}`)
-      channel.listen("ReplyMade", event => {
-        console.log("Event received:", event)
+      channel.listen("ReplyMade", () => {
       })
 
       return () => {
@@ -318,7 +317,6 @@ const MakeComment = () => {
             style={{ height: "80vh", overflowY: "auto" }}
           >
             {" "}
-            {/* Scrollable section */}
             <CardBody>
               <h5 className="text-center text-primary mb-4">
                 დამფუძნებლის კომენტარი

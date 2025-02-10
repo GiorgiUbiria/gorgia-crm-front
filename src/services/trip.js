@@ -4,6 +4,10 @@ export const getTripList = async () => {
   return defaultInstance.get("/api/business-trip/list")
 }
 
+export const getDepartmentTripList = async () => {
+  return defaultInstance.get("/api/business-trip/listDepartment")
+}
+
 export const getAllTripsList = async () => {
   return defaultInstance.get("/api/business-trip/listAll")
 }

@@ -1,240 +1,71 @@
-import React, { useState, useMemo } from "react"
-import {
-  deleteUser,
-  approveDepartmentMember,
-  rejectDepartmentMember,
-} from "services/admin/department"
-import Button from "@mui/material/Button"
-import MuiTable from "components/Mui/MuiTable"
-import useIsAdmin from "hooks/useIsAdmin"
-import Dialog from "@mui/material/Dialog"
-import DialogActions from "@mui/material/DialogActions"
-import DialogContent from "@mui/material/DialogContent"
-import DialogContentText from "@mui/material/DialogContentText"
-import DialogTitle from "@mui/material/DialogTitle"
+/* eslint-disable no-unused-vars */
+import React, { useMemo } from "react"
 import * as XLSX from "xlsx"
-import { Row, Col } from "reactstrap"
-import AddUserModal from "./AddUserModal"
-import EditUserModal from "./EditUserModal"
+import { CrmTable } from "components/CrmTable"
+import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
+import { AddUserForm } from "./components/user/add"
+import useModalStore from "store/zustand/modalStore"
+import {
+  useGetAdminUsers,
+  useApproveDepartmentMember,
+  useRejectDepartmentMember,
+  useGetDepartmentMembers,
+  useDeleteUser,
+} from "queries/admin"
+import CrmSpinner from "components/CrmSpinner"
+import { EditUserForm } from "./components/user/edit"
+import { Badge } from "./components/Badge"
+import useAuth from "hooks/useAuth"
 
-const UsersTab = ({
-  users = [],
-  onUserDeleted,
-  isDepartmentHead = false,
-  currentUserDepartmentId,
-}) => {
-  const isAdmin = useIsAdmin()
-  const [confirmModal, setConfirmModal] = useState({
-    isOpen: false,
-    type: null,
-    userId: null,
+const roleNameMapping = {
+  admin: "ადმინისტრატორი",
+  hr: "HR მენეჯერი",
+  vip: "VIP მომხმარებელი",
+  user: "მომხმარებელი",
+  department_head: "დეპარტამენტის უფროსი",
+  department_head_assistant: "დეპარტამენტის უფროსის ასისტენტი",
+  manager: "მენეჯერი",
+  ceo: "გენერალური დირექტორი",
+  ceo_assistant: "გენერალური დირექტორის ასისტენტი",
+}
+
+const statusMapping = {
+  pending: { label: "მოლოდინში", variant: "warning" },
+  accepted: { label: "დადასტურებული", variant: "success" },
+  rejected: { label: "უარყოფილი", variant: "destructive" },
+}
+
+const UsersTab = ({ departments = [], roles = [] }) => {
+  const {
+    canManageRoles,
+    canDeleteUsers,
+    canViewAllUsers,
+    isDepartmentHead,
+    getUserDepartmentId,
+  } = useAuth()
+
+  const { openModal, closeModal, isModalOpen, getModalData } = useModalStore()
+  const { data: allUsers = [], isLoading } = useGetAdminUsers({
+    enabled: canViewAllUsers() && !isDepartmentHead(),
   })
-  const [addUserModal, setAddUserModal] = useState(false)
-  const [editUserModal, setEditUserModal] = useState({
-    isOpen: false,
-    user: null,
-  })
-
-  const handleModalOpen = (type, userId) => {
-    setConfirmModal({
-      isOpen: true,
-      type,
-      userId,
+  const { data: members = [], isLoading: isLoadingMembers } =
+    useGetDepartmentMembers(getUserDepartmentId(), {
+      enabled: isDepartmentHead() && !canViewAllUsers(),
     })
-  }
 
-  const handleModalClose = () => {
-    setConfirmModal({
-      isOpen: false,
-      type: null,
-      userId: null,
-    })
-  }
+  const approveMutation = useApproveDepartmentMember()
+  const rejectMutation = useRejectDepartmentMember()
+  const deleteUserMutation = useDeleteUser()
 
-  const handleConfirmAction = async () => {
-    try {
-      const { type, userId } = confirmModal
-
-      if (!currentUserDepartmentId && isDepartmentHead) {
-        console.error("Department ID is missing for department head")
-        return
-      }
-
-      if (type === "delete") {
-        await deleteUser(userId)
-      } else if (type === "approve") {
-        await approveDepartmentMember(currentUserDepartmentId, userId)
-      } else if (type === "reject") {
-        await rejectDepartmentMember(currentUserDepartmentId, userId)
-      }
-
-      onUserDeleted()
-      handleModalClose()
-    } catch (error) {
-      console.error("Error performing action:", error)
+  const users = useMemo(() => {
+    if (canViewAllUsers()) {
+      return allUsers
     }
-  }
-
-  const handleAddUserClick = () => {
-    setAddUserModal(true)
-  }
-
-  const canManageUser = user => {
-    if (isAdmin) return true
-    if (isDepartmentHead && user.department_id === currentUserDepartmentId)
-      return true
-    return false
-  }
-
-  const columns = useMemo(
-    () => [
-      {
-        Header: "#",
-        accessor: "id",
-      },
-      {
-        Header: "სახელი/გვარი",
-        accessor: "name.fullName",
-      },
-      {
-        Header: "პირადი ნომერი",
-        accessor: "user_id",
-      },
-      {
-        Header: "ელ-ფოსტა",
-        accessor: "email",
-        disableSortBy: true,
-      },
-      {
-        Header: "დეპარტამენტი",
-        accessor: "department",
-        disableSortBy: true,
-      },
-      {
-        Header: "მობილური ნომერი",
-        accessor: "mobile_number",
-        disableSortBy: true,
-      },
-      {
-        Header: "დაწყების თარიღი",
-        accessor: "working_start_date",
-        Cell: ({ value }) =>
-          value ? (
-            <div className="date-wrapper">
-              <i className="bx bx-calendar me-2"></i>
-              {new Date(value).toLocaleDateString()}
-            </div>
-          ) : (
-            "-"
-          ),
-      },
-      {
-        Header: "სტატუსი",
-        accessor: "status",
-        Cell: ({ value }) => (
-          <span
-            style={{
-              padding: "6px 12px",
-              borderRadius: "4px",
-              display: "inline-flex",
-              alignItems: "center",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              backgroundColor:
-                value === "accepted"
-                  ? "#e8f5e9"
-                  : value === "pending"
-                  ? "#fff3e0"
-                  : value === "rejected"
-                  ? "#ffebee"
-                  : "#f5f5f5",
-              color:
-                value === "accepted"
-                  ? "#2e7d32"
-                  : value === "pending"
-                  ? "#e65100"
-                  : value === "rejected"
-                  ? "#c62828"
-                  : "#757575",
-            }}
-          >
-            {value === "accepted"
-              ? "აქტიური"
-              : value === "pending"
-              ? "მოლოდინში"
-              : value === "rejected"
-              ? "უარყოფილი"
-              : value}
-          </span>
-        ),
-      },
-      {
-        Header: "მოქმედებები",
-        accessor: "actions",
-        disableSortBy: true,
-        Cell: ({ row }) => {
-          const user = row.original
-          if (!canManageUser(user)) return null
-
-          return (
-            <div className="d-flex flex-column gap-2">
-              {(isDepartmentHead || isAdmin) && user.status === "pending" && (
-                <div className="d-flex gap-2 mb-2">
-                  <Button
-                    onClick={() => handleModalOpen("approve", user.id)}
-                    color="success"
-                    variant="contained"
-                    size="small"
-                    startIcon={<i className="bx bx-check" />}
-                    style={{ width: "100%" }}
-                  >
-                    დადასტურება
-                  </Button>
-                  <Button
-                    onClick={() => handleModalOpen("reject", user.id)}
-                    color="error"
-                    variant="contained"
-                    size="small"
-                    startIcon={<i className="bx bx-x" />}
-                    style={{ width: "100%" }}
-                  >
-                    უარყოფა
-                  </Button>
-                </div>
-              )}
-              <div className="d-flex gap-2">
-                <Button
-                  onClick={() =>
-                    setEditUserModal({ isOpen: true, user: row.original })
-                  }
-                  color="primary"
-                  variant="contained"
-                  size="small"
-                  startIcon={<i className="bx bx-edit" />}
-                  style={{ width: "100%" }}
-                >
-                  რედაქტირება
-                </Button>
-                {isAdmin && (
-                  <Button
-                    onClick={() => handleModalOpen("delete", user.id)}
-                    color="error"
-                    variant="outlined"
-                    size="small"
-                    startIcon={<i className="bx bx-trash" />}
-                    style={{ width: "100%" }}
-                  >
-                    წაშლა
-                  </Button>
-                )}
-              </div>
-            </div>
-          )
-        },
-      },
-    ],
-    [isAdmin, isDepartmentHead, currentUserDepartmentId]
-  )
+    if (isDepartmentHead() && !canViewAllUsers()) {
+      return members
+    }
+    return []
+  }, [allUsers, members, canViewAllUsers, isDepartmentHead])
 
   const transformedUsers = useMemo(() => {
     if (!Array.isArray(users)) return []
@@ -244,22 +75,171 @@ const UsersTab = ({
       id: user.id,
       role:
         user.roles?.length > 0
-          ? user.roles?.map(role => role.name).join(", ")
+          ? user.roles
+              ?.map(role => {
+                return roleNameMapping[role.slug] || role.name
+              })
+              .join(", ")
           : "არ აქვს როლი მინიჭებული",
       position: user.position || "-",
-      name: {
+      displayName: {
         fullName: `${user.name || ""} ${user.sur_name || ""}`.trim() || "-",
         firstName: user.name || "-",
         lastName: user.sur_name || "-",
       },
       email: user.email || "-",
-      department: user.department?.name || "არ არის მითითებული",
+      department: {
+        id: user.department?.id,
+        name: user.department?.name || "არ არის მითითებული",
+      },
       mobile_number: user.mobile_number || "-",
       working_start_date: user.working_start_date || null,
       status: user.status || "pending",
+      statusBadge: statusMapping[user.status || "pending"],
       user_id: user.id_number || "-",
     }))
   }, [users])
+
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "id",
+        accessorFn: row => row.id,
+        cell: info => info.getValue(),
+        header: () => <span>#</span>,
+        enableColumnFilter: false,
+        sortingFn: "basic",
+        sortDescFirst: true,
+      },
+      {
+        id: "name",
+        accessorFn: row => row.displayName.fullName,
+        cell: info => info.getValue(),
+        header: () => <span>სახელი/გვარი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "user_id",
+        accessorKey: "user_id",
+        header: () => <span>პირადი ნომერი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "email",
+        accessorKey: "email",
+        header: () => <span>ელ-ფოსტა</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "mobile_number",
+        accessorKey: "mobile_number",
+        header: () => <span>ტელეფონის ნომერი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "department",
+        accessorKey: "department.name",
+        header: () => <span>დეპარტამენტი</span>,
+        meta: {
+          filterVariant: "select",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "position",
+        accessorKey: "position",
+        header: () => <span>პოზიცია</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "role",
+        accessorKey: "role",
+        header: () => <span>როლი</span>,
+        meta: {
+          filterVariant: "select",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "status",
+        accessorKey: "status",
+        header: () => <span>სტატუსი</span>,
+        cell: info => {
+          const status = info.row.original.statusBadge || statusMapping.pending
+          return <Badge variant={status.variant}>{status.label}</Badge>
+        },
+        meta: {
+          filterVariant: "select",
+          filterOptions: Object.entries(statusMapping).map(
+            ([value, label]) => ({
+              value: value,
+              label: label.label,
+            })
+          ),
+        },
+        enableSorting: false,
+      },
+      {
+        id: "actions",
+        enableColumnFilter: false,
+        enableSorting: false,
+        header: "მოქმედებები",
+        cell: info => {
+          const user = info.row.original
+          return (
+            <div className="flex flex-col gap-y-2 max-w-full justify-center items-center">
+              <div className="flex items-center gap-x-1">
+                <DialogButton
+                  actionType="edit"
+                  size="xs"
+                  onClick={() => {
+                    openModal("editUser", { user })
+                  }}
+                />
+                {canDeleteUsers() && (
+                  <DialogButton
+                    actionType="delete"
+                    size="xs"
+                    onClick={() => openModal("deleteUser", { user })}
+                  />
+                )}
+              </div>
+              {user.status === "pending" && (
+                <div className="flex items-center gap-x-1">
+                  <DialogButton
+                    actionType="approve"
+                    size="xs"
+                    onClick={() => openModal("approveUser", { user })}
+                  />
+                  <DialogButton
+                    actionType="reject"
+                    size="xs"
+                    onClick={() => openModal("rejectUser", { user })}
+                  />
+                </div>
+              )}
+            </div>
+          )
+        },
+      },
+    ],
+    [canDeleteUsers, openModal]
+  )
 
   const exportToExcel = () => {
     const data = [
@@ -273,12 +253,14 @@ const UsersTab = ({
         "როლი",
       ],
       ...transformedUsers.map(user => [
-        user.name.fullName,
+        user.displayName.fullName,
         user.user_id,
         user.email,
-        user.department,
+        user.department.name,
         user.mobile_number,
-        user.working_start_date,
+        user.working_start_date
+          ? new Date(user.working_start_date).toLocaleDateString()
+          : "-",
         user.role,
       ]),
     ]
@@ -289,107 +271,188 @@ const UsersTab = ({
     XLSX.writeFile(wb, "მომხმარებლები.xlsx")
   }
 
+  if (
+    (canViewAllUsers() && !isDepartmentHead() && isLoading) ||
+    (isDepartmentHead() && !canViewAllUsers() && isLoadingMembers)
+  ) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <CrmSpinner />
+      </div>
+    )
+  }
+
   return (
     <div>
-      <Row className="mb-3">
-        <Col className="d-flex justify-content-end gap-2">
-          {isAdmin && (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddUserClick}
+      <div className="mb-4 flex gap-x-2">
+        <DialogButton
+          actionType="add"
+          size="sm"
+          onClick={() => openModal("addUser")}
+        />
+        <DialogButton
+          actionType="downloadExcel"
+          size="sm"
+          onClick={exportToExcel}
+        />
+      </div>
+
+      <CrmDialog
+        isOpen={isModalOpen("addUser")}
+        onOpenChange={open => !open && closeModal("addUser")}
+        title="მომხმარებლის დამატება"
+        description="შეავსეთ ფორმა მომხმარებლის დასამატებლად"
+        footer={
+          <>
+            <DialogButton
+              actionType="cancel"
+              onClick={() => closeModal("addUser")}
             >
-              <i className="bx bx-plus me-1"></i>
-              მომხმარებლის დამატება
-            </Button>
-          )}
-          <Button variant="outlined" color="primary" onClick={exportToExcel}>
-            <i className="bx bx-download me-1"></i>
-            ექსპორტი Excel-ში
-          </Button>
-        </Col>
-      </Row>
-
-      <MuiTable
-        columns={columns}
-        data={transformedUsers}
-        filterOptions={[
-          {
-            field: "status",
-            label: "სტატუსი",
-            valueLabels: {
-              accepted: "აქტიური",
-              pending: "მოლოდინში",
-              rejected: "უარყოფილი",
-            },
-          },
-        ]}
-        searchableFields={[
-          "name.fullName",
-          "email",
-          "department",
-          "mobile_number",
-          "user_id",
-        ]}
-        enableSearch={true}
-        initialPageSize={10}
-        pageSizeOptions={[5, 10, 15, 20]}
-      />
-
-      <Dialog
-        open={confirmModal.isOpen}
-        onClose={handleModalClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+              გაუქმება
+            </DialogButton>
+            <DialogButton actionType="add" type="submit" form="addUserForm">
+              დამატება
+            </DialogButton>
+          </>
+        }
       >
-        <DialogTitle id="alert-dialog-title">
-          {confirmModal.type === "delete"
-            ? "მომხმარებლის წაშლა"
-            : confirmModal.type === "approve"
-            ? "მომხმარებლის დადასტურება"
-            : "მომხმარებლის უარყოფა"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {confirmModal.type === "delete"
-              ? "დარწმუნებული ხართ, რომ გსურთ მომხმარებლის წაშლა?"
-              : confirmModal.type === "approve"
-              ? "დარწმუნებული ხართ, რომ გსურთ მომხმარებლის დადასტურება?"
-              : "დარწმუნებული ხართ, რომ გსურთ მომხმარებლის უარყოფა?"}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleModalClose} color="primary">
-            გაუქმება
-          </Button>
-          <Button
-            onClick={handleConfirmAction}
-            color={confirmModal.type === "approve" ? "success" : "error"}
-            autoFocus
-          >
-            {confirmModal.type === "delete"
-              ? "წაშლა"
-              : confirmModal.type === "approve"
-              ? "დადასტურება"
-              : "უარყოფა"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <AddUserForm
+          onSuccess={() => closeModal("addUser")}
+          departments={departments}
+          roles={canManageRoles() ? roles : []}
+          canEditRoles={canManageRoles()}
+        />
+      </CrmDialog>
 
-      <AddUserModal
-        isOpen={addUserModal}
-        toggle={() => setAddUserModal(false)}
-        onUserAdded={onUserDeleted}
+      <CrmDialog
+        isOpen={isModalOpen("editUser")}
+        onOpenChange={open => !open && closeModal("editUser")}
+        title="მომხმარებლის რედაქტირება"
+        description="შეავსეთ ფორმა მომხმარებლის რედაქტირებისთვის"
+        footer={
+          <>
+            <DialogButton
+              actionType="cancel"
+              onClick={() => closeModal("editUser")}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton actionType="edit" type="submit" form="editUserForm">
+              შენახვა
+            </DialogButton>
+          </>
+        }
+      >
+        <EditUserForm
+          onSuccess={() => closeModal("editUser")}
+          departments={departments}
+          roles={canManageRoles() ? roles : []}
+          canEditRoles={canManageRoles()}
+          user={getModalData("editUser")?.user}
+        />
+      </CrmDialog>
+
+      <CrmDialog
+        isOpen={isModalOpen("approveUser")}
+        onOpenChange={open => !open && closeModal("approveUser")}
+        title="მომხმარებლის დადასტურება"
+        description={`ნამდვილად გსურთ მომხმარებლის "${
+          getModalData("approveUser")?.user?.displayName?.fullName
+        }" დადასტურება?`}
+        footer={
+          <>
+            <DialogButton
+              actionType="cancel"
+              onClick={() => closeModal("approveUser")}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton
+              actionType="approve"
+              onClick={async () => {
+                const user = getModalData("approveUser")?.user
+                if (!user.department.id) {
+                  console.error("User doesn't have a department assigned")
+                  return
+                }
+                await approveMutation.mutateAsync({
+                  departmentId: user.department.id,
+                  userId: user.id,
+                })
+                closeModal("approveUser")
+              }}
+              loading={approveMutation.isPending}
+            >
+              დადასტურება
+            </DialogButton>
+          </>
+        }
       />
 
-      <EditUserModal
-        isOpen={editUserModal.isOpen}
-        user={editUserModal.user}
-        toggle={() => setEditUserModal({ isOpen: false, user: null })}
-        onUserUpdated={onUserDeleted}
-        isDepartmentHead={isDepartmentHead}
-        currentUserDepartmentId={currentUserDepartmentId}
+      <CrmDialog
+        isOpen={isModalOpen("rejectUser")}
+        onOpenChange={open => !open && closeModal("rejectUser")}
+        title="მომხმარებლის უარყოფა"
+        description={`ნამდვილად გსურთ მომხმარებლის "${
+          getModalData("rejectUser")?.user?.displayName?.fullName
+        }" უარყოფა?`}
+        footer={
+          <>
+            <DialogButton
+              actionType="cancel"
+              onClick={() => closeModal("rejectUser")}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton
+              actionType="reject"
+              onClick={async () => {
+                const user = getModalData("rejectUser")?.user
+                await rejectMutation.mutateAsync({
+                  departmentId: user.department?.id,
+                  userId: user.id,
+                })
+                closeModal("rejectUser")
+              }}
+              loading={rejectMutation.isPending}
+            >
+              უარყოფა
+            </DialogButton>
+          </>
+        }
       />
+
+      <CrmDialog
+        isOpen={isModalOpen("deleteUser")}
+        onOpenChange={open => !open && closeModal("deleteUser")}
+        title="მომხმარებლის წაშლა"
+        description={`ნამდვილად გსურთ მომხმარებლის "${
+          getModalData("deleteUser")?.user?.displayName?.fullName
+        }" წაშლა?`}
+        footer={
+          <>
+            <DialogButton
+              actionType="cancel"
+              onClick={() => closeModal("deleteUser")}
+            >
+              გაუქმება
+            </DialogButton>
+            <DialogButton
+              actionType="delete"
+              onClick={async () => {
+                const user = getModalData("deleteUser")?.user
+                await deleteUserMutation.mutateAsync(user.id)
+                closeModal("deleteUser")
+              }}
+              loading={deleteUserMutation.isPending}
+            >
+              წაშლა
+            </DialogButton>
+          </>
+        }
+      />
+
+      <CrmTable columns={columns} data={transformedUsers} size="md" />
     </div>
   )
 }

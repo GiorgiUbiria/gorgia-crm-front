@@ -23,3 +23,14 @@ export const updateUserIdNumber = async data => {
 export const fetchUser = async () => {
   return defaultInstance.get("/api/user")
 }
+
+export const fetchUsers = async () => {
+  const response = await defaultInstance.get("/api/admin/users")
+  return response
+}
+
+export const listUsers = async () => {
+  const response = await defaultInstance.get("/api/list-users")
+  console.log("List users response", response)
+  return response
+}

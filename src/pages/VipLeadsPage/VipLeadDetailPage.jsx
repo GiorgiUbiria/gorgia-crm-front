@@ -9,10 +9,7 @@ import {
   Button,
   Collapse,
 } from "reactstrap"
-import moment from "moment"
-import Comment from "../../components/Comment"
 import { useComments } from "../../hooks/useComments"
-import useFetchUser from "../../hooks/useFetchUser"
 
 const STATUS_CONFIG = {
   PENDING: {
@@ -39,13 +36,7 @@ const VipLeadDetailPage = () => {
   const [newComments, setNewComments] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const {
-    comments,
-    fetchComments,
-    addComment,
-    deleteComment,
-  } = useComments()
-  const { user: currentUser } = useFetchUser()
+  const { comments, fetchComments, addComment } = useComments()
 
   useEffect(() => {
     fetchRequests()
@@ -90,22 +81,6 @@ const VipLeadDetailPage = () => {
       }
     },
     [addComment]
-  )
-
-  const handleDeleteComment = useCallback(
-    async (requestId, commentId) => {
-      try {
-        const success = await deleteComment(requestId, commentId)
-        if (!success) {
-          console.error("Failed to delete comment")
-        }
-        return success
-      } catch (error) {
-        console.error("Error deleting comment:", error)
-        return false
-      }
-    },
-    [deleteComment]
   )
 
   const handleMainInputFocus = useCallback(() => {
@@ -180,22 +155,14 @@ const VipLeadDetailPage = () => {
                         )}
                       </td>
                     </tr>
-                    <tr
-                      key={`collapse-${request.id}`}
-                    >
+                    <tr key={`collapse-${request.id}`}>
                       <td colSpan="4" className="p-0">
                         <Collapse isOpen={expandedRows[request.id]}>
                           <div className="p-2 bg-light">
                             {(comments[request.id] || []).map(comment => (
-                              <Comment
-                                key={comment.id}
-                                comment={comment}
-                                requestId={request.id}
-                                onReply={handleAddComment}
-                                onDelete={handleDeleteComment}
-                                onMainInputFocus={handleMainInputFocus}
-                                currentUser={currentUser}
-                              />
+                              <div key={comment.id}>
+                                {JSON.stringify(comment)}
+                              </div>
                             ))}
                             <div className="mt-2">
                               <Input

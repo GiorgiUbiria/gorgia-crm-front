@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react"
 
-// Function to get user roles
 const getUserRoles = async userId => {
   const response = await api.get(`/users/${userId}/roles`)
   return response.data
 }
 
-// Function to update user roles
 const updateUserRoles = async (userId, roleIds) => {
   const response = await api.put(`/users/${userId}/roles`, {
     roles: roleIds,
@@ -14,7 +12,6 @@ const updateUserRoles = async (userId, roleIds) => {
   return response.data
 }
 
-// Example usage in a component
 const UserRoleManager = ({ userId }) => {
   const [roles, setRoles] = useState([])
   const [availableRoles, setAvailableRoles] = useState([])
@@ -30,7 +27,6 @@ const UserRoleManager = ({ userId }) => {
 
   const handleRoleChange = async selectedRoleIds => {
     await updateUserRoles(userId, selectedRoleIds)
-    // Refresh roles after update
     const { roles } = await getUserRoles(userId)
     setRoles(roles)
   }

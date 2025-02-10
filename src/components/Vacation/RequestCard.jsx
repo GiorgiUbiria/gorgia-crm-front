@@ -1,9 +1,7 @@
 import React from 'react';
 import './RequestCard.css';
-import { useTranslation } from 'react-i18next';
 
 const RequestCard = ({ type, duration, startDay, endDay, status, location }) => {
-  const { t } = useTranslation();
   return (
     <div className="request-card">
       <div className="request-info">
@@ -26,12 +24,12 @@ const RequestCard = ({ type, duration, startDay, endDay, status, location }) => 
         )}
         {startDay && (
           <div className="vacation-request-wrapper">
-            <span className="vacation-label">{t("start_date")}</span>
+            <span className="vacation-label">start_date</span>
             <span className="request-start-day">{startDay}</span>
           </div>
         )}
         <div className="vacation-request-wrapper">
-          <span className="vacation-label">{t("end_date")}</span>
+          <span className="vacation-label">end_date</span>
           <span className="request-end-day">{endDay}</span>
         </div>
       </div>

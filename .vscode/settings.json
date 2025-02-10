@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        ".env*": "dotenv",
+        "vector": "cpp",
+        "memory": "cpp"
+    }
+}

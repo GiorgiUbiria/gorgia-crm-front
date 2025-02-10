@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react"
-import { Row, Col, Card, CardBody } from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import { getUserAgreemnets } from "services/deliveryAgreement"
-import { toast, ToastContainer } from "react-toastify"
+import { toast } from "store/zustand/toastStore"
 import { expandedRows } from "./expandedRows"
 
 const statusMap = {
@@ -42,7 +40,10 @@ const DeliveryAgreementUser = () => {
       }
     } catch (err) {
       console.error("Error fetching agreements:", err)
-      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა")
+      toast.error("ხელშეკრულებების ჩატვირთვა ვერ მოხერხდა", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 
@@ -186,39 +187,20 @@ const DeliveryAgreementUser = () => {
   ]
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ჩემი ხელშეკრულებები"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={["jursdictional_unit.name"]}
-                    filterOptions={filterOptions}
-                    renderRowDetails={expandedRows}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </div>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["jursdictional_unit.name"]}
+          filterOptions={filterOptions}
+          renderRowDetails={expandedRows}
+        />
       </div>
-      <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 

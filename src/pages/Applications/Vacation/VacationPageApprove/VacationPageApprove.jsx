@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useState, useMemo } from "react"
 import {
   Row,
   Col,
@@ -9,12 +9,11 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
+  Badge,
 } from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
-import { getVacations } from "../../../../services/admin/vacation"
-import { updateVacationStatus } from "../../../../services/vacation"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import Button from "@mui/material/Button"
+import { toast } from "store/zustand/toastStore"
 import {
   BiCheck,
   BiX,
@@ -22,6 +21,16 @@ import {
   BiXCircle,
   BiArrowBack,
 } from "react-icons/bi"
+import {
+  useVacations,
+  useUpdateVacationStatus,
+  useDepartmentVacations,
+} from "../../../../queries/vacation"
+import AutoApprovalCountdown from "../../../../components/Vacation/AutoApprovalCountdown"
+import CancellationModal from "../../../../components/Vacation/CancellationModal"
+import { Tooltip } from "@mui/material"
+import useAuth from "hooks/useAuth"
+import CrmSpinner from "../../../../components/CrmSpinner"
 
 const statusMap = {
   pending: {
@@ -38,6 +47,16 @@ const statusMap = {
     label: "უარყოფილი",
     icon: "bx-x-circle",
     color: "#dc3545",
+  },
+  cancelled: {
+    label: "გაუქმებული",
+    icon: "bx-x-circle",
+    color: "#6c757d",
+  },
+  auto_approved: {
+    label: "ავტომატურად დამტკიცებული",
+    icon: "bx-check-double",
+    color: "#28a745",
   },
 }
 
@@ -60,12 +79,6 @@ const typeMap = {
   },
 }
 
-const STATUS_MAPPING = {
-  pending: "pending",
-  approved: "approved",
-  rejected: "rejected",
-}
-
 const TYPE_MAPPING = {
   paid_leave: "paid_leave",
   unpaid_leave: "unpaid_leave",
@@ -84,6 +97,7 @@ const ExpandedRowContent = ({ rowData }) => {
       holiday_days,
       substitute: { substitute_name, substitute_position },
       review: { reviewed_by, reviewed_at, rejection_reason },
+      cancellation: { cancellation_reason, cancelled_at },
     },
   } = rowData
 
@@ -184,6 +198,20 @@ const ExpandedRowContent = ({ rowData }) => {
                 {rejection_reason}
               </small>
             )}
+            {cancellation_reason && (
+              <div className="mt-2">
+                <div className="d-flex align-items-center text-muted">
+                  <i className="bx bx-x-circle me-1"></i>
+                  გაუქმების დეტალები:
+                </div>
+                <small className="d-block mt-1">
+                  მიზეზი: {cancellation_reason}
+                </small>
+                <small className="d-block text-muted">
+                  თარიღი: {cancelled_at}
+                </small>
+              </div>
+            )}
           </div>
         </Col>
       </Row>
@@ -194,26 +222,24 @@ const ExpandedRowContent = ({ rowData }) => {
 const VacationPageApprove = () => {
   document.title = "შვებულების ვიზირება | Gorgia LLC"
 
-  const [vacations, setVacations] = useState([])
+  const { isAdmin, isDepartmentHead, isDepartmentHeadAssistant } = useAuth()
+  const {
+    data: departmentVacationData,
+    isLoading: departmentVacationsLoading,
+  } = useDepartmentVacations({
+    enabled: isDepartmentHead() || isDepartmentHeadAssistant(),
+  })
+  const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
+    enabled: isAdmin(),
+  })
+  const { mutate: updateStatus } = useUpdateVacationStatus()
+
   const [rejectionModal, setRejectionModal] = useState(false)
   const [selectedVacation, setSelectedVacation] = useState(null)
   const [rejectionComment, setRejectionComment] = useState("")
   const [confirmModal, setConfirmModal] = useState(false)
   const [actionType, setActionType] = useState(null)
-
-  const fetchVacations = async () => {
-    try {
-      const response = await getVacations()
-      console.log(response)
-      setVacations(response.data.data)
-    } catch (err) {
-      console.error("Error fetching vacation requests:", err)
-    }
-  }
-
-  useEffect(() => {
-    fetchVacations()
-  }, [])
+  const [cancellationModal, setCancellationModal] = useState(false)
 
   const handleModalOpen = (action, vacationId) => {
     setSelectedVacation(vacationId)
@@ -227,45 +253,85 @@ const VacationPageApprove = () => {
 
   const handleConfirmAction = async () => {
     try {
-      const response = await updateVacationStatus(selectedVacation, actionType)
-      if (response.status === 200) {
-        setVacations(prevVacations =>
-          prevVacations.map(vacation =>
-            vacation.id === selectedVacation
-              ? { ...vacation, status: actionType }
-              : vacation
-          )
-        )
-        setConfirmModal(false)
-        setSelectedVacation(null)
-        setActionType(null)
-      }
+      updateStatus(
+        { id: selectedVacation, status: actionType },
+        {
+          onSuccess: () => {
+            toast.success(
+              actionType === "approved"
+                ? "შვებულება დამტკიცდა"
+                : "შვებულება უარყოფილია",
+              "წარმატება",
+              {
+                duration: 2000,
+                size: "small",
+              }
+            )
+            setConfirmModal(false)
+            setSelectedVacation(null)
+            setActionType(null)
+          },
+          onError: () => {
+            toast.error(
+              actionType === "approved"
+                ? "შვებულების დამტკიცება ვერ მოხერხდა"
+                : "შვებულების უარყოფა ვერ მოხერხდა",
+              "შეცდომა",
+              {
+                duration: 2000,
+                size: "small",
+              }
+            )
+          },
+        }
+      )
     } catch (err) {
       console.error("Error updating vacation status:", err)
+      toast.error(
+        actionType === "approved"
+          ? "შვებულების დამტკიცება ვერ მოხერხდა"
+          : "შვებულების უარყოფა ვერ მოხერხდა",
+        "შეცდომა",
+        {
+          duration: 2000,
+          size: "small",
+        }
+      )
     }
   }
 
   const handleRejectionSubmit = async () => {
     try {
-      const response = await updateVacationStatus(
-        selectedVacation,
-        "rejected",
-        rejectionComment
+      updateStatus(
+        {
+          id: selectedVacation,
+          status: "rejected",
+          rejection_reason: rejectionComment,
+        },
+        {
+          onSuccess: () => {
+            toast.success("შვებულება უარყოფილია", "წარმატება", {
+              duration: 2000,
+              size: "small",
+            })
+            setRejectionModal(false)
+            setRejectionComment("")
+            setSelectedVacation(null)
+          },
+          onError: () => {
+            toast.error("შვებულების უარყოფა ვერ მოხერხდა", "შეცდომა", {
+              duration: 2000,
+              size: "small",
+            })
+          },
+        }
       )
-      if (response.status === 200) {
-        setVacations(prevVacations =>
-          prevVacations.map(vacation =>
-            vacation.id === selectedVacation
-              ? { ...vacation, status: "rejected" }
-              : vacation
-          )
-        )
-        setRejectionModal(false)
-        setRejectionComment("")
-        setSelectedVacation(null)
-      }
     } catch (err) {
       console.error("Error rejecting vacation:", err)
+      toast.error("შვებულების უარყოფა ვერ მოხერხდა", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
     }
   }
 
@@ -311,36 +377,55 @@ const VacationPageApprove = () => {
         Header: "სტატუსი",
         accessor: "status",
         disableSortBy: true,
-        Cell: ({ value }) => (
-          <span
-            style={{
-              padding: "6px 12px",
-              borderRadius: "4px",
-              display: "inline-flex",
-              alignItems: "center",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              backgroundColor:
-                value === "pending"
-                  ? "#fff3e0"
-                  : value === "rejected"
-                  ? "#ffebee"
-                  : value === "approved"
-                  ? "#e8f5e9"
-                  : "#f5f5f5",
-              color:
-                value === "pending"
-                  ? "#e65100"
-                  : value === "rejected"
-                  ? "#c62828"
-                  : value === "approved"
-                  ? "#2e7d32"
-                  : "#757575",
-            }}
-          >
-            <i className={`bx ${statusMap[value].icon} me-2`}></i>
-            {statusMap[value].label}
-          </span>
+        Cell: ({ row }) => (
+          <div className="d-flex align-items-center gap-2">
+            <span
+              style={{
+                padding: "6px 12px",
+                borderRadius: "4px",
+                display: "inline-flex",
+                alignItems: "center",
+                fontSize: "0.875rem",
+                fontWeight: 500,
+                backgroundColor:
+                  row.original.status === "pending"
+                    ? "#fff3e0"
+                    : row.original.status === "rejected"
+                    ? "#ffebee"
+                    : row.original.status === "approved"
+                    ? "#e8f5e9"
+                    : row.original.status === "cancelled"
+                    ? "#f5f5f5"
+                    : "#f5f5f5",
+                color:
+                  row.original.status === "pending"
+                    ? "#e65100"
+                    : row.original.status === "rejected"
+                    ? "#c62828"
+                    : row.original.status === "approved"
+                    ? "#2e7d32"
+                    : row.original.status === "cancelled"
+                    ? "#6c757d"
+                    : "#757575",
+              }}
+            >
+              <i
+                className={`bx ${statusMap[row.original.status].icon} me-2`}
+              ></i>
+              {statusMap[row.original.status].label}
+            </span>
+            {row.original.isAutoApproved && (
+              <Tooltip title="ავტომატურად დამტკიცებული" arrow>
+                <Badge color="info" pill>
+                  <i className="bx bx-time-five me-1"></i>
+                  ავტო
+                </Badge>
+              </Tooltip>
+            )}
+            {row.original.status === "pending" && (
+              <AutoApprovalCountdown createdAt={row.original.created_at} />
+            )}
+          </div>
         ),
       },
       {
@@ -355,6 +440,7 @@ const VacationPageApprove = () => {
                   onClick={() => handleModalOpen("approved", row.original.id)}
                   color="success"
                   variant="contained"
+                  startIcon={<BiCheck />}
                 >
                   დამტკიცება
                 </Button>
@@ -364,6 +450,7 @@ const VacationPageApprove = () => {
                   onClick={() => handleModalOpen("rejected", row.original.id)}
                   color="error"
                   variant="contained"
+                  startIcon={<BiXCircle />}
                 >
                   უარყოფა
                 </Button>
@@ -375,49 +462,143 @@ const VacationPageApprove = () => {
     []
   )
 
-  const transformedVacations = vacations.map(vacation => ({
-    id: vacation.id,
-    status: STATUS_MAPPING[vacation.status] || vacation.status,
-    start_date: new Date(vacation.start_date).toLocaleDateString("ka-GE"),
-    end_date: new Date(vacation.end_date).toLocaleDateString("ka-GE"),
-    duration: vacation.duration.toString() + " დღე",
-    type: vacation.type
-      ? TYPE_MAPPING[vacation.type] || vacation.type
-      : "უცნობი",
-    requested_by: vacation.user
-      ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`
-      : "უცნობი",
-    requested_at: new Date(vacation.created_at).toLocaleDateString("ka-GE"),
-    requested_for: `${vacation.employee_name || ""} | ${
-      vacation.position || ""
-    } | ${vacation.department || ""}`,
-    expanded: {
-      holiday_days: {
-        is_monday: vacation.is_monday,
-        is_tuesday: vacation.is_tuesday,
-        is_wednesday: vacation.is_wednesday,
-        is_thursday: vacation.is_thursday,
-        is_friday: vacation.is_friday,
-        is_saturday: vacation.is_saturday,
-        is_sunday: vacation.is_sunday,
-      },
-      substitute: {
-        substitute_name: vacation.substitute_name || "უცნობია",
-        substitute_position: vacation.substitute_position || "უცნობია",
-      },
-      review: {
-        reviewed_by: vacation.reviewed_by
-          ? `${vacation.reviewed_by?.name || ""} ${
-              vacation.reviewed_by?.sur_name || ""
-            }`
-          : "ჯერ არ არის განხილული",
-        reviewed_at: vacation?.reviewed_at
-          ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+  const transformedVacations = useMemo(() => {
+    if (
+      (isDepartmentHead() || isDepartmentHeadAssistant()) &&
+      departmentVacationData?.data
+    ) {
+      console.log(departmentVacationData.data)
+      return departmentVacationData.data.data.map(vacation => ({
+        id: vacation.id,
+        status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+        start_date: vacation.start_date
+          ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
           : "-",
-        rejection_reason: vacation.rejection_reason || "",
-      },
-    },
-  }))
+        end_date: vacation.end_date
+          ? new Date(vacation.end_date).toLocaleDateString("ka-GE")
+          : "-",
+        duration: (vacation.duration_days ?? 0).toString() + " დღე",
+        type: vacation.type
+          ? TYPE_MAPPING[vacation.type] || vacation.type
+          : "უცნობი",
+        requested_by: vacation.user
+          ? `${vacation.user?.name || ""} ${
+              vacation.user?.sur_name || ""
+            }`.trim() || "უცნობი"
+          : "უცნობი",
+        requested_at: vacation.created_at
+          ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
+          : "-",
+        requested_for: `${vacation.employee_name || ""} | ${
+          vacation.position || ""
+        } | ${vacation.department || ""}`,
+        isAutoApproved: vacation.is_auto_approved || false,
+        created_at: vacation.created_at,
+        expanded: {
+          holiday_days: {
+            is_monday: vacation.is_monday || "no",
+            is_tuesday: vacation.is_tuesday || "no",
+            is_wednesday: vacation.is_wednesday || "no",
+            is_thursday: vacation.is_thursday || "no",
+            is_friday: vacation.is_friday || "no",
+            is_saturday: vacation.is_saturday || "no",
+            is_sunday: vacation.is_sunday || "no",
+          },
+          substitute: {
+            substitute_name: vacation.substitute_name || "უცნობია",
+            substitute_position: vacation.substitute_position || "უცნობია",
+          },
+          review: {
+            reviewed_by: vacation.reviewed_by
+              ? `${vacation.reviewed_by?.name || ""} ${
+                  vacation.reviewed_by?.sur_name || ""
+                }`
+              : "ჯერ არ არის განხილული",
+            reviewed_at: vacation?.reviewed_at
+              ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+              : "-",
+            rejection_reason: vacation.rejection_reason || "",
+          },
+          cancellation: {
+            cancellation_reason: vacation.cancellation_reason || "",
+            cancelled_at: vacation.cancelled_at
+              ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+              : "",
+          },
+        },
+      }))
+    }
+
+    if (isAdmin() && vacationsData?.data?.data) {
+      return vacationsData.data.data.map(vacation => ({
+        id: vacation.id,
+        status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+        start_date: vacation.start_date
+          ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
+          : "-",
+        end_date: vacation.end_date
+          ? new Date(vacation.end_date).toLocaleDateString("ka-GE")
+          : "-",
+        duration: (vacation.duration_days ?? 0).toString() + " დღე",
+        type: vacation.type
+          ? TYPE_MAPPING[vacation.type] || vacation.type
+          : "უცნობი",
+        requested_by: vacation.user
+          ? `${vacation.user?.name || ""} ${
+              vacation.user?.sur_name || ""
+            }`.trim() || "უცნობი"
+          : "უცნობი",
+        requested_at: vacation.created_at
+          ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
+          : "-",
+        requested_for: `${vacation.employee_name || ""} | ${
+          vacation.position || ""
+        } | ${vacation.department || ""}`,
+        isAutoApproved: vacation.is_auto_approved || false,
+        created_at: vacation.created_at,
+        expanded: {
+          holiday_days: {
+            is_monday: vacation.is_monday || "no",
+            is_tuesday: vacation.is_tuesday || "no",
+            is_wednesday: vacation.is_wednesday || "no",
+            is_thursday: vacation.is_thursday || "no",
+            is_friday: vacation.is_friday || "no",
+            is_saturday: vacation.is_saturday || "no",
+            is_sunday: vacation.is_sunday || "no",
+          },
+          substitute: {
+            substitute_name: vacation.substitute_name || "უცნობია",
+            substitute_position: vacation.substitute_position || "უცნობია",
+          },
+          review: {
+            reviewed_by: vacation.reviewed_by
+              ? `${vacation.reviewed_by?.name || ""} ${
+                  vacation.reviewed_by?.sur_name || ""
+                }`
+              : "ჯერ არ არის განხილული",
+            reviewed_at: vacation?.reviewed_at
+              ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+              : "-",
+            rejection_reason: vacation.rejection_reason || "",
+          },
+          cancellation: {
+            cancellation_reason: vacation.cancellation_reason || "",
+            cancelled_at: vacation.cancelled_at
+              ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+              : "",
+          },
+        },
+      }))
+    }
+
+    return []
+  }, [
+    departmentVacationData?.data,
+    vacationsData?.data?.data,
+    isAdmin,
+    isDepartmentHead,
+    isDepartmentHeadAssistant,
+  ])
 
   const filterOptions = [
     {
@@ -425,16 +606,18 @@ const VacationPageApprove = () => {
       label: "სტატუსი",
       valueLabels: {
         approved: "დამტკიცებული",
+        auto_approved: "ავტომატურად დამტკიცებული",
         rejected: "უარყოფილი",
         pending: "განხილვაში",
+        cancelled: "გაუქმებული",
       },
     },
     {
       field: "type",
       label: "შვებულების ტიპი",
       valueLabels: {
-        paid_leave: "გადახდილი",
-        unpaid_leave: "გადაუხდელი",
+        paid_leave: "ანაზღაურებადი",
+        unpaid_leave: "არანაზღაურებადი",
         administrative_leave: "ადმინისტრაციული",
         maternity_leave: "დეკრეტული",
       },
@@ -443,31 +626,53 @@ const VacationPageApprove = () => {
 
   const expandedRow = row => <ExpandedRowContent rowData={row} />
 
-  return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="განცხადებები"
-                breadcrumbItem="შვებულებების ვიზირება"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <MuiTable
-              data={transformedVacations}
-              columns={columns}
-              filterOptions={filterOptions}
-              enableSearch={true}
-              searchableFields={["requested_by", "requested_for"]}
-              initialPageSize={10}
-              renderRowDetails={expandedRow}
-            />
-          </Row>
+  const isLoading = vacationsLoading || departmentVacationsLoading
+
+  const isDataReady = useMemo(() => {
+    if (isAdmin()) {
+      return Boolean(vacationsData?.data?.data)
+    }
+    if (isDepartmentHead() || isDepartmentHeadAssistant()) {
+      return Boolean(departmentVacationData?.data)
+    }
+    return false
+  }, [
+    vacationsData,
+    departmentVacationData,
+    isAdmin,
+    isDepartmentHead,
+    isDepartmentHeadAssistant,
+  ])
+
+  if (isLoading || !isDataReady) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <CrmSpinner size="lg" />
+          <p className="mt-4 text-gray-500 dark:text-gray-400">
+            მონაცემების ჩატვირთვა...
+          </p>
         </div>
       </div>
+    )
+  }
+
+  return (
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="p-4 sm:p-6">
+          <MuiTable
+            data={transformedVacations}
+            columns={columns}
+            filterOptions={filterOptions}
+            enableSearch={true}
+            searchableFields={["requested_by", "requested_for"]}
+            initialPageSize={10}
+            renderRowDetails={expandedRow}
+          />
+        </div>
+      </div>
+
       <Modal isOpen={confirmModal} toggle={() => setConfirmModal(false)}>
         <ModalHeader toggle={() => setConfirmModal(false)}>
           დაადასტურეთ მოქმედება
@@ -475,7 +680,8 @@ const VacationPageApprove = () => {
         <ModalBody className="text-center">
           <BiQuestionMark className="text-warning" size={48} />
           <p className="mb-4">
-            დარწმუნებული ხართ, რომ გსურთ შვებულების მოთხოვნის დამტკიცება?
+            დარწმუნებული ხართ, რომ გსურთ შვებულების მოთხოვნის{" "}
+            {actionType === "approved" ? "დამტკიცება" : "უარყოფა"}?
           </p>
           <div className="d-flex justify-content-center gap-2">
             <Button
@@ -497,6 +703,7 @@ const VacationPageApprove = () => {
           </div>
         </ModalBody>
       </Modal>
+
       <Modal isOpen={rejectionModal} toggle={() => setRejectionModal(false)}>
         <ModalHeader toggle={() => setRejectionModal(false)}>
           <BiXCircle className="text-danger me-2" size={24} />
@@ -542,7 +749,14 @@ const VacationPageApprove = () => {
           </div>
         </ModalBody>
       </Modal>
-    </React.Fragment>
+
+      <CancellationModal
+        isOpen={cancellationModal}
+        toggle={() => setCancellationModal(false)}
+        vacationId={selectedVacation}
+        onSuccess={() => {}}
+      />
+    </>
   )
 }
 

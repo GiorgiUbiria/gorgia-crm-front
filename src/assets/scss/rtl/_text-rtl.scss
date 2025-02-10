@@ -1,12 +1,3 @@
-// stylelint-disable declaration-no-important
-
-//
-// Text
-//
-
-
-// Responsive alignment
-
 @each $breakpoint in map-keys($grid-breakpoints) {
   @include media-breakpoint-up($breakpoint) {
     $infix: breakpoint-infix($breakpoint, $grid-breakpoints);

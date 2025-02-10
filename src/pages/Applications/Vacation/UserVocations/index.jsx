@@ -1,8 +1,14 @@
-import React, { useEffect, useState, useMemo } from "react"
-import { Row, Col } from "reactstrap"
-import Breadcrumbs from "components/Common/Breadcrumb"
-import { getCurrentUserVocations } from "services/vacation"
+import React, { useState, useMemo } from "react"
+import { Row, Col, Button, Spinner } from "reactstrap"
 import MuiTable from "components/Mui/MuiTable"
+import VacationBalance from "components/Vacation/VacationBalance"
+import CancellationModal from "components/Vacation/CancellationModal"
+import { Tooltip } from "@mui/material"
+import {
+  useUserVacations,
+  useVacationBalance,
+  useCancelVacation,
+} from "../../../../queries/vacation"
 
 const statusMap = {
   pending: {
@@ -19,6 +25,16 @@ const statusMap = {
     label: "უარყოფილი",
     icon: "bx-x-circle",
     color: "#dc3545",
+  },
+  cancelled: {
+    label: "გაუქმებული",
+    icon: "bx-x-circle",
+    color: "#6c757d",
+  },
+  auto_approved: {
+    label: "ავტომატურად დამტკიცებული",
+    icon: "bx-check-double",
+    color: "#28a745",
   },
 }
 
@@ -41,12 +57,6 @@ const typeMap = {
   },
 }
 
-const STATUS_MAPPING = {
-  pending: "pending",
-  approved: "approved",
-  rejected: "rejected",
-}
-
 const TYPE_MAPPING = {
   paid_leave: "paid_leave",
   unpaid_leave: "unpaid_leave",
@@ -67,6 +77,11 @@ const ExpandedRowContent = ({ rowData }) => {
       review: { reviewed_by, reviewed_at, rejection_reason },
     },
   } = rowData
+
+  const reviewerName =
+    reviewed_by && typeof reviewed_by === "object"
+      ? `${reviewed_by.name || ""} ${reviewed_by.sur_name || ""}`.trim() || "-"
+      : reviewed_by || "-"
 
   const dayMapGe = {
     is_monday: "ორშაბათი",
@@ -146,13 +161,13 @@ const ExpandedRowContent = ({ rowData }) => {
               <i className="bx bx-check-circle me-2 text-primary"></i>
               <h6 className="mb-0">განხილვა</h6>
             </div>
-            {reviewed_by && (
+            {reviewerName !== "-" && (
               <small style={{ display: "flex", alignItems: "center" }}>
                 <i className="bx bx-user me-1"></i>
-                {reviewed_by} - {reviewed_at}
+                {reviewerName} - {reviewed_at}
               </small>
             )}
-            {rejection_reason && (
+            {rejection_reason && rejection_reason !== "-" && (
               <small
                 className="d-block text-danger mt-1"
                 style={{
@@ -175,21 +190,55 @@ const ExpandedRowContent = ({ rowData }) => {
 const UserVocation = () => {
   document.title = "შვებულებები | Gorgia LLC"
 
-  const [vacations, setVacations] = useState([])
+  const { data: vacationsData, isLoading: vacationsLoading } =
+    useUserVacations()
+  const { data: vacationBalance, isLoading: balanceLoading } =
+    useVacationBalance()
+  const { mutate: cancelVacation } = useCancelVacation()
 
-  const fetchVacations = async () => {
-    try {
-      const response = await getCurrentUserVocations()
-      console.log(response)
-      setVacations(response.data.data)
-    } catch (err) {
-      console.error("Error fetching vocations:", err)
-    }
+  const [selectedVacation, setSelectedVacation] = useState(null)
+  const [showCancellationModal, setShowCancellationModal] = useState(false)
+
+  const handleCancelRequest = vacation => {
+    setSelectedVacation(vacation)
+    setShowCancellationModal(true)
   }
 
-  useEffect(() => {
-    fetchVacations()
-  }, [])
+  const onCancellationSuccess = () => {
+    setShowCancellationModal(false)
+    setSelectedVacation(null)
+  }
+
+  const handleCancellation = (vacationId, cancellationReason) => {
+    cancelVacation(
+      { id: vacationId, data: { cancellation_reason: cancellationReason } },
+      {
+        onSuccess: () => {
+          onCancellationSuccess()
+        },
+        onError: error => {
+          console.error("Cancellation failed:", error)
+        },
+      }
+    )
+  }
+
+  const canCancel = vacation => {
+    if (!vacation) return false
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const startDate = new Date(vacation.start_date)
+    startDate.setHours(0, 0, 0, 0)
+
+    return (
+      (vacation.status === "pending" ||
+        vacation.status === "approved" ||
+        vacation.status === "auto_approved") &&
+      startDate >= today
+    )
+  }
 
   const columns = useMemo(
     () => [
@@ -225,84 +274,135 @@ const UserVocation = () => {
         Header: "სტატუსი",
         accessor: "status",
         disableSortBy: true,
-        Cell: ({ value }) => (
-          <span
-            style={{
-              padding: "6px 12px",
-              borderRadius: "4px",
-              display: "inline-flex",
-              alignItems: "center",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              backgroundColor:
-                value === "pending"
-                  ? "#fff3e0"
-                  : value === "rejected"
-                  ? "#ffebee"
-                  : value === "approved"
-                  ? "#e8f5e9"
-                  : "#f5f5f5",
-              color:
-                value === "pending"
-                  ? "#e65100"
-                  : value === "rejected"
-                  ? "#c62828"
-                  : value === "approved"
-                  ? "#2e7d32"
-                  : "#757575",
-            }}
-          >
-            <i className={`bx ${statusMap[value].icon} me-2`}></i>
-            {statusMap[value].label}
-          </span>
+        Cell: ({ value, row }) => (
+          <div>
+            <span
+              style={{
+                padding: "6px 12px",
+                borderRadius: "4px",
+                display: "inline-flex",
+                alignItems: "center",
+                fontSize: "0.875rem",
+                fontWeight: 500,
+                backgroundColor:
+                  value === "pending"
+                    ? "#fff3e0"
+                    : value === "rejected"
+                    ? "#ffebee"
+                    : value === "approved" || value === "auto_approved"
+                    ? "#e8f5e9"
+                    : value === "cancelled"
+                    ? "#f5f5f5"
+                    : "#f5f5f5",
+                color: statusMap[value]?.color || "#757575",
+              }}
+            >
+              <i className={`bx ${statusMap[value]?.icon} me-2`}></i>
+              {statusMap[value]?.label}
+            </span>
+            {row.original.auto_approved && (
+              <div className="mt-1">
+                <small className="text-muted">
+                  <i className="bx bx-time-five me-1"></i>
+                  ავტომატურად დამტკიცდა {row.original.auto_approved_at}
+                </small>
+              </div>
+            )}
+            {value === "pending" && row.original.time_until_auto_approval && (
+              <Tooltip title="დრო ავტომატურ დამტკიცებამდე" arrow>
+                <div className="mt-1">
+                  <small className="text-warning">
+                    <i className="bx bx-time-five me-1"></i>
+                    {row.original.time_until_auto_approval}
+                  </small>
+                </div>
+              </Tooltip>
+            )}
+          </div>
         ),
+      },
+      {
+        Header: "მოქმედებები",
+        accessor: "actions",
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          const vacation = row.original
+          return canCancel(vacation) ? (
+            <Button
+              color="danger"
+              size="sm"
+              outline
+              onClick={() => handleCancelRequest(vacation)}
+            >
+              <i className="bx bx-x-circle me-1"></i>
+              გაუქმება
+            </Button>
+          ) : null
+        },
       },
     ],
     []
   )
-  const transformedVacations = vacations.map(vacation => ({
-    id: vacation.id,
-    status: STATUS_MAPPING[vacation.status] || vacation.status,
-    start_date: new Date(vacation.start_date).toLocaleDateString("ka-GE"),
-    end_date: new Date(vacation.end_date).toLocaleDateString("ka-GE"),
-    duration: vacation.duration.toString() + " დღე",
-    type: vacation.type
-      ? TYPE_MAPPING[vacation.type] || vacation.type
-      : "უცნობი",
-    requested_by: vacation.user
-      ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""}`
-      : "უცნობი",
-    requested_at: new Date(vacation.created_at).toLocaleDateString("ka-GE"),
-    requested_for: `${vacation.employee_name || ""} | ${
-      vacation.position || ""
-    } | ${vacation.department || ""}`,
-    expanded: {
-      holiday_days: {
-        is_monday: vacation.is_monday,
-        is_tuesday: vacation.is_tuesday,
-        is_wednesday: vacation.is_wednesday,
-        is_thursday: vacation.is_thursday,
-        is_friday: vacation.is_friday,
-        is_saturday: vacation.is_saturday,
-        is_sunday: vacation.is_sunday,
+
+  const transformedVacations = useMemo(() => {
+    if (!vacationsData?.data?.data) return []
+
+    return vacationsData.data.data.map(vacation => ({
+      ...vacation,
+      id: vacation.id,
+      status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+      start_date: vacation.start_date
+        ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
+        : "-",
+      end_date: vacation.end_date
+        ? new Date(vacation.end_date).toLocaleDateString("ka-GE")
+        : "-",
+      duration: (vacation.duration_days ?? 0).toString() + " დღე",
+      type: vacation.type
+        ? TYPE_MAPPING[vacation.type] || vacation.type
+        : "უცნობი",
+      requested_by: vacation.user
+        ? `${vacation.user?.name || ""} ${
+            vacation.user?.sur_name || ""
+          }`.trim() || "უცნობი"
+        : "უცნობი",
+      requested_at: vacation.created_at
+        ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
+        : "-",
+      auto_approved: vacation.is_auto_approved,
+      auto_approved_at: vacation.auto_approved_at
+        ? new Date(vacation.auto_approved_at).toLocaleDateString("ka-GE")
+        : null,
+      time_until_auto_approval: vacation.time_until_auto_approval,
+      cancellation_reason: vacation.cancellation_reason,
+      cancelled_at: vacation.cancelled_at
+        ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+        : null,
+      requested_for: `${vacation.employee_name || ""} | ${
+        vacation.position || ""
+      } | ${vacation.department || ""}`,
+      expanded: {
+        holiday_days: vacation.holiday_days || {},
+        substitute: {
+          substitute_name: vacation.substitute_name || "-",
+          substitute_position: vacation.substitute_position || "-",
+        },
+        review: {
+          reviewed_by: vacation.reviewed_by || "-",
+          reviewed_at: vacation.reviewed_at
+            ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
+            : "-",
+          rejection_reason: vacation.rejection_reason || "-",
+        },
+        cancellation: {
+          cancellation_reason: vacation.cancellation_reason || "",
+          cancelled_at: vacation.cancelled_at
+            ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
+            : "",
+        },
       },
-      substitute: {
-        substitute_name: vacation.substitute_name || "უცნობია",
-        substitute_position: vacation.substitute_position || "უცნობია",
-      },
-      review: {
-        reviewed_by: vacation.reviewed_by
-          ? `${vacation.reviewed_by?.name || ""} ${
-              vacation.reviewed_by?.sur_name || ""
-            }`
-          : "ჯერ არ არის განხილული",
-        reviewed_at: vacation?.reviewed_at
-          ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
-          : "-",
-        rejection_reason: vacation.rejection_reason || "",
-      },
-    },
-  }))
+    }))
+  }, [vacationsData])
 
   const filterOptions = [
     {
@@ -310,8 +410,10 @@ const UserVocation = () => {
       label: "სტატუსი",
       valueLabels: {
         approved: "დამტკიცებული",
+        auto_approved: "ავტომატურად დამტკიცებული",
         rejected: "უარყოფილი",
         pending: "განხილვაში",
+        cancelled: "გაუქმებული",
       },
     },
     {
@@ -326,34 +428,48 @@ const UserVocation = () => {
     },
   ]
 
-  const expandedRow = row => <ExpandedRowContent rowData={row} />
+  if (vacationsLoading || balanceLoading) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner color="primary" />
+      </div>
+    )
+  }
+
+  console.log(transformedVacations)
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="განცხადებები"
-                breadcrumbItem="ჩემი შვებულებები"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <MuiTable
-              data={transformedVacations}
-              columns={columns}
-              filterOptions={filterOptions}
-              enableSearch={true}
-              searchableFields={["type"]}
-              initialPageSize={10}
-              renderRowDetails={expandedRow}
-            />
-          </Row>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="p-4 sm:p-6">
+          {vacationBalance && (
+            <VacationBalance balance={vacationBalance.data} />
+          )}
+
+          <MuiTable
+            data={transformedVacations}
+            columns={columns}
+            filterOptions={filterOptions}
+            enableSearch={true}
+            searchableFields={["type", "status"]}
+            initialPageSize={10}
+            renderRowDetails={row => <ExpandedRowContent rowData={row} />}
+          />
         </div>
       </div>
-    </React.Fragment>
+
+      {showCancellationModal && selectedVacation && (
+        <CancellationModal
+          isOpen={showCancellationModal}
+          toggle={() => {
+            setShowCancellationModal(false)
+            setSelectedVacation(null)
+          }}
+          vacationId={selectedVacation.id}
+          onSuccess={handleCancellation}
+        />
+      )}
+    </>
   )
 }
 

@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from "react"
-import Breadcrumbs from "../../../components/Common/Breadcrumb"
 import { getHrDocuments, updateHrDocumentStatus } from "services/hrDocument"
 import MuiTable from "../../../components/Mui/MuiTable"
 import {
@@ -9,10 +8,11 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material"
-import { Row, Col, TabContent, Label, Spinner } from "reactstrap"
+import { TabContent, Label, Spinner } from "reactstrap"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import DatePicker from "components/DatePicker"
-import moment from "moment"
+import { subMonths, isBefore } from "date-fns"
+import { toast } from "store/zustand/toastStore"
 
 const statusMap = {
   in_progress: {
@@ -37,6 +37,18 @@ const STATUS_MAPPING = {
   approved: "approved",
   rejected: "rejected",
 }
+
+const REGIONS = [
+  "თბილისი",
+  "ბათუმი",
+  "ქუთაისი",
+  "ზუგდიდი",
+  "თელავი",
+  "მარნეული",
+  "რუსთავი",
+  "გორი",
+  "საჩხერე",
+]
 
 const DOCUMENT_TYPES = {
   PAID_EMPLOYMENT: "ხელფასიანი ცნობა",
@@ -78,9 +90,7 @@ const HrPageApprove = () => {
     }
   }
 
-
   const findDocument = async documentId => {
-    
     const response = await getHrDocuments()
     const documentData = response.data.find(d => d.id === documentId)
     setFormData(data => ({
@@ -107,11 +117,17 @@ const HrPageApprove = () => {
       working_start_date: "",
       purpose: documentData?.purpose,
       comment: "",
-      salary: "",
-      salary_text: "",
-      template_num: Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) + 1,
-      document_number: "",
-      started_date: documentData?.is_other_user !== 1 ? documentData?.user?.working_start_date : documentData?.started_working_day,
+      salary: documentData?.salary || "",
+      salary_text: documentData?.salary_text || "",
+      region: documentData?.region || "",
+      template_num:
+        Object.values(DOCUMENT_TYPES).findIndex(d => d === documentData.name) +
+        1,
+      document_number: documentData?.document_number || "No number",
+      started_date:
+        documentData?.is_other_user !== 1
+          ? documentData?.user?.working_start_date
+          : documentData?.started_working_day,
     }))
   }
 
@@ -143,8 +159,7 @@ const HrPageApprove = () => {
       }
     } catch (err) {
       console.error("Error updating document status:", err)
-    }
-    finally{
+    } finally {
       fetchDocuments()
       setIsProcessing(false)
     }
@@ -320,14 +335,22 @@ const HrPageApprove = () => {
   }
 
   const handleConfirm = () => {
+    if (!formData.region) {
+      toast.error("გთხოვთ აირჩიეთ რეგიონი", "შეცდომა", {
+        duration: 2000,
+        size: "small",
+      })
+      return
+    }
+
     handleUpdateStatus(selectedDocumentId, selectedStatus, formData)
     handleModalClose()
   }
 
   const hasWorkedSixMonths = startDate => {
     if (!startDate) return false
-    const sixMonthsAgo = moment().subtract(6, "months")
-    return moment(startDate).isBefore(sixMonthsAgo)
+    const sixMonthsAgo = subMonths(new Date(), 6)
+    return isBefore(new Date(startDate), sixMonthsAgo)
   }
 
   const isDocumentTypeDisabled = (type, started) => {
@@ -346,17 +369,9 @@ const HrPageApprove = () => {
   }
 
   return (
-    <React.Fragment>
-      <div className="page-content mb-4">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="HR დოკუმენტები"
-                breadcrumbItem="დოკუმენტების ვიზირება"
-              />
-            </Col>
-          </Row>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div>
           {isProcessing ? (
             <div className="text-center">
               <Spinner color="primary" />
@@ -365,32 +380,32 @@ const HrPageApprove = () => {
               </p>
             </div>
           ) : (
-          <MuiTable
-            data={transformedHrDocuments}
-            columns={columns}
-            filterOptions={filterOptions}
-            enableSearch={true}
-            searchableFields={[
-              "user.name",
-              "user.id",
-              "salary",
-              "name",
-              "purpose",
-            ]}
-            renderRowDetails={row => <div>{row.comment}</div>}
-          />
+            <MuiTable
+              data={transformedHrDocuments}
+              columns={columns}
+              filterOptions={filterOptions}
+              enableSearch={true}
+              searchableFields={[
+                "user.name",
+                "user.id",
+                "salary",
+                "name",
+                "purpose",
+              ]}
+              renderRowDetails={row => <div>{row.comment}</div>}
+            />
           )}
-          <Dialog open={modalOpen} onClose={handleModalClose}  >
-            <DialogTitle >
+          <Dialog open={modalOpen} onClose={handleModalClose}>
+            <DialogTitle>
               {selectedStatus === "approved"
                 ? "დოკუმენტის დამტკიცება"
                 : "დოკუმენტის უარყოფა"}
             </DialogTitle>
 
-            <div className="mt-4" >
-              <Formik enableReinitialize initialValues={formData} >
+            <div className="mt-4">
+              <Formik enableReinitialize initialValues={formData}>
                 {({ values }) => (
-                  <Form style={{padding: '30px'}}>
+                  <Form style={{ padding: "30px" }}>
                     <TabContent>
                       {selectedStatus === "approved" && (
                         <>
@@ -442,8 +457,7 @@ const HrPageApprove = () => {
                             </div>
                           </div>
 
-                            {/* User Info */}
-                            <div className="row g-3 mb-4">
+                          <div className="row g-3 mb-4">
                             <div className="col-md-6">
                               <Label className="form-label">
                                 დოკუმენტის ნომერი
@@ -470,11 +484,14 @@ const HrPageApprove = () => {
                             </div>
                             <div className="col-md-6">
                               <div className="flex flex-row">
-
-                              <Label className="form-label">დაწყების თარიღი</Label>
-                                {/* date! */}
-                                <DatePicker startDate={formData?.started_date} handleStartedDate={setFormData} initialValue={formData?.started_date} />
-
+                                <Label className="form-label">
+                                  დაწყების თარიღი
+                                </Label>
+                                <DatePicker
+                                  startDate={formData?.started_date}
+                                  handleStartedDate={setFormData}
+                                  initialValue={formData?.started_date}
+                                />
                               </div>
                               <ErrorMessage
                                 name="started_date"
@@ -482,7 +499,6 @@ const HrPageApprove = () => {
                                 className="text-danger mt-1"
                               />
                             </div>
-                            
                           </div>
 
                           <div className="mb-2">
@@ -504,10 +520,13 @@ const HrPageApprove = () => {
                               <option value="">აირჩიეთ დოკუმენტის ტიპი</option>
                               {Object.entries(DOCUMENT_TYPES).map(
                                 ([key, type]) => (
-                                  <option 
-                                  key={key} 
-                                  value={type}
-                                  disabled={isDocumentTypeDisabled(type,  formData.started_date)}
+                                  <option
+                                    key={key}
+                                    value={type}
+                                    disabled={isDocumentTypeDisabled(
+                                      type,
+                                      formData.started_date
+                                    )}
                                   >
                                     {type}
                                   </option>
@@ -527,7 +546,39 @@ const HrPageApprove = () => {
                             )}
                           </div>
 
-                          {/* User Info */}
+                          <div className="mb-2">
+                            <Label className="form-label">
+                              რეგიონი <span className="text-danger">*</span>
+                            </Label>
+                            <Field
+                              as="select"
+                              name="region"
+                              className={`form-select ${
+                                !formData.region && "is-invalid"
+                              }`}
+                              value={formData.region}
+                              onChange={e =>
+                                setFormData(data => ({
+                                  ...data,
+                                  region: e.target.value,
+                                }))
+                              }
+                              required
+                            >
+                              <option value="">აირჩიეთ რეგიონი</option>
+                              {REGIONS.map((region, index) => (
+                                <option key={index} value={region}>
+                                  {region}
+                                </option>
+                              ))}
+                            </Field>
+                            {!formData.region && (
+                              <div className="invalid-feedback">
+                                გთხოვთ აირჩიოთ რეგიონი
+                              </div>
+                            )}
+                          </div>
+
                           <div className="row g-3 mb-4">
                             <div className="col-md-6">
                               <Label className="form-label">
@@ -577,81 +628,81 @@ const HrPageApprove = () => {
                               />
                             </div>
                           </div>
-                          {/* Purpose field for paid documents */}
                           {isPaidDocument(values.documentType) && (
                             <>
-                          <div className="row g-3 mb-4">
-                            <div className="col-md-6">
-                              <Label className="form-label">
-                                ანაზღაურება
-                              </Label>
+                              <div className="row g-3 mb-4">
+                                <div className="col-md-6">
+                                  <Label className="form-label">
+                                    ანაზღაურება
+                                  </Label>
 
-                              <Field
-                                type="text"
-                                name="salary"
-                                value={formData.salary}
-                                onChange={e =>
-                                  setFormData(data => ({
-                                    ...data,
-                                    salary: e.target.value,
-                                  }))
-                                }
-                                className="form-control"
-                                />
+                                  <Field
+                                    type="text"
+                                    name="salary"
+                                    value={formData.salary}
+                                    onChange={e =>
+                                      setFormData(data => ({
+                                        ...data,
+                                        salary: e.target.value,
+                                      }))
+                                    }
+                                    className="form-control"
+                                  />
 
-                              <ErrorMessage
-                                name="salary"
-                                component="div"
-                                className="text-danger mt-1"
-                                />
-                            </div>
+                                  <ErrorMessage
+                                    name="salary"
+                                    component="div"
+                                    className="text-danger mt-1"
+                                  />
+                                </div>
 
-                            <div className="col-md-6">
-                              <Label className="form-label">ანაზღაურება (ტექსტური)</Label>
+                                <div className="col-md-6">
+                                  <Label className="form-label">
+                                    ანაზღაურება (ტექსტური)
+                                  </Label>
 
-                              <Field
-                                type="text"
-                                name="salary_text"
-                                value={formData.salary_text}
-                                onChange={e =>
-                                  setFormData(data => ({
-                                    ...data,
-                                    salary_text: e.target.value,
-                                  }))
-                                }
-                                className="form-control"
-                                />
+                                  <Field
+                                    type="text"
+                                    name="salary_text"
+                                    value={formData.salary_text}
+                                    onChange={e =>
+                                      setFormData(data => ({
+                                        ...data,
+                                        salary_text: e.target.value,
+                                      }))
+                                    }
+                                    className="form-control"
+                                  />
 
-                              <ErrorMessage
-                                name="salary_text"
-                                component="div"
-                                className="text-danger mt-1"
-                                />
-                            </div>
-                          </div>
+                                  <ErrorMessage
+                                    name="salary_text"
+                                    component="div"
+                                    className="text-danger mt-1"
+                                  />
+                                </div>
+                              </div>
 
-                          
-                            <div className="mb-4">
-                              <Label className="form-label">მიზანი</Label>
-                              <Field
-                                type="text"
-                                name="purpose"
-                                className="form-control"
-                                value={formData.purpose}
-                                onChange={e =>
-                                  setFormData(data => ({
-                                    ...data,
-                                    purpose: e.target.value,
-                                  }))
-                                }
+                              <div className="mb-4">
+                                <Label className="form-label">მიზანი</Label>
+                                <Field
+                                  type="text"
+                                  name="purpose"
+                                  className="form-control"
+                                  value={formData.purpose}
+                                  onChange={e =>
+                                    setFormData(data => ({
+                                      ...data,
+                                      purpose: e.target.value,
+                                    }))
+                                  }
                                 />
-                              <ErrorMessage
-                                name="purpose"
-                                component="div"
-                                className="text-danger mt-1"
+                                <ErrorMessage
+                                  name="purpose"
+                                  component="div"
+                                  className="text-danger mt-1"
                                 />
-                            </div>
-                                </>
+                              </div>
+                            </>
                           )}
                         </>
                       )}
@@ -689,7 +740,7 @@ const HrPageApprove = () => {
           </Dialog>
         </div>
       </div>
-    </React.Fragment>
+    </>
   )
 }
 

@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Container, Row, Col, Button, Input } from "reactstrap"
 import { debounce } from "lodash"
 import { getNoteList, deleteNote } from "../../services/note"
-import Breadcrumbs from "components/Common/Breadcrumb"
 import NoteCard from "../../components/NoteCard"
 import DeleteModal from "../../components/DeleteModal"
-import { Box, CircularProgress, Typography } from "@mui/material"
+import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([])
@@ -89,77 +87,82 @@ const NotesPage = () => {
 
   if (isLoading) {
     return (
-      <Container fluid className="page-content">
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="50vh"
-        >
-          <CircularProgress />
-        </Box>
-      </Container>
+      <div className="min-h-screen bg-white dark:!bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex justify-center items-center min-h-[50vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:!border-blue-400"></div>
+          </div>
+        </div>
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Container fluid className="page-content">
-        <Box display="flex" flexDirection="column" alignItems="center" pt={5}>
-          <Typography color="error" variant="h6" gutterBottom>
-            {error}
-          </Typography>
-          <Button color="primary" onClick={() => window.location.reload()}>
-            Retry
-          </Button>
-        </Box>
-      </Container>
+      <div className="min-h-screen bg-white dark:!bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col items-center pt-5">
+            <p className="text-red-600 dark:!text-red-400 text-xl mb-4">
+              {error}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-500 hover:bg-blue-700 dark:!bg-blue-600 dark:!hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
     )
   }
 
   return (
-    <Container fluid className="page-content">
-      <Breadcrumbs title="ადმინი" breadcrumbItem="ჩემი ჩანაწერები" />
-
-      <Row className="mb-4">
-        <Col md={{ size: 6, offset: 6 }} className="text-right">
-          <Box display="flex" justifyContent="flex-end" width="100%">
-            <Input
-              type="text"
-              placeholder="ძებნა..."
-              onChange={handleSearchChange}
-              style={{ maxWidth: "250px", marginRight: "10px" }}
-            />
-            <Link to="/tools/notes/create">
-              <Button color="primary" className="d-flex align-items-center">
-                დამატება
-              </Button>
+    <div className="min-h-screen bg-white dark:!bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:!text-white">
+            ჩანაწერები
+          </h1>
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="ძებნა..."
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:!border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:!bg-gray-800 dark:!text-white"
+              />
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 dark:!text-gray-300 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            </div>
+            <Link
+              to="/tools/notes/create"
+              className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 dark:!bg-blue-600 dark:!hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              დამატება
             </Link>
-          </Box>
-        </Col>
-      </Row>
-
-      <Row>
+          </div>
+        </div>
         {filteredNotes.length === 0 ? (
-          <Col className="text-center pt-5">
-            <Typography variant="h6" className="font-weight-bold mb-3">
+          <div className="text-center py-12 px-4">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:!text-white mb-3">
               ჩანაწერები ვერ მოიძებნა
-            </Typography>
-            <Typography>
+            </h2>
+            <p className="text-gray-600 dark:!text-gray-400 mb-6">
               თქვენ ჯერ არ გაქვთ ჩანაწერები, დაამატეთ პირველი ჩანაწერი
-            </Typography>
-            <Button
-              color="primary"
+            </p>
+            <button
               onClick={handleGetStarted}
-              style={{ marginTop: "20px" }}
+              className="bg-blue-500 hover:bg-blue-700 dark:!bg-blue-600 dark:!hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full sm:w-auto"
             >
               დაწყება
-            </Button>
-          </Col>
+            </button>
+          </div>
         ) : (
-          filteredNotes.map(note => (
-            <Col md="4" key={note.id}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4 sm:px-0">
+            {filteredNotes.map(note => (
               <NoteCard
+                key={note.id}
                 note={note}
                 onDelete={note => {
                   setNoteToDelete(note)
@@ -167,17 +170,16 @@ const NotesPage = () => {
                 }}
                 onEdit={handleEditNote}
               />
-            </Col>
-          ))
+            ))}
+          </div>
         )}
-      </Row>
-
-      <DeleteModal
-        isOpen={deleteModalOpen}
-        toggle={() => setDeleteModalOpen(!deleteModalOpen)}
-        onDelete={handleDeleteNote}
-      />
-    </Container>
+        <DeleteModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onDelete={handleDeleteNote}
+        />
+      </div>
+    </div>
   )
 }
 

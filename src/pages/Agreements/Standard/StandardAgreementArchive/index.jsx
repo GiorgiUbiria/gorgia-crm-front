@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react"
-import { Row, Col, Card, CardBody } from "reactstrap"
-import Breadcrumbs from "../../../../components/Common/Breadcrumb"
+import { Row, Col } from "reactstrap"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import {
   getDepartmentAgreements,
   downloadAgreement as downloadAgreementService,
 } from "services/agreement"
-import { toast, ToastContainer } from "react-toastify"
+import { toast } from "store/zustand/toastStore"
 import {
   BsBank,
   BsCalendar,
@@ -19,10 +18,20 @@ import {
 const handleDownload = async agreementId => {
   try {
     await downloadAgreementService(agreementId)
-    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა")
+    toast.success("ხელშეკრულება წარმატებით ჩამოიტვირთა", "შესრულდა", {
+      duration: 2000,
+      size: "small",
+    })
   } catch (error) {
     console.error("Download failed:", error)
-    toast.error(error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად")
+    toast.error(
+      error.message || "ფაილი არ არის ხელმისაწვდომი ჩამოსატვირთად",
+      "შეცდომა",
+      {
+        duration: 2000,
+        size: "small",
+      }
+    )
   }
 }
 
@@ -226,7 +235,6 @@ const StandardAgreementArchive = () => {
 
     return (
       <div className="p-4 bg-light rounded">
-        {/* Status Banner */}
         {row.expanded.rejection_reason && (
           <div className="alert alert-danger d-flex align-items-center mb-4">
             <i className="bx bx-error-circle me-2 fs-5"></i>
@@ -236,14 +244,12 @@ const StandardAgreementArchive = () => {
           </div>
         )}
 
-        {/* Requester Info */}
         <div className="d-flex align-items-center mb-4 gap-2 text-muted">
           <BsPerson className="fs-3 text-primary" />
           <strong>მოითხოვა:</strong>
           <span className="ms-2">{row.expanded.requested_by}</span>
         </div>
 
-        {/* Details Grid */}
         <div className="border rounded p-4 bg-white mb-4">
           <Row className="g-4">
             <Col md={6}>
@@ -314,7 +320,6 @@ const StandardAgreementArchive = () => {
                 </div>
               </div>
             </Col>
-            {/* Additional Fields */}
             <Col md={6}>
               <div className="d-flex align-items-center gap-2">
                 <i className="bx bx-dollar fs-7 text-primary"></i>
@@ -395,40 +400,21 @@ const StandardAgreementArchive = () => {
   }, [])
 
   return (
-    <React.Fragment>
-      <div className="page-content">
-        <div className="container-fluid">
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Breadcrumbs
-                title="ხელშეკრულებები"
-                breadcrumbItem="ხელშეკრულებების არქივი"
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xl={12}>
-              <Card>
-                <CardBody>
-                  <MuiTable
-                    columns={columns}
-                    data={transformedAgreements}
-                    initialPageSize={10}
-                    pageSizeOptions={[5, 10, 15, 20]}
-                    enableSearch={true}
-                    searchableFields={["contragent.name", "requested_by"]}
-                    filterOptions={filterOptions}
-                    onRowClick={() => {}}
-                    renderRowDetails={renderRowDetails}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </div>
+    <>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <MuiTable
+          columns={columns}
+          data={transformedAgreements}
+          initialPageSize={10}
+          pageSizeOptions={[5, 10, 15, 20]}
+          enableSearch={true}
+          searchableFields={["contragent.name", "requested_by"]}
+          filterOptions={filterOptions}
+          onRowClick={() => {}}
+          renderRowDetails={renderRowDetails}
+        />
       </div>
-      <ToastContainer />
-    </React.Fragment>
+    </>
   )
 }
 
