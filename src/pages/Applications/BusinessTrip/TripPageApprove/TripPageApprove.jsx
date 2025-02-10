@@ -240,7 +240,7 @@ const TripPageApprove = () => {
   const [actionType, setActionType] = useState(null)
   const { isAdmin } = useAuth()
 
-  const fetchTrips = async () => {
+  const fetchTrips = useCallback(async () => {
     try {
       let response
       isAdmin() ? response = await getAllTripsList() : response = await getDepartmentTripList()
@@ -248,11 +248,11 @@ const TripPageApprove = () => {
     } catch (err) {
       console.error("Error fetching trip requests:", err)
     }
-  }
+  }, [isAdmin])
 
   useEffect(() => {
     fetchTrips()
-  }, [])
+  }, [fetchTrips])
 
   const handleModalOpen = (action, tripId) => {
     setSelectedTrip(tripId)

@@ -305,25 +305,28 @@ const VacationPageArchive = () => {
   const [selectedVacation, setSelectedVacation] = useState(null)
   const [comment, setComment] = useState("")
 
-  const handleOneCStatusUpdate = async (id, currentStatus) => {
-    if (!currentStatus) {
-      setSelectedVacation({ id, currentStatus })
-      setModalOpen(true)
-      return
-    }
+  const handleOneCStatusUpdate = React.useCallback(
+    async (id, currentStatus) => {
+      if (!currentStatus) {
+        setSelectedVacation({ id, currentStatus })
+        setModalOpen(true)
+        return
+      }
 
-    try {
-      updateOneCStatusMutation.mutate({
-        id,
-        data: {
-          stored_in_one_c: !currentStatus,
-          one_c_comment: "",
-        },
-      })
-    } catch (error) {
-      console.error("Error updating 1C status:", error)
-    }
-  }
+      try {
+        updateOneCStatusMutation.mutate({
+          id,
+          data: {
+            stored_in_one_c: !currentStatus,
+            one_c_comment: "",
+          },
+        })
+      } catch (error) {
+        console.error("Error updating 1C status:", error)
+      }
+    },
+    [updateOneCStatusMutation]
+  )
 
   const handleModalSubmit = () => {
     if (!selectedVacation) return

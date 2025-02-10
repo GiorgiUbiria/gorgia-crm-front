@@ -5,7 +5,6 @@ import VerticalLayout from "./components/VerticalLayout/"
 import NonAuthLayout from "./components/NonAuthLayout"
 import AuthInitializer from "./components/AuthInitializer"
 import ToastContainer from "./components/CrmToast/ToastContainer"
-import "./assets/scss/theme.scss"
 
 const App = () => {
   const Layout = VerticalLayout
