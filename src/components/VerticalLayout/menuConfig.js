@@ -17,6 +17,7 @@ import {
   LuNotebook,
   LuMessageSquare,
   LuUser,
+  LuFilter,
   // LuBriefcase,
 } from "react-icons/lu"
 
@@ -407,10 +408,18 @@ const getMenuItems = can => {
       label: "ჩატი",
     },
     {
+      to: "/tools/employee-contacts",
+      icon: LuFilter,
+      label: "საკომუნიკაციო ბაზა",
+    },
+    {
       to: "/tools/people-counting",
       icon: LuUser,
       label: "ვიზიტორების ფორმა",
-      show: () => can("role:admin|department:36|department:21|department:30"),
+      show: () =>
+        can(
+          "role:admin|department:36,role:department_head|department:21|department:30|user:133"
+        ),
     },
     {
       to: "/tools/calendar",

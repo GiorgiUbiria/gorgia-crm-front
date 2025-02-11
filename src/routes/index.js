@@ -32,6 +32,8 @@ import LegalTaskList from "pages/LegalJobPages/JobList"
 import LegalTaskDetails from "pages/LegalJobPages/JobDetails"
 import AgreementRequest from "pages/Agreements/AgreementRequest"
 
+import EmployeeContacts from "pages/EmployeeContacts"
+
 import StandardAgreementApprove from "pages/Agreements/Standard/StandardAgreementApprove"
 import StandardAgreementArchive from "pages/Agreements/Standard/StandardAgreementArchive"
 import StandardAgreementUser from "pages/Agreements/Standard/StandardAgreementUser"
@@ -485,6 +487,10 @@ const toolsRoutes = {
       path: "/tools/inner-daily-results/:id",
       component: withProtectedRoute(<DailyInner />),
     },
+    employeeContacts: {
+      path: "/tools/employee-contacts",
+      component: withProtectedRoute(<EmployeeContacts />),
+    },
     peopleCounting: {
       path: "/tools/people-counting",
       component: withProtectedRoute(
@@ -532,11 +538,29 @@ const authProtectedRoutes = [
   ...flattenRoutes(communicationRoutes),
   ...flattenRoutes(leadsRoutes),
   ...flattenRoutes(toolsRoutes),
-  { path: "/vacancy-requests", component: withProtectedRoute(<VacancyRequests />, "role:admin|role:hr") },
-  { path: "/vacancy-requests/create", component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr") },
-  { path: "/vacancy-requests/my-requests", component: withProtectedRoute(<MyVacancyRequests />, "role:admin|role:hr") },
-  { path: "/vacancy-requests/:id", component: withProtectedRoute(<VacancyRequestDetails />, "role:admin|role:hr") },
-  { path: "/vacancy-requests/:id/edit", component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr") },
+  {
+    path: "/vacancy-requests",
+    component: withProtectedRoute(<VacancyRequests />, "role:admin|role:hr"),
+  },
+  {
+    path: "/vacancy-requests/create",
+    component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr"),
+  },
+  {
+    path: "/vacancy-requests/my-requests",
+    component: withProtectedRoute(<MyVacancyRequests />, "role:admin|role:hr"),
+  },
+  {
+    path: "/vacancy-requests/:id",
+    component: withProtectedRoute(
+      <VacancyRequestDetails />,
+      "role:admin|role:hr"
+    ),
+  },
+  {
+    path: "/vacancy-requests/:id/edit",
+    component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr"),
+  },
 ]
 
 const publicRoutes = [
