@@ -18,6 +18,7 @@ import {
   LuMessageSquare,
   LuUser,
   LuFilter,
+  LuPaintbrush,
   // LuBriefcase,
 } from "react-icons/lu"
 
@@ -381,6 +382,11 @@ const getMenuItems = can => {
           ],
         },
       ],
+    },
+    {
+      to: "/tools/design-forms",
+      icon: LuPaintbrush,
+      label: "დიზაინის მოთხოვნები",
     },
     {
       to: "/support/it-tasks",

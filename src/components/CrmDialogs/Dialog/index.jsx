@@ -12,6 +12,7 @@ import {
   FileText,
   FileSpreadsheet,
   Download,
+  Loader2,
 } from "lucide-react"
 
 const actionTypes = {
@@ -133,16 +134,23 @@ export const DialogButton = ({
   variant,
   icon: CustomIcon,
   size = "md",
+  loading = false,
   ...props
 }) => {
   const actionConfig = actionType ? actionTypes[actionType] : null
 
   const buttonVariant = variant || (actionConfig?.variant ?? "primary")
-  const Icon = CustomIcon || (actionConfig?.icon ?? null)
+  const Icon = loading ? Loader2 : CustomIcon || (actionConfig?.icon ?? null)
   const buttonLabel = label || (actionConfig?.label ?? "")
 
   return (
-    <BaseButton variant={buttonVariant} icon={Icon} size={size} {...props}>
+    <BaseButton
+      variant={buttonVariant}
+      icon={Icon}
+      size={size}
+      className={loading ? "animate-spin" : ""}
+      {...props}
+    >
       {buttonLabel}
     </BaseButton>
   )

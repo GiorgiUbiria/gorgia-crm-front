@@ -79,6 +79,7 @@ import VacancyRequests from "pages/Vacancies/VacancyRequests"
 import VacancyRequestForm from "pages/Vacancies/VacancyRequestForm"
 import VacancyRequestDetails from "pages/Vacancies/VacancyRequestDetails"
 import MyVacancyRequests from "pages/Vacancies/MyVacancyRequests"
+import DesignForm from "pages/DesignForm"
 
 const withProtectedRoute = (component, permission = "") => (
   <ProtectedRoute permission={permission}>{component}</ProtectedRoute>
@@ -452,6 +453,10 @@ const toolsRoutes = {
     calendar: {
       path: "/tools/calendar",
       component: withProtectedRoute(<Calendar />),
+    },
+    designForms: {
+      path: "/tools/design-forms",
+      component: withProtectedRoute(<DesignForm />),
     },
     notes: {
       path: "/tools/notes",
