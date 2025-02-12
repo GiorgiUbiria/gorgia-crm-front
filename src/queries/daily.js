@@ -90,29 +90,59 @@ export const useCreateDepartmentHeadDaily = () => {
 
   return useMutation({
     mutationFn: createDepartmentHeadDaily,
-    onSuccess: data => {
-      queryClient.invalidateQueries({
+    onMutate: async data => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
         queryKey: dailyKeys.departmentHead.lists(),
       })
 
-      queryClient.setQueryData(
-        dailyKeys.departmentHead.detail(data.daily.id),
-        data
+      // Snapshot the previous value
+      const previousDailies = queryClient.getQueryData(
+        dailyKeys.departmentHead.list({})
       )
 
-      const updateList = oldData => {
-        if (!oldData?.dailies) return oldData
-        return {
-          ...oldData,
-          dailies: [data.daily, ...oldData.dailies],
-          total: (oldData.total || 0) + 1,
-        }
+      // Create an optimistic daily entry
+      const optimisticDaily = {
+        id: `temp-${Date.now()}`, // temporary ID
+        ...data,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        status: "pending",
       }
 
+      // Optimistically update lists
       queryClient.setQueriesData(
         { queryKey: dailyKeys.departmentHead.lists() },
-        updateList
+        old => {
+          if (!old?.dailies) return old
+          return {
+            ...old,
+            dailies: [optimisticDaily, ...old.dailies],
+            total: (old.total || 0) + 1,
+          }
+        }
       )
+
+      return { previousDailies }
+    },
+    onError: (err, _, context) => {
+      // Revert the optimistic update on error
+      if (context?.previousDailies) {
+        queryClient.setQueriesData(
+          { queryKey: dailyKeys.departmentHead.lists() },
+          context.previousDailies
+        )
+      }
+    },
+    onSettled: () => {
+      // Always refetch after mutation settles
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.departmentHead.lists(),
+      })
+      // Also invalidate the all dailies list if it exists
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.all,
+      })
     },
   })
 }
@@ -151,23 +181,80 @@ export const useUpdateDepartmentHeadDaily = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => updateDepartmentHeadDaily(id, data),
-    onSuccess: (data, { id }) => {
-      queryClient.setQueryData(dailyKeys.departmentHead.detail(id), data)
+    onMutate: async ({ id, data }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: dailyKeys.departmentHead.detail(id),
+      })
+      await queryClient.cancelQueries({
+        queryKey: dailyKeys.departmentHead.lists(),
+      })
 
-      const updateList = oldData => {
-        if (!oldData?.dailies) return oldData
-        return {
-          ...oldData,
-          dailies: oldData.dailies.map(daily =>
-            daily.id === id ? data.daily : daily
-          ),
-        }
-      }
+      // Snapshot the previous value
+      const previousDaily = queryClient.getQueryData(
+        dailyKeys.departmentHead.detail(id)
+      )
 
+      // Optimistically update the detail view
+      queryClient.setQueryData(dailyKeys.departmentHead.detail(id), old => ({
+        ...old,
+        daily: {
+          ...(old?.daily || {}),
+          ...data,
+          updated_at: new Date().toISOString(),
+        },
+      }))
+
+      // Optimistically update any lists that contain this daily
       queryClient.setQueriesData(
         { queryKey: dailyKeys.departmentHead.lists() },
-        updateList
+        old => {
+          if (!old?.dailies) return old
+          return {
+            ...old,
+            dailies: old.dailies.map(daily =>
+              daily.id === id
+                ? {
+                    ...daily,
+                    ...data,
+                    updated_at: new Date().toISOString(),
+                  }
+                : daily
+            ),
+          }
+        }
       )
+
+      return { previousDaily }
+    },
+    onError: (err, { id }, context) => {
+      // Revert the optimistic update on error
+      if (context?.previousDaily) {
+        queryClient.setQueryData(
+          dailyKeys.departmentHead.detail(id),
+          context.previousDaily
+        )
+      }
+      // Invalidate to ensure consistency
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.departmentHead.detail(id),
+      })
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.departmentHead.lists(),
+      })
+    },
+    onSettled: (_, __, variables) => {
+      // Always refetch after mutation settles to ensure consistency
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.departmentHead.detail(variables.id),
+      })
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.departmentHead.lists(),
+      })
+      // Also invalidate the all dailies list if it exists
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.all,
+      })
     },
   })
 }
@@ -177,23 +264,80 @@ export const useUpdateRegularDaily = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => updateRegularDaily(id, data),
-    onSuccess: (data, { id }) => {
-      queryClient.setQueryData(dailyKeys.regular.detail(id), data)
+    onMutate: async ({ id, data }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: dailyKeys.regular.detail(id),
+      })
+      await queryClient.cancelQueries({
+        queryKey: dailyKeys.regular.lists(),
+      })
 
-      const updateList = oldData => {
-        if (!oldData?.dailies) return oldData
-        return {
-          ...oldData,
-          dailies: oldData.dailies.map(daily =>
-            daily.id === id ? data.daily : daily
-          ),
-        }
-      }
+      // Snapshot the previous value
+      const previousDaily = queryClient.getQueryData(
+        dailyKeys.regular.detail(id)
+      )
 
+      // Optimistically update the detail view
+      queryClient.setQueryData(dailyKeys.regular.detail(id), old => ({
+        ...old,
+        daily: {
+          ...(old?.daily || {}),
+          ...data,
+          updated_at: new Date().toISOString(),
+        },
+      }))
+
+      // Optimistically update any lists that contain this daily
       queryClient.setQueriesData(
         { queryKey: dailyKeys.regular.lists() },
-        updateList
+        old => {
+          if (!old?.dailies) return old
+          return {
+            ...old,
+            dailies: old.dailies.map(daily =>
+              daily.id === id
+                ? {
+                    ...daily,
+                    ...data,
+                    updated_at: new Date().toISOString(),
+                  }
+                : daily
+            ),
+          }
+        }
       )
+
+      return { previousDaily }
+    },
+    onError: (err, { id }, context) => {
+      // Revert the optimistic update on error
+      if (context?.previousDaily) {
+        queryClient.setQueryData(
+          dailyKeys.regular.detail(id),
+          context.previousDaily
+        )
+      }
+      // Invalidate to ensure consistency
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.regular.detail(id),
+      })
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.regular.lists(),
+      })
+    },
+    onSettled: (_, __, variables) => {
+      // Always refetch after mutation settles
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.regular.detail(variables.id),
+      })
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.regular.lists(),
+      })
+      // Also invalidate the all dailies list if it exists
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.all,
+      })
     },
   })
 }
@@ -203,24 +347,66 @@ export const useDeleteDepartmentHeadDaily = () => {
 
   return useMutation({
     mutationFn: deleteDepartmentHeadDaily,
-    onSuccess: (_, id) => {
+    onMutate: async id => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: dailyKeys.departmentHead.detail(id),
+      })
+      await queryClient.cancelQueries({
+        queryKey: dailyKeys.departmentHead.lists(),
+      })
+
+      // Snapshot the previous values
+      const previousDaily = queryClient.getQueryData(
+        dailyKeys.departmentHead.detail(id)
+      )
+      const previousLists = queryClient.getQueriesData({
+        queryKey: dailyKeys.departmentHead.lists(),
+      })
+
+      // Remove the daily from detail cache
       queryClient.removeQueries({
         queryKey: dailyKeys.departmentHead.detail(id),
       })
 
-      const updateList = oldData => {
-        if (!oldData?.dailies) return oldData
-        return {
-          ...oldData,
-          dailies: oldData.dailies.filter(daily => daily.id !== id),
-          total: Math.max(0, (oldData.total || 0) - 1),
-        }
-      }
-
+      // Optimistically update lists
       queryClient.setQueriesData(
         { queryKey: dailyKeys.departmentHead.lists() },
-        updateList
+        old => {
+          if (!old?.dailies) return old
+          return {
+            ...old,
+            dailies: old.dailies.filter(daily => daily.id !== id),
+            total: Math.max(0, (old.total || 0) - 1),
+          }
+        }
       )
+
+      return { previousDaily, previousLists }
+    },
+    onError: (err, id, context) => {
+      // Restore the detail cache
+      if (context?.previousDaily) {
+        queryClient.setQueryData(
+          dailyKeys.departmentHead.detail(id),
+          context.previousDaily
+        )
+      }
+      // Restore all list caches
+      if (context?.previousLists) {
+        context.previousLists.forEach(([queryKey, value]) => {
+          queryClient.setQueryData(queryKey, value)
+        })
+      }
+    },
+    onSettled: () => {
+      // Always refetch after mutation settles
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.departmentHead.lists(),
+      })
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.all,
+      })
     },
   })
 }
@@ -230,24 +416,66 @@ export const useDeleteRegularDaily = () => {
 
   return useMutation({
     mutationFn: deleteRegularDaily,
-    onSuccess: (_, id) => {
+    onMutate: async id => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: dailyKeys.regular.detail(id),
+      })
+      await queryClient.cancelQueries({
+        queryKey: dailyKeys.regular.lists(),
+      })
+
+      // Snapshot the previous values
+      const previousDaily = queryClient.getQueryData(
+        dailyKeys.regular.detail(id)
+      )
+      const previousLists = queryClient.getQueriesData({
+        queryKey: dailyKeys.regular.lists(),
+      })
+
+      // Remove the daily from detail cache
       queryClient.removeQueries({
         queryKey: dailyKeys.regular.detail(id),
       })
 
-      const updateList = oldData => {
-        if (!oldData?.dailies) return oldData
-        return {
-          ...oldData,
-          dailies: oldData.dailies.filter(daily => daily.id !== id),
-          total: Math.max(0, (oldData.total || 0) - 1),
-        }
-      }
-
+      // Optimistically update lists
       queryClient.setQueriesData(
         { queryKey: dailyKeys.regular.lists() },
-        updateList
+        old => {
+          if (!old?.dailies) return old
+          return {
+            ...old,
+            dailies: old.dailies.filter(daily => daily.id !== id),
+            total: Math.max(0, (old.total || 0) - 1),
+          }
+        }
       )
+
+      return { previousDaily, previousLists }
+    },
+    onError: (err, id, context) => {
+      // Restore the detail cache
+      if (context?.previousDaily) {
+        queryClient.setQueryData(
+          dailyKeys.regular.detail(id),
+          context.previousDaily
+        )
+      }
+      // Restore all list caches
+      if (context?.previousLists) {
+        context.previousLists.forEach(([queryKey, value]) => {
+          queryClient.setQueryData(queryKey, value)
+        })
+      }
+    },
+    onSettled: () => {
+      // Always refetch after mutation settles
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.regular.lists(),
+      })
+      queryClient.invalidateQueries({
+        queryKey: dailyKeys.all,
+      })
     },
   })
 }

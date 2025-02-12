@@ -1,21 +1,17 @@
 import React, { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import defaultInstance from "plugins/axios"
-import { format } from "date-fns"
-import { toast } from "store/zustand/toastStore"
 import { Loader2 } from "lucide-react"
+import { toast } from "store/zustand/toastStore"
 
 const UploadEmployeeContactsForm = ({ onClose }) => {
   const [file, setFile] = useState(null)
-  const [reportPeriod, setReportPeriod] = useState(
-    format(new Date(), "yyyy-MM")
-  )
   const queryClient = useQueryClient()
 
   const uploadMutation = useMutation({
     mutationFn: async formData => {
       const { data } = await defaultInstance.post(
-        "/api/employee-contacts/upload/monthly",
+        "/api/employee-contacts/upload",
         formData,
         {
           headers: {
@@ -26,35 +22,9 @@ const UploadEmployeeContactsForm = ({ onClose }) => {
       return data
     },
     onSuccess: data => {
-      toast.success("ფაილი წარმატებით აიტვირთა და მუშავდება")
-      
-      // Start polling for file status
-      const pollInterval = setInterval(async () => {
-        try {
-          const { data: fileData } = await defaultInstance.get(
-            `/api/employee-contacts/files/${data.file.id}`
-          )
-
-          if (fileData.status === "completed") {
-            clearInterval(pollInterval)
-            toast.success("ფაილის დამუშავება დასრულდა")
-            queryClient.invalidateQueries(["employee-contacts"])
-            queryClient.invalidateQueries(["employee-contacts-files"])
-            onClose()
-          } else if (fileData.status === "failed") {
-            clearInterval(pollInterval)
-            toast.error("ფაილის დამუშავება ვერ მოხერხდა")
-          }
-        } catch (error) {
-          clearInterval(pollInterval)
-          console.error("Error polling file status:", error)
-        }
-      }, 2000) // Poll every 2 seconds
-
-      // Clear interval after 5 minutes to prevent infinite polling
-      setTimeout(() => {
-        clearInterval(pollInterval)
-      }, 5 * 60 * 1000)
+      toast.success(data.message)
+      queryClient.invalidateQueries(["employee-contacts"])
+      onClose()
     },
     onError: error => {
       toast.error(error.response?.data?.message || "შეცდომა ფაილის ატვირთვისას")
@@ -70,27 +40,12 @@ const UploadEmployeeContactsForm = ({ onClose }) => {
 
     const formData = new FormData()
     formData.append("file", file)
-    formData.append("report_period", reportPeriod)
 
     uploadMutation.mutate(formData)
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:!text-gray-200">
-          რეპორტის პერიოდი
-        </label>
-        <input
-          type="month"
-          value={reportPeriod}
-          onChange={e => setReportPeriod(e.target.value)}
-          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:!bg-gray-700 dark:!border-gray-600"
-          required
-          disabled={uploadMutation.isLoading}
-        />
-      </div>
-
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:!text-gray-200">
           ფაილი
@@ -114,7 +69,11 @@ const UploadEmployeeContactsForm = ({ onClose }) => {
             <div className="flex text-sm text-gray-600 dark:!text-gray-400">
               <label
                 htmlFor="file-upload"
-                className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                className={`relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500 ${
+                  uploadMutation.isLoading
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
               >
                 <span>აირჩიეთ ფაილი</span>
                 <input
@@ -122,7 +81,7 @@ const UploadEmployeeContactsForm = ({ onClose }) => {
                   name="file-upload"
                   type="file"
                   className="sr-only"
-                  accept=".xlsx,.xls,.csv"
+                  accept=".xlsx,.xls"
                   onChange={e => setFile(e.target.files[0])}
                   disabled={uploadMutation.isLoading}
                 />
@@ -130,7 +89,7 @@ const UploadEmployeeContactsForm = ({ onClose }) => {
               <p className="pl-1">ან ჩააგდეთ</p>
             </div>
             <p className="text-xs text-gray-500 dark:!text-gray-400">
-              XLSX, XLS, CSV მაქს. 10MB
+              XLSX, XLS მაქს. 10MB
             </p>
             {file && (
               <p className="text-sm text-gray-500 dark:!text-gray-400">

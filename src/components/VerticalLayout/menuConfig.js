@@ -411,6 +411,7 @@ const getMenuItems = can => {
       to: "/tools/employee-contacts",
       icon: LuFilter,
       label: "საკომუნიკაციო ბაზა",
+      show: () => can("role:admin|department:8"),
     },
     {
       to: "/tools/people-counting",

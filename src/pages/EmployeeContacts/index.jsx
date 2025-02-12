@@ -3,13 +3,18 @@ import { useQuery } from "@tanstack/react-query"
 import { CrmTable } from "components/CrmTable"
 import { useForm } from "@tanstack/react-form"
 import UploadEmployeeContactsForm from "./components/upload"
-import UploadedFilesTable from "./components/files"
 import CrmSpinner from "components/CrmSpinner"
-import { Filter } from "lucide-react"
+import { Filter, Download } from "lucide-react"
 import defaultInstance from "plugins/axios"
 import useAuth from "hooks/useAuth"
+import { toast } from "store/zustand/toastStore"
 
 const defaultFilters = {
+  employee_name: "",
+  position: "",
+  corporate_number: "",
+  personal_number: "",
+  email: "",
   city: "",
   branch: "",
   search: "",
@@ -21,6 +26,8 @@ const EmployeeContacts = () => {
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState(defaultFilters)
+  const [page, setPage] = useState(1)
+  const [perPage] = useState(15)
 
   const form = useForm({
     defaultValues: defaultFilters,
@@ -30,6 +37,7 @@ const EmployeeContacts = () => {
         if (val) newFilters[key] = val
       })
       setFilters(newFilters)
+      setPage(1)
     },
   })
 
@@ -43,15 +51,57 @@ const EmployeeContacts = () => {
     },
   })
 
-  const { data: employeeContactsData, isLoading } = useQuery({
-    queryKey: ["employee-contacts", filters],
+  const { data: employeeContactsData, isLoading: isDataLoading } = useQuery({
+    queryKey: ["employee-contacts", filters, page, perPage],
     queryFn: async () => {
       const { data } = await defaultInstance.get("/api/employee-contacts", {
-        params: filters,
+        params: {
+          ...filters,
+          page,
+          per_page: perPage,
+        },
       })
       return data
     },
   })
+
+  const { data: filesData } = useQuery({
+    queryKey: ["employee-contacts-files"],
+    queryFn: async () => {
+      const { data } = await defaultInstance.get(
+        "/api/employee-contacts/files",
+        {
+          params: {
+            status: "completed",
+            per_page: 1,
+          },
+        }
+      )
+      return data
+    },
+  })
+
+  const handleDownload = async file => {
+    try {
+      const response = await defaultInstance.get(
+        `/api/employee-contacts/files/${file.id}/download`,
+        {
+          responseType: "blob",
+        }
+      )
+
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement("a")
+      link.href = url
+      link.setAttribute("download", file.original_name)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      toast.error("შეცდომა ფაილის ჩამოტვირთვისას")
+    }
+  }
 
   const columns = useMemo(
     () => [
@@ -66,12 +116,12 @@ const EmployeeContacts = () => {
         enableColumnFilter: false,
       },
       {
-        header: "კორპორატიული ტელეფონის ნომერი",
+        header: "კორპორატიული ნომერი",
         accessorKey: "corporate_number",
         enableColumnFilter: false,
       },
       {
-        header: "პირადი ტელეფონის ნომერი",
+        header: "ტელეფონის ნომერი",
         accessorKey: "personal_number",
         enableColumnFilter: false,
       },
@@ -94,6 +144,8 @@ const EmployeeContacts = () => {
     []
   )
 
+  const isLoading = isDataLoading
+
   if (isLoading) {
     return <CrmSpinner />
   }
@@ -105,6 +157,14 @@ const EmployeeContacts = () => {
           <h1 className="text-3xl font-bold text-gray-900 dark:!text-white">
             თანამშრომლების კონტაქტები
           </h1>
+          {filesData?.files?.data?.[0] && canManageContacts && (
+            <button
+              onClick={() => handleDownload(filesData.files.data[0])}
+              className="text-blue-600 hover:text-blue-900 dark:!text-blue-400 dark:!hover:text-blue-300"
+            >
+              <Download className="h-5 w-5" />
+            </button>
+          )}
         </div>
         <div className="flex gap-4">
           <button
@@ -117,7 +177,7 @@ const EmployeeContacts = () => {
           {canManageContacts && (
             <button
               onClick={() => setShowUploadForm(!showUploadForm)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {showUploadForm ? "დახურვა" : "ატვირთვა"}
             </button>
@@ -149,6 +209,91 @@ const EmployeeContacts = () => {
             }}
             className="grid grid-cols-1 md:grid-cols-4 gap-4"
           >
+            <form.Field name="employee_name">
+              {field => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                    სახელი/გვარი
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                    placeholder="სახელი/გვარი"
+                  />
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="position">
+              {field => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                    თანამდებობა
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                    placeholder="თანამდებობა"
+                  />
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="email">
+              {field => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                    ელ-ფოსტა
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                    placeholder="ელ-ფოსტა"
+                  />
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="personal_number">
+              {field => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                    ტელეფონის ნომერი
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                    placeholder="პირადი ნომერი"
+                  />
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="corporate_number">
+              {field => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                    კორპორატიული ნომერი
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={e => field.handleChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                    placeholder="კორპორატიული ნომერი"
+                  />
+                </div>
+              )}
+            </form.Field>
+
             <form.Field name="city">
               {field => (
                 <div>
@@ -175,65 +320,14 @@ const EmployeeContacts = () => {
               {field => (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
-                    ფილიალი
+                    ფილიალი/დეპარტამენტი
                   </label>
                   <input
                     type="text"
                     value={field.state.value}
                     onChange={e => field.handleChange(e.target.value)}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
-                    placeholder="ფილიალი"
-                  />
-                </div>
-              )}
-            </form.Field>
-
-            <form.Field name="search">
-              {field => (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
-                    ძებნა
-                  </label>
-                  <input
-                    type="text"
-                    value={field.state.value}
-                    onChange={e => field.handleChange(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
-                    placeholder="სახელი, პოზიცია, ელ-ფოსტა"
-                  />
-                </div>
-              )}
-            </form.Field>
-
-            <form.Field name="personal_number">
-              {field => (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
-                    პირადი ნომერი
-                  </label>
-                  <input
-                    type="text"
-                    value={field.state.value}
-                    onChange={e => field.handleChange(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
-                    placeholder="პირადი ნომერი"
-                  />
-                </div>
-              )}
-            </form.Field>
-
-            <form.Field name="corporate_number">
-              {field => (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
-                    კორპორატიული ნომერი
-                  </label>
-                  <input
-                    type="text"
-                    value={field.state.value}
-                    onChange={e => field.handleChange(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
-                    placeholder="კორპორატიული ნომერი"
+                    placeholder="ფილიალი/დეპარტამენტი"
                   />
                 </div>
               )}
@@ -266,13 +360,15 @@ const EmployeeContacts = () => {
           data={employeeContactsData?.data || []}
           columns={columns}
           pagination={{
-            pageIndex: 0,
-            pageSize: 15,
-            pageCount: Math.ceil((employeeContactsData?.total || 0) / 15),
-            total: employeeContactsData?.total || 0,
+            pageIndex: page - 1,
+            pageSize: perPage,
+            pageCount: Math.ceil(
+              (employeeContactsData?.meta?.total || 0) / perPage
+            ),
+            total: employeeContactsData?.meta?.total || 0,
+            onPageChange: newPage => setPage(newPage + 1),
           }}
         />
-        {canManageContacts && <UploadedFilesTable />}
       </div>
     </div>
   )
