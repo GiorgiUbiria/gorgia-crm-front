@@ -133,7 +133,7 @@ export const procurementSchema = Yup.object()
   .shape({
     procurement_type: Yup.string()
       .required("შესყიდვის ტიპის არჩევა სავალდებულოა")
-      .oneOf(["purchase", "price_inquiry"], "არასწორი შესყიდვის ტიპი"),
+      .oneOf(["purchase", "price_inquiry", "service"], "არასწორი შესყიდვის ტიპი"),
 
     branches: Yup.array()
       .of(Yup.string().oneOf(branchOptions, "არასწორი ფილიალი"))

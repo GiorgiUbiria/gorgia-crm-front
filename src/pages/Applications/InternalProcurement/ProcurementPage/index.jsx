@@ -304,12 +304,16 @@ const ProductBranchSelector = ({ formik, index }) => {
             >
               <input
                 type="checkbox"
-                checked={formik.values.products[index].branches.includes(branch)}
+                checked={formik.values.products[index].branches.includes(
+                  branch
+                )}
                 onChange={e => {
                   const checked = e.target.checked
                   const branches = checked
                     ? [...formik.values.products[index].branches, branch]
-                    : formik.values.products[index].branches.filter(b => b !== branch)
+                    : formik.values.products[index].branches.filter(
+                        b => b !== branch
+                      )
                   formik.setFieldValue(`products.${index}.branches`, branches)
                 }}
                 className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500/30 
@@ -322,18 +326,19 @@ const ProductBranchSelector = ({ formik, index }) => {
           ))}
         </div>
       </div>
-      {formik.touched.products?.[index]?.branches && formik.errors.products?.[index]?.branches && (
-        <div className="mt-2 text-sm text-red-500 dark:!text-red-400 flex items-center gap-1.5">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span>{formik.errors.products[index].branches}</span>
-        </div>
-      )}
+      {formik.touched.products?.[index]?.branches &&
+        formik.errors.products?.[index]?.branches && (
+          <div className="mt-2 text-sm text-red-500 dark:!text-red-400 flex items-center gap-1.5">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>{formik.errors.products[index].branches}</span>
+          </div>
+        )}
     </div>
   )
 }
@@ -737,6 +742,7 @@ const ProcurementPage = () => {
                       <option value="">აირჩიეთ შესყიდვის ტიპი</option>
                       <option value="purchase">შესყიდვა</option>
                       <option value="price_inquiry">ფასის მოკვლევა</option>
+                      <option value="service">მომსახურება</option>
                     </InputWithError>
 
                     <InputWithError
@@ -866,7 +872,7 @@ const ProcurementPage = () => {
             </FormSection>
 
             {formik.values.category === "Marketing" && (
-              <FormSection title="მართვის ინფორმაცია">
+              <FormSection title="დამატებითი ინფორმაცია">
                 <div className="space-y-2 sm:space-y-4">
                   <InputWithError
                     formik={formik}
@@ -886,7 +892,7 @@ const ProcurementPage = () => {
             )}
             {formik.values.category !== "Marketing" &&
               formik.values.category !== "" && (
-                <FormSection title="მართვის ინფორმაცია">
+                <FormSection title="დამატებითი ინფორმაცია">
                   <div className="space-y-2 sm:space-y-4">
                     <InputWithError
                       formik={formik}

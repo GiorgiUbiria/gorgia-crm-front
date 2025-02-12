@@ -1,6 +1,9 @@
 import React, { useState } from "react"
 import { useForm } from "@tanstack/react-form"
-import { useUploadMonthlyReport, useUploadWeeklyReport } from "queries/peopleCounting"
+import {
+  useUploadMonthlyReport,
+  useUploadWeeklyReport,
+} from "queries/peopleCounting"
 
 const UploadPeopleCountingForm = ({ onSuccess }) => {
   const [reportType, setReportType] = useState("monthly")
@@ -14,7 +17,7 @@ const UploadPeopleCountingForm = ({ onSuccess }) => {
     },
     onSubmit: async ({ value }) => {
       const { file, report_period } = value
-      
+
       try {
         if (reportType === "monthly") {
           await uploadMonthlyReportMutation.mutateAsync({
@@ -27,7 +30,7 @@ const UploadPeopleCountingForm = ({ onSuccess }) => {
             reportPeriod: report_period,
           })
         }
-        
+
         onSuccess?.()
       } catch (error) {
         console.error("Error uploading report:", error)
@@ -35,7 +38,9 @@ const UploadPeopleCountingForm = ({ onSuccess }) => {
     },
   })
 
-  const isSubmitting = uploadMonthlyReportMutation.isPending || uploadWeeklyReportMutation.isPending
+  const isSubmitting =
+    uploadMonthlyReportMutation.isPending ||
+    uploadWeeklyReportMutation.isPending
 
   return (
     <form
@@ -58,7 +63,7 @@ const UploadPeopleCountingForm = ({ onSuccess }) => {
           }}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
         >
-          <option value="monthly">თვიური</option>
+          <option value="monthly">თვის</option>
           <option value="weekly">კვირის</option>
         </select>
       </div>
@@ -84,7 +89,9 @@ const UploadPeopleCountingForm = ({ onSuccess }) => {
               htmlFor={field.name}
               className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
             >
-              {reportType === "monthly" ? "რეპორტის პერიოდი" : "პერიოდის დასაწყისი"}
+              {reportType === "monthly"
+                ? "რეპორტის პერიოდი"
+                : "პერიოდის დასაწყისი"}
             </label>
             <input
               type={reportType === "monthly" ? "month" : "date"}
@@ -153,4 +160,4 @@ const UploadPeopleCountingForm = ({ onSuccess }) => {
   )
 }
 
-export default UploadPeopleCountingForm 
+export default UploadPeopleCountingForm

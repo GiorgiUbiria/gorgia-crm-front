@@ -142,7 +142,11 @@ const ProcurementPageArchive = () => {
         Cell: ({ value }) => (
           <div>
             <span className="badge bg-primary">
-              {value === "purchase" ? "შესყიდვა" : "ფასის მოკვლევა"}
+              {value === "purchase"
+                ? "შესყიდვა"
+                : value === "price_inquiry"
+                ? "ფასის მოკვლევა"
+                : "მომსახურება"}
             </span>
           </div>
         ),
