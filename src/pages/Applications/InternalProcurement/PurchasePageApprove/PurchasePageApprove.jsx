@@ -456,8 +456,8 @@ const PurchasePageApprove = () => {
       },
     },
     {
-      field: "branch",
-      label: "ფილიალი",
+      field: "branches",
+      label: "ფილიალები",
     },
   ]
 
@@ -862,7 +862,7 @@ const PurchasePageApprove = () => {
                   <tr>
                     <th>
                       <div className="d-flex align-items-center gap-2">
-                        <BiBuilding /> <span>ფილიალი</span>
+                        <BiBuilding /> <span>ფილიალები</span>
                       </div>
                     </th>
                     <th>
@@ -920,7 +920,11 @@ const PurchasePageApprove = () => {
                 <tbody>
                   {rowData.products.map((product, idx) => (
                     <tr key={idx}>
-                      <td>{product?.branch || "N/A"}</td>
+                      <td>
+                        {product?.branches?.length > 0
+                          ? product.branches.join(", ")
+                          : "N/A"}
+                      </td>
                       <td>{product?.name || "N/A"}</td>
                       <td>{product?.quantity || "N/A"}</td>
                       <td>{product?.dimensions || "N/A"}</td>

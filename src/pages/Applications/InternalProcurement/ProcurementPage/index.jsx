@@ -275,6 +275,69 @@ const InputWithError = ({
   )
 }
 
+const ProductBranchSelector = ({ formik, index }) => {
+  const [searchQuery, setSearchQuery] = useState("")
+  const filteredBranches = formik.values.branches.filter(branch =>
+    branch.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  return (
+    <div className="relative">
+      <label className="block text-sm font-medium mb-2 text-gray-700 dark:!text-gray-300">
+        ფილიალები
+      </label>
+      <div className="rounded-lg border border-gray-200 dark:!border-gray-700 bg-white dark:!bg-gray-800 overflow-hidden">
+        <div className="p-2 border-b border-gray-200 dark:!border-gray-700">
+          <input
+            type="text"
+            placeholder="მოძებნე ფილიალი..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:!bg-gray-700 border border-gray-200 dark:!border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          />
+        </div>
+        <div className="max-h-[240px] overflow-y-auto p-2 grid grid-cols-2 gap-2">
+          {filteredBranches.map(branch => (
+            <label
+              key={branch}
+              className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-50 dark:!hover:bg-gray-700 cursor-pointer group transition-colors"
+            >
+              <input
+                type="checkbox"
+                checked={formik.values.products[index].branches.includes(branch)}
+                onChange={e => {
+                  const checked = e.target.checked
+                  const branches = checked
+                    ? [...formik.values.products[index].branches, branch]
+                    : formik.values.products[index].branches.filter(b => b !== branch)
+                  formik.setFieldValue(`products.${index}.branches`, branches)
+                }}
+                className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500/30 
+                dark:!border-gray-600 dark:!bg-gray-700 transition-colors"
+              />
+              <span className="text-sm text-gray-700 dark:!text-gray-200 group-hover:text-gray-900 dark:!group-hover:text-white transition-colors">
+                {branch}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+      {formik.touched.products?.[index]?.branches && formik.errors.products?.[index]?.branches && (
+        <div className="mt-2 text-sm text-red-500 dark:!text-red-400 flex items-center gap-1.5">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>{formik.errors.products[index].branches}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
   <div className="border dark:!border-gray-700/50 rounded-xl overflow-hidden bg-white dark:!bg-gray-800/95 transition-all duration-300 hover:shadow-lg dark:!hover:shadow-gray-800/50 group">
     <div
@@ -347,19 +410,7 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
         </div>
 
         <div className="space-y-4">
-          <InputWithError
-            formik={formik}
-            name={`products.${index}.branch`}
-            label="ფილიალი"
-            type="select"
-          >
-            <option value="">აირჩიეთ ფილიალი</option>
-            {formik.values.branches.map(branch => (
-              <option key={branch} value={branch}>
-                {branch}
-              </option>
-            ))}
-          </InputWithError>
+          <ProductBranchSelector formik={formik} index={index} />
 
           <InputWithError
             formik={formik}
@@ -647,7 +698,7 @@ const ProcurementPage = () => {
         similar_purchase_planned: "",
         in_stock_explanation: "",
         payer: "",
-        branch: "",
+        branches: [],
       },
     ])
     setExpandedProducts(prev => [...prev, newProductIndex])

@@ -51,6 +51,10 @@ export function CrmTable({
   const [sorting, setSorting] = React.useState([])
   const [columnFilters, setColumnFilters] = React.useState([])
   const [expanded, setExpanded] = React.useState({})
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  })
 
   const sizeClasses = sizeVariants[size]
 
@@ -68,12 +72,14 @@ export function CrmTable({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onExpandedChange: setExpanded,
+    onPaginationChange: setPagination,
     getRowCanExpand: () => true,
-    autoResetAll: true,
+    autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
       expanded,
+      pagination,
     },
   })
 

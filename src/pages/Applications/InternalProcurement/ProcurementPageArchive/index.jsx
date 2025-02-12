@@ -249,8 +249,8 @@ const ProcurementPageArchive = () => {
       },
     },
     {
-      field: "branch",
-      label: "ფილიალი",
+      field: "branches",
+      label: "ფილიალები",
     },
   ]
 
@@ -607,7 +607,7 @@ const ProcurementPageArchive = () => {
                 >
                   <tr>
                     <th className="dark:!text-gray-300">
-                      <BiBuilding className="dark:!text-gray-400" /> ფილიალი
+                      <BiBuilding className="dark:!text-gray-400" /> ფილიალები
                     </th>
                     <th className="dark:!text-gray-300">
                       <BiLabel className="dark:!text-gray-400" /> სახელი
@@ -656,7 +656,9 @@ const ProcurementPageArchive = () => {
                       className="dark:!bg-gray-800 dark:!border-gray-700 hover:dark:!bg-gray-700"
                     >
                       <td className="dark:!text-gray-400">
-                        {product?.branch || "N/A"}
+                        {product?.branches?.length > 0
+                          ? product.branches.join(", ")
+                          : "N/A"}
                       </td>
                       <td className="dark:!text-gray-400">
                         {product?.name || "N/A"}

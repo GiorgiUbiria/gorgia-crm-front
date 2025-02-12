@@ -200,8 +200,8 @@ const UserProcurements = () => {
       },
     },
     {
-      field: "branch",
-      label: "ფილიალი",
+      field: "branches",
+      label: "ფილიალები",
     },
   ]
 
@@ -502,7 +502,7 @@ const UserProcurements = () => {
                 <thead className="table-light">
                   <tr>
                     <th>
-                      <BiBuilding /> ფილიალი
+                      <BiBuilding /> ფილიალები
                     </th>
                     <th>
                       <BiLabel /> სახელი
@@ -540,7 +540,11 @@ const UserProcurements = () => {
                 <tbody>
                   {rowData.products.map((product, idx) => (
                     <tr key={idx}>
-                      <td>{product?.branch || "N/A"}</td>
+                      <td>
+                        {product?.branches?.length > 0
+                          ? product.branches.join(", ")
+                          : "N/A"}
+                      </td>
                       <td>{product?.name || "N/A"}</td>
                       <td>{product?.quantity || "N/A"}</td>
                       <td>{product?.dimensions || "N/A"}</td>
