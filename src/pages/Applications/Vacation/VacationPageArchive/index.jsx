@@ -299,7 +299,7 @@ const VacationPageArchive = () => {
     useAuth()
   const updateOneCStatusMutation = useUpdateOneCStatus()
 
-  const isHrAssistant = isDepartmentHeadAssistant() || isHrMember()
+  const isHrAssistant = isDepartmentHeadAssistant() && isHrMember()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedVacation, setSelectedVacation] = useState(null)
