@@ -31,6 +31,8 @@ import FarmTaskDetails from "pages/FarmJobPages/JobDetails"
 import FarmTaskList from "pages/FarmJobPages/JobList"
 import LegalTaskList from "pages/LegalJobPages/JobList"
 import LegalTaskDetails from "pages/LegalJobPages/JobDetails"
+import OneCTaskList from "pages/OneCJobPages/JobList"
+import OneCTaskDetails from "pages/OneCJobPages/JobDetails"
 import AgreementRequest from "pages/Agreements/AgreementRequest"
 
 import EmployeeContacts from "pages/EmployeeContacts"
@@ -420,9 +422,16 @@ const supportRoutes = {
       path: "/support/legal-tasks/:id",
       component: withProtectedRoute(<LegalTaskDetails />),
     },
+    oneCTasks: {
+      path: "/support/1c-tasks",
+      component: withProtectedRoute(<OneCTaskList />),
+    },
+    oneCTaskDetails: {
+      path: "/support/1c-tasks/:id",
+      component: withProtectedRoute(<OneCTaskDetails />),
+    },
   },
 }
-
 const communicationRoutes = {
   path: "/communication",
   children: {

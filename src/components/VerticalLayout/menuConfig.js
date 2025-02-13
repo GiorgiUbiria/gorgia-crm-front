@@ -411,6 +411,11 @@ const getMenuItems = can => {
       label: "იურიდიული Tasks",
     },
     {
+      to: "/support/1c-tasks",
+      icon: LuFileCode,
+      label: "1C Tasks",
+    },
+    {
       to: "/tools/notes",
       icon: LuNotebook,
       label: "ჩანაწერები",
