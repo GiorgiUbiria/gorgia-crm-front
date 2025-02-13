@@ -281,6 +281,22 @@ const ProductBranchSelector = ({ formik, index }) => {
     branch.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  const ensureArray = value => {
+    if (Array.isArray(value)) return value
+    if (typeof value === "string") return value.split(",").map(b => b.trim())
+    if (!value) return []
+    return [value]
+  }
+
+  const handleBranchChange = (branch, checked) => {
+    const currentBranches = ensureArray(formik.values.products[index].branches)
+    const newBranches = checked
+      ? [...currentBranches, branch]
+      : currentBranches.filter(b => b !== branch)
+
+    formik.setFieldValue(`products.${index}.branches`, newBranches)
+  }
+
   return (
     <div className="relative">
       <label className="block text-sm font-medium mb-2 text-gray-700 dark:!text-gray-300">
@@ -304,18 +320,11 @@ const ProductBranchSelector = ({ formik, index }) => {
             >
               <input
                 type="checkbox"
-                checked={formik.values.products[index].branches.includes(
-                  branch
-                )}
-                onChange={e => {
-                  const checked = e.target.checked
-                  const branches = checked
-                    ? [...formik.values.products[index].branches, branch]
-                    : formik.values.products[index].branches.filter(
-                        b => b !== branch
-                      )
-                  formik.setFieldValue(`products.${index}.branches`, branches)
-                }}
+                checked={
+                  formik.values.products[index]?.branches?.includes(branch) ||
+                  false
+                }
+                onChange={e => handleBranchChange(branch, e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500/30 
                 dark:!border-gray-600 dark:!bg-gray-700 transition-colors"
               />
@@ -514,7 +523,19 @@ const ProcurementPage = () => {
       delivery_address: "",
       external_url: "",
       file: null,
-      products: [],
+      products: [
+        {
+          name: "",
+          quantity: "",
+          dimensions: "",
+          description: "",
+          search_variant: "",
+          similar_purchase_planned: "",
+          in_stock_explanation: "",
+          payer: "",
+          branches: [],
+        },
+      ],
     },
     validationSchema: procurementSchema,
     validateOnMount: true,
@@ -524,22 +545,13 @@ const ProcurementPage = () => {
       try {
         setGeneralError(null)
 
-        console.log("Form submission started with file:", {
-          fileInState: file
-            ? {
-                name: file.name,
-                type: file.type,
-                size: file.size,
-              }
-            : null,
-          fileInFormik: formik.values.file
-            ? {
-                name: formik.values.file.name,
-                type: formik.values.file.type,
-                size: formik.values.file.size,
-              }
-            : null,
-        })
+        const ensureArray = value => {
+          if (Array.isArray(value)) return value
+          if (typeof value === "string")
+            return value.split(",").map(b => b.trim())
+          if (!value) return []
+          return [value]
+        }
 
         const formattedValues = {
           ...values,
@@ -553,21 +565,13 @@ const ProcurementPage = () => {
                 values.category === "IT" || values.category === "Marketing"
                   ? null
                   : product.in_stock_explanation,
+              branches: ensureArray(product.branches),
             })) || [],
+          branches: ensureArray(values.branches),
           file: file,
         }
 
-        console.log("Formatted values before API call:", {
-          category: formattedValues.category,
-          hasFile: !!formattedValues.file,
-          fileDetails: formattedValues.file
-            ? {
-                name: formattedValues.file.name,
-                type: formattedValues.file.type,
-                size: formattedValues.file.size,
-              }
-            : null,
-        })
+        console.log("Formatted values before API call:", formattedValues)
 
         createPurchase(formattedValues, {
           onSuccess: () => {

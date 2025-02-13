@@ -244,7 +244,7 @@ const getBreadcrumbItems = (path, user) => {
               ? "გაგზავნილი"
               : action === "new"
               ? "დამატება"
-              : t(action),
+              : action,
           path: path,
         })
       }

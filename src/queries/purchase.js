@@ -36,7 +36,7 @@ export const useGetPurchaseList = (filters = {}, options = {}) => {
   return useQuery({
     queryKey: purchaseKeys.list(filters),
     queryFn: () => getPurchaseList(filters),
-    select: response => response.data,
+    select: response => response.data.data,
     ...options,
   })
 }

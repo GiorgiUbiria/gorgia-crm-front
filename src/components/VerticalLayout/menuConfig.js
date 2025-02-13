@@ -87,6 +87,13 @@ const getMenuItems = can => {
               icon: LuPlus,
             },
             {
+              to: "/applications/purchases/it",
+              label: "IT შესყიდვები",
+              icon: LuShieldCheck,
+              disabled: true,
+              show: () => can("role:admin|department:5"),
+            },
+            {
               to: "/applications/purchases/approve",
               label: "ვიზირება",
               icon: LuShieldCheck,

@@ -100,6 +100,8 @@ const ProcurementPageArchive = () => {
       !can("user:373"),
   })
 
+  console.log(purchaseData)
+
   const canViewTable = useMemo(() => {
     return (
       isAdmin() ||
@@ -811,7 +813,7 @@ const ProcurementPageArchive = () => {
             columns={columns}
             data={
               isAdmin() || getUserDepartmentId() === 7
-                ? purchaseData?.data || []
+                ? purchaseData || []
                 : departmentPurchaseData?.data || []
             }
             filterOptions={filterOptions}

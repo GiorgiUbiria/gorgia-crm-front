@@ -1038,7 +1038,7 @@ const PurchasePageApprove = () => {
             columns={columns}
             data={
               isAdmin() || getUserDepartmentId() === 7
-                ? purchaseData?.data || []
+                ? purchaseData || []
                 : departmentPurchaseData?.data || []
             }
             filterOptions={filterOptions}

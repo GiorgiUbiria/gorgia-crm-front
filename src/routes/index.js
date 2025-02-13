@@ -10,6 +10,7 @@ import ProcurementPage from "pages/Applications/InternalProcurement/ProcurementP
 import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
 import ProcurementPageArchive from "pages/Applications/InternalProcurement/ProcurementPageArchive"
 import UserProcurement from "pages/Applications/InternalProcurement/UserProcurements"
+import ItProcurements from "pages/Applications/InternalProcurement/ItProcurements"
 import UserVocation from "pages/Applications/Vacation/UserVocations"
 import VacationPage from "pages/Applications/Vacation/VacationPage"
 import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
@@ -125,6 +126,13 @@ const applicationsRoutes = {
         new: {
           path: "/applications/purchases/new",
           component: withProtectedRoute(<ProcurementPage />),
+        },
+        it: {
+          path: "/applications/purchases/it",
+          component: withProtectedRoute(
+            <ItProcurements />,
+            "role:admin|department:5"
+          ),
         },
         approve: {
           path: "/applications/purchases/approve",
