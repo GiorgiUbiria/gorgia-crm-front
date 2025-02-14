@@ -140,6 +140,13 @@ const TaskList = () => {
           enableSorting: false,
         },
         {
+          id: "ip_address",
+          accessorKey: "ip_address",
+          header: () => <span>IP მისამართი</span>,
+          cell: info => info.getValue(),
+          enableSorting: false,
+        },
+        {
           id: "priority",
           accessorKey: "priority",
           header: () => <span>მოთხოვნის პრიორიტეტი</span>,

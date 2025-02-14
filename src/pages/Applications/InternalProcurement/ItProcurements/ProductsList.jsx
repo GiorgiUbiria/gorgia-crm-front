@@ -1,10 +1,10 @@
-import React, { useState } from "react"
+import React, { useState, useCallback, memo } from "react"
 import {
   useUpdateProductStatus,
   useUpdatePurchaseStatus,
 } from "../../../../queries/purchase"
 
-const ProductsList = ({ purchase }) => {
+const ProductsList = memo(({ purchase }) => {
   const [editingProduct, setEditingProduct] = useState(null)
   const [reviewComment, setReviewComment] = useState("")
   const [isInStock, setIsInStock] = useState(false)
@@ -12,7 +12,7 @@ const ProductsList = ({ purchase }) => {
   const { mutate: updateProductStatus } = useUpdateProductStatus()
   const { mutate: updatePurchaseStatus } = useUpdatePurchaseStatus()
 
-  const handleReview = (product, isQuickReview = false) => {
+  const handleReview = useCallback((product, isQuickReview = false) => {
     const data = {
       purchaseId: purchase.id,
       productId: product.id,
@@ -30,7 +30,6 @@ const ProductsList = ({ purchase }) => {
         setReviewComment("")
         setIsInStock(false)
 
-        // Check if all products are reviewed
         const remainingProducts = purchase.products.filter(
           p => p.id !== product.id && p.status !== "completed"
         )
@@ -44,9 +43,9 @@ const ProductsList = ({ purchase }) => {
         alert(err.response?.data?.message || "შეცდომა განხილვის განახლებისას")
       },
     })
-  }
+  }, [purchase.id, purchase.products, isInStock, reviewComment, updateProductStatus])
 
-  const handleCompleteReview = () => {
+  const handleCompleteReview = useCallback(() => {
     updatePurchaseStatus(
       {
         id: purchase.id,
@@ -55,7 +54,6 @@ const ProductsList = ({ purchase }) => {
       },
       {
         onSuccess: () => {
-          // Handle success if needed
         },
         onError: err => {
           console.error("Error completing review:", err)
@@ -63,7 +61,7 @@ const ProductsList = ({ purchase }) => {
         },
       }
     )
-  }
+  }, [purchase.id, updatePurchaseStatus])
 
   return (
     <div className="mt-4">
@@ -187,6 +185,8 @@ const ProductsList = ({ purchase }) => {
       </div>
     </div>
   )
-}
+})
+
+ProductsList.displayName = "ProductsList"
 
 export default ProductsList

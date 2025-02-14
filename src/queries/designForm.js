@@ -75,25 +75,22 @@ export const useDownloadDesignFormAttachment = () => {
   return useMutation({
     mutationFn: designFormService.downloadAttachment,
     onSuccess: (response, id) => {
-      // Get content type from response
       const contentType = response.type
-      
-      // Determine file extension based on content type
-      let extension = '.jpg' // default extension
+
+      let extension = ".jpg"
       if (contentType) {
-        // Try to extract extension from mime type
-        const ext = contentType.split('/')[1]
-        
-        if (contentType === 'image/jpeg') {
-          extension = '.jpg'
-        } else if (contentType === 'image/png') {
-          extension = '.png'
-        } else if (contentType === 'image/gif') {
-          extension = '.gif'
-        } else if (contentType === 'image/webp') {
-          extension = '.webp'
-        } else if (contentType === 'image/svg+xml') {
-          extension = '.svg'
+        const ext = contentType.split("/")[1]
+
+        if (contentType === "image/jpeg") {
+          extension = ".jpg"
+        } else if (contentType === "image/png") {
+          extension = ".png"
+        } else if (contentType === "image/gif") {
+          extension = ".gif"
+        } else if (contentType === "image/webp") {
+          extension = ".webp"
+        } else if (contentType === "image/svg+xml") {
+          extension = ".svg"
         } else if (ext) {
           extension = `.${ext}`
         }

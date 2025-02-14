@@ -8,6 +8,7 @@ import { Filter, Download } from "lucide-react"
 import defaultInstance from "plugins/axios"
 import useAuth from "hooks/useAuth"
 import { toast } from "store/zustand/toastStore"
+import { useNavigate } from "react-router-dom"
 
 const defaultFilters = {
   employee_name: "",
@@ -21,6 +22,7 @@ const defaultFilters = {
 }
 
 const EmployeeContacts = () => {
+  const navigate = useNavigate()
   const { isAdmin, isHrMember } = useAuth()
   const canManageContacts = isAdmin() || isHrMember()
   const [showUploadForm, setShowUploadForm] = useState(false)
@@ -54,14 +56,25 @@ const EmployeeContacts = () => {
   const { data: employeeContactsData, isLoading: isDataLoading } = useQuery({
     queryKey: ["employee-contacts", filters, page, perPage],
     queryFn: async () => {
-      const { data } = await defaultInstance.get("/api/employee-contacts", {
-        params: {
-          ...filters,
-          page,
-          per_page: perPage,
-        },
-      })
-      return data
+      try {
+        const { data } = await defaultInstance.get("/api/employee-contacts", {
+          params: {
+            ...filters,
+            page,
+            per_page: perPage,
+          },
+        })
+        return data
+      } catch (error) {
+        if (error.response?.data?.error_type === "ip_restricted") {
+          toast.error(
+            "თქვენ არ გაქვთ წვდომა ამ გვერდზე კომპანიის ქსელის გარედან"
+          )
+          navigate("/dashboard")
+          return null
+        }
+        throw error
+      }
     },
   })
 

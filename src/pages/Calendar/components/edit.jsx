@@ -44,14 +44,12 @@ export const EditCalendarEventForm = ({ eventId, onSuccess }) => {
   const formatDateTimeForInput = date => {
     if (!date) return ""
     const d = new Date(date)
-    // Convert UTC+4 to local time for input
     const localTime = new Date(d.getTime() - 4 * 60 * 60 * 1000)
     return localTime.toISOString().slice(0, 16)
   }
 
   const parseDateTimeFromInput = value => {
     if (!value) return null
-    // Input time is already in local timezone, no need for conversion
     return new Date(value)
   }
 

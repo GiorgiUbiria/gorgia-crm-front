@@ -16,6 +16,9 @@ const TaskHeader = ({ task }) => {
               <span className="text-xs sm:text-sm text-gray-500 dark:!text-gray-400">
                 {task.data.phone_number}
               </span>
+              <span className="text-xs sm:text-sm text-gray-500 dark:!text-gray-400">
+                {task.data.ip_address}
+              </span>
             </div>
           </h1>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 dark:!text-gray-300">

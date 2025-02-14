@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useState, useCallback } from "react"
 import { CrmTable } from "components/CrmTable"
 import {
   useGetPurchaseList,
@@ -55,7 +55,7 @@ const ItProcurements = () => {
     }
   )
 
-  const handleDownloadAttachment = async purchaseId => {
+  const handleDownloadAttachment = useCallback(async purchaseId => {
     try {
       const response = await downloadPurchase(purchaseId)
       const contentDisposition = response.headers["content-disposition"]
@@ -86,9 +86,9 @@ const ItProcurements = () => {
       console.error("Error downloading file:", error)
       alert("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
     }
-  }
+  }, [])
 
-  const handleUploadAttachment = () => {
+  const handleUploadAttachment = useCallback(() => {
     if (!attachmentFile || !selectedPurchase) return
 
     updatePurchaseStatus(
@@ -110,7 +110,13 @@ const ItProcurements = () => {
         },
       }
     )
-  }
+  }, [attachmentFile, selectedPurchase, updatePurchaseStatus])
+
+  const handleCloseUploadDialog = useCallback(() => {
+    setIsUploadDialogOpen(false)
+    setAttachmentFile(null)
+    setSelectedPurchase(null)
+  }, [])
 
   const columns = useMemo(
     () => [
@@ -254,7 +260,7 @@ const ItProcurements = () => {
     []
   )
 
-  const renderExpandedRow = row => {
+  const renderExpandedRow = useCallback(row => {
     const details = [
       {
         label: "ფილიალები",
@@ -323,7 +329,7 @@ const ItProcurements = () => {
         )}
       </div>
     )
-  }
+  }, [handleDownloadAttachment])
 
   return (
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -361,11 +367,7 @@ const ItProcurements = () => {
           <div className="flex justify-end gap-2">
             <DialogButton
               actionType="cancel"
-              onClick={() => {
-                setIsUploadDialogOpen(false)
-                setAttachmentFile(null)
-                setSelectedPurchase(null)
-              }}
+              onClick={handleCloseUploadDialog}
             />
             <DialogButton
               actionType="approve"

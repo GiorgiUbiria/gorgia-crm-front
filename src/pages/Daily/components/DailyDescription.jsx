@@ -10,7 +10,6 @@ const DailyDescription = ({ daily }) => {
   const { user, isAdmin } = useAuth()
   const updateMutation = useUpdateDepartmentHeadDaily()
 
-  // Update local state when daily description changes and we're not editing
   useEffect(() => {
     if (!isEditing && !updateMutation.isPending) {
       setDescription(daily?.description || "")
@@ -60,7 +59,6 @@ const DailyDescription = ({ daily }) => {
     setIsEditing(false)
   }
 
-  // Use the optimistic value during mutation, otherwise use the server value
   const displayDescription = updateMutation.isPending
     ? description
     : daily.description || "აღწერა არ არის"

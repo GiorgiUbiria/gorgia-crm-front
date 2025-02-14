@@ -11,6 +11,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ["BPG Rioni Arial", "system-ui", "sans-serif"],
+        handwriting: ["Kalam", "cursive"],
       },
       spacing: {
         1.5: "0.375rem",

@@ -91,26 +91,22 @@ export const useCreateDepartmentHeadDaily = () => {
   return useMutation({
     mutationFn: createDepartmentHeadDaily,
     onMutate: async data => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: dailyKeys.departmentHead.lists(),
       })
 
-      // Snapshot the previous value
       const previousDailies = queryClient.getQueryData(
         dailyKeys.departmentHead.list({})
       )
 
-      // Create an optimistic daily entry
       const optimisticDaily = {
-        id: `temp-${Date.now()}`, // temporary ID
+        id: `temp-${Date.now()}`,
         ...data,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         status: "pending",
       }
 
-      // Optimistically update lists
       queryClient.setQueriesData(
         { queryKey: dailyKeys.departmentHead.lists() },
         old => {
@@ -126,7 +122,6 @@ export const useCreateDepartmentHeadDaily = () => {
       return { previousDailies }
     },
     onError: (err, _, context) => {
-      // Revert the optimistic update on error
       if (context?.previousDailies) {
         queryClient.setQueriesData(
           { queryKey: dailyKeys.departmentHead.lists() },
@@ -135,11 +130,9 @@ export const useCreateDepartmentHeadDaily = () => {
       }
     },
     onSettled: () => {
-      // Always refetch after mutation settles
       queryClient.invalidateQueries({
         queryKey: dailyKeys.departmentHead.lists(),
       })
-      // Also invalidate the all dailies list if it exists
       queryClient.invalidateQueries({
         queryKey: dailyKeys.all,
       })
@@ -182,7 +175,6 @@ export const useUpdateDepartmentHeadDaily = () => {
   return useMutation({
     mutationFn: ({ id, data }) => updateDepartmentHeadDaily(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: dailyKeys.departmentHead.detail(id),
       })
@@ -190,12 +182,10 @@ export const useUpdateDepartmentHeadDaily = () => {
         queryKey: dailyKeys.departmentHead.lists(),
       })
 
-      // Snapshot the previous value
       const previousDaily = queryClient.getQueryData(
         dailyKeys.departmentHead.detail(id)
       )
 
-      // Optimistically update the detail view
       queryClient.setQueryData(dailyKeys.departmentHead.detail(id), old => ({
         ...old,
         daily: {
@@ -205,7 +195,6 @@ export const useUpdateDepartmentHeadDaily = () => {
         },
       }))
 
-      // Optimistically update any lists that contain this daily
       queryClient.setQueriesData(
         { queryKey: dailyKeys.departmentHead.lists() },
         old => {
@@ -228,14 +217,12 @@ export const useUpdateDepartmentHeadDaily = () => {
       return { previousDaily }
     },
     onError: (err, { id }, context) => {
-      // Revert the optimistic update on error
       if (context?.previousDaily) {
         queryClient.setQueryData(
           dailyKeys.departmentHead.detail(id),
           context.previousDaily
         )
       }
-      // Invalidate to ensure consistency
       queryClient.invalidateQueries({
         queryKey: dailyKeys.departmentHead.detail(id),
       })
@@ -244,14 +231,12 @@ export const useUpdateDepartmentHeadDaily = () => {
       })
     },
     onSettled: (_, __, variables) => {
-      // Always refetch after mutation settles to ensure consistency
       queryClient.invalidateQueries({
         queryKey: dailyKeys.departmentHead.detail(variables.id),
       })
       queryClient.invalidateQueries({
         queryKey: dailyKeys.departmentHead.lists(),
       })
-      // Also invalidate the all dailies list if it exists
       queryClient.invalidateQueries({
         queryKey: dailyKeys.all,
       })
@@ -265,7 +250,6 @@ export const useUpdateRegularDaily = () => {
   return useMutation({
     mutationFn: ({ id, data }) => updateRegularDaily(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: dailyKeys.regular.detail(id),
       })
@@ -273,12 +257,10 @@ export const useUpdateRegularDaily = () => {
         queryKey: dailyKeys.regular.lists(),
       })
 
-      // Snapshot the previous value
       const previousDaily = queryClient.getQueryData(
         dailyKeys.regular.detail(id)
       )
 
-      // Optimistically update the detail view
       queryClient.setQueryData(dailyKeys.regular.detail(id), old => ({
         ...old,
         daily: {
@@ -288,7 +270,6 @@ export const useUpdateRegularDaily = () => {
         },
       }))
 
-      // Optimistically update any lists that contain this daily
       queryClient.setQueriesData(
         { queryKey: dailyKeys.regular.lists() },
         old => {
@@ -311,14 +292,12 @@ export const useUpdateRegularDaily = () => {
       return { previousDaily }
     },
     onError: (err, { id }, context) => {
-      // Revert the optimistic update on error
       if (context?.previousDaily) {
         queryClient.setQueryData(
           dailyKeys.regular.detail(id),
           context.previousDaily
         )
       }
-      // Invalidate to ensure consistency
       queryClient.invalidateQueries({
         queryKey: dailyKeys.regular.detail(id),
       })
@@ -327,14 +306,12 @@ export const useUpdateRegularDaily = () => {
       })
     },
     onSettled: (_, __, variables) => {
-      // Always refetch after mutation settles
       queryClient.invalidateQueries({
         queryKey: dailyKeys.regular.detail(variables.id),
       })
       queryClient.invalidateQueries({
         queryKey: dailyKeys.regular.lists(),
       })
-      // Also invalidate the all dailies list if it exists
       queryClient.invalidateQueries({
         queryKey: dailyKeys.all,
       })
@@ -348,7 +325,6 @@ export const useDeleteDepartmentHeadDaily = () => {
   return useMutation({
     mutationFn: deleteDepartmentHeadDaily,
     onMutate: async id => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: dailyKeys.departmentHead.detail(id),
       })
@@ -356,7 +332,6 @@ export const useDeleteDepartmentHeadDaily = () => {
         queryKey: dailyKeys.departmentHead.lists(),
       })
 
-      // Snapshot the previous values
       const previousDaily = queryClient.getQueryData(
         dailyKeys.departmentHead.detail(id)
       )
@@ -364,12 +339,10 @@ export const useDeleteDepartmentHeadDaily = () => {
         queryKey: dailyKeys.departmentHead.lists(),
       })
 
-      // Remove the daily from detail cache
       queryClient.removeQueries({
         queryKey: dailyKeys.departmentHead.detail(id),
       })
 
-      // Optimistically update lists
       queryClient.setQueriesData(
         { queryKey: dailyKeys.departmentHead.lists() },
         old => {
@@ -385,14 +358,12 @@ export const useDeleteDepartmentHeadDaily = () => {
       return { previousDaily, previousLists }
     },
     onError: (err, id, context) => {
-      // Restore the detail cache
       if (context?.previousDaily) {
         queryClient.setQueryData(
           dailyKeys.departmentHead.detail(id),
           context.previousDaily
         )
       }
-      // Restore all list caches
       if (context?.previousLists) {
         context.previousLists.forEach(([queryKey, value]) => {
           queryClient.setQueryData(queryKey, value)
@@ -400,7 +371,6 @@ export const useDeleteDepartmentHeadDaily = () => {
       }
     },
     onSettled: () => {
-      // Always refetch after mutation settles
       queryClient.invalidateQueries({
         queryKey: dailyKeys.departmentHead.lists(),
       })
@@ -417,7 +387,6 @@ export const useDeleteRegularDaily = () => {
   return useMutation({
     mutationFn: deleteRegularDaily,
     onMutate: async id => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: dailyKeys.regular.detail(id),
       })
@@ -425,7 +394,6 @@ export const useDeleteRegularDaily = () => {
         queryKey: dailyKeys.regular.lists(),
       })
 
-      // Snapshot the previous values
       const previousDaily = queryClient.getQueryData(
         dailyKeys.regular.detail(id)
       )
@@ -433,12 +401,10 @@ export const useDeleteRegularDaily = () => {
         queryKey: dailyKeys.regular.lists(),
       })
 
-      // Remove the daily from detail cache
       queryClient.removeQueries({
         queryKey: dailyKeys.regular.detail(id),
       })
 
-      // Optimistically update lists
       queryClient.setQueriesData(
         { queryKey: dailyKeys.regular.lists() },
         old => {
@@ -454,14 +420,12 @@ export const useDeleteRegularDaily = () => {
       return { previousDaily, previousLists }
     },
     onError: (err, id, context) => {
-      // Restore the detail cache
       if (context?.previousDaily) {
         queryClient.setQueryData(
           dailyKeys.regular.detail(id),
           context.previousDaily
         )
       }
-      // Restore all list caches
       if (context?.previousLists) {
         context.previousLists.forEach(([queryKey, value]) => {
           queryClient.setQueryData(queryKey, value)
@@ -469,7 +433,6 @@ export const useDeleteRegularDaily = () => {
       }
     },
     onSettled: () => {
-      // Always refetch after mutation settles
       queryClient.invalidateQueries({
         queryKey: dailyKeys.regular.lists(),
       })

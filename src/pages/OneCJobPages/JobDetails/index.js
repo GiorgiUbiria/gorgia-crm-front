@@ -55,7 +55,7 @@ const JobDetails = () => {
 
     return (
       isAdmin() ||
-      (isOneCDepartment() &&
+      (isOneCDepartment &&
         task.data.assigned_users?.some(user => user.id === user?.id)) ||
       isAdmin()
     )

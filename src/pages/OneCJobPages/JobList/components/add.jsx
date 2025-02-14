@@ -53,11 +53,7 @@ export const AddOneCTaskForm = ({ onSuccess }) => {
           name="task_title"
           validators={{
             onChange: ({ value }) =>
-              !value
-                ? "პრობლემის ტიპის მითითება სავალდებულოა"
-                : value.length < 5
-                ? "პრობლემის ტიპი უნდა შეიცავდეს მინიმუმ 5 სიმბოლოს"
-                : undefined,
+              !value ? "პრობლემის ტიპის მითითება სავალდებულოა" : undefined,
           }}
         >
           {field => (
@@ -68,15 +64,34 @@ export const AddOneCTaskForm = ({ onSuccess }) => {
               >
                 პრობლემის ტიპი
               </label>
-              <input
-                type="text"
+              <select
                 id={field.task_title}
                 name={field.task_title}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
-              />
+              >
+                <option value="">აირჩიეთ პრობლემის ტიპი</option>
+                <option value="ბაზის ჩაწერა">ბაზის ჩაწერა</option>
+                <option value="ოფლაინ და თვითმომსახურების სალარო">
+                  ოფლაინ და თვითმომსახურების სალარო
+                </option>
+                <option value="სასწორი">სასწორი</option>
+                <option value="სკანერი">სკანერი</option>
+                <option value="ბანკის ტერმინალები">ბანკის ტერმინალები</option>
+                <option value="ხელის მოკრების ტერმინალები">
+                  ხელის მოკრების ტერმინალები
+                </option>
+                <option value="ტრენინგები და გამოცდები">
+                  ტრენინგები და გამოცდები
+                </option>
+                <option value="1C -ERP">1C -ERP</option>
+                <option value="WMS">WMS</option>
+                <option value="Agent+">Agent+</option>
+                <option value="ანთა.ჯი">ანთა.ჯი</option>
+                <option value="ავტოინვესტი">ავტოინვესტი</option>
+              </select>
               <FieldInfo field={field} />
             </div>
           )}
@@ -132,6 +147,47 @@ export const AddOneCTaskForm = ({ onSuccess }) => {
                 type="text"
                 id={field.phone_number}
                 name={field.phone_number}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={e => field.handleChange(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+              />
+              <FieldInfo field={field} />
+            </div>
+          )}
+        </form.Field>
+      </div>
+
+      <div>
+        <form.Field
+          name="ip_address"
+          validators={{
+            onChange: ({ value }) => {
+              if (!value) return "IP მითითება სავალდებულოა"
+
+              const ipPattern =
+                /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+
+              if (!ipPattern.test(value)) {
+                return "გთხოვთ მიუთითოთ სწორი IP მისამართის ფორმატი (მაგ. 192.168.1.1)"
+              }
+
+              return undefined
+            },
+          }}
+        >
+          {field => (
+            <div>
+              <label
+                htmlFor={field.ip_address}
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                IP მისამართი
+              </label>
+              <input
+                type="text"
+                id={field.ip_address}
+                name={field.ip_address}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={e => field.handleChange(e.target.value)}

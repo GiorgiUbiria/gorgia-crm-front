@@ -55,7 +55,7 @@ const schema = yup.object().shape({
     })
     .test("fileSize", "ფაილის ზომა არ უნდა აღემატებოდეს 10MB-ს", value => {
       if (!value || !value[0]) return true
-      return value[0].size <= 10 * 1024 * 1024 // 10MB
+      return value[0].size <= 10 * 1024 * 1024
     })
     .test("fileType", "ფაილი უნდა იყოს სურათი", value => {
       if (!value || !value[0]) return true
