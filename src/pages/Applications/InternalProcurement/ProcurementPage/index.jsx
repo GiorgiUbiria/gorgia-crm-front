@@ -5,6 +5,7 @@ import { useFormik } from "formik"
 import { procurementSchema } from "./validationSchema"
 import { useCreatePurchase } from "../../../../queries/purchase"
 import { toast } from "store/zustand/toastStore"
+import { useProcurementStore } from "store/zustand/procurementStore"
 
 const branchOptions = [
   "დიდუბე",
@@ -352,7 +353,14 @@ const ProductBranchSelector = ({ formik, index }) => {
   )
 }
 
-const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
+const ProductForm = ({
+  formik,
+  index,
+  isExpanded,
+  onToggle,
+  onRemove,
+  onFieldChange,
+}) => (
   <div className="border dark:!border-gray-700/50 rounded-xl overflow-hidden bg-white dark:!bg-gray-800/95 transition-all duration-300 hover:shadow-lg dark:!hover:shadow-gray-800/50 group">
     <div
       className="flex justify-between items-center cursor-pointer p-4 bg-gray-50/80 dark:!bg-gray-700/30 group-hover:bg-gray-100 dark:!group-hover:bg-gray-700/50 transition-colors duration-200"
@@ -404,22 +412,26 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
             formik={formik}
             name={`products.${index}.name`}
             label="პროდუქტის სახელი"
+            onChange={e => onFieldChange(index, "name", e.target.value)}
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.quantity`}
             label="რაოდენობა"
             type="number"
+            onChange={e => onFieldChange(index, "quantity", e.target.value)}
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.dimensions`}
             label="ზომები"
+            onChange={e => onFieldChange(index, "dimensions", e.target.value)}
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.payer`}
             label="ვინ ანაზღაურებს თანხას?"
+            onChange={e => onFieldChange(index, "payer", e.target.value)}
           />
         </div>
 
@@ -431,24 +443,34 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
             name={`products.${index}.description`}
             label="აღწერა"
             type="textarea"
+            onChange={e => onFieldChange(index, "description", e.target.value)}
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.search_variant`}
             label="თქვენი მოძიებული ვარიანტი"
             type="textarea"
+            onChange={e =>
+              onFieldChange(index, "search_variant", e.target.value)
+            }
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.similar_purchase_planned`}
             label="იგეგმება ანალოგიური პროდუქციის შესყიდვა?"
             type="textarea"
+            onChange={e =>
+              onFieldChange(index, "similar_purchase_planned", e.target.value)
+            }
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.in_stock_explanation`}
             label="გვაქვს თუ არა ეს პროდუქცია ასორტიმენტში ჩვენ?"
             type="textarea"
+            onChange={e =>
+              onFieldChange(index, "in_stock_explanation", e.target.value)
+            }
           />
         </div>
 
@@ -486,17 +508,24 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
 const ProcurementPage = () => {
   document.title = "შიდა შესყიდვების დამატება | Gorgia LLC"
   const navigate = useNavigate()
-  const [expandedProducts, setExpandedProducts] = useState([0])
-  const [generalError, setGeneralError] = useState(null)
-  const [file, setFile] = useState(null)
+  const {
+    formData,
+    expandedProducts,
+    generalError,
+    file,
+    setFormData,
+    updateProductField,
+    toggleProduct,
+    addProduct,
+    removeProduct,
+    setGeneralError,
+    setFile,
+    resetStore,
+    clearUpdateFlag,
+    isUpdating,
+  } = useProcurementStore()
 
   const { mutate: createPurchase, isLoading } = useCreatePurchase()
-
-  const toggleProduct = index => {
-    setExpandedProducts(prev =>
-      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
-    )
-  }
 
   const handleFileChange = event => {
     const selectedFile = event.target.files[0]
@@ -510,33 +539,7 @@ const ProcurementPage = () => {
   }
 
   const formik = useFormik({
-    initialValues: {
-      procurement_type: "",
-      branches: [],
-      category: "",
-      purchase_purpose: "",
-      requested_arrival_date: "",
-      short_date_notice_explanation: null,
-      exceeds_needs_reason: "",
-      creates_stock: false,
-      stock_purpose: null,
-      delivery_address: "",
-      external_url: "",
-      file: null,
-      products: [
-        {
-          name: "",
-          quantity: "",
-          dimensions: "",
-          description: "",
-          search_variant: "",
-          similar_purchase_planned: "",
-          in_stock_explanation: "",
-          payer: "",
-          branches: [],
-        },
-      ],
-    },
+    initialValues: formData,
     validationSchema: procurementSchema,
     validateOnMount: true,
     validateOnChange: true,
@@ -582,6 +585,7 @@ const ProcurementPage = () => {
             })
 
             formik.resetForm()
+            resetStore()
             setTimeout(() => {
               navigate("/applications/purchases/my-requests")
             }, 1000)
@@ -658,6 +662,37 @@ const ProcurementPage = () => {
     },
   })
 
+  // Modified useEffect hooks
+  React.useEffect(() => {
+    // Only update store if formik values have changed
+    if (
+      !isUpdating &&
+      JSON.stringify(formik.values) !== JSON.stringify(formData)
+    ) {
+      setFormData(formik.values)
+    }
+  }, [formik.values, setFormData, isUpdating, formData])
+
+  React.useEffect(() => {
+    // Only update formik if store data has changed
+    if (
+      isUpdating &&
+      JSON.stringify(formData) !== JSON.stringify(formik.values)
+    ) {
+      formik.setValues(formData)
+      clearUpdateFlag()
+    }
+  }, [formData, isUpdating, clearUpdateFlag, formik])
+
+  // Handle product field changes
+  const handleProductFieldChange = (index, field, value) => {
+    // First update formik
+    formik.setFieldValue(`products.${index}.${field}`, value)
+
+    // Then update store
+    updateProductField(index, field, value)
+  }
+
   const showCurrentValidationErrors = () => {
     const errors = formik.errors
     if (Object.keys(errors).length > 0) {
@@ -692,32 +727,6 @@ const ProcurementPage = () => {
     } else {
       setGeneralError(null)
     }
-  }
-
-  const addProduct = () => {
-    const newProductIndex = formik.values.products.length
-    formik.setFieldValue("products", [
-      ...formik.values.products,
-      {
-        name: "",
-        quantity: "",
-        dimensions: "",
-        description: "",
-        search_variant: "",
-        similar_purchase_planned: "",
-        in_stock_explanation: "",
-        payer: "",
-        branches: [],
-      },
-    ])
-    setExpandedProducts(prev => [...prev, newProductIndex])
-  }
-
-  const removeProduct = index => {
-    const products = [...formik.values.products]
-    products.splice(index, 1)
-    formik.setFieldValue("products", products)
-    setExpandedProducts(prev => prev.filter(i => i !== index))
   }
 
   return (
@@ -918,7 +927,8 @@ const ProcurementPage = () => {
                     index={index}
                     isExpanded={expandedProducts.includes(index)}
                     onToggle={() => toggleProduct(index)}
-                    onRemove={removeProduct}
+                    onRemove={() => removeProduct(index)}
+                    onFieldChange={handleProductFieldChange}
                   />
                 ))}
               </div>
