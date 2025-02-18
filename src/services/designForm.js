@@ -20,6 +20,13 @@ export const designFormService = {
         if (file) {
           formData.append(key, file)
         }
+      } else if (key === "attachments") {
+        const files = data[key]
+        if (files && files.length) {
+          Array.from(files).forEach(file => {
+            formData.append("attachments[]", file)
+          })
+        }
       } else {
         formData.append(key, data[key] || "")
       }
@@ -52,6 +59,13 @@ export const designFormService = {
       {
         responseType: "blob",
       }
+    )
+    return response.data
+  },
+
+  deleteAttachment: async (designFormId, attachmentId) => {
+    const response = await defaultInstance.delete(
+      `/api/design-forms/${designFormId}/attachments/${attachmentId}`
     )
     return response.data
   },

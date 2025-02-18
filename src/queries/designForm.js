@@ -113,3 +113,19 @@ export const useDownloadDesignFormAttachment = () => {
     },
   })
 }
+
+export const useDeleteAttachment = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ designFormId, attachmentId }) =>
+      designFormService.deleteAttachment(designFormId, attachmentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["designForms"] })
+      toast.success("ფაილი წარმატებით წაიშალა")
+    },
+    onError: error => {
+      toast.error(error.response?.data?.message || "ფაილის წაშლა ვერ მოხერხდა")
+    },
+  })
+}
