@@ -23,9 +23,9 @@ export const designFormService = {
       } else if (key === "attachments") {
         const files = data[key]
         if (files && files.length) {
-          Array.from(files).forEach(file => {
-            formData.append("attachments[]", file)
-          })
+          for (let i = 0; i < files.length; i++) {
+            formData.append(`attachments[${i}]`, files[i])
+          }
         }
       } else {
         formData.append(key, data[key] || "")

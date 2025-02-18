@@ -340,7 +340,7 @@ const DesignForm = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-900 dark:!text-gray-100 mb-1.5">
-                ფაილები (მინ. 1, მაქს. 10)
+                გთხოვთ ატვირთოთ დიზაინის მოთხოვნის ფორმა
               </label>
               <input
                 type="file"
