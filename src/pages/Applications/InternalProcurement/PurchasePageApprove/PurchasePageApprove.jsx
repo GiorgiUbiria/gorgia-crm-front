@@ -89,6 +89,14 @@ const categoryDepartmentMap = {
   Farm: 38,
 }
 
+const categoryGeorgianMap = {
+  IT: "IT",
+  Marketing: "მარკეტინგი",
+  Security: "უსაფრთხოება",
+  Network: "საცალო ქსელი",
+  Farm: "სამეურნეო",
+}
+
 const PurchasePageApprove = () => {
   document.title = "შიდა შესყიდვების ვიზირება | Gorgia LLC"
   const {
@@ -420,6 +428,9 @@ const PurchasePageApprove = () => {
       {
         Header: "მიმართულება",
         accessor: "category",
+        Cell: ({ value }) => (
+          <div>{categoryGeorgianMap[value] || value}</div>
+        ),
       },
       {
         Header: "მიზანი",

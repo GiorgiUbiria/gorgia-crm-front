@@ -62,6 +62,14 @@ const statusMap = {
   },
 }
 
+const categoryGeorgianMap = {
+  IT: "IT",
+  Marketing: "მარკეტინგი",
+  Security: "უსაფრთხოება",
+  Network: "საცალო ქსელი",
+  Farm: "სამეურნეო",
+}
+
 const UserProcurements = () => {
   document.title = "ჩემი შესყიდვები | Gorgia LLC"
 
@@ -170,6 +178,9 @@ const UserProcurements = () => {
       {
         Header: "მიმართულება",
         accessor: "category",
+        Cell: ({ value }) => (
+          <div>{categoryGeorgianMap[value] || value}</div>
+        ),
       },
       {
         Header: "მიზანი",
