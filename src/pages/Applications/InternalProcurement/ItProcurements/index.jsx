@@ -1,13 +1,14 @@
 import React, { useMemo, useState, useCallback } from "react"
 import { CrmTable } from "components/CrmTable"
 import {
-  useGetPurchaseList,
-  useUpdatePurchaseStatus,
+  useGetITPurchases,
+  useUpdatePurchaseReviewStatus,
 } from "../../../../queries/purchase"
 import useAuth from "hooks/useAuth"
 import ProductsList from "./ProductsList"
 import { downloadPurchase } from "../../../../services/purchase"
 import CrmDialog, { DialogButton } from "components/CrmDialogs/Dialog"
+import { BiInfoCircle } from "react-icons/bi"
 
 const statusMap = {
   "pending department head": {
@@ -42,18 +43,19 @@ const statusMap = {
 const ItProcurements = () => {
   document.title = "IT შესყიდვების განხილვა | Gorgia LLC"
   const [selectedPurchase, setSelectedPurchase] = useState(null)
+  const [reviewComment, setReviewComment] = useState("")
   const [attachmentFile, setAttachmentFile] = useState(null)
-  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false)
 
   const { isAdmin, isITDepartment } = useAuth()
-  const { mutate: updatePurchaseStatus } = useUpdatePurchaseStatus()
+  const { mutate: updatePurchaseReview, isLoading: isReviewLoading } =
+    useUpdatePurchaseReviewStatus()
 
-  const { data: purchaseData } = useGetPurchaseList(
-    { category: "IT" },
-    {
-      enabled: isAdmin() || isITDepartment(),
-    }
-  )
+  const { data: purchaseData } = useGetITPurchases({
+    enabled: isAdmin() || isITDepartment(),
+  })
+
+  console.log(purchaseData)
 
   const handleDownloadAttachment = useCallback(async purchaseId => {
     try {
@@ -88,32 +90,37 @@ const ItProcurements = () => {
     }
   }, [])
 
-  const handleUploadAttachment = useCallback(() => {
-    if (!attachmentFile || !selectedPurchase) return
+  const handleReviewPurchase = useCallback(() => {
+    if (!selectedPurchase) return
 
-    updatePurchaseStatus(
+    const data = {
+      review_comment: reviewComment || null,
+      file: attachmentFile,
+    }
+
+    updatePurchaseReview(
       {
         id: selectedPurchase.id,
-        status: "pending requested department",
-        comment: "განახლებული პროდუქტების სია",
-        file: attachmentFile,
+        data,
       },
       {
         onSuccess: () => {
-          setIsUploadDialogOpen(false)
+          setIsReviewDialogOpen(false)
+          setReviewComment("")
           setAttachmentFile(null)
           setSelectedPurchase(null)
         },
         onError: err => {
-          console.error("Error uploading attachment:", err)
-          alert(err.response?.data?.message || "შეცდომა ფაილის ატვირთვისას")
+          console.error("Error reviewing purchase:", err)
+          alert(err.response?.data?.message || "შეცდომა განხილვის ატვირთვისას")
         },
       }
     )
-  }, [attachmentFile, selectedPurchase, updatePurchaseStatus])
+  }, [selectedPurchase, reviewComment, attachmentFile, updatePurchaseReview])
 
-  const handleCloseUploadDialog = useCallback(() => {
-    setIsUploadDialogOpen(false)
+  const handleCloseReviewDialog = useCallback(() => {
+    setIsReviewDialogOpen(false)
+    setReviewComment("")
     setAttachmentFile(null)
     setSelectedPurchase(null)
   }, [])
@@ -260,76 +267,112 @@ const ItProcurements = () => {
     []
   )
 
-  const renderExpandedRow = useCallback(row => {
-    const details = [
-      {
-        label: "ფილიალები",
-        value: row?.branches?.join(", ") || "N/A",
-        icon: "bx-building",
-      },
-      {
-        label: "მომთხოვნი",
-        value: `${row?.requester?.name} ${row?.requester?.sur_name}`,
-        icon: "bx-user",
-      },
-      {
-        label: "მომთხოვნის დეპარტამენტი",
-        value: row?.requester?.department?.name || "N/A",
-        icon: "bx-user",
-      },
-      {
-        label: "მომთხოვნის ხელმძღვანელი",
-        value: row?.responsible_for_purchase
-          ? `${row.responsible_for_purchase.name} ${row.responsible_for_purchase.sur_name}`
-          : "N/A",
-        icon: "bx-user-check",
-      },
-    ]
+  const renderExpandedRow = useCallback(
+    row => {
+      const details = [
+        {
+          label: "ფილიალები",
+          value: row?.branches?.join(", ") || "N/A",
+          icon: "bx-building",
+        },
+        {
+          label: "მომთხოვნი",
+          value: `${row?.requester?.name} ${row?.requester?.sur_name}`,
+          icon: "bx-user",
+        },
+        {
+          label: "მომთხოვნის დეპარტამენტი",
+          value: row?.requester?.department?.name || "N/A",
+          icon: "bx-user",
+        },
+        {
+          label: "მომთხოვნის ხელმძღვანელი",
+          value: row?.responsible_for_purchase
+            ? `${row.responsible_for_purchase.name} ${row.responsible_for_purchase.sur_name}`
+            : "N/A",
+          icon: "bx-user-check",
+        },
+      ]
 
-    return (
-      <div className="p-4 bg-white dark:bg-gray-800">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-          {details.map((detail, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <i className={`bx ${detail.icon} text-gray-400`}></i>
-              <div>
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {detail.label}
-                </div>
-                <div className="text-sm text-gray-900 dark:text-gray-100">
-                  {detail.value}
+      const canCompleteReview =
+        row.status === "pending IT team review" &&
+        (!row.products?.length ||
+          row.products?.every(p => p.review_status === "reviewed"))
+
+      return (
+        <div className="p-4 bg-white dark:bg-gray-800">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            {details.map((detail, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <i className={`bx ${detail.icon} text-gray-400`}></i>
+                <div>
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {detail.label}
+                  </div>
+                  <div className="text-sm text-gray-900 dark:text-gray-100">
+                    {detail.value}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {row.has_products_attachment && (
-          <div className="flex justify-end gap-2 mb-4">
-            <button
-              onClick={() => handleDownloadAttachment(row.id)}
-              className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
-            >
-              პროდუქტების სიის ჩამოტვირთვა
-            </button>
-            <button
-              onClick={() => {
-                setSelectedPurchase(row)
-                setIsUploadDialogOpen(true)
-              }}
-              className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors"
-            >
-              პროდუქტების სიის განახლება
-            </button>
+            ))}
           </div>
-        )}
 
-        {row.products && row.products.length > 0 && (
-          <ProductsList purchase={row} />
-        )}
-      </div>
-    )
-  }, [handleDownloadAttachment])
+          <div className="flex justify-between items-center mb-4">
+            {row.has_products_attachment && (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleDownloadAttachment(row.id)}
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+                >
+                  პროდუქტების სიის ჩამოტვირთვა
+                </button>
+                {row.status === "pending IT team review" && (
+                  <span className="text-sm text-gray-500">
+                    <BiInfoCircle className="inline-block mr-1" />
+                    შეგიძლიათ განახლებული სია ატვირთოთ განხილვის დასრულებისას
+                  </span>
+                )}
+              </div>
+            )}
+            {canCompleteReview && (
+              <button
+                onClick={() => {
+                  setSelectedPurchase(row)
+                  setIsReviewDialogOpen(true)
+                }}
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors"
+              >
+                განხილვის დასრულება
+              </button>
+            )}
+          </div>
+
+          {row.products && row.products.length > 0 && (
+            <>
+              {row.status === "pending IT team review" &&
+                !row.products.every(p => p.review_status === "reviewed") && (
+                  <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <BiInfoCircle className="h-5 w-5 text-yellow-400" />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm">
+                          განხილვის დასრულებამდე საჭიროა ყველა პროდუქტის
+                          განხილვა
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              <ProductsList purchase={row} />
+            </>
+          )}
+        </div>
+      )
+    },
+    [handleDownloadAttachment]
+  )
 
   return (
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -345,34 +388,86 @@ const ItProcurements = () => {
       </div>
 
       <CrmDialog
-        isOpen={isUploadDialogOpen}
-        onOpenChange={setIsUploadDialogOpen}
-        title="პროდუქტების სიის განახლება"
+        isOpen={isReviewDialogOpen}
+        onOpenChange={setIsReviewDialogOpen}
+        title="შესყიდვის განხილვის დასრულება"
       >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              აირჩიეთ ფაილი
+              განხილვის კომენტარი
             </label>
-            <input
-              type="file"
-              onChange={e => setAttachmentFile(e.target.files[0])}
-              accept=".xls,.xlsx"
-              className="block w-full text-sm text-gray-500 dark:text-gray-400
-                file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
-                file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-100"
+            <textarea
+              value={reviewComment}
+              onChange={e => setReviewComment(e.target.value)}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+              rows={3}
+              placeholder="შეიყვანეთ კომენტარი (არასავალდებულო)..."
             />
           </div>
+
+          {selectedPurchase?.has_products_attachment && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  განახლებული პროდუქტების სია
+                </label>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadAttachment(selectedPurchase.id)}
+                  className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  არსებული სიის ჩამოტვირთვა
+                </button>
+              </div>
+              <input
+                type="file"
+                onChange={e => {
+                  const file = e.target.files[0]
+                  if (file) {
+                    const extension = file.name.split(".").pop().toLowerCase()
+                    if (!["xls", "xlsx"].includes(extension)) {
+                      alert("დაშვებულია მხოლოდ Excel ფაილები (xls, xlsx)")
+                      e.target.value = ""
+                      setAttachmentFile(null)
+                      return
+                    }
+                    if (file.size > 10 * 1024 * 1024) {
+                      alert("ფაილის ზომა არ უნდა აღემატებოდეს 10MB-ს")
+                      e.target.value = ""
+                      setAttachmentFile(null)
+                      return
+                    }
+                    setAttachmentFile(file)
+                  }
+                }}
+                accept=".xls,.xlsx"
+                className="block w-full text-sm text-gray-500 dark:text-gray-400
+                  file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
+                  file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-100"
+              />
+              <small className="text-gray-500 dark:text-gray-400 mt-1 block">
+                მაქსიმალური ზომა: 10MB. დაშვებული ფორმატები: XLS, XLSX
+              </small>
+              {!attachmentFile && (
+                <small className="text-gray-500 dark:text-gray-400 mt-1 block">
+                  <BiInfoCircle className="inline-block mr-1" />
+                  ფაილის აუტვირთაობის შემთხვევაში არსებული სია დარჩება უცვლელი
+                </small>
+              )}
+            </div>
+          )}
+
           <div className="flex justify-end gap-2">
             <DialogButton
               actionType="cancel"
-              onClick={handleCloseUploadDialog}
+              onClick={handleCloseReviewDialog}
             />
             <DialogButton
               actionType="approve"
-              onClick={handleUploadAttachment}
-              disabled={!attachmentFile}
+              onClick={handleReviewPurchase}
+              disabled={isReviewLoading}
             />
           </div>
         </div>

@@ -90,7 +90,6 @@ const getMenuItems = can => {
               to: "/applications/purchases/it",
               label: "IT შესყიდვები",
               icon: LuShieldCheck,
-              disabled: true,
               show: () => can("role:admin|department:5"),
             },
             {

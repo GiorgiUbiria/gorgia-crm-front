@@ -23,12 +23,6 @@ const branchOptions = [
 
 const categoryOptions = ["IT", "Marketing", "Security", "Network", "Farm"]
 
-const isExcelFile = file => {
-  if (!file) return false
-  const extension = file.name.split(".").pop().toLowerCase()
-  return ["xls", "xlsx"].includes(extension)
-}
-
 const productSchema = Yup.object().shape({
   name: Yup.string()
     .required("პროდუქტის სახელი სავალდებულოა")
@@ -40,80 +34,24 @@ const productSchema = Yup.object().shape({
       const num = Number(originalValue)
       return isNaN(num) ? null : num
     })
-    .when(["$file"], {
-      is: file => !file || !isExcelFile(file),
-      then: schema =>
-        schema
-          .required("რაოდენობა სავალდებულოა")
-          .typeError("რაოდენობა უნდა იყოს რიცხვი")
-          .min(1, "მინიმალური რაოდენობა არის 1")
-          .max(999999999, "რაოდენობა ძალიან დიდია"),
-      otherwise: schema => schema.nullable(),
-    }),
-
-  dimensions: Yup.string()
     .nullable()
-    .when(["$file"], {
-      is: file => !file || !isExcelFile(file),
-      then: schema =>
-        schema.required("ზომები სავალდებულოა").max(255, "მაქსიმუმ 255 სიმბოლო"),
-      otherwise: schema => schema.nullable(),
-    }),
+    .max(999999999, "რაოდენობა ძალიან დიდია"),
 
-  description: Yup.string()
-    .nullable()
-    .when(["$file"], {
-      is: file => !file || !isExcelFile(file),
-      then: schema =>
-        schema.required("აღწერა სავალდებულოა").max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-      otherwise: schema => schema.nullable(),
-    }),
+  dimensions: Yup.string().nullable().max(255, "მაქსიმუმ 255 სიმბოლო"),
 
-  search_variant: Yup.string()
-    .nullable()
-    .when(["$file"], {
-      is: file => !file || !isExcelFile(file),
-      then: schema =>
-        schema
-          .required("მოძიებული ვარიანტი სავალდებულოა")
-          .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-      otherwise: schema => schema.nullable(),
-    }),
+  description: Yup.string().nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
+
+  search_variant: Yup.string().nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
   similar_purchase_planned: Yup.string()
     .nullable()
-    .when(["$file"], {
-      is: file => !file || !isExcelFile(file),
-      then: schema =>
-        schema
-          .required("მომავალი შესყიდვების ინფორმაცია სავალდებულოა")
-          .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-      otherwise: schema => schema.nullable(),
-    }),
+    .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
   in_stock_explanation: Yup.string()
     .nullable()
-    .when(["$file", "$category"], {
-      is: (file, category) =>
-        (!file || !isExcelFile(file)) &&
-        !["IT", "Marketing", "Farm", "Security", "Network"].includes(category),
-      then: schema =>
-        schema
-          .required("ასორტიმენტში არსებობის ინფორმაცია სავალდებულოა")
-          .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-      otherwise: schema => schema.nullable(),
-    }),
+    .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
-  payer: Yup.string()
-    .nullable()
-    .when(["$file"], {
-      is: file => !file || !isExcelFile(file),
-      then: schema =>
-        schema
-          .required("გადამხდელის მითითება სავალდებულოა")
-          .max(255, "მაქსიმუმ 255 სიმბოლო"),
-      otherwise: schema => schema.nullable(),
-    }),
+  payer: Yup.string().nullable().max(255, "მაქსიმუმ 255 სიმბოლო"),
 
   branches: Yup.array()
     .required("ფილიალების მითითება სავალდებულოა")
@@ -133,7 +71,10 @@ export const procurementSchema = Yup.object()
   .shape({
     procurement_type: Yup.string()
       .required("შესყიდვის ტიპის არჩევა სავალდებულოა")
-      .oneOf(["purchase", "price_inquiry", "service"], "არასწორი შესყიდვის ტიპი"),
+      .oneOf(
+        ["purchase", "price_inquiry", "service"],
+        "არასწორი შესყიდვის ტიპი"
+      ),
 
     branches: Yup.array()
       .of(Yup.string().oneOf(branchOptions, "არასწორი ფილიალი"))

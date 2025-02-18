@@ -53,6 +53,11 @@ const statusMap = {
     icon: "bx-time",
     color: "#FFA500",
   },
+  "pending IT team review": {
+    label: "განხილვაში (IT გუნდი)",
+    icon: "bx-time",
+    color: "#FFA500",
+  },
   "pending requested department": {
     label: "განხილვაში (მოთხოვნილი დეპარტამენტი)",
     icon: "bx-time",
@@ -91,6 +96,7 @@ const PurchasePageApprove = () => {
     isDepartmentHeadAssistant,
     getUserDepartmentId,
     isAdmin,
+    isITDepartment,
   } = useAuth()
 
   const [rejectionModal, setRejectionModal] = useState(false)
@@ -152,6 +158,13 @@ const PurchasePageApprove = () => {
         return true
       }
 
+      if (
+        purchase.status === "pending IT team review" &&
+        (isITDepartment() || getUserDepartmentId() === 5)
+      ) {
+        return purchase.products?.every(p => p.review_status === "reviewed")
+      }
+
       if (!isDepartmentHead()) {
         return false
       }
@@ -176,17 +189,27 @@ const PurchasePageApprove = () => {
           return false
       }
     },
-    [isDepartmentHead, getUserDepartmentId, isAdmin]
+    [isDepartmentHead, getUserDepartmentId, isAdmin, isITDepartment]
   )
 
   const getNextStatus = purchase => {
     if (purchase.status === "pending department head") {
+      if (purchase.category === "IT") {
+        return "pending IT team review"
+      }
       const purchaseCategory = purchase.category
       const requesterDepartmentId = purchase.requester?.department_id
       const categoryDepartmentId = categoryDepartmentMap[purchaseCategory]
 
       if (requesterDepartmentId === categoryDepartmentId) {
         return "pending products completion"
+      }
+      return "pending requested department"
+    }
+
+    if (purchase.status === "pending IT team review") {
+      if (!purchase.products?.every(p => p.review_status === "reviewed")) {
+        return purchase.status
       }
       return "pending requested department"
     }

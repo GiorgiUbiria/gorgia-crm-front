@@ -5,7 +5,6 @@ import { useFormik } from "formik"
 import { procurementSchema } from "./validationSchema"
 import { useCreatePurchase } from "../../../../queries/purchase"
 import { toast } from "store/zustand/toastStore"
-import { useProcurementStore } from "store/zustand/procurementStore"
 
 const branchOptions = [
   "დიდუბე",
@@ -508,22 +507,11 @@ const ProductForm = ({
 const ProcurementPage = () => {
   document.title = "შიდა შესყიდვების დამატება | Gorgia LLC"
   const navigate = useNavigate()
-  const {
-    formData,
-    expandedProducts,
-    generalError,
-    file,
-    setFormData,
-    updateProductField,
-    toggleProduct,
-    addProduct,
-    removeProduct,
-    setGeneralError,
-    setFile,
-    resetStore,
-    clearUpdateFlag,
-    isUpdating,
-  } = useProcurementStore()
+
+  // Replace Zustand store with local state
+  const [expandedProducts, setExpandedProducts] = useState([0])
+  const [generalError, setGeneralError] = useState(null)
+  const [file, setFile] = useState(null)
 
   const { mutate: createPurchase, isLoading } = useCreatePurchase()
 
@@ -538,8 +526,37 @@ const ProcurementPage = () => {
     formik.setFieldValue("file", selectedFile)
   }
 
+  // Initial form values (moved from store)
+  const initialProductState = {
+    name: "",
+    quantity: "",
+    dimensions: "",
+    description: "",
+    search_variant: "",
+    similar_purchase_planned: "",
+    in_stock_explanation: "",
+    payer: "",
+    branches: [],
+  }
+
+  const initialFormState = {
+    procurement_type: "",
+    branches: [],
+    category: "",
+    purchase_purpose: "",
+    requested_arrival_date: "",
+    short_date_notice_explanation: null,
+    exceeds_needs_reason: "",
+    creates_stock: false,
+    stock_purpose: null,
+    delivery_address: "",
+    external_url: "",
+    file: null,
+    products: [{ ...initialProductState }],
+  }
+
   const formik = useFormik({
-    initialValues: formData,
+    initialValues: initialFormState,
     validationSchema: procurementSchema,
     validateOnMount: true,
     validateOnChange: true,
@@ -585,7 +602,6 @@ const ProcurementPage = () => {
             })
 
             formik.resetForm()
-            resetStore()
             setTimeout(() => {
               navigate("/applications/purchases/my-requests")
             }, 1000)
@@ -662,35 +678,27 @@ const ProcurementPage = () => {
     },
   })
 
-  // Modified useEffect hooks
-  React.useEffect(() => {
-    // Only update store if formik values have changed
-    if (
-      !isUpdating &&
-      JSON.stringify(formik.values) !== JSON.stringify(formData)
-    ) {
-      setFormData(formik.values)
-    }
-  }, [formik.values, setFormData, isUpdating, formData])
-
-  React.useEffect(() => {
-    // Only update formik if store data has changed
-    if (
-      isUpdating &&
-      JSON.stringify(formData) !== JSON.stringify(formik.values)
-    ) {
-      formik.setValues(formData)
-      clearUpdateFlag()
-    }
-  }, [formData, isUpdating, clearUpdateFlag, formik])
-
-  // Handle product field changes
+  // Replace store functions with local handlers
   const handleProductFieldChange = (index, field, value) => {
-    // First update formik
     formik.setFieldValue(`products.${index}.${field}`, value)
+  }
 
-    // Then update store
-    updateProductField(index, field, value)
+  const toggleProduct = index => {
+    setExpandedProducts(prev =>
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    )
+  }
+
+  const addProduct = () => {
+    const newProducts = [...formik.values.products, { ...initialProductState }]
+    formik.setFieldValue("products", newProducts)
+    setExpandedProducts(prev => [...prev, formik.values.products.length])
+  }
+
+  const removeProduct = index => {
+    const newProducts = formik.values.products.filter((_, i) => i !== index)
+    formik.setFieldValue("products", newProducts)
+    setExpandedProducts(prev => prev.filter(i => i !== index))
   }
 
   const showCurrentValidationErrors = () => {
