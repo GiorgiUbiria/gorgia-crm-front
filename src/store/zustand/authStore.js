@@ -77,6 +77,11 @@ const useAuthStore = create((set, get) => ({
     )
   },
 
+  isAssistant: () => {
+    const { user } = get()
+    return user?.roles?.some(role => role.slug === "assistant")
+  },
+
   isHrMember: () => {
     const { user } = get()
     return user?.department_id === 8

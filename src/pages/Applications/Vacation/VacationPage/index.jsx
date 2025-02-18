@@ -23,7 +23,7 @@ import { toast } from "store/zustand/toastStore"
 const VacationPage = () => {
   const navigate = useNavigate()
   const { user, loading: userLoading } = useFetchUser()
-  const { isAdmin, isHrMember, hasAnyRole } = useAuth()
+  const { isAdmin, isHrMember, hasAnyRole, isAssistant } = useAuth()
 
   const [departments, setDepartments] = useState([])
   const [departmentsLoading, setDepartmentsLoading] = useState(false)
@@ -77,6 +77,7 @@ const VacationPage = () => {
     return (
       isAdmin() ||
       isHrMember() ||
+      isAssistant() ||
       hasAnyRole([
         "department_head",
         "security_manager",
@@ -84,7 +85,7 @@ const VacationPage = () => {
       ]) ||
       (user?.id === 211)
     )
-  }, [isAdmin, isHrMember, hasAnyRole, user])
+  }, [isAdmin, isHrMember, hasAnyRole, user, isAssistant])
 
   const toggleTab = useCallback(
     tab => {

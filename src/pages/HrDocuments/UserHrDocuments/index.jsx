@@ -65,7 +65,6 @@ const UserHrDocuments = () => {
           : document.position,
     },
     name: document.name,
-    salary: document.salary,
     purpose: document.purpose,
     comment: document.comment,
   }))
@@ -122,10 +121,6 @@ const UserHrDocuments = () => {
         Header: "მიზანი",
         accessor: "purpose",
         disableSortBy: true,
-      },
-      {
-        Header: "ხელფასი",
-        accessor: "salary",
       },
       {
         Header: "სტატუსი",
