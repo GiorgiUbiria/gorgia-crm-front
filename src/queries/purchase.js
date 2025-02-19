@@ -120,14 +120,20 @@ export const useUpdatePurchaseStatus = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, status, comment }) =>
-      updatePurchaseStatus(id, status, comment),
+    mutationFn: ({ id, status, comment }) => {
+      console.log('Updating purchase status:', { id, status, comment })
+      return updatePurchaseStatus(id, status, comment)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: purchaseKeys.all })
       queryClient.invalidateQueries({
         queryKey: purchaseKeys.departmentPurchases(),
       })
     },
+    onError: (error) => {
+      console.error('Purchase status update error:', error)
+      throw error
+    }
   })
 }
 

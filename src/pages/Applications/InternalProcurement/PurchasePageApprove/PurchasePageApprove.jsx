@@ -159,40 +159,39 @@ const PurchasePageApprove = () => {
         return true
       }
 
-      if (
-        getUserDepartmentId() === 7 &&
-        purchase.status === "pending products completion"
-      ) {
-        return true
+      if (getUserDepartmentId() === 7) {
+        return purchase.status === "pending products completion"
       }
 
-      if (
-        purchase.status === "pending IT team review" &&
-        (isITDepartment() || getUserDepartmentId() === 5)
-      ) {
-        return purchase.products?.every(p => p.review_status === "reviewed")
-      }
-
-      if (!isDepartmentHead()) {
-        return false
+      if (purchase.status === "pending IT team review") {
+        return (isITDepartment() || getUserDepartmentId() === 5) &&
+          purchase.products?.every(p => p.review_status === "reviewed")
       }
 
       const purchaseCategory = purchase.category
       const requesterDepartmentId = purchase.requester?.department_id
       const categoryDepartmentId = categoryDepartmentMap[purchaseCategory]
 
+      if (!isDepartmentHead()) {
+        return false
+      }
+
+      const isCategoryDepartmentHead = getUserDepartmentId() === categoryDepartmentId
+
+      const isRequesterDepartmentHead = getUserDepartmentId() === requesterDepartmentId
+
       if (requesterDepartmentId === categoryDepartmentId) {
         return (
-          purchase.status === "pending department head" &&
+          (purchase.status === "pending department head" || purchase.status === "pending requested department") &&
           getUserDepartmentId() === requesterDepartmentId
         )
       }
 
       switch (purchase.status) {
         case "pending department head":
-          return getUserDepartmentId() === requesterDepartmentId
+          return isRequesterDepartmentHead
         case "pending requested department":
-          return getUserDepartmentId() === categoryDepartmentId
+          return isCategoryDepartmentHead
         default:
           return false
       }
@@ -201,10 +200,19 @@ const PurchasePageApprove = () => {
   )
 
   const getNextStatus = purchase => {
+    if (purchase.status === "rejected") {
+      return "rejected"
+    }
+
+    if (purchase.status === "completed") {
+      return "completed"
+    }
+
     if (purchase.status === "pending department head") {
       if (purchase.category === "IT") {
         return "pending IT team review"
       }
+
       const purchaseCategory = purchase.category
       const requesterDepartmentId = purchase.requester?.department_id
       const categoryDepartmentId = categoryDepartmentMap[purchaseCategory]
@@ -227,9 +235,10 @@ const PurchasePageApprove = () => {
     }
 
     if (purchase.status === "pending products completion") {
-      return purchase.products?.every(p => p.status === "completed")
-        ? "completed"
-        : purchase.status
+      if (purchase.products?.every(p => p.status === "completed")) {
+        return "completed"
+      }
+      return purchase.status
     }
 
     return purchase.status
@@ -277,7 +286,7 @@ const PurchasePageApprove = () => {
       {
         id: selectedPurchase.id,
         status: "rejected",
-        comment: rejectionComment,
+        comment: rejectionComment || null,
       },
       {
         onSuccess: () => {
@@ -319,7 +328,7 @@ const PurchasePageApprove = () => {
           console.error("Error updating product status:", err)
           alert(
             err.response?.data?.message ||
-              "შეცდომა პროდუქტის სტატუსის განახლებისას"
+            "შეცდომა პროდუქტის სტატუსის განახლებისას"
           )
         },
       }
@@ -355,8 +364,8 @@ const PurchasePageApprove = () => {
               {value === "purchase"
                 ? "შესყიდვა"
                 : value === "price_inquiry"
-                ? "ფასის მოკვლევა"
-                : "მომსახურება"}
+                  ? "ფასის მოკვლევა"
+                  : "მომსახურება"}
             </span>
           </div>
         ),
@@ -399,22 +408,22 @@ const PurchasePageApprove = () => {
               fontWeight: 500,
               backgroundColor:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#fff3e0"
                   : value === "rejected"
-                  ? "#ffebee"
-                  : value === "completed"
-                  ? "#e8f5e9"
-                  : "#f5f5f5",
+                    ? "#ffebee"
+                    : value === "completed"
+                      ? "#e8f5e9"
+                      : "#f5f5f5",
               color:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#e65100"
                   : value === "rejected"
-                  ? "#c62828"
-                  : value === "completed"
-                  ? "#2e7d32"
-                  : "#757575",
+                    ? "#c62828"
+                    : value === "completed"
+                      ? "#2e7d32"
+                      : "#757575",
             }}
           >
             <i
@@ -664,9 +673,8 @@ const PurchasePageApprove = () => {
 
           <div className="d-flex align-items-center gap-3 mb-3">
             <span
-              className={`badge bg-${
-                rowData.status === "completed" ? "success" : "primary"
-              } px-3 py-2`}
+              className={`badge bg-${rowData.status === "completed" ? "success" : "primary"
+                } px-3 py-2`}
             >
               <div className="d-flex align-items-center gap-2">
                 {rowData.status === "completed" ? (
@@ -1276,7 +1284,7 @@ const PurchasePageApprove = () => {
                             console.error("Error completing request:", err)
                             alert(
                               err.response?.data?.message ||
-                                "შეცდომა მოთხოვნის დასრულებისას"
+                              "შეცდომა მოთხოვნის დასრულებისას"
                             )
                           },
                         }

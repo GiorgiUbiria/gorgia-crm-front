@@ -118,8 +118,8 @@ const ProductsList = memo(({ purchase }) => {
               </th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 მარაგშია
-                <BiInfoCircle 
-                  className="inline-block ml-1 text-gray-400" 
+                <BiInfoCircle
+                  className="inline-block ml-1 text-gray-400"
                   title="მიუთითეთ პროდუქტი არის თუ არა მარაგში"
                 />
               </th>
@@ -139,11 +139,10 @@ const ProductsList = memo(({ purchase }) => {
                 </td>
                 <td className="px-4 py-2">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      product.review_status === "reviewed"
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.review_status === "reviewed"
                         ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
                         : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                    }`}
+                      }`}
                   >
                     {product.review_status === "reviewed"
                       ? "განხილულია"
@@ -173,15 +172,6 @@ const ProductsList = memo(({ purchase }) => {
                         className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
                       >
                         განხილვა
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsInStock(true)
-                          handleReview(product, true)
-                        }}
-                        className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 transition-colors"
-                      >
-                        მარაგშია
                       </button>
                       <button
                         onClick={() => {
@@ -227,31 +217,28 @@ const ProductsList = memo(({ purchase }) => {
             <div className="flex gap-2">
               <button
                 onClick={() => setIsInStock(true)}
-                className={`px-3 py-1.5 rounded-md ${
-                  isInStock === true
+                className={`px-3 py-1.5 rounded-md ${isInStock === true
                     ? "bg-blue-600 text-white"
                     : "bg-gray-100 text-gray-700"
-                }`}
+                  }`}
               >
                 დიახ
               </button>
               <button
                 onClick={() => setIsInStock(false)}
-                className={`px-3 py-1.5 rounded-md ${
-                  isInStock === false
+                className={`px-3 py-1.5 rounded-md ${isInStock === false
                     ? "bg-blue-600 text-white"
                     : "bg-gray-100 text-gray-700"
-                }`}
+                  }`}
               >
                 არა
               </button>
               <button
                 onClick={() => setIsInStock(null)}
-                className={`px-3 py-1.5 rounded-md ${
-                  isInStock === null
+                className={`px-3 py-1.5 rounded-md ${isInStock === null
                     ? "bg-blue-600 text-white"
                     : "bg-gray-100 text-gray-700"
-                }`}
+                  }`}
               >
                 არ ვიცი
               </button>
