@@ -118,10 +118,10 @@ const NotesPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:!bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:!text-white">
+    <div className="min-h-screen  dark:from-gray-900 dark:to-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-handwriting">
             ჩანაწერები
           </h1>
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
@@ -130,36 +130,45 @@ const NotesPage = () => {
                 type="text"
                 placeholder="ძებნა..."
                 onChange={handleSearchChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:!border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:!bg-gray-800 dark:!text-white"
+                className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-full 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm
+                         dark:text-white transition-all duration-200"
               />
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 dark:!text-gray-300 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
             </div>
             <Link
               to="/tools/notes/create"
-              className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 dark:!bg-blue-600 dark:!hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center"
+              className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 
+                       text-white font-medium py-2 px-6 rounded-full shadow-lg hover:shadow-xl
+                       transition-all duration-200 transform hover:-translate-y-0.5
+                       inline-flex items-center justify-center gap-2"
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
+              <PlusIcon className="h-5 w-5" />
               დამატება
             </Link>
           </div>
         </div>
+
         {filteredNotes.length === 0 ? (
-          <div className="text-center py-12 px-4">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:!text-white mb-3">
+          <div className="text-center py-16 px-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3 font-handwriting">
               ჩანაწერები ვერ მოიძებნა
             </h2>
-            <p className="text-gray-600 dark:!text-gray-400 mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
               თქვენ ჯერ არ გაქვთ ჩანაწერები, დაამატეთ პირველი ჩანაწერი
             </p>
             <button
               onClick={handleGetStarted}
-              className="bg-blue-500 hover:bg-blue-700 dark:!bg-blue-600 dark:!hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full sm:w-auto"
+              className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 
+                       text-white font-medium py-3 px-8 rounded-full shadow-lg hover:shadow-xl
+                       transition-all duration-200 transform hover:-translate-y-0.5"
             >
               დაწყება
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4 sm:px-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 p-4 sm:p-0">
             {filteredNotes.map(note => (
               <NoteCard
                 key={note.id}

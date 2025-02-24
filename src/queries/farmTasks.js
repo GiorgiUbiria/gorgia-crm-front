@@ -14,6 +14,8 @@ import {
   createTaskComment,
   updateTaskComment,
   deleteTaskComment,
+  downloadTaskAttachment,
+  deleteTaskAttachment,
 } from "../services/farmTasks"
 
 export const taskKeys = {
@@ -23,6 +25,7 @@ export const taskKeys = {
   detail: id => [...taskKeys.all, "detail", id],
   assignedToMe: () => [...taskKeys.all, "assigned-to-me"],
   comments: taskId => [...taskKeys.all, taskId, "comments"],
+  attachments: taskId => [...taskKeys.all, taskId, "attachments"],
 }
 
 export const useGetTaskList = (options = {}) => {
@@ -166,6 +169,25 @@ export const useDeleteTaskComment = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: taskKeys.comments(variables.taskId),
+      })
+    },
+  })
+}
+
+export const useDownloadTaskAttachment = () => {
+  return useMutation({
+    mutationFn: downloadTaskAttachment,
+  })
+}
+
+export const useDeleteTaskAttachment = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteTaskAttachment,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.detail(variables.taskId),
       })
     },
   })

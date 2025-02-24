@@ -47,7 +47,11 @@ export const getTask = async id => {
 
 export const createTask = async data => {
   try {
-    const response = await defaultInstance.post("/api/farm-tasks", data)
+    const response = await defaultInstance.post("/api/farm-tasks", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
     return response.data
   } catch (error) {
     console.error("Error creating task:", error)
@@ -169,6 +173,33 @@ export const updateTaskStatus = async (id, status) => {
     return response.data
   } catch (error) {
     console.error("Error updating task status:", error)
+    throw error
+  }
+}
+
+export const downloadTaskAttachment = async ({ taskId, attachmentId }) => {
+  try {
+    const response = await defaultInstance.get(
+      `/api/farm-tasks/${taskId}/attachments/${attachmentId}/download`,
+      {
+        responseType: "blob",
+      }
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error downloading task attachment:", error)
+    throw error
+  }
+}
+
+export const deleteTaskAttachment = async ({ taskId, attachmentId }) => {
+  try {
+    const response = await defaultInstance.delete(
+      `/api/farm-tasks/${taskId}/attachments/${attachmentId}`
+    )
+    return response.data
+  } catch (error) {
+    console.error("Error deleting task attachment:", error)
     throw error
   }
 }

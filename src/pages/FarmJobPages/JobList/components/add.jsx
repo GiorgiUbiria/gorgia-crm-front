@@ -21,6 +21,7 @@ function FieldInfo({ field }) {
 
 export const AddFarmTaskForm = ({ onSuccess }) => {
   const createTaskMutation = useCreateTask()
+  const fileInputRef = React.useRef(null)
 
   const form = useForm({
     defaultValues: {
@@ -31,9 +32,24 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
       phone_number: "",
       assigned_users: [],
       due_date: new Date().toISOString().split("T")[0],
+      attachments: [],
     },
     onSubmit: async ({ value }) => {
-      await createTaskMutation.mutateAsync(value)
+      const formData = new FormData()
+      formData.append("task_title", value.task_title)
+      formData.append("description", value.description)
+      formData.append("priority", value.priority)
+      formData.append("status", value.status)
+      formData.append("phone_number", value.phone_number)
+      formData.append("due_date", value.due_date)
+
+      if (fileInputRef.current?.files?.length > 0) {
+        Array.from(fileInputRef.current.files).forEach((file, index) => {
+          formData.append(`attachments[${index}]`, file)
+        })
+      }
+
+      await createTaskMutation.mutateAsync(formData)
       onSuccess?.(onSuccess)
     },
   })
@@ -176,6 +192,31 @@ export const AddFarmTaskForm = ({ onSuccess }) => {
                   <span> მაღალი </span>
                 </option>
               </select>
+              <FieldInfo field={field} />
+            </div>
+          )}
+        </form.Field>
+      </div>
+
+      <div>
+        <form.Field name="attachments">
+          {field => (
+            <div>
+              <label
+                htmlFor="attachments"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                ფაილების მიმაგრება
+              </label>
+              <input
+                type="file"
+                id="attachments"
+                name="attachments"
+                ref={fileInputRef}
+                multiple
+                onChange={e => field.handleChange(Array.from(e.target.files))}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:!file:bg-gray-700 dark:!file:text-gray-300"
+              />
               <FieldInfo field={field} />
             </div>
           )}

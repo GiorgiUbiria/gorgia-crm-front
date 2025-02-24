@@ -188,7 +188,16 @@ export const ViewCalendarEventDetails = ({ eventId, onClose }) => {
           <Clock className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
           <div>
             <div className="font-medium dark:!text-gray-200">
-              {formatDateTime(event.start_time)}
+              {new Date(
+                new Date(event.start_time).getTime() - 4 * 60 * 60 * 1000
+              ).toLocaleDateString("ka-GE", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              })}
             </div>
             {event.end_time && (
               <div className="text-gray-500 dark:!text-gray-400 text-sm">

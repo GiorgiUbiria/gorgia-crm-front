@@ -17,6 +17,11 @@ export const getCurrentUserPurchases = async (page = 1, perPage = 15) => {
   )
 }
 
+export const getITPurchases = async () => {
+  const response = await defaultInstance.get(`/api/internal-purchases/it`)
+  return response.data
+}
+
 export const getDepartmentPurchases = async (page = 1, perPage = 15) => {
   return defaultInstance.get(
     `/api/internal-purchases/department?page=${page}&per_page=${perPage}`
@@ -155,4 +160,48 @@ export const downloadPurchase = async purchaseId => {
 
   console.log(response)
   return response
+}
+
+export const updatePurchaseReviewStatus = async (id, data) => {
+  const formData = new FormData()
+  formData.append("review_comment", data.review_comment)
+  if (data.file) {
+    formData.append("file", data.file)
+  }
+
+  return defaultInstance.post(
+    `/api/internal-purchases/${id}/review-status`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  )
+}
+
+export const updateProductReviewStatus = async (
+  purchaseId,
+  productId,
+  data
+) => {
+  const formData = new FormData()
+  formData.append("review_comment", data.review_comment)
+  formData.append("in_stock", data.in_stock ? "1" : "0")
+  if (data.technical_specifications) {
+    formData.append("technical_specifications", data.technical_specifications)
+  }
+  if (data.file) {
+    formData.append("file", data.file)
+  }
+
+  return defaultInstance.post(
+    `/api/internal-purchases/${purchaseId}/products/${productId}/review-status`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  )
 }

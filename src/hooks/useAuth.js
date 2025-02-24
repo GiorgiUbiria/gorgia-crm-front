@@ -20,6 +20,7 @@ const useAuth = () => {
     isSuperAdmin: store.isSuperAdmin,
     isDepartmentHead: store.isDepartmentHead,
     isDepartmentHeadAssistant: store.isDepartmentHeadAssistant,
+    isAssistant: store.isAssistant,
     isHrMember: store.isHrMember,
     isLegalDepartment: store.isLegalDepartment,
     isITDepartment: store.isITDepartment,

@@ -91,7 +91,7 @@ const JobDetails = () => {
   return (
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white dark:!bg-gray-800 shadow rounded-lg mb-6">
-        <TaskHeader task={task} />
+        <TaskHeader task={task} canEdit={hasEditPermission} />
         <div className="p-6 flex justify-between items-center border-b border-gray-200 dark:!border-gray-700">
           <TaskStatus status={task.data.status} />
           <TaskActions task={task} canEdit={hasEditPermission} />

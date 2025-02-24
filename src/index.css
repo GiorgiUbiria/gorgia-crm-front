@@ -1,6 +1,23 @@
+@import url("https://cdn.web-fonts.ge/fonts/bpg-rioni-arial/css/bpg-rioni-arial.min.css");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: "BPG Rioni Arial", system-ui, sans-serif !important;
+  }
+
+  html {
+    font-family: "BPG Rioni Arial", system-ui, sans-serif !important;
+    font-size: 1rem;
+  }
+
+  body {
+    font-family: "BPG Rioni Arial", system-ui, sans-serif !important;
+  }
+}
 
 @supports (-webkit-touch-callout: none) {
   .min-h-screen {

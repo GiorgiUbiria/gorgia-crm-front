@@ -34,16 +34,14 @@ export const AddCalendarEventForm = ({
   const formatDateTimeForInput = date => {
     if (!date) return ""
     const d = new Date(date)
-    const tzOffset = d.getTimezoneOffset() * 60000
-    const localDate = new Date(d.getTime() - tzOffset)
-    return localDate.toISOString().slice(0, 16)
+    return d.toISOString().slice(0, 16)
   }
 
   const parseDateTimeFromInput = value => {
     if (!value) return null
     const d = new Date(value)
-    const tzOffset = d.getTimezoneOffset() * 60000
-    return new Date(d.getTime() + tzOffset)
+    const utcPlus4 = new Date(d.getTime() + 4 * 60 * 60 * 1000)
+    return utcPlus4
   }
 
   const form = useForm({
@@ -89,9 +87,14 @@ export const AddCalendarEventForm = ({
         const formData = new FormData()
 
         formData.append("title", value.title.trim())
-        formData.append("start_time", new Date(value.start_time).toISOString())
+        const startTime = new Date(value.start_time)
+        const startTimeUTC4 = new Date(startTime.getTime() + 4 * 60 * 60 * 1000)
+        formData.append("start_time", startTimeUTC4.toISOString())
+
         if (value.end_time) {
-          formData.append("end_time", new Date(value.end_time).toISOString())
+          const endTime = new Date(value.end_time)
+          const endTimeUTC4 = new Date(endTime.getTime() + 4 * 60 * 60 * 1000)
+          formData.append("end_time", endTimeUTC4.toISOString())
         }
 
         formData.append("is_task_event", tasks.length > 0 ? "1" : "0")
@@ -379,7 +382,7 @@ export const AddCalendarEventForm = ({
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm dark:!text-gray-200 truncate">
-                  {user.name}
+                  {user.name} {user.sur_name}
                 </span>
               </label>
             ))}

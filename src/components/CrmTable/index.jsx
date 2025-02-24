@@ -38,6 +38,7 @@ const sizeVariants = {
     cellPadding: "px-3 py-2 sm:px-5 sm:py-4",
     text: "text-xs sm:text-sm",
     paginationPadding: "px-3 py-2 sm:px-6 sm:py-4",
+    headerBg: "bg-gradient-to-r from-blue-600 to-blue-500",
   },
 }
 
@@ -47,10 +48,16 @@ export function CrmTable({
   renderSubComponent,
   onRowClick,
   size = "lg",
+  striped = true,
+  hover = true,
 }) {
   const [sorting, setSorting] = React.useState([])
   const [columnFilters, setColumnFilters] = React.useState([])
   const [expanded, setExpanded] = React.useState({})
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 10,
+  })
 
   const sizeClasses = sizeVariants[size]
 
@@ -68,12 +75,14 @@ export function CrmTable({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onExpandedChange: setExpanded,
+    onPaginationChange: setPagination,
     getRowCanExpand: () => true,
-    autoResetAll: true,
+    autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
       expanded,
+      pagination,
     },
   })
 
@@ -90,7 +99,9 @@ export function CrmTable({
                       <th
                         key={header.id}
                         colSpan={header.colSpan}
-                        className={`${sizeClasses.headerPadding} bg-[#105D8D] dark:!bg-gray-900 border-b border-gray-200 dark:!border-gray-700 whitespace-nowrap`}
+                        className={`${sizeClasses.headerPadding} ${
+                          size === "lg" ? sizeClasses.headerBg : "bg-[#105D8D]"
+                        } dark:!bg-gray-900 border-b border-gray-200 dark:!border-gray-700 whitespace-nowrap`}
                       >
                         {header.isPlaceholder ? null : (
                           <>
@@ -137,12 +148,16 @@ export function CrmTable({
                     <Fragment key={row.id}>
                       <tr
                         className={`${
-                          row.index % 2 === 0
+                          striped &&
+                          (row.index % 2 === 0
                             ? "bg-white dark:!bg-gray-800"
-                            : "bg-gray-50 dark:!bg-gray-700"
-                        } hover:bg-gray-100 dark:!hover:bg-gray-600/50 ${
+                            : "bg-gray-50 dark:!bg-gray-700")
+                        } ${
+                          hover &&
+                          "hover:bg-gray-100 dark:!hover:bg-gray-600/50"
+                        } ${
                           onRowClick ? "cursor-pointer" : ""
-                        }`}
+                        } transition-colors duration-200`}
                         onClick={() => onRowClick?.(row)}
                       >
                         {row.getVisibleCells().map(cell => {
@@ -160,7 +175,7 @@ export function CrmTable({
                         })}
                       </tr>
                       {row.getIsExpanded() && (
-                        <tr>
+                        <tr className="bg-gray-50 dark:!bg-gray-700">
                           <td colSpan={row.getVisibleCells().length}>
                             {renderSubComponent({ row })}
                           </td>
@@ -357,7 +372,7 @@ function DebouncedInput({
     }, debounce)
 
     return () => clearTimeout(timeout)
-  }, [value])
+  }, [debounce, onChange, value])
 
   return (
     <input

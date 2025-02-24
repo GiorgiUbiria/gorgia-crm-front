@@ -77,20 +77,9 @@ export const createDepartmentHeadDaily = async data => {
 
 export const updateDepartmentHeadDaily = async (id, data) => {
   try {
-    const formData = new FormData()
-    Object.keys(data).forEach(key => {
-      if (data[key] !== null && data[key] !== undefined) {
-        formData.append(key, data[key])
-      }
-    })
     const response = await defaultInstance.put(
       `/api/department-head-dailies/${id}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
+      data
     )
     return response.data
   } catch (error) {
@@ -173,20 +162,9 @@ export const createRegularDaily = async data => {
 
 export const updateRegularDaily = async (id, data) => {
   try {
-    const formData = new FormData()
-    Object.keys(data).forEach(key => {
-      if (data[key] !== null && data[key] !== undefined) {
-        formData.append(key, data[key])
-      }
-    })
     const response = await defaultInstance.put(
       `/api/regular-dailies/${id}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
+      data
     )
     return response.data
   } catch (error) {

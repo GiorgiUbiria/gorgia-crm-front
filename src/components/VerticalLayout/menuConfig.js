@@ -17,6 +17,8 @@ import {
   LuNotebook,
   LuMessageSquare,
   LuUser,
+  LuFilter,
+  LuPaintbrush,
   // LuBriefcase,
 } from "react-icons/lu"
 
@@ -83,6 +85,12 @@ const getMenuItems = can => {
               to: "/applications/purchases/new",
               label: "დამატება",
               icon: LuPlus,
+            },
+            {
+              to: "/applications/purchases/it",
+              label: "IT შესყიდვები",
+              icon: LuShieldCheck,
+              show: () => can("role:admin|department:5"),
             },
             {
               to: "/applications/purchases/approve",
@@ -382,6 +390,11 @@ const getMenuItems = can => {
       ],
     },
     {
+      to: "/tools/design-forms",
+      icon: LuPaintbrush,
+      label: "დიზაინის მოთხოვნები",
+    },
+    {
       to: "/support/it-tasks",
       icon: LuHeadset,
       label: "IT მხარდაჭერა",
@@ -397,6 +410,11 @@ const getMenuItems = can => {
       label: "იურიდიული Tasks",
     },
     {
+      to: "/support/1c-tasks",
+      icon: LuFileCode,
+      label: "1C Tasks",
+    },
+    {
       to: "/tools/notes",
       icon: LuNotebook,
       label: "ჩანაწერები",
@@ -407,10 +425,19 @@ const getMenuItems = can => {
       label: "ჩატი",
     },
     {
+      to: "/tools/employee-contacts",
+      icon: LuFilter,
+      label: "საკომუნიკაციო ბაზა",
+      show: () => can("role:admin|department:8"),
+    },
+    {
       to: "/tools/people-counting",
       icon: LuUser,
       label: "ვიზიტორების ფორმა",
-      show: () => can("role:admin|department:36|department:21|department:30"),
+      show: () =>
+        can(
+          "role:admin|department:36,role:department_head|department:21|department:30|user:133"
+        ),
     },
     {
       to: "/tools/calendar",

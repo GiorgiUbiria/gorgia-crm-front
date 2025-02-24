@@ -53,7 +53,7 @@ const UploadedFilesTable = () => {
     {
       header: "რეპორტის ტიპი",
       accessorKey: "report_type",
-      cell: info => (info.getValue() === "monthly" ? "თვიური" : "კვირის"),
+      cell: info => (info.getValue() === "monthly" ? "თვის" : "კვირის"),
       enableColumnFilter: false,
     },
 

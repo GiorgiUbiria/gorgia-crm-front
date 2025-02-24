@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState, useMemo, useCallback } from "react"
 import { Row, Col } from "reactstrap"
-import { getAllTripsList, getDepartmentTripList } from "../../../../services/trip"
+import {
+  getAllTripsList,
+  getDepartmentTripList,
+} from "../../../../services/trip"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import useAuth from "hooks/useAuth"
 const statusMap = {
@@ -216,7 +219,7 @@ const TripPageArchive = () => {
   const [trips, setTrips] = useState([])
   const { isAdmin } = useAuth()
 
-  const fetchTrips = async () => {
+  const fetchTrips = useCallback(async () => {
     try {
       let response
       isAdmin()
@@ -226,11 +229,11 @@ const TripPageArchive = () => {
     } catch (err) {
       console.error("Error fetching trip requests:", err)
     }
-  }
+  }, [isAdmin])
 
   useEffect(() => {
     fetchTrips()
-  }, [])
+  }, [fetchTrips])
 
   const columns = useMemo(
     () => [

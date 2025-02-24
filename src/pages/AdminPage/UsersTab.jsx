@@ -27,6 +27,7 @@ const roleNameMapping = {
   manager: "მენეჯერი",
   ceo: "გენერალური დირექტორი",
   ceo_assistant: "გენერალური დირექტორის ასისტენტი",
+  assistant: "ასისტენტი",
 }
 
 const statusMapping = {
