@@ -176,8 +176,11 @@ const PurchasePageApprove = () => {
         return false
       }
 
-      const isCategoryDepartmentHead = getUserDepartmentId() === categoryDepartmentId
+      if (requesterDepartmentId === 7) {
+        return false
+      }
 
+      const isCategoryDepartmentHead = getUserDepartmentId() === categoryDepartmentId
       const isRequesterDepartmentHead = getUserDepartmentId() === requesterDepartmentId
 
       if (requesterDepartmentId === categoryDepartmentId) {
@@ -644,16 +647,37 @@ const PurchasePageApprove = () => {
         ),
         icon: <BiDownload />,
       },
-      {
-        label: "პროდუქტების სია დანართში",
-        value: rowData?.has_products_attachment ? (
-          <span className="badge bg-info">დიახ</span>
-        ) : (
-          <span className="badge bg-secondary">არა</span>
-        ),
-        icon: <BiPackage />,
-      },
     ]
+
+    // Add IT review details if category is IT
+    if (rowData.category === "IT") {
+      details.push(
+        {
+          label: "IT განხილვის სტატუსი",
+          value: rowData.review_status === "reviewed" ? "განხილულია" : "განსახილველი",
+          icon: <BiCheckCircle />,
+        },
+        {
+          label: "IT განხილვის კომენტარი",
+          value: rowData.review_comment || "N/A",
+          icon: <BiComment />,
+        },
+        {
+          label: "განმხილველი",
+          value: rowData.reviewed_by
+            ? `${rowData.reviewed_by.name} ${rowData.reviewed_by.sur_name}`
+            : "N/A",
+          icon: <BiUser />,
+        },
+        {
+          label: "განხილვის თარიღი",
+          value: rowData.reviewed_at
+            ? new Date(rowData.reviewed_at).toLocaleString()
+            : "N/A",
+          icon: <BiCalendar />,
+        }
+      )
+    }
 
     const completedProductsCount =
       rowData?.products?.filter(p => p.status === "completed").length || 0
@@ -951,6 +975,25 @@ const PurchasePageApprove = () => {
                         <BiBox /> <span>ასორტიმენტში</span>
                       </div>
                     </th>
+                    {rowData.category === "IT" && (
+                      <>
+                        <th>
+                          <div className="d-flex align-items-center gap-2">
+                            <BiCheckCircle /> <span>განხილვის სტატუსი</span>
+                          </div>
+                        </th>
+                        <th>
+                          <div className="d-flex align-items-center gap-2">
+                            <BiComment /> <span>განხილვის კომენტარი</span>
+                          </div>
+                        </th>
+                        <th>
+                          <div className="d-flex align-items-center gap-2">
+                            <BiBox /> <span>მარაგშია</span>
+                          </div>
+                        </th>
+                      </>
+                    )}
                     <th>
                       <div className="d-flex align-items-center gap-2">
                         <BiFlag /> <span>სტატუსი</span>
@@ -979,6 +1022,39 @@ const PurchasePageApprove = () => {
                       <td>{product?.search_variant || "N/A"}</td>
                       <td>{product?.similar_purchase_planned || "N/A"}</td>
                       <td>{product?.in_stock_explanation || "N/A"}</td>
+                      {rowData.category === "IT" && (
+                        <>
+                          <td>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.review_status === "reviewed"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                                }`}
+                            >
+                              {product.review_status === "reviewed"
+                                ? "განხილულია"
+                                : "განსახილველი"}
+                            </span>
+                          </td>
+                          <td>{product?.review_comment || "N/A"}</td>
+                          <td>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.in_stock === true
+                                ? "bg-green-100 text-green-800"
+                                : product.in_stock === false
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-gray-100 text-gray-800"
+                                }`}
+                            >
+                              {product.in_stock === true
+                                ? "დიახ"
+                                : product.in_stock === false
+                                  ? "არა"
+                                  : "არ არის მითითებული"}
+                            </span>
+                          </td>
+                        </>
+                      )}
                       <td>
                         <span
                           style={{

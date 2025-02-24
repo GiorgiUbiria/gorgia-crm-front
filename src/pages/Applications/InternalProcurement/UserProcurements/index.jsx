@@ -104,8 +104,8 @@ const UserProcurements = () => {
               {value === "purchase"
                 ? "შესყიდვა"
                 : value === "price_inquiry"
-                ? "ფასის მოკვლევა"
-                : "მომსახურება"}
+                  ? "ფასის მოკვლევა"
+                  : "მომსახურება"}
             </span>
           </div>
         ),
@@ -148,28 +148,27 @@ const UserProcurements = () => {
               fontWeight: 500,
               backgroundColor:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#fff3e0"
                   : value === "rejected"
-                  ? "#ffebee"
-                  : value === "completed"
-                  ? "#e8f5e9"
-                  : "#f5f5f5",
+                    ? "#ffebee"
+                    : value === "completed"
+                      ? "#e8f5e9"
+                      : "#f5f5f5",
               color:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#e65100"
                   : value === "rejected"
-                  ? "#c62828"
-                  : value === "completed"
-                  ? "#2e7d32"
-                  : "#757575",
+                    ? "#c62828"
+                    : value === "completed"
+                      ? "#2e7d32"
+                      : "#757575",
             }}
           >
             <i
-              className={`bx ${
-                statusMap[value]?.icon || "bx-help-circle"
-              } me-2`}
+              className={`bx ${statusMap[value]?.icon || "bx-help-circle"
+                } me-2`}
             ></i>
             {statusMap[value]?.label || value}
           </span>
@@ -269,7 +268,6 @@ const UserProcurements = () => {
         value: rowData?.branches?.map(branch => branch).join(", ") || "N/A",
         icon: <BiBuilding className="text-primary" />,
       },
-
       {
         label: "მომთხოვნი",
         value: rowData?.requester.name + " " + rowData?.requester.sur_name,
@@ -364,6 +362,36 @@ const UserProcurements = () => {
         icon: <BiDownload />,
       },
     ]
+
+    // Add IT review details if category is IT
+    if (rowData.category === "IT") {
+      details.push(
+        {
+          label: "IT განხილვის სტატუსი",
+          value: rowData.review_status === "reviewed" ? "განხილულია" : "განსახილველი",
+          icon: <BiCheckCircle />,
+        },
+        {
+          label: "IT განხილვის კომენტარი",
+          value: rowData.review_comment || "N/A",
+          icon: <BiComment />,
+        },
+        {
+          label: "განმხილველი",
+          value: rowData.reviewed_by
+            ? `${rowData.reviewed_by.name} ${rowData.reviewed_by.sur_name}`
+            : "N/A",
+          icon: <BiUser />,
+        },
+        {
+          label: "განხილვის თარიღი",
+          value: rowData.reviewed_at
+            ? new Date(rowData.reviewed_at).toLocaleString()
+            : "N/A",
+          icon: <BiCalendar />,
+        }
+      )
+    }
 
     const StatusTimeline = () => (
       <Card className="mb-4 shadow-sm">

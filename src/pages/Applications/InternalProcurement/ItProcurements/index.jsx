@@ -131,12 +131,10 @@ const ItProcurements = () => {
         id: "expander",
         header: "",
         cell: ({ row }) => {
-          const isPendingITReview = row.original.status === "pending IT team review";
           return (
             <button
               onClick={row.getToggleExpandedHandler()}
               className="px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-              style={{ visibility: isPendingITReview ? "visible" : "hidden" }}
             >
               {row.getIsExpanded() ? "▼" : "▶"}
             </button>
@@ -294,6 +292,30 @@ const ItProcurements = () => {
             ? `${row.responsible_for_purchase.name} ${row.responsible_for_purchase.sur_name}`
             : "N/A",
           icon: "bx-user-check",
+        },
+        {
+          label: "IT განხილვის სტატუსი",
+          value: row.review_status === "reviewed" ? "განხილულია" : "განსახილველი",
+          icon: "bx-check-circle",
+        },
+        {
+          label: "IT განხილვის კომენტარი",
+          value: row.review_comment || "N/A",
+          icon: "bx-comment",
+        },
+        {
+          label: "განმხილველი",
+          value: row.reviewed_by
+            ? `${row.reviewed_by.name} ${row.reviewed_by.sur_name}`
+            : "N/A",
+          icon: "bx-user",
+        },
+        {
+          label: "განხილვის თარიღი",
+          value: row.reviewed_at
+            ? new Date(row.reviewed_at).toLocaleString()
+            : "N/A",
+          icon: "bx-calendar",
         },
       ]
 

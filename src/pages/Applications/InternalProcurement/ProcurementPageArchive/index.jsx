@@ -155,8 +155,8 @@ const ProcurementPageArchive = () => {
               {value === "purchase"
                 ? "შესყიდვა"
                 : value === "price_inquiry"
-                ? "ფასის მოკვლევა"
-                : "მომსახურება"}
+                  ? "ფასის მოკვლევა"
+                  : "მომსახურება"}
             </span>
           </div>
         ),
@@ -199,28 +199,27 @@ const ProcurementPageArchive = () => {
               fontWeight: 500,
               backgroundColor:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#fff3e0"
                   : value === "rejected"
-                  ? "#ffebee"
-                  : value === "completed"
-                  ? "#e8f5e9"
-                  : "#f5f5f5",
+                    ? "#ffebee"
+                    : value === "completed"
+                      ? "#e8f5e9"
+                      : "#f5f5f5",
               color:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#e65100"
                   : value === "rejected"
-                  ? "#c62828"
-                  : value === "completed"
-                  ? "#2e7d32"
-                  : "#757575",
+                    ? "#c62828"
+                    : value === "completed"
+                      ? "#2e7d32"
+                      : "#757575",
             }}
           >
             <i
-              className={`bx ${
-                statusMap[value]?.icon || "bx-help-circle"
-              } me-2`}
+              className={`bx ${statusMap[value]?.icon || "bx-help-circle"
+                } me-2`}
             ></i>
             {statusMap[value]?.label || value}
           </span>
@@ -279,9 +278,8 @@ const ProcurementPageArchive = () => {
 
     return rows.filter(row => {
       if (!row.original.requester) return false
-      const requesterName = `${row.original.requester.name || ""} ${
-        row.original.requester.sur_name || ""
-      }`.toLowerCase()
+      const requesterName = `${row.original.requester.name || ""} ${row.original.requester.sur_name || ""
+        }`.toLowerCase()
       return requesterName.includes(searchTerm)
     })
   }, [])
@@ -325,16 +323,9 @@ const ProcurementPageArchive = () => {
 
     const details = [
       {
-        label: "კომენტარი",
-        value: rowData?.comment || "N/A",
-        icon: <BiComment className="dark:!text-gray-300" />,
-      },
-      {
         label: "ფილიალები",
         value: rowData?.branches?.map(branch => branch).join(", ") || "N/A",
-        icon: (
-          <BiBuilding className="w-5 h-5 text-gray-500 dark:!text-gray-400" />
-        ),
+        icon: <BiBuilding className="dark:!text-gray-300" />,
       },
       {
         label: "მომთხოვნი",
@@ -431,6 +422,36 @@ const ProcurementPageArchive = () => {
       },
     ]
 
+    // Add IT review details if category is IT
+    if (rowData.category === "IT") {
+      details.push(
+        {
+          label: "IT განხილვის სტატუსი",
+          value: rowData.review_status === "reviewed" ? "განხილულია" : "განსახილველი",
+          icon: <BiCheckCircle className="dark:!text-gray-300" />,
+        },
+        {
+          label: "IT განხილვის კომენტარი",
+          value: rowData.review_comment || "N/A",
+          icon: <BiComment className="dark:!text-gray-300" />,
+        },
+        {
+          label: "განმხილველი",
+          value: rowData.reviewed_by
+            ? `${rowData.reviewed_by.name} ${rowData.reviewed_by.sur_name}`
+            : "N/A",
+          icon: <BiUser className="dark:!text-gray-300" />,
+        },
+        {
+          label: "განხილვის თარიღი",
+          value: rowData.reviewed_at
+            ? new Date(rowData.reviewed_at).toLocaleString()
+            : "N/A",
+          icon: <BiCalendar className="dark:!text-gray-300" />,
+        }
+      )
+    }
+
     const completedProductsCount =
       rowData?.products?.filter(p => p.status === "completed").length || 0
     const totalProductsCount = rowData?.products?.length || 0
@@ -449,11 +470,9 @@ const ProcurementPageArchive = () => {
 
           <div className="d-flex align-items-center gap-3 mb-3">
             <span
-              className={`badge bg-${
-                rowData.status === "completed" ? "success" : "primary"
-              } px-3 py-2 dark:!bg-${
-                rowData.status === "completed" ? "success" : "primary"
-              }-600`}
+              className={`badge bg-${rowData.status === "completed" ? "success" : "primary"
+                } px-3 py-2 dark:!bg-${rowData.status === "completed" ? "success" : "primary"
+                }-600`}
             >
               <div className="d-flex align-items-center gap-2 dark:!text-gray-200">
                 {rowData.status === "completed" ? (

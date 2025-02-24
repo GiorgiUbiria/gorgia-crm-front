@@ -3,7 +3,6 @@ import { Row, Col, Button, Spinner } from "reactstrap"
 import MuiTable from "components/Mui/MuiTable"
 import VacationBalance from "components/Vacation/VacationBalance"
 import CancellationModal from "components/Vacation/CancellationModal"
-import { Tooltip } from "@mui/material"
 import {
   useUserVacations,
   useVacationBalance,
@@ -30,11 +29,6 @@ const statusMap = {
     label: "გაუქმებული",
     icon: "bx-x-circle",
     color: "#6c757d",
-  },
-  auto_approved: {
-    label: "ავტომატურად დამტკიცებული",
-    icon: "bx-check-double",
-    color: "#28a745",
   },
 }
 
@@ -234,8 +228,7 @@ const UserVocation = () => {
 
     return (
       (vacation.status === "pending" ||
-        vacation.status === "approved" ||
-        vacation.status === "auto_approved") &&
+        vacation.status === "approved") &&
       startDate >= today
     )
   }
@@ -274,7 +267,7 @@ const UserVocation = () => {
         Header: "სტატუსი",
         accessor: "status",
         disableSortBy: true,
-        Cell: ({ value, row }) => (
+        Cell: ({ value }) => (
           <div>
             <span
               style={{
@@ -288,36 +281,18 @@ const UserVocation = () => {
                   value === "pending"
                     ? "#fff3e0"
                     : value === "rejected"
-                    ? "#ffebee"
-                    : value === "approved" || value === "auto_approved"
-                    ? "#e8f5e9"
-                    : value === "cancelled"
-                    ? "#f5f5f5"
-                    : "#f5f5f5",
+                      ? "#ffebee"
+                      : value === "approved"
+                        ? "#e8f5e9"
+                        : value === "cancelled"
+                          ? "#f5f5f5"
+                          : "#f5f5f5",
                 color: statusMap[value]?.color || "#757575",
               }}
             >
               <i className={`bx ${statusMap[value]?.icon} me-2`}></i>
               {statusMap[value]?.label}
             </span>
-            {row.original.auto_approved && (
-              <div className="mt-1">
-                <small className="text-muted">
-                  <i className="bx bx-time-five me-1"></i>
-                  ავტომატურად დამტკიცდა {row.original.auto_approved_at}
-                </small>
-              </div>
-            )}
-            {value === "pending" && row.original.time_until_auto_approval && (
-              <Tooltip title="დრო ავტომატურ დამტკიცებამდე" arrow>
-                <div className="mt-1">
-                  <small className="text-warning">
-                    <i className="bx bx-time-five me-1"></i>
-                    {row.original.time_until_auto_approval}
-                  </small>
-                </div>
-              </Tooltip>
-            )}
           </div>
         ),
       },
@@ -350,7 +325,7 @@ const UserVocation = () => {
     return vacationsData.data.data.map(vacation => ({
       ...vacation,
       id: vacation.id,
-      status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+      status: vacation.status,
       start_date: vacation.start_date
         ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
         : "-",
@@ -362,25 +337,14 @@ const UserVocation = () => {
         ? TYPE_MAPPING[vacation.type] || vacation.type
         : "უცნობი",
       requested_by: vacation.user
-        ? `${vacation.user?.name || ""} ${
-            vacation.user?.sur_name || ""
+        ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""
           }`.trim() || "უცნობი"
         : "უცნობი",
       requested_at: vacation.created_at
         ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
         : "-",
-      auto_approved: vacation.is_auto_approved,
-      auto_approved_at: vacation.auto_approved_at
-        ? new Date(vacation.auto_approved_at).toLocaleDateString("ka-GE")
-        : null,
-      time_until_auto_approval: vacation.time_until_auto_approval,
-      cancellation_reason: vacation.cancellation_reason,
-      cancelled_at: vacation.cancelled_at
-        ? new Date(vacation.cancelled_at).toLocaleDateString("ka-GE")
-        : null,
-      requested_for: `${vacation.employee_name || ""} | ${
-        vacation.position || ""
-      } | ${vacation.department || ""}`,
+      requested_for: `${vacation.employee_name || ""} | ${vacation.position || ""
+        } | ${vacation.department || ""}`,
       expanded: {
         holiday_days: vacation.holiday_days || {},
         substitute: {
@@ -410,7 +374,6 @@ const UserVocation = () => {
       label: "სტატუსი",
       valueLabels: {
         approved: "დამტკიცებული",
-        auto_approved: "ავტომატურად დამტკიცებული",
         rejected: "უარყოფილი",
         pending: "განხილვაში",
         cancelled: "გაუქმებული",
