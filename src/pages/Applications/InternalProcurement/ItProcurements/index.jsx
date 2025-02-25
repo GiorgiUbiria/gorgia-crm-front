@@ -14,29 +14,29 @@ const statusMap = {
   "pending department head": {
     label: "განხილვაში (დეპარტამენტის უფროსი)",
     color:
-      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100",
+      "bg-orange-100 text-orange-800 dark:!bg-orange-900 dark:!text-orange-100",
   },
   "pending IT team review": {
     label: "განხილვაში (IT გუნდი)",
     color:
-      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100",
+      "bg-orange-100 text-orange-800 dark:!bg-orange-900 dark:!text-orange-100",
   },
   "pending requested department": {
     label: "განხილვაში (მოთხოვნილი დეპარტამენტი)",
     color:
-      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100",
+      "bg-orange-100 text-orange-800 dark:!bg-orange-900 dark:!text-orange-100",
   },
   "pending products completion": {
     label: "პროდუქტების დასრულების მოლოდინში",
-    color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
+    color: "bg-blue-100 text-blue-800 dark:!bg-blue-900 dark:!text-blue-100",
   },
   completed: {
     label: "დასრულებული",
-    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+    color: "bg-green-100 text-green-800 dark:!bg-green-900 dark:!text-green-100",
   },
   rejected: {
     label: "უარყოფილი",
-    color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
+    color: "bg-red-100 text-red-800 dark:!bg-red-900 dark:!text-red-100",
   },
 }
 
@@ -54,8 +54,6 @@ const ItProcurements = () => {
   const { data: purchaseData } = useGetITPurchases({
     enabled: isAdmin() || isITDepartment(),
   })
-
-  console.log(purchaseData)
 
   const handleDownloadAttachment = useCallback(async purchaseId => {
     try {
@@ -134,7 +132,7 @@ const ItProcurements = () => {
           return (
             <button
               onClick={row.getToggleExpandedHandler()}
-              className="px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="px-2 py-1 rounded-md hover:bg-gray-100 dark:!hover:bg-gray-700"
             >
               {row.getIsExpanded() ? "▼" : "▶"}
             </button>
@@ -158,10 +156,10 @@ const ItProcurements = () => {
           const requester = info.getValue()
           return (
             <div>
-              <div className="text-gray-900 dark:text-gray-100">
+              <div className="text-gray-900 dark:!text-gray-100">
                 {requester?.name} {requester?.sur_name}
               </div>
-              <small className="text-gray-500 dark:text-gray-400">
+              <small className="text-gray-500 dark:!text-gray-400">
                 {requester?.department?.name || "N/A"}
               </small>
             </div>
@@ -179,7 +177,7 @@ const ItProcurements = () => {
         cell: info => {
           const value = info.getValue()
           return (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:!bg-blue-900 dark:!text-blue-100">
               {value === "purchase"
                 ? "შესყიდვა"
                 : value === "price_inquiry"
@@ -202,7 +200,7 @@ const ItProcurements = () => {
                 branches.map((branch, index) => (
                   <span
                     key={`${branch}-${index}`}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:!bg-blue-900 dark:!text-blue-100"
                   >
                     {branch}
                   </span>
@@ -222,7 +220,7 @@ const ItProcurements = () => {
         cell: info => {
           const value = info.getValue()
           return (
-            <div className="flex items-center text-gray-600 dark:text-gray-300">
+            <div className="flex items-center text-gray-600 dark:!text-gray-300">
               <i className="bx bx-calendar mr-2"></i>
               {value ? new Date(value).toLocaleDateString() : "N/A"}
             </div>
@@ -241,7 +239,7 @@ const ItProcurements = () => {
           return (
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusMap[value]?.color ||
-                "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100"
+                "bg-gray-100 text-gray-800 dark:!bg-gray-900 dark:!text-gray-100"
                 }`}
             >
               {statusMap[value]?.label || value}
@@ -255,7 +253,7 @@ const ItProcurements = () => {
         accessorKey: "purchase_purpose",
         header: () => <span>მიზანი</span>,
         cell: info => (
-          <div className="text-gray-900 dark:text-gray-100">
+          <div className="text-gray-900 dark:!text-gray-100">
             {info.getValue() || "N/A"}
           </div>
         ),
@@ -325,16 +323,16 @@ const ItProcurements = () => {
           row.products?.every(p => p.review_status === "reviewed"))
 
       return (
-        <div className="p-4 bg-white dark:bg-gray-800">
+        <div className="p-4 bg-white dark:!bg-gray-800">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             {details.map((detail, index) => (
               <div key={index} className="flex items-center gap-2">
                 <i className={`bx ${detail.icon} text-gray-400`}></i>
                 <div>
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <div className="text-sm font-medium text-gray-500 dark:!text-gray-400">
                     {detail.label}
                   </div>
-                  <div className="text-sm text-gray-900 dark:text-gray-100">
+                  <div className="text-sm text-gray-900 dark:!text-gray-100">
                     {detail.value}
                   </div>
                 </div>
@@ -347,7 +345,7 @@ const ItProcurements = () => {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => handleDownloadAttachment(row.id)}
-                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:!bg-blue-500 dark:!hover:bg-blue-600 transition-colors"
                 >
                   პროდუქტების სიის ჩამოტვირთვა
                 </button>
@@ -365,7 +363,7 @@ const ItProcurements = () => {
                   setSelectedPurchase(row)
                   setIsReviewDialogOpen(true)
                 }}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors"
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:!bg-green-500 dark:!hover:bg-green-600 transition-colors"
               >
                 განხილვის დასრულება
               </button>
@@ -401,7 +399,7 @@ const ItProcurements = () => {
 
   return (
     <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden">
+      <div className="bg-white dark:!bg-gray-800 shadow-xl rounded-lg overflow-hidden">
         <CrmTable
           columns={columns}
           data={Array.isArray(purchaseData) ? purchaseData : []}
@@ -419,13 +417,13 @@ const ItProcurements = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
               განხილვის კომენტარი
             </label>
             <textarea
               value={reviewComment}
               onChange={e => setReviewComment(e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:!bg-gray-700 dark:!border-gray-600"
               rows={3}
               placeholder="შეიყვანეთ კომენტარი (არასავალდებულო)..."
             />
@@ -434,13 +432,13 @@ const ItProcurements = () => {
           {selectedPurchase?.has_products_attachment && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300">
                   განახლებული პროდუქტების სია
                 </label>
                 <button
                   type="button"
                   onClick={() => handleDownloadAttachment(selectedPurchase.id)}
-                  className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  className="text-sm text-blue-600 hover:text-blue-700 dark:!text-blue-400 dark:!hover:text-blue-300"
                 >
                   არსებული სიის ჩამოტვირთვა
                 </button>
@@ -467,16 +465,16 @@ const ItProcurements = () => {
                   }
                 }}
                 accept=".xls,.xlsx"
-                className="block w-full text-sm text-gray-500 dark:text-gray-400
+                className="block w-full text-sm text-gray-500 dark:!text-gray-400
                   file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
                   file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700
-                  hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-100"
+                  hover:file:bg-blue-100 dark:!file:bg-blue-900 dark:!file:text-blue-100"
               />
-              <small className="text-gray-500 dark:text-gray-400 mt-1 block">
+              <small className="text-gray-500 dark:!text-gray-400 mt-1 block">
                 მაქსიმალური ზომა: 10MB. დაშვებული ფორმატები: XLS, XLSX
               </small>
               {!attachmentFile && (
-                <small className="text-gray-500 dark:text-gray-400 mt-1 block">
+                <small className="text-gray-500 dark:!text-gray-400 mt-1 block">
                   <BiInfoCircle className="inline-block mr-1" />
                   ფაილის აუტვირთაობის შემთხვევაში არსებული სია დარჩება უცვლელი
                 </small>

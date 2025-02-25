@@ -121,20 +121,22 @@ const PurchasePageApprove = () => {
       isAdmin() ||
       isDepartmentHead() ||
       isDepartmentHeadAssistant() ||
-      getUserDepartmentId() === 7
+      getUserDepartmentId() === 7 ||
+      isITDepartment()
     )
   }, [
     isAdmin,
     isDepartmentHead,
     isDepartmentHeadAssistant,
     getUserDepartmentId,
+    isITDepartment,
   ])
 
   const { data: purchaseData, isLoading: isPurchasesLoading } =
     useGetPurchaseList(
       {},
       {
-        enabled: !!isAdmin() || getUserDepartmentId() === 7,
+        enabled: isAdmin() || getUserDepartmentId() === 7,
       }
     )
 
@@ -144,7 +146,9 @@ const PurchasePageApprove = () => {
   const {
     data: departmentPurchaseData,
     isLoading: isDepartmentPurchaseLoading,
-  } = useGetDepartmentPurchases({}, { enabled: isDepartmentHead() })
+  } = useGetDepartmentPurchases({}, {
+    enabled: (isDepartmentHead() || isDepartmentHeadAssistant() || isITDepartment()) && !isAdmin() && getUserDepartmentId() !== 7
+  })
 
   const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
     useUpdateProductStatus()

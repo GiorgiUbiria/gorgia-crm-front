@@ -40,7 +40,7 @@ const ProductReview = ({ product, purchase, onClose, onSuccess }) => {
     >
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          <h3 className="text-lg font-medium text-gray-900 dark:!text-gray-100">
             პროდუქტის დეტალები
           </h3>
           <div className="mt-2 space-y-2">

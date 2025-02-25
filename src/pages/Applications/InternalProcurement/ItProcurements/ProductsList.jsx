@@ -146,7 +146,7 @@ const ProductsList = memo(({ purchase }) => {
             {purchase.has_products_attachment && (
               <button
                 onClick={() => setIsReviewDialogOpen(true)}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:!bg-blue-500 dark:!hover:bg-blue-600 transition-colors"
               >
                 ატვირთე განახლებული სია
               </button>
@@ -154,7 +154,7 @@ const ProductsList = memo(({ purchase }) => {
             {purchase.products.length > 0 && (
               <button
                 onClick={handleQuickReviewAll}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors"
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:!bg-green-500 dark:!hover:bg-green-600 transition-colors"
               >
                 სწრაფი განხილვა
               </button>
@@ -165,47 +165,47 @@ const ProductsList = memo(({ purchase }) => {
 
       {purchase.products.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:!divide-gray-700">
+            <thead className="bg-gray-50 dark:!bg-gray-700">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:!text-gray-300 uppercase tracking-wider">
                   დასახელება
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:!text-gray-300 uppercase tracking-wider">
                   რაოდენობა
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:!text-gray-300 uppercase tracking-wider">
                   განხილვის სტატუსი
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:!text-gray-300 uppercase tracking-wider">
                   კომენტარი
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:!text-gray-300 uppercase tracking-wider">
                   მარაგშია
                   <BiInfoCircle
                     className="inline-block ml-1 text-gray-400"
                     title="მიუთითეთ პროდუქტი არის თუ არა მარაგში"
                   />
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:!text-gray-300 uppercase tracking-wider">
                   მოქმედებები
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white dark:!bg-gray-800 divide-y divide-gray-200 dark:!divide-gray-700">
               {purchase.products.map((product, index) => (
                 <tr key={index}>
-                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
+                  <td className="px-4 py-2 text-sm text-gray-900 dark:!text-gray-100">
                     {product.name}
                   </td>
-                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
+                  <td className="px-4 py-2 text-sm text-gray-900 dark:!text-gray-100">
                     {product.quantity}
                   </td>
                   <td className="px-4 py-2">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.review_status === "reviewed"
-                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                        ? "bg-green-100 text-green-800 dark:!bg-green-900 dark:!text-green-100"
+                        : "bg-yellow-100 text-yellow-800 dark:!bg-yellow-900 dark:!text-yellow-100"
                         }`}
                     >
                       {product.review_status === "reviewed"
@@ -213,7 +213,7 @@ const ProductsList = memo(({ purchase }) => {
                         : "განსახილველი"}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
+                  <td className="px-4 py-2 text-sm text-gray-900 dark:!text-gray-100">
                     {product.review_comment || "-"}
                   </td>
                   <td className="px-4 py-2">
@@ -233,7 +233,7 @@ const ProductsList = memo(({ purchase }) => {
                             setIsInStock(null)
                             setIsReviewDialogOpen(true)
                           }}
-                          className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+                          className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:!bg-blue-500 dark:!hover:bg-blue-600 transition-colors"
                         >
                           განხილვა
                         </button>
@@ -242,7 +242,7 @@ const ProductsList = memo(({ purchase }) => {
                             setIsInStock(false)
                             handleReview(product, true)
                           }}
-                          className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors"
+                          className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:!bg-green-500 dark:!hover:bg-green-600 transition-colors"
                         >
                           განხილულია
                         </button>
@@ -263,13 +263,13 @@ const ProductsList = memo(({ purchase }) => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
               განხილვის კომენტარი
             </label>
             <textarea
               value={reviewComment}
               onChange={e => setReviewComment(e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:!bg-gray-700 dark:!border-gray-600"
               rows={3}
               placeholder="შეიყვანეთ კომენტარი (არასავალდებულო)..."
             />
@@ -277,7 +277,7 @@ const ProductsList = memo(({ purchase }) => {
 
           {editingProduct && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
                 მარაგშია
               </label>
               <div className="flex gap-2">
@@ -314,7 +314,7 @@ const ProductsList = memo(({ purchase }) => {
 
           {purchase.has_products_attachment && !editingProduct && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
                 განახლებული პროდუქტების სია
               </label>
               <input
@@ -339,12 +339,12 @@ const ProductsList = memo(({ purchase }) => {
                   }
                 }}
                 accept=".xls,.xlsx"
-                className="block w-full text-sm text-gray-500 dark:text-gray-400
+                className="block w-full text-sm text-gray-500 dark:!text-gray-400
                   file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
                   file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700
-                  hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-100"
+                  hover:file:bg-blue-100 dark:!file:bg-blue-900 dark:!file:text-blue-100"
               />
-              <small className="text-gray-500 dark:text-gray-400 mt-1 block">
+              <small className="text-gray-500 dark:!text-gray-400 mt-1 block">
                 მაქსიმალური ზომა: 10MB. დაშვებული ფორმატები: XLS, XLSX
               </small>
             </div>
