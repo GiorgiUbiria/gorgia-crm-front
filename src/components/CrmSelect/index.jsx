@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect, forwardRef } from "react"
+import React, { forwardRef, useState, useEffect, useMemo } from "react"
+import { Combobox, Listbox } from "@headlessui/react"
 import { ChevronDownIcon, CheckIcon } from "@radix-ui/react-icons"
 import classNames from "classnames"
-import { createPortal } from "react-dom"
 
 const CrmSelect = forwardRef(
   (
@@ -20,285 +20,229 @@ const CrmSelect = forwardRef(
     },
     ref
   ) => {
-    const [isOpen, setIsOpen] = useState(false)
-    const [searchQuery, setSearchQuery] = useState("")
-    const [isFocused, setIsFocused] = useState(false)
-    const triggerRef = useRef(null)
-    const dropdownRef = useRef(null)
+    // State for searchable select
+    const [query, setQuery] = useState("")
+    const [inputValue, setInputValue] = useState("")
 
-    const portalContainerRef = useRef(null)
+    // Normalize options and handle empty arrays
+    const normalizedOptions = useMemo(() =>
+      (options?.filter(Boolean) || []),
+      [options]
+    )
 
-    const value = propValue?.value || propValue || ""
-    const selectedOption = options.find(option => {
-      const optionValue = option.value?.toString() || option.value
-      const compareValue = value?.toString() || value
-      return optionValue === compareValue
-    })
+    // Handle null/undefined values properly
+    const value = propValue?.value ?? propValue ?? ""
 
-    React.useImperativeHandle(ref, () => ({
-      focus: () => triggerRef.current?.focus(),
-      blur: () => triggerRef.current?.blur(),
-    }))
+    // Find the selected option based on value
+    const selectedOption = useMemo(() =>
+      normalizedOptions.find(option => {
+        const optionValue = option.value?.toString() ?? option.value
+        const compareValue = value?.toString() ?? value
+        return optionValue === compareValue
+      }),
+      [normalizedOptions, value]
+    )
 
+    // Update input value when selected option changes (for searchable select)
     useEffect(() => {
-      const handleClickOutside = event => {
-        const portalElement = document.querySelector("[data-select-dropdown]")
-
-        if (
-          dropdownRef.current &&
-          !dropdownRef.current.contains(event.target) &&
-          !triggerRef.current?.contains(event.target) &&
-          !portalElement?.contains(event.target)
-        ) {
-          setIsOpen(false)
-          setIsFocused(false)
-          if (selectedOption) {
-            setSearchQuery(selectedOption.label)
-          } else {
-            setSearchQuery("")
-          }
-        }
+      if (selectedOption) {
+        setInputValue(selectedOption.label)
+      } else {
+        setInputValue("")
       }
-
-      document.addEventListener("mousedown", handleClickOutside)
-      return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [selectedOption])
 
-    useEffect(() => {
-      if (selectedOption && !isFocused) {
-        setSearchQuery(selectedOption.label)
+    // Filter options based on search query
+    const filteredOptions = useMemo(() => {
+      if (!searchable || !query) return normalizedOptions
+
+      return normalizedOptions.filter(option =>
+        option.label.toLowerCase().includes(query.toLowerCase())
+      )
+    }, [normalizedOptions, query, searchable])
+
+    // Common styles for both select types
+    const buttonStyles = classNames(
+      "relative w-full cursor-default rounded-md border py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm",
+      "bg-white text-gray-900 dark:!bg-gray-800 dark:!text-gray-100",
+      {
+        "border-red-500": error,
+        "border-gray-300 dark:!border-gray-600": !error,
+        "opacity-50 cursor-not-allowed bg-gray-50": disabled,
+      },
+      className
+    )
+
+    const optionsStyles = classNames(
+      "absolute z-[100] mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm",
+      "dark:!bg-gray-800 dark:!ring-gray-700"
+    )
+
+    // Render empty state messages
+    const renderEmptyState = () => {
+      if (isLoading) {
+        return (
+          <div className="px-3 py-4 text-center text-sm text-gray-500 dark:!text-gray-400">
+            იტვირთება...
+          </div>
+        )
       }
-    }, [selectedOption, isFocused])
 
-    const filteredOptions =
-      searchable && searchQuery && isFocused
-        ? options.filter(option =>
-            option.label.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        : options
+      if ((searchable ? filteredOptions : normalizedOptions).length === 0) {
+        return (
+          <div className="px-3 py-4 text-center text-sm text-gray-500 dark:!text-gray-400">
+            მონაცემები არ მოიძებნა
+          </div>
+        )
+      }
 
-    const sortedOptions = selectedOption
-      ? [
-          selectedOption,
-          ...filteredOptions.filter(
-            option => option.value !== selectedOption.value
-          ),
-        ]
-      : filteredOptions
-
-    const handleSelect = option => {
-      onChange(option.value)
-      setSearchQuery(option.label)
-      setIsOpen(false)
-      setIsFocused(false)
+      return null
     }
 
-    const handleInputChange = e => {
-      const value = e.target.value
-      if (searchable) {
-        setSearchQuery(value)
-        if (!isOpen) {
-          setIsOpen(true)
-        }
-      }
-    }
+    // Render option content (shared between Listbox and Combobox)
+    const renderOptionContent = (option, { active, selected }) => (
+      <>
+        <span
+          className={classNames("block truncate", {
+            "font-semibold": selected
+          })}
+        >
+          {option.label}
+        </span>
+        {selected && (
+          <span
+            className={classNames(
+              "absolute inset-y-0 right-0 flex items-center pr-4",
+              active ? "text-white" : "text-blue-600"
+            )}
+          >
+            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+          </span>
+        )}
+      </>
+    )
 
-    const handleInputFocus = () => {
-      if (searchable) {
-        setIsFocused(true)
-        setSearchQuery("")
-        setIsOpen(true)
-      }
-    }
-
-    const handleKeyDown = e => {
-      if (e.key === "Enter" && filteredOptions.length === 1) {
-        handleSelect(filteredOptions[0])
-      }
-    }
-
-    const toggleDropdown = () => {
-      if (!disabled) {
-        const newIsOpen = !isOpen
-        setIsOpen(newIsOpen)
-        if (newIsOpen) {
-          triggerRef.current?.focus()
-          if (searchable) {
-            setIsFocused(true)
-            setSearchQuery("")
-          }
-        } else {
-          setIsFocused(false)
-          if (selectedOption) {
-            setSearchQuery(selectedOption.label)
-          }
-        }
-      }
-    }
-
-    const displayValue = searchable
-      ? isFocused
-        ? searchQuery
-        : selectedOption?.label || ""
-      : selectedOption?.label || ""
-
-    useEffect(() => {
-      if (isOpen) {
-        const updatePosition = () => {
-          setIsOpen(true)
-        }
-
-        window.addEventListener("scroll", updatePosition)
-        window.addEventListener("resize", updatePosition)
-
-        return () => {
-          window.removeEventListener("scroll", updatePosition)
-          window.removeEventListener("resize", updatePosition)
-        }
-      }
-    }, [isOpen])
-
-    const isInsideDialog = () => {
-      return !!dropdownRef.current?.closest('[role="dialog"]')
-    }
-
-    const getPortalContainer = () => {
-      if (isInsideDialog()) {
-        if (!portalContainerRef.current) {
-          portalContainerRef.current = document.createElement("div")
-          portalContainerRef.current.style.position = "relative"
-          dropdownRef.current?.appendChild(portalContainerRef.current)
-        }
-        return portalContainerRef.current
-      }
-      return document.body
-    }
-
-    useEffect(() => {
-      return () => {
-        if (portalContainerRef.current) {
-          portalContainerRef.current.remove()
-        }
-      }
-    }, [])
-
-    const getDropdownStyles = () => {
-      if (isInsideDialog()) {
-        return {
-          position: "absolute",
-          zIndex: 9999,
-          width: "100%",
-          left: 0,
-          top: "100%",
-          marginTop: "4px",
-        }
-      }
-
-      return {
-        position: "absolute",
-        zIndex: 9999,
-        width: dropdownRef.current?.offsetWidth,
-        left: dropdownRef.current?.getBoundingClientRect().left,
-        top:
-          dropdownRef.current?.getBoundingClientRect().bottom + window.scrollY,
-      }
-    }
-
+    // Render the appropriate select component based on searchable prop
     return (
-      <div className="relative w-full" ref={dropdownRef}>
+      <div className="relative w-full">
         <div className="flex flex-col gap-1">
           {label && (
             <label className="text-sm font-medium text-gray-700 dark:!text-gray-300">
               {label}
             </label>
           )}
-          <div className="relative">
-            <input
-              ref={triggerRef}
-              type="text"
-              value={displayValue}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onClick={() => !disabled && setIsOpen(true)}
-              onFocus={handleInputFocus}
-              placeholder={placeholder}
-              readOnly={!searchable}
+
+          {searchable ? (
+            // Searchable select using Combobox
+            <Combobox
+              value={selectedOption}
+              onChange={(option) => {
+                onChange(option?.value ?? null)
+                setQuery("")
+              }}
               disabled={disabled}
-              className={classNames(
-                "flex h-10 w-full items-center rounded-md border bg-white px-3 pr-8 text-sm text-gray-900",
-                "focus:outline-none focus:ring-2 focus:ring-blue-500",
-                "dark:!bg-gray-800 dark:!text-gray-100",
-                {
-                  "border-red-500": error,
-                  "border-gray-300 dark:!border-gray-600": !error,
-                  "opacity-50 cursor-not-allowed": disabled,
-                  "cursor-pointer": !searchable,
-                },
-                className
-              )}
-            />
-            <div
-              onClick={toggleDropdown}
-              className="absolute right-0 top-0 flex h-full w-8 cursor-pointer items-center justify-center"
+              nullable
             >
-              <ChevronDownIcon
-                className={classNames(
-                  "h-4 w-4 text-gray-500 transition-transform dark:!text-gray-400",
-                  { "rotate-180": isOpen }
-                )}
-              />
-            </div>
-          </div>
+              <div className="relative">
+                <Combobox.Input
+                  className={buttonStyles}
+                  onChange={(event) => {
+                    const value = event.target.value
+                    setInputValue(value)
+                    setQuery(value)
+                  }}
+                  onFocus={() => {
+                    if (!selectedOption) {
+                      setInputValue("")
+                      setQuery("")
+                    }
+                  }}
+                  value={inputValue}
+                  displayValue={(option) => option?.label ?? ""}
+                  placeholder={placeholder}
+                  ref={ref}
+                  autoComplete="off"
+                />
+                <Combobox.Button className="absolute inset-y-0 right-0 flex items-center px-2">
+                  <ChevronDownIcon
+                    className="h-5 w-5 text-gray-400"
+                    aria-hidden="true"
+                  />
+                </Combobox.Button>
+
+                <Combobox.Options className={optionsStyles} portal={false}>
+                  {renderEmptyState() ||
+                    filteredOptions.map((option) => (
+                      <Combobox.Option
+                        key={option.value}
+                        value={option}
+                        className={({ active }) =>
+                          classNames(
+                            "relative cursor-pointer select-none py-2 pl-3 pr-9",
+                            {
+                              "bg-blue-600 text-white": active,
+                              "text-gray-900 dark:!text-gray-100": !active,
+                            }
+                          )
+                        }
+                      >
+                        {(optionProps) => renderOptionContent(option, optionProps)}
+                      </Combobox.Option>
+                    ))
+                  }
+                </Combobox.Options>
+              </div>
+            </Combobox>
+          ) : (
+            // Regular select using Listbox
+            <Listbox
+              value={selectedOption}
+              onChange={(option) => onChange(option?.value ?? null)}
+              disabled={disabled}
+            >
+              <div className="relative">
+                <Listbox.Button className={buttonStyles}>
+                  <span className="block truncate">
+                    {selectedOption?.label || placeholder}
+                  </span>
+                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <ChevronDownIcon
+                      className="h-5 w-5 text-gray-400"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </Listbox.Button>
+                <Listbox.Options className={optionsStyles} portal={false}>
+                  {renderEmptyState() ||
+                    normalizedOptions.map((option) => (
+                      <Listbox.Option
+                        key={option.value}
+                        value={option}
+                        className={({ active }) =>
+                          classNames(
+                            "relative cursor-pointer select-none py-2 pl-3 pr-9",
+                            {
+                              "bg-blue-600 text-white": active,
+                              "text-gray-900 dark:!text-gray-100": !active,
+                            }
+                          )
+                        }
+                      >
+                        {(optionProps) => renderOptionContent(option, optionProps)}
+                      </Listbox.Option>
+                    ))
+                  }
+                </Listbox.Options>
+              </div>
+            </Listbox>
+          )}
+
           {touched && error && (
-            <div className="d-block mt-1 text-sm text-red-500">{error}</div>
+            <div className="mt-1 text-sm text-red-500">
+              {error}
+            </div>
           )}
         </div>
-
-        {isOpen &&
-          createPortal(
-            <div data-select-dropdown style={getDropdownStyles()}>
-              <div
-                className="w-full overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg dark:!border-gray-700 dark:!bg-gray-800"
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="max-h-[300px] overflow-y-auto p-1">
-                  {isLoading ? (
-                    <div className="px-2 py-4 text-center text-sm text-gray-500 dark:!text-gray-400">
-                      იტვირთება...
-                    </div>
-                  ) : sortedOptions.length > 0 ? (
-                    sortedOptions.map(option => (
-                      <div
-                        key={option.value}
-                        onClick={e => {
-                          e.stopPropagation()
-                          handleSelect(option)
-                        }}
-                        className={classNames(
-                          "relative flex h-9 cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm text-gray-900",
-                          "hover:bg-gray-100 dark:!text-gray-100 dark:!hover:bg-gray-700",
-                          {
-                            "bg-gray-100 dark:!bg-gray-700":
-                              option.value === value,
-                          }
-                        )}
-                      >
-                        <span className="truncate">{option.label}</span>
-                        {option.value === value && (
-                          <CheckIcon className="absolute right-2 h-4 w-4 text-blue-500" />
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="px-2 py-4 text-center text-sm text-gray-500 dark:!text-gray-400">
-                      მონაცემები არ მოიძებნა
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>,
-            getPortalContainer()
-          )}
       </div>
     )
   }
