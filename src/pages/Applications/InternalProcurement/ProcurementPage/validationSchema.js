@@ -23,96 +23,63 @@ const branchOptions = [
 
 const categoryOptions = ["IT", "Marketing", "Security", "Network", "Farm"]
 
-const isExcelFile = file => {
-  if (!file) return false
-  const extension = file.name.split(".").pop().toLowerCase()
-  return ["xls", "xlsx"].includes(extension)
-}
-
-const productSchema = Yup.object().shape({
+const getProductSchema = (hasFile) => Yup.object().shape({
   name: Yup.string()
     .required("პროდუქტის სახელი სავალდებულოა")
     .max(255, "მაქსიმუმ 255 სიმბოლო"),
 
-  quantity: Yup.number()
-    .transform((value, originalValue) => {
-      if (originalValue === "") return null
-      const num = Number(originalValue)
-      return isNaN(num) ? null : num
-    })
-    .when(["$file"], {
-      is: file => !file || !isExcelFile(file),
-      then: schema =>
-        schema
-          .required("რაოდენობა სავალდებულოა")
-          .typeError("რაოდენობა უნდა იყოს რიცხვი")
-          .min(1, "მინიმალური რაოდენობა არის 1")
-          .max(999999999, "რაოდენობა ძალიან დიდია"),
-      otherwise: schema => schema.nullable().transform(() => null), 
-    }),
+  quantity: hasFile
+    ? Yup.number()
+      .transform((value, originalValue) => {
+        if (originalValue === "") return null
+        const num = Number(originalValue)
+        return isNaN(num) ? null : num
+      })
+      .nullable()
+      .max(999999999, "რაოდენობა ძალიან დიდია")
+    : Yup.number()
+      .transform((value, originalValue) => {
+        if (originalValue === "") return null
+        const num = Number(originalValue)
+        return isNaN(num) ? null : num
+      })
+      .required("რაოდენობა სავალდებულოა")
+      .max(999999999, "რაოდენობა ძალიან დიდია"),
 
-  dimensions: Yup.string().when(["$file"], {
-    is: file => !file || !isExcelFile(file),
-    then: schema =>
-      schema.required("ზომები სავალდებულოა").max(255, "მაქსიმუმ 255 სიმბოლო"),
-    otherwise: schema => schema.nullable().max(255, "მაქსიმუმ 255 სიმბოლო"),
-  }),
+  dimensions: hasFile
+    ? Yup.string().nullable().max(255, "მაქსიმუმ 255 სიმბოლო")
+    : Yup.string().required("ზომები სავალდებულოა").max(255, "მაქსიმუმ 255 სიმბოლო"),
 
-  description: Yup.string().when(["$file"], {
-    is: file => !file || !isExcelFile(file),
-    then: schema =>
-      schema.required("აღწერა სავალდებულოა").max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-    otherwise: schema => schema.nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-  }),
+  description: hasFile
+    ? Yup.string().nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო")
+    : Yup.string().required("აღწერა სავალდებულოა").max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
-  search_variant: Yup.string().when(["$file"], {
-    is: file => !file || !isExcelFile(file),
-    then: schema =>
-      schema
-        .required("მოძიებული ვარიანტი სავალდებულოა")
-        .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-    otherwise: schema => schema.nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-  }),
+  search_variant: hasFile
+    ? Yup.string().nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო")
+    : Yup.string().required("მოძიებული ვარიანტი სავალდებულოა").max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
-  similar_purchase_planned: Yup.string().when(["$file"], {
-    is: file => !file || !isExcelFile(file),
-    then: schema =>
-      schema
-        .required("მომავალი შესყიდვების ინფორმაცია სავალდებულოა")
-        .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-    otherwise: schema => schema.nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-  }),
+  similar_purchase_planned: hasFile
+    ? Yup.string().nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო")
+    : Yup.string().required("ანალოგიური შესყიდვის ინფორმაცია სავალდებულოა").max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
-  in_stock_explanation: Yup.string().when(["$file", "$category"], {
-    is: (file, category) =>
-      (!file || !isExcelFile(file)) &&
-      !["IT", "Marketing", "Farm", "Security", "Network"].includes(category),
-    then: schema =>
-      schema
-        .required("ასორტიმენტში არსებობის ინფორმაცია სავალდებულოა")
-        .max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-    otherwise: schema => schema.nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო"),
-  }),
+  in_stock_explanation: hasFile
+    ? Yup.string().nullable().max(1000, "მაქსიმუმ 1000 სიმბოლო")
+    : Yup.string().required("ასორტიმენტის ინფორმაცია სავალდებულოა").max(1000, "მაქსიმუმ 1000 სიმბოლო"),
 
-  payer: Yup.string().when(["$file"], {
-    is: file => !file || !isExcelFile(file),
-    then: schema =>
-      schema
-        .required("გადამხდელის მითითება სავალდებულოა")
-        .max(255, "მაქსიმუმ 255 სიმბოლო"),
-    otherwise: schema => schema.nullable().max(255, "მაქსიმუმ 255 სიმბოლო"),
-  }),
+  payer: hasFile
+    ? Yup.string().nullable().max(255, "მაქსიმუმ 255 სიმბოლო")
+    : Yup.string().required("გადამხდელის მითითება სავალდებულოა").max(255, "მაქსიმუმ 255 სიმბოლო"),
 
-  branch: Yup.string()
-    .required("ფილიალის მითითება სავალდებულოა")
-    .oneOf(branchOptions, "არასწორი ფილიალი")
+  branches: Yup.array()
+    .required("ფილიალების მითითება სავალდებულოა")
+    .min(1, "მინიმუმ ერთი ფილიალი სავალდებულოა")
     .test(
-      "branch-in-parent",
-      "ფილიალი უნდა იყოს არჩეული ფილიალებიდან",
+      "branches-in-parent",
+      "ფილიალები უნდა იყოს არჩეული ფილიალებიდან",
       function (value) {
-        if (!value) return true
+        if (!value || value.length === 0) return true
         const parentBranches = this.from[1]?.value?.branches || []
-        return parentBranches.includes(value)
+        return value.every(branch => parentBranches.includes(branch))
       }
     ),
 })
@@ -121,7 +88,10 @@ export const procurementSchema = Yup.object()
   .shape({
     procurement_type: Yup.string()
       .required("შესყიდვის ტიპის არჩევა სავალდებულოა")
-      .oneOf(["purchase", "price_inquiry"], "არასწორი შესყიდვის ტიპი"),
+      .oneOf(
+        ["purchase", "price_inquiry", "service"],
+        "არასწორი შესყიდვის ტიპი"
+      ),
 
     branches: Yup.array()
       .of(Yup.string().oneOf(branchOptions, "არასწორი ფილიალი"))
@@ -205,14 +175,22 @@ export const procurementSchema = Yup.object()
       ),
 
     products: Yup.array()
-      .of(productSchema)
+      .of(Yup.lazy(() => getProductSchema(Yup.ref("file"))))
       .nullable()
+      .test(
+        "products-or-file-required",
+        "პროდუქტების სია ან ფაილი სავალდებულოა",
+        function (value, context) {
+          const hasFile = context.parent.file
+          return hasFile || (Array.isArray(value) && value.length > 0)
+        }
+      )
       .test(
         "products-branch-consistency",
         "ყველა პროდუქტს უნდა ჰქონდეს მითითებული ფილიალი",
         function (value) {
           if (!value || value.length === 0) return true
-          return value.every(product => product.branch)
+          return value.every(product => product.branches.length > 0)
         }
       ),
 

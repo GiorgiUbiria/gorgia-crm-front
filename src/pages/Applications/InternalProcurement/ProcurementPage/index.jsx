@@ -275,7 +275,91 @@ const InputWithError = ({
   )
 }
 
-const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
+const ProductBranchSelector = ({ formik, index }) => {
+  const [searchQuery, setSearchQuery] = useState("")
+  const filteredBranches = formik.values.branches.filter(branch =>
+    branch.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const ensureArray = value => {
+    if (Array.isArray(value)) return value
+    if (typeof value === "string") return value.split(",").map(b => b.trim())
+    if (!value) return []
+    return [value]
+  }
+
+  const handleBranchChange = (branch, checked) => {
+    const currentBranches = ensureArray(formik.values.products[index].branches)
+    const newBranches = checked
+      ? [...currentBranches, branch]
+      : currentBranches.filter(b => b !== branch)
+
+    formik.setFieldValue(`products.${index}.branches`, newBranches)
+  }
+
+  return (
+    <div className="relative">
+      <label className="block text-sm font-medium mb-2 text-gray-700 dark:!text-gray-300">
+        ფილიალები
+      </label>
+      <div className="rounded-lg border border-gray-200 dark:!border-gray-700 bg-white dark:!bg-gray-800 overflow-hidden">
+        <div className="p-2 border-b border-gray-200 dark:!border-gray-700">
+          <input
+            type="text"
+            placeholder="მოძებნე ფილიალი..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full px-3 py-1.5 text-sm bg-gray-50 dark:!bg-gray-700 border border-gray-200 dark:!border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          />
+        </div>
+        <div className="max-h-[240px] overflow-y-auto p-2 grid grid-cols-2 gap-2">
+          {filteredBranches.map(branch => (
+            <label
+              key={branch}
+              className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-50 dark:!hover:bg-gray-700 cursor-pointer group transition-colors"
+            >
+              <input
+                type="checkbox"
+                checked={
+                  formik.values.products[index]?.branches?.includes(branch) ||
+                  false
+                }
+                onChange={e => handleBranchChange(branch, e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500/30 
+                dark:!border-gray-600 dark:!bg-gray-700 transition-colors"
+              />
+              <span className="text-sm text-gray-700 dark:!text-gray-200 group-hover:text-gray-900 dark:!group-hover:text-white transition-colors">
+                {branch}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+      {formik.touched.products?.[index]?.branches &&
+        formik.errors.products?.[index]?.branches && (
+          <div className="mt-2 text-sm text-red-500 dark:!text-red-400 flex items-center gap-1.5">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>{formik.errors.products[index].branches}</span>
+          </div>
+        )}
+    </div>
+  )
+}
+
+const ProductForm = ({
+  formik,
+  index,
+  isExpanded,
+  onToggle,
+  onRemove,
+  onFieldChange,
+}) => (
   <div className="border dark:!border-gray-700/50 rounded-xl overflow-hidden bg-white dark:!bg-gray-800/95 transition-all duration-300 hover:shadow-lg dark:!hover:shadow-gray-800/50 group">
     <div
       className="flex justify-between items-center cursor-pointer p-4 bg-gray-50/80 dark:!bg-gray-700/30 group-hover:bg-gray-100 dark:!group-hover:bg-gray-700/50 transition-colors duration-200"
@@ -327,63 +411,65 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
             formik={formik}
             name={`products.${index}.name`}
             label="პროდუქტის სახელი"
+            onChange={e => onFieldChange(index, "name", e.target.value)}
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.quantity`}
             label="რაოდენობა"
             type="number"
+            onChange={e => onFieldChange(index, "quantity", e.target.value)}
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.dimensions`}
             label="ზომები"
+            onChange={e => onFieldChange(index, "dimensions", e.target.value)}
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.payer`}
             label="ვინ ანაზღაურებს თანხას?"
+            onChange={e => onFieldChange(index, "payer", e.target.value)}
           />
         </div>
 
         <div className="space-y-4">
-          <InputWithError
-            formik={formik}
-            name={`products.${index}.branch`}
-            label="ფილიალი"
-            type="select"
-          >
-            <option value="">აირჩიეთ ფილიალი</option>
-            {formik.values.branches.map(branch => (
-              <option key={branch} value={branch}>
-                {branch}
-              </option>
-            ))}
-          </InputWithError>
+          <ProductBranchSelector formik={formik} index={index} />
 
           <InputWithError
             formik={formik}
             name={`products.${index}.description`}
             label="აღწერა"
             type="textarea"
+            onChange={e => onFieldChange(index, "description", e.target.value)}
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.search_variant`}
             label="თქვენი მოძიებული ვარიანტი"
             type="textarea"
+            onChange={e =>
+              onFieldChange(index, "search_variant", e.target.value)
+            }
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.similar_purchase_planned`}
             label="იგეგმება ანალოგიური პროდუქციის შესყიდვა?"
             type="textarea"
+            onChange={e =>
+              onFieldChange(index, "similar_purchase_planned", e.target.value)
+            }
           />
           <InputWithError
             formik={formik}
             name={`products.${index}.in_stock_explanation`}
             label="გვაქვს თუ არა ეს პროდუქცია ასორტიმენტში ჩვენ?"
             type="textarea"
+            onChange={e =>
+              onFieldChange(index, "in_stock_explanation", e.target.value)
+            }
           />
         </div>
 
@@ -421,17 +507,13 @@ const ProductForm = ({ formik, index, isExpanded, onToggle, onRemove }) => (
 const ProcurementPage = () => {
   document.title = "შიდა შესყიდვების დამატება | Gorgia LLC"
   const navigate = useNavigate()
+
+  // Replace Zustand store with local state
   const [expandedProducts, setExpandedProducts] = useState([0])
   const [generalError, setGeneralError] = useState(null)
   const [file, setFile] = useState(null)
 
   const { mutate: createPurchase, isLoading } = useCreatePurchase()
-
-  const toggleProduct = index => {
-    setExpandedProducts(prev =>
-      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
-    )
-  }
 
   const handleFileChange = event => {
     const selectedFile = event.target.files[0]
@@ -444,22 +526,37 @@ const ProcurementPage = () => {
     formik.setFieldValue("file", selectedFile)
   }
 
+  // Initial form values (moved from store)
+  const initialProductState = {
+    name: "",
+    quantity: "",
+    dimensions: "",
+    description: "",
+    search_variant: "",
+    similar_purchase_planned: "",
+    in_stock_explanation: "",
+    payer: "",
+    branches: [],
+  }
+
+  const initialFormState = {
+    procurement_type: "",
+    branches: [],
+    category: "",
+    purchase_purpose: "",
+    requested_arrival_date: "",
+    short_date_notice_explanation: null,
+    exceeds_needs_reason: "",
+    creates_stock: false,
+    stock_purpose: null,
+    delivery_address: "",
+    external_url: "",
+    file: null,
+    products: [{ ...initialProductState }],
+  }
+
   const formik = useFormik({
-    initialValues: {
-      procurement_type: "",
-      branches: [],
-      category: "",
-      purchase_purpose: "",
-      requested_arrival_date: "",
-      short_date_notice_explanation: null,
-      exceeds_needs_reason: "",
-      creates_stock: false,
-      stock_purpose: null,
-      delivery_address: "",
-      external_url: "",
-      file: null,
-      products: [],
-    },
+    initialValues: initialFormState,
     validationSchema: procurementSchema,
     validateOnMount: true,
     validateOnChange: true,
@@ -468,22 +565,13 @@ const ProcurementPage = () => {
       try {
         setGeneralError(null)
 
-        console.log("Form submission started with file:", {
-          fileInState: file
-            ? {
-                name: file.name,
-                type: file.type,
-                size: file.size,
-              }
-            : null,
-          fileInFormik: formik.values.file
-            ? {
-                name: formik.values.file.name,
-                type: formik.values.file.type,
-                size: formik.values.file.size,
-              }
-            : null,
-        })
+        const ensureArray = value => {
+          if (Array.isArray(value)) return value
+          if (typeof value === "string")
+            return value.split(",").map(b => b.trim())
+          if (!value) return []
+          return [value]
+        }
 
         const formattedValues = {
           ...values,
@@ -497,21 +585,13 @@ const ProcurementPage = () => {
                 values.category === "IT" || values.category === "Marketing"
                   ? null
                   : product.in_stock_explanation,
+              branches: ensureArray(product.branches),
             })) || [],
+          branches: ensureArray(values.branches),
           file: file,
         }
 
-        console.log("Formatted values before API call:", {
-          category: formattedValues.category,
-          hasFile: !!formattedValues.file,
-          fileDetails: formattedValues.file
-            ? {
-                name: formattedValues.file.name,
-                type: formattedValues.file.type,
-                size: formattedValues.file.size,
-              }
-            : null,
-        })
+        console.log("Formatted values before API call:", formattedValues)
 
         createPurchase(formattedValues, {
           onSuccess: () => {
@@ -598,6 +678,29 @@ const ProcurementPage = () => {
     },
   })
 
+  // Replace store functions with local handlers
+  const handleProductFieldChange = (index, field, value) => {
+    formik.setFieldValue(`products.${index}.${field}`, value)
+  }
+
+  const toggleProduct = index => {
+    setExpandedProducts(prev =>
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    )
+  }
+
+  const addProduct = () => {
+    const newProducts = [...formik.values.products, { ...initialProductState }]
+    formik.setFieldValue("products", newProducts)
+    setExpandedProducts(prev => [...prev, formik.values.products.length])
+  }
+
+  const removeProduct = index => {
+    const newProducts = formik.values.products.filter((_, i) => i !== index)
+    formik.setFieldValue("products", newProducts)
+    setExpandedProducts(prev => prev.filter(i => i !== index))
+  }
+
   const showCurrentValidationErrors = () => {
     const errors = formik.errors
     if (Object.keys(errors).length > 0) {
@@ -634,32 +737,6 @@ const ProcurementPage = () => {
     }
   }
 
-  const addProduct = () => {
-    const newProductIndex = formik.values.products.length
-    formik.setFieldValue("products", [
-      ...formik.values.products,
-      {
-        name: "",
-        quantity: "",
-        dimensions: "",
-        description: "",
-        search_variant: "",
-        similar_purchase_planned: "",
-        in_stock_explanation: "",
-        payer: "",
-        branch: "",
-      },
-    ])
-    setExpandedProducts(prev => [...prev, newProductIndex])
-  }
-
-  const removeProduct = index => {
-    const products = [...formik.values.products]
-    products.splice(index, 1)
-    formik.setFieldValue("products", products)
-    setExpandedProducts(prev => prev.filter(i => i !== index))
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br dark:!from-gray-900 dark:!to-gray-800">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -686,6 +763,7 @@ const ProcurementPage = () => {
                       <option value="">აირჩიეთ შესყიდვის ტიპი</option>
                       <option value="purchase">შესყიდვა</option>
                       <option value="price_inquiry">ფასის მოკვლევა</option>
+                      <option value="service">მომსახურება</option>
                     </InputWithError>
 
                     <InputWithError
@@ -815,7 +893,7 @@ const ProcurementPage = () => {
             </FormSection>
 
             {formik.values.category === "Marketing" && (
-              <FormSection title="მართვის ინფორმაცია">
+              <FormSection title="დამატებითი ინფორმაცია">
                 <div className="space-y-2 sm:space-y-4">
                   <InputWithError
                     formik={formik}
@@ -835,7 +913,7 @@ const ProcurementPage = () => {
             )}
             {formik.values.category !== "Marketing" &&
               formik.values.category !== "" && (
-                <FormSection title="მართვის ინფორმაცია">
+                <FormSection title="დამატებითი ინფორმაცია">
                   <div className="space-y-2 sm:space-y-4">
                     <InputWithError
                       formik={formik}
@@ -857,7 +935,8 @@ const ProcurementPage = () => {
                     index={index}
                     isExpanded={expandedProducts.includes(index)}
                     onToggle={() => toggleProduct(index)}
-                    onRemove={removeProduct}
+                    onRemove={() => removeProduct(index)}
+                    onFieldChange={handleProductFieldChange}
                   />
                 ))}
               </div>

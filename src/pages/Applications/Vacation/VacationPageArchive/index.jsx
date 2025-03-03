@@ -34,11 +34,6 @@ const statusMap = {
     icon: "bx-x-circle",
     color: "#dc3545",
   },
-  auto_approved: {
-    label: "ავტომატურად დამტკიცებული",
-    icon: "bx-check-double",
-    color: "#28a745",
-  },
   cancelled: {
     label: "გაუქმებული",
     icon: "bx-x",
@@ -299,31 +294,34 @@ const VacationPageArchive = () => {
     useAuth()
   const updateOneCStatusMutation = useUpdateOneCStatus()
 
-  const isHrAssistant = isDepartmentHeadAssistant() || isHrMember()
+  const isHrAssistant = isDepartmentHeadAssistant() && isHrMember()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedVacation, setSelectedVacation] = useState(null)
   const [comment, setComment] = useState("")
 
-  const handleOneCStatusUpdate = async (id, currentStatus) => {
-    if (!currentStatus) {
-      setSelectedVacation({ id, currentStatus })
-      setModalOpen(true)
-      return
-    }
+  const handleOneCStatusUpdate = React.useCallback(
+    async (id, currentStatus) => {
+      if (!currentStatus) {
+        setSelectedVacation({ id, currentStatus })
+        setModalOpen(true)
+        return
+      }
 
-    try {
-      updateOneCStatusMutation.mutate({
-        id,
-        data: {
-          stored_in_one_c: !currentStatus,
-          one_c_comment: "",
-        },
-      })
-    } catch (error) {
-      console.error("Error updating 1C status:", error)
-    }
-  }
+      try {
+        updateOneCStatusMutation.mutate({
+          id,
+          data: {
+            stored_in_one_c: !currentStatus,
+            one_c_comment: "",
+          },
+        })
+      } catch (error) {
+        console.error("Error updating 1C status:", error)
+      }
+    },
+    [updateOneCStatusMutation]
+  )
 
   const handleModalSubmit = () => {
     if (!selectedVacation) return
@@ -422,7 +420,7 @@ const VacationPageArchive = () => {
                     ? "#fff3e0"
                     : value === "rejected" || value === "cancelled"
                     ? "#ffebee"
-                    : value === "approved" || value === "auto_approved"
+                    : value === "approved"
                     ? "#e8f5e9"
                     : "#f5f5f5",
                 color: statusInfo.color,
@@ -441,7 +439,7 @@ const VacationPageArchive = () => {
           const { status } = row.original
           const stored_in_one_c =
             row.original.expanded.one_c_status.stored_in_one_c
-          const isApproved = status === "approved" || status === "auto_approved"
+          const isApproved = status === "approved"
 
           if (!isHrAssistant || (!isApproved && status !== "pending")) {
             return (
@@ -522,7 +520,7 @@ const VacationPageArchive = () => {
     if (!vacations) return []
     return vacations.map(vacation => ({
       id: vacation.id,
-      status: vacation.is_auto_approved ? "auto_approved" : vacation.status,
+      status: vacation.status,
       start_date: vacation.start_date
         ? new Date(vacation.start_date).toLocaleDateString("ka-GE")
         : "-",
@@ -544,11 +542,6 @@ const VacationPageArchive = () => {
       requested_for: `${vacation.employee_name || ""} | ${
         vacation.position || ""
       } | ${vacation.department || ""}`,
-      auto_approved: vacation.is_auto_approved || false,
-      auto_approved_at: vacation.auto_approved_at
-        ? new Date(vacation.auto_approved_at).toLocaleDateString("ka-GE")
-        : null,
-      time_until_auto_approval: vacation.time_until_auto_approval,
       expanded: {
         holiday_days: {
           is_monday: vacation.is_monday || null,
@@ -596,6 +589,7 @@ const VacationPageArchive = () => {
         approved: "დამტკიცებული",
         rejected: "უარყოფილი",
         pending: "განხილვაში",
+        cancelled: "გაუქმებული",
       },
     },
     {

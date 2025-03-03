@@ -41,7 +41,7 @@ export const AssignDepartmentHeadForm = ({
 
   const selectOptions = users.map(user => ({
     value: user.id,
-    label: `${user.name} ${user.sur_name}`,
+    label: `${user.name} ${user.sur_name} (${user.email}) - ${user.position || 'პოზიცია არ არის მითითებული'}`,
   }))
 
   return (

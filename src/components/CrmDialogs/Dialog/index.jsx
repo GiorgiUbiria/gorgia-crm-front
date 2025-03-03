@@ -1,6 +1,6 @@
 import React from "react"
-import * as Dialog from "@radix-ui/react-dialog"
-import { Cross2Icon } from "@radix-ui/react-icons"
+import { Dialog as HeadlessDialog, Transition } from "@headlessui/react"
+import { Fragment } from "react"
 import { BaseButton } from "components/CrmActionButtons"
 import {
   Plus,
@@ -12,6 +12,7 @@ import {
   FileText,
   FileSpreadsheet,
   Download,
+  Loader2,
 } from "lucide-react"
 
 const actionTypes = {
@@ -82,49 +83,79 @@ const CrmDialog = ({
   footer,
   maxWidth = "450px",
 }) => (
-  <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
-    {trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
-    <Dialog.Portal>
-      <Dialog.Overlay className="fixed inset-0 bg-black/40 data-[state=open]:animate-overlayShow" />
-      <Dialog.Content
-        className="fixed left-1/2 top-1/2 max-h-[85vh] w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg focus:outline-none data-[state=open]:animate-contentShow dark:!bg-gray-800 flex flex-col overflow-hidden"
-        style={{
-          maxWidth,
-          zIndex: 1000,
-        }}
+  <Transition.Root show={isOpen} as={Fragment}>
+    <HeadlessDialog as="div" className="relative z-50" onClose={onOpenChange}>
+      {trigger && (
+        <HeadlessDialog.Trigger as={Fragment}>
+          {trigger}
+        </HeadlessDialog.Trigger>
+      )}
+      <Transition.Child
+        as={Fragment}
+        enter="ease-out duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
       >
-        <div className="flex-none p-6">
-          {title && (
-            <Dialog.Title className="m-0 text-lg font-semibold text-gray-900 dark:!text-gray-100">
-              {title}
-            </Dialog.Title>
-          )}
-          {description && (
-            <Dialog.Description className="mb-5 mt-2.5 text-sm leading-normal text-gray-600 dark:!text-gray-400">
-              {description}
-            </Dialog.Description>
-          )}
-        </div>
+        <div className="fixed inset-0 bg-black/40 transition-opacity" />
+      </Transition.Child>
 
-        <div className="px-6 flex-1 overflow-y-auto min-h-0">{children}</div>
-
-        {footer && (
-          <div className="p-6 pt-4 flex-none border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-            {footer}
-          </div>
-        )}
-
-        <Dialog.Close asChild>
-          <button
-            className="absolute right-4 top-4 inline-flex h-6 w-6 items-center justify-center rounded-full text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:!text-gray-400 dark:!hover:text-gray-300"
-            aria-label="Close"
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            enterTo="opacity-100 translate-y-0 sm:scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
-            <Cross2Icon />
-          </button>
-        </Dialog.Close>
-      </Dialog.Content>
-    </Dialog.Portal>
-  </Dialog.Root>
+            <HeadlessDialog.Panel
+              className="relative w-full transform rounded-lg bg-white text-left shadow-xl transition-all dark:!bg-gray-800"
+              style={{ maxWidth }}
+            >
+              <div className="flex flex-col">
+                <div className="flex-none p-6">
+                  {title && (
+                    <HeadlessDialog.Title className="text-lg font-semibold text-gray-900 dark:!text-gray-100">
+                      {title}
+                    </HeadlessDialog.Title>
+                  )}
+                  {description && (
+                    <HeadlessDialog.Description className="mt-2.5 text-sm text-gray-600 dark:!text-gray-400">
+                      {description}
+                    </HeadlessDialog.Description>
+                  )}
+                </div>
+
+                <div className="relative px-6 flex-1 min-h-0">
+                  {children}
+                </div>
+
+                {footer && (
+                  <div className="p-6 pt-4 flex-none border-t border-gray-200 dark:!border-gray-700 flex justify-end gap-3">
+                    {footer}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className="absolute right-4 top-4 rounded-full p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:!text-gray-400 dark:!hover:text-gray-300"
+                  onClick={() => onOpenChange(false)}
+                >
+                  <span className="sr-only">Close</span>
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </HeadlessDialog.Panel>
+          </Transition.Child>
+        </div>
+      </div>
+    </HeadlessDialog>
+  </Transition.Root>
 )
 
 export const DialogButton = ({
@@ -133,16 +164,23 @@ export const DialogButton = ({
   variant,
   icon: CustomIcon,
   size = "md",
+  loading = false,
   ...props
 }) => {
   const actionConfig = actionType ? actionTypes[actionType] : null
 
   const buttonVariant = variant || (actionConfig?.variant ?? "primary")
-  const Icon = CustomIcon || (actionConfig?.icon ?? null)
+  const Icon = loading ? Loader2 : CustomIcon || (actionConfig?.icon ?? null)
   const buttonLabel = label || (actionConfig?.label ?? "")
 
   return (
-    <BaseButton variant={buttonVariant} icon={Icon} size={size} {...props}>
+    <BaseButton
+      variant={buttonVariant}
+      icon={Icon}
+      size={size}
+      className={loading ? "animate-spin" : ""}
+      {...props}
+    >
       {buttonLabel}
     </BaseButton>
   )

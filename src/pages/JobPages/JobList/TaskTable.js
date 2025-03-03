@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { MdEdit, MdDelete, Md1kPlus } from "react-icons/md"
 import { formatDate } from "../../../utils/dateUtils"
 import useAuth from "hooks/useAuth"
+import { useTheme } from "hooks/useTheme"
 
 const TaskTable = ({
   tasks,
@@ -19,6 +20,7 @@ const TaskTable = ({
   const navigate = useNavigate()
   const { user, isLoading, getUserDepartmentId, isAdmin, isITSupport } =
     useAuth()
+  const { isDarkMode } = useTheme()
 
   if (isLoading) {
     return (
@@ -137,13 +139,29 @@ const TaskTable = ({
       cell: task => {
         switch (task.priority) {
           case "High":
-            return <Badge className="bg-danger">მაღალი</Badge>
+            return (
+              <Badge className="!bg-red-100 dark:!bg-red-900/50 text-red-800 dark:!text-red-200">
+                მაღალი
+              </Badge>
+            )
           case "Medium":
-            return <Badge className="bg-warning">საშუალო</Badge>
+            return (
+              <Badge className="!bg-yellow-100 dark:!bg-yellow-900/50 text-yellow-800 dark:!text-yellow-200">
+                საშუალო
+              </Badge>
+            )
           case "Low":
-            return <Badge className="bg-success">დაბალი</Badge>
+            return (
+              <Badge className="!bg-green-100 dark:!bg-green-900/50 text-green-800 dark:!text-green-200">
+                დაბალი
+              </Badge>
+            )
           default:
-            return <Badge className="bg-secondary">უცნობი</Badge>
+            return (
+              <Badge className="!bg-gray-100 dark:!bg-gray-900/50 text-gray-800 dark:!text-gray-200">
+                უცნობი
+              </Badge>
+            )
         }
       },
     },
@@ -153,15 +171,35 @@ const TaskTable = ({
       cell: task => {
         switch (task.status) {
           case "Pending":
-            return <Badge className="bg-warning">ახალი</Badge>
+            return (
+              <Badge className="!bg-yellow-50 dark:!bg-yellow-900/50 text-yellow-700 dark:!text-yellow-200">
+                ახალი
+              </Badge>
+            )
           case "In Progress":
-            return <Badge className="bg-info">მიმდინარე</Badge>
+            return (
+              <Badge className="!bg-blue-50 dark:!bg-blue-900/50 text-blue-700 dark:!text-blue-200">
+                მიმდინარე
+              </Badge>
+            )
           case "Completed":
-            return <Badge className="bg-success">დასრულებული</Badge>
+            return (
+              <Badge className="!bg-green-50 dark:!bg-green-900/50 text-green-700 dark:!text-green-200">
+                დასრულებული
+              </Badge>
+            )
           case "Cancelled":
-            return <Badge className="bg-danger">გაუქმებული</Badge>
+            return (
+              <Badge className="!bg-red-50 dark:!bg-red-900/50 text-red-700 dark:!text-red-200">
+                გაუქმებული
+              </Badge>
+            )
           default:
-            return <Badge className="bg-secondary">უცნობი</Badge>
+            return (
+              <Badge className="bg-gray-50 dark:!bg-gray-900/50 text-gray-700 dark:!text-gray-200">
+                უცნობი
+              </Badge>
+            )
         }
       },
     },
@@ -202,7 +240,7 @@ const TaskTable = ({
               <li data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
                 <Link
                   to="#"
-                  className="btn btn-sm btn-soft-info action-button"
+                  className="btn btn-sm action-button text-info dark:!text-blue-300 hover:bg-blue-50 dark:!hover:bg-blue-900/30"
                   onClick={e => {
                     e.stopPropagation()
                     onEdit(task)
@@ -218,7 +256,7 @@ const TaskTable = ({
               >
                 <Link
                   to="#"
-                  className="btn btn-sm btn-soft-danger action-button"
+                  className="btn btn-sm action-button text-danger dark:!text-red-300 hover:bg-red-50 dark:!hover:bg-red-900/30"
                   onClick={e => {
                     e.stopPropagation()
                     onDelete(task)
@@ -233,7 +271,7 @@ const TaskTable = ({
             <li>
               <Link
                 to="#"
-                className="btn btn-sm btn-soft-info action-button"
+                className="btn btn-sm action-button text-info dark:!text-blue-300 hover:bg-blue-50 dark:!hover:bg-blue-900/30"
                 onClick={e => {
                   e.stopPropagation()
                   onAssign(task)
@@ -250,13 +288,18 @@ const TaskTable = ({
 
   return (
     <div className="overflow-x-auto">
-      <Table hover className="table-nowrap min-w-full">
-        <thead className="thead-light">
+      <Table
+        hover
+        size="sm"
+        data-bs-theme={isDarkMode ? "dark" : "light"}
+        className="table-nowrap min-w-full text-gray-500 dark:!text-gray-400 text-sm"
+      >
+        <thead className="bg-gray-50 dark:!bg-gray-800/50">
           <tr>
             {columns.map((column, index) => (
               <th
                 key={column.accessorKey || index}
-                className="whitespace-nowrap"
+                className="whitespace-nowrap text-gray-600 dark:!text-gray-300 text-sm font-medium"
               >
                 {column.header}
               </th>
@@ -264,18 +307,21 @@ const TaskTable = ({
           </tr>
         </thead>
         <tbody>
-          {tasks.map(task => (
+          {tasks.map((task, index) => (
             <tr
               key={task.id}
               onClick={e => handleRowClick(e, task)}
-              className={`cursor-pointer hover:bg-gray-50 ${
-                canAccessTaskDetails(task) ? "" : "opacity-75"
-              }`}
+              className={`cursor-pointer ${
+                index % 2 === 0
+                  ? "bg-white dark:!bg-gray-900"
+                  : "bg-gray-50 dark:!bg-gray-800/50"
+              } hover:bg-gray-100 dark:!hover:bg-gray-700/50 
+                ${canAccessTaskDetails(task) ? "" : "opacity-75"}`}
             >
-              {columns.map((column, index) => (
+              {columns.map((column, colIndex) => (
                 <td
-                  key={`${task.id}-${column.accessorKey || index}`}
-                  className="whitespace-nowrap"
+                  key={`${task.id}-${column.accessorKey || colIndex}`}
+                  className="whitespace-nowrap text-sm"
                 >
                   {column.cell ? column.cell(task) : task[column.accessorKey]}
                 </td>

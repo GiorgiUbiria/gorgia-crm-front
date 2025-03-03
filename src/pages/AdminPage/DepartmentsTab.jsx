@@ -27,10 +27,9 @@ const DepartmentsTab = ({ departments = [] }) => {
       name: department.name,
       description: department.description || "არ არის მითითებული",
       department_head: department.department_head
-        ? department.department_head?.name ||
-          "" + " " + department.department_head?.sur_name ||
-          ""
+        ? `${department.department_head.name} ${department.department_head.sur_name}`
         : "არ არის მითითებული",
+      department_head_email: department.department_head?.email || "არ არის მითითებული",
       department_head_id: department.department_head_id,
     }))
   }, [departments])
@@ -67,6 +66,15 @@ const DepartmentsTab = ({ departments = [] }) => {
         id: "department_head",
         accessorKey: "department_head",
         header: () => <span>დეპარტამენტის ხელმძღვანელი</span>,
+        meta: {
+          filterVariant: "text",
+        },
+        enableSorting: false,
+      },
+      {
+        id: "department_head_email",
+        accessorKey: "department_head_email",
+        header: () => <span>ხელმძღვანელის ელ-ფოსტა</span>,
         meta: {
           filterVariant: "text",
         },

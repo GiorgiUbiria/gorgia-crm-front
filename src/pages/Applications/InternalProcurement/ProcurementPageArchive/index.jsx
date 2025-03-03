@@ -27,6 +27,7 @@ import {
   BiMessageAltX,
   BiLink,
   BiDownload,
+  BiUpload,
 } from "react-icons/bi"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import {
@@ -36,9 +37,14 @@ import {
 import {
   downloadPurchaseProduct,
   downloadPurchase,
+  downloadInvoice,
 } from "../../../../services/purchase"
 import { DownloadButton } from "../../../../components/CrmActionButtons/ActionButtons"
 import useAuth from "hooks/useAuth"
+import { useTheme } from "../../../../hooks/useTheme"
+import classNames from "classnames"
+import { toast } from "store/zustand/toastStore"
+
 
 const statusMap = {
   "pending department head": {
@@ -68,8 +74,18 @@ const statusMap = {
   },
 }
 
+const categoryGeorgianMap = {
+  IT: "IT",
+  Marketing: "მარკეტინგი",
+  Security: "უსაფრთხოება",
+  Network: "საცალო ქსელი",
+  Farm: "სამეურნეო",
+}
+
 const ProcurementPageArchive = () => {
   document.title = "შესყიდვების არქივი | Gorgia LLC"
+
+  const { isDarkMode } = useTheme()
 
   const {
     isAdmin,
@@ -95,6 +111,8 @@ const ProcurementPageArchive = () => {
       getUserDepartmentId() !== 7 &&
       !can("user:373"),
   })
+
+  console.log(purchaseData)
 
   const canViewTable = useMemo(() => {
     return (
@@ -138,7 +156,11 @@ const ProcurementPageArchive = () => {
         Cell: ({ value }) => (
           <div>
             <span className="badge bg-primary">
-              {value === "purchase" ? "შესყიდვა" : "ფასის მოკვლევა"}
+              {value === "purchase"
+                ? "შესყიდვა"
+                : value === "price_inquiry"
+                  ? "ფასის მოკვლევა"
+                  : "მომსახურება"}
             </span>
           </div>
         ),
@@ -181,28 +203,27 @@ const ProcurementPageArchive = () => {
               fontWeight: 500,
               backgroundColor:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#fff3e0"
                   : value === "rejected"
-                  ? "#ffebee"
-                  : value === "completed"
-                  ? "#e8f5e9"
-                  : "#f5f5f5",
+                    ? "#ffebee"
+                    : value === "completed"
+                      ? "#e8f5e9"
+                      : "#f5f5f5",
               color:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#e65100"
                   : value === "rejected"
-                  ? "#c62828"
-                  : value === "completed"
-                  ? "#2e7d32"
-                  : "#757575",
+                    ? "#c62828"
+                    : value === "completed"
+                      ? "#2e7d32"
+                      : "#757575",
             }}
           >
             <i
-              className={`bx ${
-                statusMap[value]?.icon || "bx-help-circle"
-              } me-2`}
+              className={`bx ${statusMap[value]?.icon || "bx-help-circle"
+                } me-2`}
             ></i>
             {statusMap[value]?.label || value}
           </span>
@@ -211,6 +232,9 @@ const ProcurementPageArchive = () => {
       {
         Header: "მიმართულება",
         accessor: "category",
+        Cell: ({ value }) => (
+          <div>{categoryGeorgianMap[value] || value}</div>
+        ),
       },
       {
         Header: "მიზანი",
@@ -245,8 +269,8 @@ const ProcurementPageArchive = () => {
       },
     },
     {
-      field: "branch",
-      label: "ფილიალი",
+      field: "branches",
+      label: "ფილიალები",
     },
   ]
 
@@ -258,9 +282,8 @@ const ProcurementPageArchive = () => {
 
     return rows.filter(row => {
       if (!row.original.requester) return false
-      const requesterName = `${row.original.requester.name || ""} ${
-        row.original.requester.sur_name || ""
-      }`.toLowerCase()
+      const requesterName = `${row.original.requester.name || ""} ${row.original.requester.sur_name || ""
+        }`.toLowerCase()
       return requesterName.includes(searchTerm)
     })
   }, [])
@@ -298,84 +321,112 @@ const ProcurementPageArchive = () => {
         window.URL.revokeObjectURL(url)
       } catch (error) {
         console.error("Error downloading file:", error)
-        alert("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
+        toast.error("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
+      }
+    }
+
+    const handleDownloadInvoice = async purchaseId => {
+      try {
+        const response = await downloadInvoice(purchaseId)
+
+        const contentDisposition = response.headers["content-disposition"]
+        let filename = `purchase_${purchaseId}_invoice`
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(
+            /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+          )
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, "")
+          }
+        }
+
+        const blob = new Blob([response.data], {
+          type: response.headers["content-type"] || "application/octet-stream",
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.setAttribute("download", filename)
+        document.body.appendChild(link)
+        link.click()
+
+        link.parentNode.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error("Error downloading invoice:", error)
+        toast.error("ხელშეკრულების ჩამოტვირთვა ვერ მოხერხდა")
       }
     }
 
     const details = [
       {
-        label: "კომენტარი",
-        value: rowData?.comment || "N/A",
-        icon: <BiComment />,
-      },
-      {
         label: "ფილიალები",
         value: rowData?.branches?.map(branch => branch).join(", ") || "N/A",
-        icon: <BiBuilding className="w-5 h-5 text-gray-500" />,
+        icon: <BiBuilding className="dark:!text-gray-300" />,
       },
-
       {
         label: "მომთხოვნი",
         value: rowData?.requester.name + " " + rowData?.requester.sur_name,
-        icon: <BiUser className="w-5 h-5 text-gray-500" />,
+        icon: <BiUser className="w-5 h-5 text-gray-500 dark:!text-gray-400" />,
       },
       {
         label: "მომთხოვნის დეპარტამენტი",
         value: rowData?.requester?.department?.name || "N/A",
-        icon: <BiUser className="w-5 h-5 text-gray-500" />,
+        icon: <BiUser className="w-5 h-5 text-gray-500 dark:!text-gray-400" />,
       },
       {
         label: "მომთხოვნის ხელმძღვანელი",
         value: rowData?.responsible_for_purchase
           ? `${rowData.responsible_for_purchase.name} ${rowData.responsible_for_purchase.sur_name}`
           : "N/A",
-        icon: <BiUser className="w-5 h-5 text-gray-500" />,
+        icon: <BiUser className="w-5 h-5 text-gray-500 dark:!text-gray-400" />,
       },
       {
         label: "მიმართულების ხელმძღვანელი",
         value: rowData?.category_head
           ? `${rowData.category_head.name} ${rowData.category_head.sur_name}`
           : "N/A",
-        icon: <BiUserCheck />,
+        icon: <BiUserCheck className="dark:!text-gray-300" />,
       },
       {
         label: "შესყიდვაზე პასუხისმგებელი",
         value: rowData?.reviewer
           ? `${rowData.reviewer.name} ${rowData.reviewer.sur_name}`
           : "N/A",
-        icon: <BiUserVoice />,
+        icon: <BiUserVoice className="dark:!text-gray-300" />,
       },
       {
         label: "მოთხოვნილი მიღების თარიღი",
         value: rowData?.requested_arrival_date
           ? new Date(rowData.requested_arrival_date).toLocaleDateString()
           : "N/A",
-        icon: <BiCalendar />,
+        icon: <BiCalendar className="dark:!text-gray-300" />,
       },
       {
         label: "მცირე ვადის მიზეზი",
         value: rowData?.short_date_notice_explanation || "N/A",
-        icon: <BiTime />,
+        icon: <BiTime className="dark:!text-gray-300" />,
       },
       {
         label: "საჭიროების გადაჭარბების მიზეზი",
         value: rowData?.exceeds_needs_reason || "N/A",
-        icon: <BiInfoCircle />,
+        icon: <BiInfoCircle className="dark:!text-gray-300" />,
       },
       {
         label: "იქმნება მარაგი",
         value: rowData?.creates_stock ? "დიახ" : "არა",
-        icon: <BiBox />,
+        icon: <BiBox className="dark:!text-gray-300" />,
       },
       {
         label: "მარაგის მიზანი",
         value: rowData?.stock_purpose || "N/A",
-        icon: <BiTargetLock />,
+        icon: <BiTargetLock className="dark:!text-gray-300" />,
       },
       {
         label: "მიწოდების მისამართი",
         value: rowData?.delivery_address || "N/A",
-        icon: <BiMapPin />,
+        icon: <BiMapPin className="dark:!text-gray-300" />,
       },
       {
         label: "გარე ბმული",
@@ -384,30 +435,74 @@ const ProcurementPageArchive = () => {
             href={rowData.external_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary"
+            className="text-primary dark:!text-primary-400"
           >
             {rowData.external_url}
           </a>
         ) : (
           "N/A"
         ),
-        icon: <BiLink />,
+        icon: <BiLink className="dark:!text-gray-300" />,
       },
       {
         label: "მიმაგრებული ფაილი",
         value: rowData?.file_path ? (
           <button
             onClick={() => handleDownloadPurchaseFile(rowData.id)}
-            className="btn btn-link btn-sm p-0 text-primary"
+            className="btn btn-link btn-sm p-0 text-primary dark:!text-primary-400"
           >
             ჩამოტვირთვა
           </button>
         ) : (
           "N/A"
         ),
-        icon: <BiDownload />,
+        icon: <BiDownload className="dark:!text-gray-300" />,
+      },
+      {
+        label: "ხელშეკრულება",
+        value: rowData.status === "completed" && rowData.invoice_attachment ? (
+          <button
+            onClick={() => handleDownloadInvoice(rowData.id)}
+            className="btn btn-link btn-sm p-0 text-primary dark:!text-primary-400"
+          >
+            ჩამოტვირთვა
+          </button>
+        ) : (
+          "N/A"
+        ),
+        icon: <BiUpload className="dark:!text-gray-300" />,
       },
     ]
+
+    // Add IT review details if category is IT
+    if (rowData.category === "IT") {
+      details.push(
+        {
+          label: "IT განხილვის სტატუსი",
+          value: rowData.review_status === "reviewed" ? "განხილულია" : "განსახილველი",
+          icon: <BiCheckCircle className="dark:!text-gray-300" />,
+        },
+        {
+          label: "IT განხილვის კომენტარი",
+          value: rowData.review_comment || "N/A",
+          icon: <BiComment className="dark:!text-gray-300" />,
+        },
+        {
+          label: "განმხილველი",
+          value: rowData.reviewed_by
+            ? `${rowData.reviewed_by.name} ${rowData.reviewed_by.sur_name}`
+            : "N/A",
+          icon: <BiUser className="dark:!text-gray-300" />,
+        },
+        {
+          label: "განხილვის თარიღი",
+          value: rowData.reviewed_at
+            ? new Date(rowData.reviewed_at).toLocaleString()
+            : "N/A",
+          icon: <BiCalendar className="dark:!text-gray-300" />,
+        }
+      )
+    }
 
     const completedProductsCount =
       rowData?.products?.filter(p => p.status === "completed").length || 0
@@ -418,20 +513,20 @@ const ProcurementPageArchive = () => {
         : (completedProductsCount / totalProductsCount) * 100
 
     const StatusTimeline = () => (
-      <Card className="mb-4 shadow-sm">
-        <CardBody>
+      <Card className="mb-4 shadow-sm dark:!bg-gray-800 dark:!border-gray-700">
+        <CardBody className="dark:!bg-gray-800">
           <div className="d-flex align-items-center gap-2 mb-3">
-            <BiTime className="text-primary" size={24} />
-            <h6 className="mb-0">შესყიდვის სტატუსი</h6>
+            <BiTime className="text-primary dark:!text-primary-400" size={24} />
+            <h6 className="mb-0 dark:!text-gray-200">შესყიდვის სტატუსი</h6>
           </div>
 
           <div className="d-flex align-items-center gap-3 mb-3">
             <span
-              className={`badge bg-${
-                rowData.status === "completed" ? "success" : "primary"
-              } px-3 py-2`}
+              className={`badge bg-${rowData.status === "completed" ? "success" : "primary"
+                } px-3 py-2 dark:!bg-${rowData.status === "completed" ? "success" : "primary"
+                }-600`}
             >
-              <div className="d-flex align-items-center gap-2">
+              <div className="d-flex align-items-center gap-2 dark:!text-gray-200">
                 {rowData.status === "completed" ? (
                   <BiCheckCircle />
                 ) : (
@@ -442,7 +537,7 @@ const ProcurementPageArchive = () => {
             </span>
 
             {rowData.status === "pending products completion" && (
-              <span className="text-muted">
+              <span className="text-muted dark:!text-gray-400">
                 <BiPackage className="me-1" />
                 {completedProductsCount}/{totalProductsCount} პროდუქტი
                 დასრულებული
@@ -453,8 +548,8 @@ const ProcurementPageArchive = () => {
           <div className="timeline">
             {rowData.department_head_decision_date && (
               <div className="timeline-item">
-                <BiCheckCircle className="text-success" />
-                <small className="text-muted">
+                <BiCheckCircle className="text-success dark:!text-success-400" />
+                <small className="text-muted dark:!text-gray-400">
                   დეპარტამენტის უფროსის გადაწყვეტილება:{" "}
                   {new Date(
                     rowData.department_head_decision_date
@@ -465,8 +560,8 @@ const ProcurementPageArchive = () => {
 
             {rowData.requested_department_decision_date && (
               <div className="timeline-item">
-                <BiCheckCircle className="text-success" />
-                <small className="text-muted">
+                <BiCheckCircle className="text-success dark:!text-success-400" />
+                <small className="text-muted dark:!text-gray-400">
                   მოთხოვნილი დეპარტამენტის გადაწყვეტილება:{" "}
                   {new Date(
                     rowData.requested_department_decision_date
@@ -493,21 +588,28 @@ const ProcurementPageArchive = () => {
     )
 
     const PurchaseDetails = () => (
-      <Card className="mb-4 shadow-sm">
-        <CardBody>
+      <Card className="mb-4 shadow-sm dark:!bg-gray-800 dark:!border-gray-700">
+        <CardBody className="dark:!bg-gray-800">
           <div className="d-flex align-items-center gap-2 mb-3">
-            <BiDetail className="text-primary" size={24} />
-            <h6 className="mb-0">შესყიდვის დეტალები</h6>
+            <BiDetail
+              className="text-primary dark:!text-primary-400"
+              size={24}
+            />
+            <h6 className="mb-0 dark:!text-gray-200">შესყიდვის დეტალები</h6>
           </div>
 
           <div className="row g-3">
             {details.map((detail, index) => (
               <div key={index} className="col-md-6">
                 <div className="d-flex align-items-center gap-2">
-                  <span className="text-primary">{detail.icon}</span>
+                  <span className="text-primary dark:!text-primary-400">
+                    {detail.icon}
+                  </span>
                   <div>
-                    <strong>{detail.label}:</strong>
-                    <div>{detail.value}</div>
+                    <strong className="dark:!text-gray-300">
+                      {detail.label}:
+                    </strong>
+                    <div className="dark:!text-gray-400">{detail.value}</div>
                   </div>
                 </div>
               </div>
@@ -556,12 +658,15 @@ const ProcurementPageArchive = () => {
       }
 
       return (
-        <Card className="shadow-sm">
-          <CardBody>
+        <Card className="shadow-sm dark:!bg-gray-800 dark:!border-gray-700">
+          <CardBody className="dark:!bg-gray-800">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <div className="d-flex align-items-center gap-2">
-                <BiPackage className="text-primary" size={24} />
-                <h6 className="mb-0">პროდუქტები</h6>
+                <BiPackage
+                  className="text-primary dark:!text-primary-400"
+                  size={24}
+                />
+                <h6 className="mb-0 dark:!text-gray-200">პროდუქტები</h6>
               </div>
 
               {rowData.status === "pending products completion" && (
@@ -581,57 +686,92 @@ const ProcurementPageArchive = () => {
             </div>
 
             <div className="table-responsive">
-              <table className="table table-hover">
-                <thead className="table-light">
+              <table className="table table-hover dark:!bg-gray-800 dark:!border-gray-700">
+                <thead
+                  className={classNames(
+                    isDarkMode ? "table-dark" : "table-light",
+                    "dark:!bg-gray-700"
+                  )}
+                >
                   <tr>
-                    <th>
-                      <BiBuilding /> ფილიალი
+                    <th className="dark:!text-gray-300">
+                      <BiBuilding className="dark:!text-gray-400" /> ფილიალები
                     </th>
-                    <th>
-                      <BiLabel /> სახელი
+                    <th className="dark:!text-gray-300">
+                      <BiLabel className="dark:!text-gray-400" /> სახელი
                     </th>
-                    <th>
-                      <BiHash /> რაოდენობა
+                    <th className="dark:!text-gray-300">
+                      <BiHash className="dark:!text-gray-400" /> რაოდენობა
                     </th>
-                    <th>
-                      <BiRuler /> ზომები
+                    <th className="dark:!text-gray-300">
+                      <BiRuler className="dark:!text-gray-400" /> ზომები
                     </th>
-                    <th>
-                      <BiText /> აღწერა
+                    <th className="dark:!text-gray-300">
+                      <BiText className="dark:!text-gray-400" /> აღწერა
                     </th>
-                    <th>
-                      <BiWallet /> გადამხდელი
+                    <th className="dark:!text-gray-300">
+                      <BiWallet className="dark:!text-gray-400" /> გადამხდელი
                     </th>
-                    <th>
-                      <BiStore /> მოძიებული ვარიანტი
+                    <th className="dark:!text-gray-300">
+                      <BiStore className="dark:!text-gray-400" /> მოძიებული
+                      ვარიანტი
                     </th>
-                    <th>
-                      <BiTime /> ანალოგიური შესყიდვა
+                    <th className="dark:!text-gray-300">
+                      <BiTime className="dark:!text-gray-400" /> ანალოგიური
+                      შესყიდვა
                     </th>
-                    <th>
-                      <BiBox /> ასორტიმენტში
+                    <th className="dark:!text-gray-300">
+                      <BiBox className="dark:!text-gray-400" /> ასორტიმენტში
                     </th>
-                    <th>
-                      <BiFlag /> სტატუსი
+                    <th className="dark:!text-gray-300">
+                      <BiFlag className="dark:!text-gray-400" /> სტატუსი
                     </th>
-                    <th>
-                      <BiComment /> კომენტარი
+                    <th className="dark:!text-gray-300">
+                      <BiComment className="dark:!text-gray-400" /> კომენტარი
                     </th>
-                    <th>მოქმედებები</th>
+                    <th className="dark:!text-gray-300">მოქმედებები</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody
+                  className={classNames(
+                    isDarkMode ? "table-dark" : "table-light",
+                    "dark:!bg-gray-800"
+                  )}
+                >
                   {rowData.products.map((product, idx) => (
-                    <tr key={idx}>
-                      <td>{product?.branch || "N/A"}</td>
-                      <td>{product?.name || "N/A"}</td>
-                      <td>{product?.quantity || "N/A"}</td>
-                      <td>{product?.dimensions || "N/A"}</td>
-                      <td>{product?.description || "N/A"}</td>
-                      <td>{product?.payer || "N/A"}</td>
-                      <td>{product?.search_variant || "N/A"}</td>
-                      <td>{product?.similar_purchase_planned || "N/A"}</td>
-                      <td>{product?.in_stock_explanation || "N/A"}</td>
+                    <tr
+                      key={idx}
+                      className="dark:!bg-gray-800 dark:!border-gray-700 hover:dark:!bg-gray-700"
+                    >
+                      <td className="dark:!text-gray-400">
+                        {product?.branches?.length > 0
+                          ? product.branches.join(", ")
+                          : "N/A"}
+                      </td>
+                      <td className="dark:!text-gray-400">
+                        {product?.name || "N/A"}
+                      </td>
+                      <td className="dark:!text-gray-400">
+                        {product?.quantity || "N/A"}
+                      </td>
+                      <td className="dark:!text-gray-400">
+                        {product?.dimensions || "N/A"}
+                      </td>
+                      <td className="dark:!text-gray-400">
+                        {product?.description || "N/A"}
+                      </td>
+                      <td className="dark:!text-gray-400">
+                        {product?.payer || "N/A"}
+                      </td>
+                      <td className="dark:!text-gray-400">
+                        {product?.search_variant || "N/A"}
+                      </td>
+                      <td className="dark:!text-gray-400">
+                        {product?.similar_purchase_planned || "N/A"}
+                      </td>
+                      <td className="dark:!text-gray-400">
+                        {product?.in_stock_explanation || "N/A"}
+                      </td>
                       <td>
                         <span
                           style={{
@@ -643,13 +783,18 @@ const ProcurementPageArchive = () => {
                             fontSize: "0.875rem",
                             backgroundColor:
                               product?.status === "completed"
-                                ? "#e8f5e9"
-                                : "#fff3e0",
+                                ? "dark:!bg-green-900/20"
+                                : "dark:!bg-orange-900/20",
                             color:
                               product?.status === "completed"
-                                ? "#2e7d32"
-                                : "#e65100",
+                                ? "dark:!text-green-400"
+                                : "dark:!text-orange-400",
                           }}
+                          className={
+                            product?.status === "completed"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-orange-100 text-orange-800"
+                          }
                         >
                           {product?.status === "completed" ? (
                             <BiCheckCircle size={16} />
@@ -665,9 +810,13 @@ const ProcurementPageArchive = () => {
                       </td>
                       <td>
                         {product?.comment ? (
-                          <span className="text-muted">{product.comment}</span>
+                          <span className="text-muted dark:!text-gray-400">
+                            {product.comment}
+                          </span>
                         ) : (
-                          <span className="text-muted">-</span>
+                          <span className="text-muted dark:!text-gray-400">
+                            -
+                          </span>
                         )}
                       </td>
                       <td>
@@ -746,7 +895,7 @@ const ProcurementPageArchive = () => {
             columns={columns}
             data={
               isAdmin() || getUserDepartmentId() === 7
-                ? purchaseData?.data || []
+                ? purchaseData || []
                 : departmentPurchaseData?.data || []
             }
             filterOptions={filterOptions}

@@ -1,4 +1,5 @@
 import React from "react"
+import CrmSpinner from "components/CrmSpinner"
 import {
   StickyNote,
   Calendar,
@@ -200,40 +201,40 @@ function WidgetCard({ widget }) {
   const isExternal = widget.link.startsWith("http")
 
   const CardContent = () => (
-    <div className="p-4 sm:p-6 h-full flex flex-col">
+    <div className="p-5 sm:p-6 h-full flex flex-col">
       <div
-        className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${colors.bg} ${colors.text} flex items-center justify-center mb-3 sm:mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6`}
+        className={`w-12 h-12 rounded-2xl ${colors.bg} ${colors.text} flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6`}
       >
-        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+        <Icon className="w-6 h-6" />
       </div>
-      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:!text-gray-100 mb-1 sm:mb-2">
+      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:!text-gray-100 mb-2">
         {widget.title}
       </h3>
-      <p className="text-gray-600 dark:!text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4 flex-grow">
+      <p className="text-gray-600 dark:!text-gray-400 text-sm mb-4 flex-grow">
         {widget.description}
       </p>
       <div
-        className={`inline-flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg sm:rounded-xl transition-all duration-300 group-hover:gap-3 ${
+        className={`inline-flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl transition-all duration-300 group-hover:gap-3 ${
           isDisabled
             ? "bg-gray-100 dark:!bg-gray-800 text-gray-400 dark:!text-gray-500 cursor-not-allowed"
             : `${colors.bg} ${colors.text} ${colors.hover}`
         }`}
       >
         {widget.buttonText}
-        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-300 group-hover:translate-x-1" />
+        <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
       </div>
     </div>
   )
 
   const cardClasses = `
-    group relative bg-white dark:!bg-gray-800 rounded-xl sm:rounded-2xl
-    border border-gray-100 dark:!border-gray-700
+    group relative bg-white dark:!bg-gray-800 rounded-2xl
+    border border-gray-100 dark:!border-gray-700/50
     hover:border-gray-200 dark:!hover:border-gray-600
-    shadow-sm hover:shadow-lg sm:hover:shadow-xl
+    shadow-lg hover:shadow-xl
     transition-all duration-300
     overflow-hidden
     animate-fade-in
-    ${isDisabled ? "opacity-60 cursor-not-allowed" : "hover:-translate-y-1"}
+    ${isDisabled ? "opacity-60 cursor-not-allowed" : "hover:-translate-y-1.5"}
   `
 
   if (isDisabled) {
@@ -271,7 +272,7 @@ function Dashboard() {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="animate-pulse text-gray-600 dark:!text-gray-400">
-          Loading user data...
+          <CrmSpinner />
         </div>
       </div>
     )

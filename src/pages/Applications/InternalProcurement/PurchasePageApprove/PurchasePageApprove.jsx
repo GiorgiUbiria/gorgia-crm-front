@@ -53,6 +53,11 @@ const statusMap = {
     icon: "bx-time",
     color: "#FFA500",
   },
+  "pending IT team review": {
+    label: "განხილვაში (IT გუნდი)",
+    icon: "bx-time",
+    color: "#FFA500",
+  },
   "pending requested department": {
     label: "განხილვაში (მოთხოვნილი დეპარტამენტი)",
     icon: "bx-time",
@@ -84,6 +89,14 @@ const categoryDepartmentMap = {
   Farm: 38,
 }
 
+const categoryGeorgianMap = {
+  IT: "IT",
+  Marketing: "მარკეტინგი",
+  Security: "უსაფრთხოება",
+  Network: "საცალო ქსელი",
+  Farm: "სამეურნეო",
+}
+
 const PurchasePageApprove = () => {
   document.title = "შიდა შესყიდვების ვიზირება | Gorgia LLC"
   const {
@@ -91,6 +104,7 @@ const PurchasePageApprove = () => {
     isDepartmentHeadAssistant,
     getUserDepartmentId,
     isAdmin,
+    isITDepartment,
   } = useAuth()
 
   const [rejectionModal, setRejectionModal] = useState(false)
@@ -107,20 +121,22 @@ const PurchasePageApprove = () => {
       isAdmin() ||
       isDepartmentHead() ||
       isDepartmentHeadAssistant() ||
-      getUserDepartmentId() === 7
+      getUserDepartmentId() === 7 ||
+      isITDepartment()
     )
   }, [
     isAdmin,
     isDepartmentHead,
     isDepartmentHeadAssistant,
     getUserDepartmentId,
+    isITDepartment,
   ])
 
   const { data: purchaseData, isLoading: isPurchasesLoading } =
     useGetPurchaseList(
       {},
       {
-        enabled: !!isAdmin() || getUserDepartmentId() === 7,
+        enabled: isAdmin() || getUserDepartmentId() === 7,
       }
     )
 
@@ -130,7 +146,9 @@ const PurchasePageApprove = () => {
   const {
     data: departmentPurchaseData,
     isLoading: isDepartmentPurchaseLoading,
-  } = useGetDepartmentPurchases({}, { enabled: isDepartmentHead() })
+  } = useGetDepartmentPurchases({}, {
+    enabled: (isDepartmentHead() || isDepartmentHeadAssistant() || isITDepartment()) && !isAdmin() && getUserDepartmentId() !== 7
+  })
 
   const { mutate: updateProductStatus, isLoading: isProductUpdateLoading } =
     useUpdateProductStatus()
@@ -145,42 +163,63 @@ const PurchasePageApprove = () => {
         return true
       }
 
-      if (
-        getUserDepartmentId() === 7 &&
-        purchase.status === "pending products completion"
-      ) {
-        return true
+      if (getUserDepartmentId() === 7) {
+        return purchase.status === "pending products completion"
       }
 
-      if (!isDepartmentHead()) {
-        return false
+      if (purchase.status === "pending IT team review") {
+        return (isITDepartment() || getUserDepartmentId() === 5) &&
+          purchase.products?.every(p => p.review_status === "reviewed")
       }
 
       const purchaseCategory = purchase.category
       const requesterDepartmentId = purchase.requester?.department_id
       const categoryDepartmentId = categoryDepartmentMap[purchaseCategory]
 
+      if (!isDepartmentHead()) {
+        return false
+      }
+
+      if (requesterDepartmentId === 7) {
+        return false
+      }
+
+      const isCategoryDepartmentHead = getUserDepartmentId() === categoryDepartmentId
+      const isRequesterDepartmentHead = getUserDepartmentId() === requesterDepartmentId
+
       if (requesterDepartmentId === categoryDepartmentId) {
         return (
-          purchase.status === "pending department head" &&
+          (purchase.status === "pending department head" || purchase.status === "pending requested department") &&
           getUserDepartmentId() === requesterDepartmentId
         )
       }
 
       switch (purchase.status) {
         case "pending department head":
-          return getUserDepartmentId() === requesterDepartmentId
+          return isRequesterDepartmentHead
         case "pending requested department":
-          return getUserDepartmentId() === categoryDepartmentId
+          return isCategoryDepartmentHead
         default:
           return false
       }
     },
-    [isDepartmentHead, getUserDepartmentId, isAdmin]
+    [isDepartmentHead, getUserDepartmentId, isAdmin, isITDepartment]
   )
 
   const getNextStatus = purchase => {
+    if (purchase.status === "rejected") {
+      return "rejected"
+    }
+
+    if (purchase.status === "completed") {
+      return "completed"
+    }
+
     if (purchase.status === "pending department head") {
+      if (purchase.category === "IT") {
+        return "pending IT team review"
+      }
+
       const purchaseCategory = purchase.category
       const requesterDepartmentId = purchase.requester?.department_id
       const categoryDepartmentId = categoryDepartmentMap[purchaseCategory]
@@ -191,14 +230,22 @@ const PurchasePageApprove = () => {
       return "pending requested department"
     }
 
+    if (purchase.status === "pending IT team review") {
+      if (!purchase.products?.every(p => p.review_status === "reviewed")) {
+        return purchase.status
+      }
+      return "pending requested department"
+    }
+
     if (purchase.status === "pending requested department") {
       return "pending products completion"
     }
 
     if (purchase.status === "pending products completion") {
-      return purchase.products?.every(p => p.status === "completed")
-        ? "completed"
-        : purchase.status
+      if (purchase.products?.every(p => p.status === "completed")) {
+        return "completed"
+      }
+      return purchase.status
     }
 
     return purchase.status
@@ -246,7 +293,7 @@ const PurchasePageApprove = () => {
       {
         id: selectedPurchase.id,
         status: "rejected",
-        comment: rejectionComment,
+        comment: rejectionComment || null,
       },
       {
         onSuccess: () => {
@@ -288,7 +335,7 @@ const PurchasePageApprove = () => {
           console.error("Error updating product status:", err)
           alert(
             err.response?.data?.message ||
-              "შეცდომა პროდუქტის სტატუსის განახლებისას"
+            "შეცდომა პროდუქტის სტატუსის განახლებისას"
           )
         },
       }
@@ -321,7 +368,11 @@ const PurchasePageApprove = () => {
         Cell: ({ value }) => (
           <div>
             <span className="badge bg-primary">
-              {value === "purchase" ? "შესყიდვა" : "ფასის მოკვლევა"}
+              {value === "purchase"
+                ? "შესყიდვა"
+                : value === "price_inquiry"
+                  ? "ფასის მოკვლევა"
+                  : "მომსახურება"}
             </span>
           </div>
         ),
@@ -364,22 +415,22 @@ const PurchasePageApprove = () => {
               fontWeight: 500,
               backgroundColor:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#fff3e0"
                   : value === "rejected"
-                  ? "#ffebee"
-                  : value === "completed"
-                  ? "#e8f5e9"
-                  : "#f5f5f5",
+                    ? "#ffebee"
+                    : value === "completed"
+                      ? "#e8f5e9"
+                      : "#f5f5f5",
               color:
                 value === "pending department head" ||
-                value === "pending requested department"
+                  value === "pending requested department"
                   ? "#e65100"
                   : value === "rejected"
-                  ? "#c62828"
-                  : value === "completed"
-                  ? "#2e7d32"
-                  : "#757575",
+                    ? "#c62828"
+                    : value === "completed"
+                      ? "#2e7d32"
+                      : "#757575",
             }}
           >
             <i
@@ -393,6 +444,9 @@ const PurchasePageApprove = () => {
       {
         Header: "მიმართულება",
         accessor: "category",
+        Cell: ({ value }) => (
+          <div>{categoryGeorgianMap[value] || value}</div>
+        ),
       },
       {
         Header: "მიზანი",
@@ -456,8 +510,8 @@ const PurchasePageApprove = () => {
       },
     },
     {
-      field: "branch",
-      label: "ფილიალი",
+      field: "branches",
+      label: "ფილიალები",
     },
   ]
 
@@ -597,16 +651,37 @@ const PurchasePageApprove = () => {
         ),
         icon: <BiDownload />,
       },
-      {
-        label: "პროდუქტების სია დანართში",
-        value: rowData?.has_products_attachment ? (
-          <span className="badge bg-info">დიახ</span>
-        ) : (
-          <span className="badge bg-secondary">არა</span>
-        ),
-        icon: <BiPackage />,
-      },
     ]
+
+    // Add IT review details if category is IT
+    if (rowData.category === "IT") {
+      details.push(
+        {
+          label: "IT განხილვის სტატუსი",
+          value: rowData.review_status === "reviewed" ? "განხილულია" : "განსახილველი",
+          icon: <BiCheckCircle />,
+        },
+        {
+          label: "IT განხილვის კომენტარი",
+          value: rowData.review_comment || "N/A",
+          icon: <BiComment />,
+        },
+        {
+          label: "განმხილველი",
+          value: rowData.reviewed_by
+            ? `${rowData.reviewed_by.name} ${rowData.reviewed_by.sur_name}`
+            : "N/A",
+          icon: <BiUser />,
+        },
+        {
+          label: "განხილვის თარიღი",
+          value: rowData.reviewed_at
+            ? new Date(rowData.reviewed_at).toLocaleString()
+            : "N/A",
+          icon: <BiCalendar />,
+        }
+      )
+    }
 
     const completedProductsCount =
       rowData?.products?.filter(p => p.status === "completed").length || 0
@@ -626,9 +701,8 @@ const PurchasePageApprove = () => {
 
           <div className="d-flex align-items-center gap-3 mb-3">
             <span
-              className={`badge bg-${
-                rowData.status === "completed" ? "success" : "primary"
-              } px-3 py-2`}
+              className={`badge bg-${rowData.status === "completed" ? "success" : "primary"
+                } px-3 py-2`}
             >
               <div className="d-flex align-items-center gap-2">
                 {rowData.status === "completed" ? (
@@ -862,7 +936,7 @@ const PurchasePageApprove = () => {
                   <tr>
                     <th>
                       <div className="d-flex align-items-center gap-2">
-                        <BiBuilding /> <span>ფილიალი</span>
+                        <BiBuilding /> <span>ფილიალები</span>
                       </div>
                     </th>
                     <th>
@@ -905,6 +979,25 @@ const PurchasePageApprove = () => {
                         <BiBox /> <span>ასორტიმენტში</span>
                       </div>
                     </th>
+                    {rowData.category === "IT" && (
+                      <>
+                        <th>
+                          <div className="d-flex align-items-center gap-2">
+                            <BiCheckCircle /> <span>განხილვის სტატუსი</span>
+                          </div>
+                        </th>
+                        <th>
+                          <div className="d-flex align-items-center gap-2">
+                            <BiComment /> <span>განხილვის კომენტარი</span>
+                          </div>
+                        </th>
+                        <th>
+                          <div className="d-flex align-items-center gap-2">
+                            <BiBox /> <span>მარაგშია</span>
+                          </div>
+                        </th>
+                      </>
+                    )}
                     <th>
                       <div className="d-flex align-items-center gap-2">
                         <BiFlag /> <span>სტატუსი</span>
@@ -920,7 +1013,11 @@ const PurchasePageApprove = () => {
                 <tbody>
                   {rowData.products.map((product, idx) => (
                     <tr key={idx}>
-                      <td>{product?.branch || "N/A"}</td>
+                      <td>
+                        {product?.branches?.length > 0
+                          ? product.branches.join(", ")
+                          : "N/A"}
+                      </td>
                       <td>{product?.name || "N/A"}</td>
                       <td>{product?.quantity || "N/A"}</td>
                       <td>{product?.dimensions || "N/A"}</td>
@@ -929,6 +1026,39 @@ const PurchasePageApprove = () => {
                       <td>{product?.search_variant || "N/A"}</td>
                       <td>{product?.similar_purchase_planned || "N/A"}</td>
                       <td>{product?.in_stock_explanation || "N/A"}</td>
+                      {rowData.category === "IT" && (
+                        <>
+                          <td>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.review_status === "reviewed"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                                }`}
+                            >
+                              {product.review_status === "reviewed"
+                                ? "განხილულია"
+                                : "განსახილველი"}
+                            </span>
+                          </td>
+                          <td>{product?.review_comment || "N/A"}</td>
+                          <td>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.in_stock === true
+                                ? "bg-green-100 text-green-800"
+                                : product.in_stock === false
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-gray-100 text-gray-800"
+                                }`}
+                            >
+                              {product.in_stock === true
+                                ? "დიახ"
+                                : product.in_stock === false
+                                  ? "არა"
+                                  : "არ არის მითითებული"}
+                            </span>
+                          </td>
+                        </>
+                      )}
                       <td>
                         <span
                           style={{
@@ -1030,7 +1160,7 @@ const PurchasePageApprove = () => {
             columns={columns}
             data={
               isAdmin() || getUserDepartmentId() === 7
-                ? purchaseData?.data || []
+                ? purchaseData || []
                 : departmentPurchaseData?.data || []
             }
             filterOptions={filterOptions}
@@ -1234,7 +1364,7 @@ const PurchasePageApprove = () => {
                             console.error("Error completing request:", err)
                             alert(
                               err.response?.data?.message ||
-                                "შეცდომა მოთხოვნის დასრულებისას"
+                              "შეცდომა მოთხოვნის დასრულებისას"
                             )
                           },
                         }

@@ -1,63 +1,65 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { CrmTable } from "../../components/CrmTable";
+import React, { useState } from "react"
+import { Link } from "react-router-dom"
+import { CrmTable } from "../../components/CrmTable"
 import {
   useVacancyRequests,
   useApproveVacancyRequest,
   useRejectVacancyRequest,
-} from "../../queries/vacancyRequests";
-import { useToast } from "../../store/zustand/toastStore";
-import CrmDialog, { DialogButton } from "../../components/CrmDialogs/Dialog";
+} from "../../queries/vacancyRequests"
+import { useToast } from "../../store/zustand/toastStore"
+import CrmDialog, { DialogButton } from "../../components/CrmDialogs/Dialog"
 
 const VacancyRequests = () => {
-  const [statusFilter, setStatusFilter] = useState("");
-  const [rejectModal, setRejectModal] = useState({ isOpen: false, id: null });
-  const [rejectionReason, setRejectionReason] = useState("");
-  const toast = useToast();
+  const [statusFilter, setStatusFilter] = useState("")
+  const [rejectModal, setRejectModal] = useState({ isOpen: false, id: null })
+  const [rejectionReason, setRejectionReason] = useState("")
+  const toast = useToast()
 
   const { data: vacancyRequests, isLoading } = useVacancyRequests({
     status: statusFilter || undefined,
-  });
+  })
 
-  const approveMutation = useApproveVacancyRequest();
-  const rejectMutation = useRejectVacancyRequest();
+  const approveMutation = useApproveVacancyRequest()
+  const rejectMutation = useRejectVacancyRequest()
 
-  const handleApprove = async (id) => {
-    if (window.confirm("ნამდვილად გსურთ ვაკანსიის მოთხოვნის დამტკიცება?")) {
-      try {
-        await approveMutation.mutateAsync(id);
-        toast.success("ვაკანსიის მოთხოვნა წარმატებით დამტკიცდა");
-      } catch (error) {
-        toast.error("დაფიქსირდა შეცდომა, გთხოვთ სცადოთ თავიდან");
-        console.error("Error approving vacancy request:", error);
+  const handleApprove = React.useCallback(
+    async id => {
+      if (window.confirm("ნამდვილად გსურთ ვაკანსიის მოთხოვნის დამტკიცება?")) {
+        try {
+          await approveMutation.mutateAsync(id)
+          toast.success("ვაკანსიის მოთხოვნა წარმატებით დამტკიცდა")
+        } catch (error) {
+          toast.error("დაფიქსირდა შეცდომა, გთხოვთ სცადოთ თავიდან")
+          console.error("Error approving vacancy request:", error)
+        }
       }
-    }
-  };
+    },
+    [approveMutation, toast]
+  )
 
   const handleReject = async () => {
     try {
       await rejectMutation.mutateAsync({
         id: rejectModal.id,
         rejectionReason,
-      });
-      setRejectModal({ isOpen: false, id: null });
-      setRejectionReason("");
-      toast.success("ვაკანსიის მოთხოვნა წარმატებით უარყოფილია");
+      })
+      setRejectModal({ isOpen: false, id: null })
+      setRejectionReason("")
+      toast.success("ვაკანსიის მოთხოვნა წარმატებით უარყოფილია")
     } catch (error) {
-      toast.error("დაფიქსირდა შეცდომა, გთხოვთ სცადოთ თავიდან");
-      console.error("Error rejecting vacancy request:", error);
+      toast.error("დაფიქსირდა შეცდომა, გთხოვთ სცადოთ თავიდან")
+      console.error("Error rejecting vacancy request:", error)
     }
-  };
+  }
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = status => {
     const statusColors = {
       pending: "warning",
       approved: "success",
       rejected: "danger",
-    };
-    return <div className={`badge bg-${statusColors[status]}`}>{status}</div>;
-  };
-
+    }
+    return <div className={`badge bg-${statusColors[status]}`}>{status}</div>
+  }
 
   const columns = React.useMemo(
     () => [
@@ -144,8 +146,8 @@ const VacancyRequests = () => {
         ),
       },
     ],
-    []
-  );
+    [handleApprove]
+  )
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -209,7 +211,7 @@ const VacancyRequests = () => {
         </div>
       </CrmDialog>
     </div>
-  );
-};
+  )
+}
 
-export default VacancyRequests; 
+export default VacancyRequests

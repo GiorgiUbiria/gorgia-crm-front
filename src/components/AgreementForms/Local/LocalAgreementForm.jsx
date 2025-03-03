@@ -2,6 +2,15 @@ import React, { useState } from "react"
 import classnames from "classnames"
 import { createAgreement } from "services/localAgreement"
 import { toast } from "store/zustand/toastStore"
+import {
+  BsFileEarmarkText,
+  BsChevronLeft,
+  BsChevronRight,
+  BsCheckCircle,
+  BsPerson,
+  BsBank,
+  BsExclamationTriangle,
+} from "react-icons/bs"
 
 const LocalAgreementForm = ({ onSuccess }) => {
   const [activeTab, setActiveTab] = useState(1)
@@ -319,9 +328,9 @@ const LocalAgreementForm = ({ onSuccess }) => {
         <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 dark:!bg-gray-700 -translate-y-1/2"></div>
         <div className="relative flex justify-between items-center">
           {[
-            { label: "შემსრულებლის ინფორმაცია", icon: "bx-user" },
-            { label: "საბანკო დეტალები", icon: "bx-money" },
-            { label: "ხელშეკრულების დეტალები", icon: "bx-file" },
+            { label: "შემსრულებლის ინფორმაცია", icon: <BsPerson size={24} /> },
+            { label: "საბანკო დეტალები", icon: <BsBank size={24} /> },
+            { label: "ხელშეკრულების დეტალები", icon: <BsFileEarmarkText size={24} /> },
           ].map((step, index) => (
             <div
               key={index}
@@ -358,7 +367,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
                   }
                 )}
               >
-                <i className={`bx ${step.icon} text-2xl`}></i>
+                {step.icon}
               </div>
               <div
                 className={classnames(
@@ -413,7 +422,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_firm_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_firm_name}
                 </div>
               )}
@@ -445,7 +454,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_id_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_id_number}
                 </div>
               )}
@@ -476,7 +485,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_home_address && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_home_address}
                 </div>
               )}
@@ -507,7 +516,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_factual_address && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_factual_address}
                 </div>
               )}
@@ -538,7 +547,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_full_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_full_name}
                 </div>
               )}
@@ -569,7 +578,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_position && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_position}
                 </div>
               )}
@@ -607,7 +616,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_bank_account && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_bank_account}
                 </div>
               )}
@@ -638,7 +647,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_bank_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_bank_name}
                 </div>
               )}
@@ -670,7 +679,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_bank_swift && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_bank_swift}
                 </div>
               )}
@@ -701,7 +710,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.director_full_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.director_full_name}
                 </div>
               )}
@@ -733,7 +742,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.director_id_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.director_id_number}
                 </div>
               )}
@@ -771,7 +780,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.agreement_active_term && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.agreement_active_term}
                 </div>
               )}
@@ -847,7 +856,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.exclusive_placement && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.exclusive_placement}
                 </div>
               )}
@@ -883,7 +892,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
           onClick={() => toggleTab(activeTab - 1)}
           disabled={activeTab === 1}
         >
-          <i className="bx bx-chevron-left"></i>
+          <BsChevronLeft />
           წინა გვერდი
         </button>
 
@@ -893,7 +902,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
             onClick={handleSubmit}
           >
             დასრულება
-            <i className="bx bx-check-circle"></i>
+            <BsCheckCircle />
           </button>
         ) : (
           <button
@@ -909,7 +918,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
             disabled={activeTab === 4}
           >
             შემდეგი გვერდი
-            <i className="bx bx-chevron-right"></i>
+            <BsChevronRight />
           </button>
         )}
       </div>

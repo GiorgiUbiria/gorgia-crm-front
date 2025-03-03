@@ -10,6 +10,7 @@ import ProcurementPage from "pages/Applications/InternalProcurement/ProcurementP
 import PurchasePageApprove from "pages/Applications/InternalProcurement/PurchasePageApprove/PurchasePageApprove"
 import ProcurementPageArchive from "pages/Applications/InternalProcurement/ProcurementPageArchive"
 import UserProcurement from "pages/Applications/InternalProcurement/UserProcurements"
+import ItProcurements from "pages/Applications/InternalProcurement/ItProcurements"
 import UserVocation from "pages/Applications/Vacation/UserVocations"
 import VacationPage from "pages/Applications/Vacation/VacationPage"
 import VacationPageApprove from "pages/Applications/Vacation/VacationPageApprove/VacationPageApprove"
@@ -30,7 +31,11 @@ import FarmTaskDetails from "pages/FarmJobPages/JobDetails"
 import FarmTaskList from "pages/FarmJobPages/JobList"
 import LegalTaskList from "pages/LegalJobPages/JobList"
 import LegalTaskDetails from "pages/LegalJobPages/JobDetails"
+import OneCTaskList from "pages/OneCJobPages/JobList"
+import OneCTaskDetails from "pages/OneCJobPages/JobDetails"
 import AgreementRequest from "pages/Agreements/AgreementRequest"
+
+import EmployeeContacts from "pages/EmployeeContacts"
 
 import StandardAgreementApprove from "pages/Agreements/Standard/StandardAgreementApprove"
 import StandardAgreementArchive from "pages/Agreements/Standard/StandardAgreementArchive"
@@ -43,6 +48,10 @@ import DeliveryAgreementApprove from "pages/Agreements/Delivery/DeliveryAgreemen
 import MarketingAgreementApprove from "pages/Agreements/Marketing/MarketingAgreementApprove"
 import MarketingAgreementArchive from "pages/Agreements/Marketing/MarketingAgreementArchive"
 import MarketingAgreementUser from "pages/Agreements/Marketing/MarketingAgreementUser"
+
+import MarketingDeliveryAgreementArchive from "pages/Agreements/MarketingDelivery/DeliveryAgreementArchive"
+import MarketingDeliveryAgreementUser from "pages/Agreements/MarketingDelivery/DeliveryAgreementUser"
+import MarketingDeliveryAgreementApprove from "pages/Agreements/MarketingDelivery/DeliveryAgreementApprove"
 
 import ServiceAgreementApprove from "pages/Agreements/Service/ServiceAgreementApprove"
 import ServiceAgreementArchive from "pages/Agreements/Service/ServiceAgreementArchive"
@@ -77,6 +86,7 @@ import VacancyRequests from "pages/Vacancies/VacancyRequests"
 import VacancyRequestForm from "pages/Vacancies/VacancyRequestForm"
 import VacancyRequestDetails from "pages/Vacancies/VacancyRequestDetails"
 import MyVacancyRequests from "pages/Vacancies/MyVacancyRequests"
+import DesignForm from "pages/DesignForm"
 
 const withProtectedRoute = (component, permission = "") => (
   <ProtectedRoute permission={permission}>{component}</ProtectedRoute>
@@ -122,6 +132,13 @@ const applicationsRoutes = {
         new: {
           path: "/applications/purchases/new",
           component: withProtectedRoute(<ProcurementPage />),
+        },
+        it: {
+          path: "/applications/purchases/it",
+          component: withProtectedRoute(
+            <ItProcurements />,
+            "role:admin|department:5"
+          ),
         },
         approve: {
           path: "/applications/purchases/approve",
@@ -324,6 +341,31 @@ const legalRoutes = {
             },
           },
         },
+        marketingDelivery: {
+          path: "/legal/contracts/marketing-delivery",
+          children: {
+            approve: {
+              path: "/legal/contracts/marketing-delivery/approve",
+              component: withProtectedRoute(
+                <MarketingDeliveryAgreementApprove />,
+                "role:admin|role:department_head"
+              ),
+            },
+            archive: {
+              path: "/legal/contracts/marketing-delivery/archive",
+              component: withProtectedRoute(
+                <MarketingDeliveryAgreementArchive />,
+                "role:admin|role:department_head|role:department_head_assistant"
+              ),
+            },
+            myRequests: {
+              path: "/legal/contracts/marketing-delivery/my-requests",
+              component: withProtectedRoute(
+                <MarketingDeliveryAgreementUser />
+              ),
+            },
+          },
+        },
         service: {
           path: "/legal/contracts/service",
           children: {
@@ -409,9 +451,16 @@ const supportRoutes = {
       path: "/support/legal-tasks/:id",
       component: withProtectedRoute(<LegalTaskDetails />),
     },
+    oneCTasks: {
+      path: "/support/1c-tasks",
+      component: withProtectedRoute(<OneCTaskList />),
+    },
+    oneCTaskDetails: {
+      path: "/support/1c-tasks/:id",
+      component: withProtectedRoute(<OneCTaskDetails />),
+    },
   },
 }
-
 const communicationRoutes = {
   path: "/communication",
   children: {
@@ -451,6 +500,10 @@ const toolsRoutes = {
       path: "/tools/calendar",
       component: withProtectedRoute(<Calendar />),
     },
+    designForms: {
+      path: "/tools/design-forms",
+      component: withProtectedRoute(<DesignForm />),
+    },
     notes: {
       path: "/tools/notes",
       component: withProtectedRoute(<NotesPage />),
@@ -484,6 +537,10 @@ const toolsRoutes = {
     innerDailyResultDetails: {
       path: "/tools/inner-daily-results/:id",
       component: withProtectedRoute(<DailyInner />),
+    },
+    employeeContacts: {
+      path: "/tools/employee-contacts",
+      component: withProtectedRoute(<EmployeeContacts />),
     },
     peopleCounting: {
       path: "/tools/people-counting",
@@ -532,11 +589,29 @@ const authProtectedRoutes = [
   ...flattenRoutes(communicationRoutes),
   ...flattenRoutes(leadsRoutes),
   ...flattenRoutes(toolsRoutes),
-  { path: "/vacancy-requests", component: withProtectedRoute(<VacancyRequests />, "role:admin|role:hr") },
-  { path: "/vacancy-requests/create", component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr") },
-  { path: "/vacancy-requests/my-requests", component: withProtectedRoute(<MyVacancyRequests />, "role:admin|role:hr") },
-  { path: "/vacancy-requests/:id", component: withProtectedRoute(<VacancyRequestDetails />, "role:admin|role:hr") },
-  { path: "/vacancy-requests/:id/edit", component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr") },
+  {
+    path: "/vacancy-requests",
+    component: withProtectedRoute(<VacancyRequests />, "role:admin|role:hr"),
+  },
+  {
+    path: "/vacancy-requests/create",
+    component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr"),
+  },
+  {
+    path: "/vacancy-requests/my-requests",
+    component: withProtectedRoute(<MyVacancyRequests />, "role:admin|role:hr"),
+  },
+  {
+    path: "/vacancy-requests/:id",
+    component: withProtectedRoute(
+      <VacancyRequestDetails />,
+      "role:admin|role:hr"
+    ),
+  },
+  {
+    path: "/vacancy-requests/:id/edit",
+    component: withProtectedRoute(<VacancyRequestForm />, "role:admin|role:hr"),
+  },
 ]
 
 const publicRoutes = [

@@ -180,51 +180,63 @@ const Calendar = () => {
       <PendingInvitations />
 
       <div className="bg-white dark:!bg-gray-800 rounded-lg shadow p-6">
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={calendarEvents}
-          editable={true}
-          selectable={true}
-          selectMirror={true}
-          dayMaxEvents={true}
-          weekends={true}
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay",
-          }}
-          locale={kaLocale}
-          timeZone="Asia/Tbilisi"
-          eventClick={info => {
-            setSelectedEventId(info.event.id)
-            openModal("viewCalendarEvent")
-          }}
-          select={event => {
-            openModal("addCalendarEvent", {
-              startTime: event.startStr,
-              endTime: event.endStr,
-            })
-          }}
-          slotMinTime="07:00:00"
-          slotMaxTime="22:00:00"
-          slotDuration="00:15:00"
-          allDaySlot={true}
-          nowIndicator={true}
-          eventTimeFormat={{
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }}
-          eventDisplay="block"
-          eventClassNames="dark:!bg-opacity-80"
-          dayCellClassNames="dark:!bg-gray-800 dark:!text-gray-200"
-          slotLabelClassNames="dark:!text-gray-300"
-          dayHeaderClassNames="dark:!text-gray-200"
-          moreLinkClassNames="dark:!text-blue-400"
-          nowIndicatorClassNames="dark:!border-red-400"
-          eventPropGetter={eventStyleGetter}
-        />
+        <div className="calendar-container" style={{ height: '80vh', maxWidth: '90%', margin: '0 auto' }}>
+          <FullCalendar
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            events={calendarEvents}
+            editable={true}
+            selectable={true}
+            selectMirror={true}
+            dayMaxEvents={true}
+            weekends={true}
+            headerToolbar={{
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth,timeGridWeek,timeGridDay",
+            }}
+            locale={kaLocale}
+            timeZone="UTC"
+            eventClick={info => {
+              setSelectedEventId(info.event.id)
+              openModal("viewCalendarEvent")
+            }}
+            select={event => {
+              openModal("addCalendarEvent", {
+                startTime: event.startStr,
+                endTime: event.endStr,
+              })
+            }}
+            slotMinTime="07:00:00"
+            slotMaxTime="22:00:00"
+            slotDuration="00:15:00"
+            allDaySlot={true}
+            nowIndicator={true}
+            eventTimeFormat={{
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+              meridiem: false,
+            }}
+            slotLabelFormat={{
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+              meridiem: false,
+            }}
+            eventDisplay="block"
+            eventClassNames="dark:!bg-opacity-80"
+            dayCellClassNames="dark:!bg-gray-800 dark:!text-gray-200"
+            slotLabelClassNames="dark:!text-gray-300"
+            dayHeaderClassNames="dark:!text-gray-200"
+            moreLinkClassNames="dark:!text-blue-400"
+            nowIndicatorClassNames="dark:!border-red-400"
+            eventPropGetter={eventStyleGetter}
+            height="auto"
+            contentHeight="auto"
+            aspectRatio={1.8}
+          />
+        </div>
       </div>
 
       <div className="fixed z-[100]">

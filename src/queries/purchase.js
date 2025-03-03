@@ -12,6 +12,9 @@ import {
   updatePurchaseProduct,
   deletePurchaseProduct,
   updateProductStatus,
+  updatePurchaseReviewStatus,
+  updateProductReviewStatus,
+  getITPurchases,
 } from "../services/purchase"
 
 export const purchaseKeys = {
@@ -36,6 +39,15 @@ export const useGetPurchaseList = (filters = {}, options = {}) => {
   return useQuery({
     queryKey: purchaseKeys.list(filters),
     queryFn: () => getPurchaseList(filters),
+    select: response => response.data.data,
+    ...options,
+  })
+}
+
+export const useGetITPurchases = (options = {}) => {
+  return useQuery({
+    queryKey: purchaseKeys.list({ status: "pending IT team review" }),
+    queryFn: () => getITPurchases(),
     select: response => response.data,
     ...options,
   })
@@ -49,7 +61,11 @@ export const useGetCurrentUserPurchases = (page = 1, perPage = 15) => {
   })
 }
 
-export const useGetDepartmentPurchases = (page = 1, perPage = 15, options = {}) => {
+export const useGetDepartmentPurchases = (
+  page = 1,
+  perPage = 15,
+  options = {}
+) => {
   return useQuery({
     queryKey: purchaseKeys.departmentPurchases(page, perPage),
     queryFn: () => getDepartmentPurchases(page, perPage),
@@ -104,12 +120,20 @@ export const useUpdatePurchaseStatus = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, status, comment }) =>
-      updatePurchaseStatus(id, status, comment),
+    mutationFn: ({ id, status, comment }) => {
+      console.log('Updating purchase status:', { id, status, comment })
+      return updatePurchaseStatus(id, status, comment)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: purchaseKeys.all })
-      queryClient.invalidateQueries({ queryKey: purchaseKeys.departmentPurchases() })
+      queryClient.invalidateQueries({
+        queryKey: purchaseKeys.departmentPurchases(),
+      })
     },
+    onError: (error) => {
+      console.error('Purchase status update error:', error)
+      throw error
+    }
   })
 }
 
@@ -161,6 +185,32 @@ export const useUpdateProductStatus = () => {
   return useMutation({
     mutationFn: ({ purchaseId, productId, status, comment, file }) =>
       updateProductStatus(purchaseId, productId, status, comment, file),
+    onSuccess: (_, { purchaseId }) => {
+      queryClient.invalidateQueries({
+        queryKey: purchaseKeys.products(purchaseId),
+      })
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.all })
+    },
+  })
+}
+
+export const useUpdatePurchaseReviewStatus = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }) => updatePurchaseReviewStatus(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.all })
+    },
+  })
+}
+
+export const useUpdateProductReviewStatus = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ purchaseId, productId, data }) =>
+      updateProductReviewStatus(purchaseId, productId, data),
     onSuccess: (_, { purchaseId }) => {
       queryClient.invalidateQueries({
         queryKey: purchaseKeys.products(purchaseId),

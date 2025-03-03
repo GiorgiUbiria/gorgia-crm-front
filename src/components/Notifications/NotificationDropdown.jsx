@@ -4,6 +4,7 @@ import classNames from "classnames"
 import useNotifications from "../../hooks/useNotifications"
 import { formatDistanceToNow, isValid, parseISO } from "date-fns"
 import notificationSound from "../../assets/sounds/notification.mp3"
+import { BellIcon } from "@heroicons/react/24/outline"
 
 const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -16,7 +17,10 @@ const NotificationDropdown = () => {
   } = useNotifications()
   const [previousCount, setPreviousCount] = useState(unreadCount)
   const [hasInteracted, setHasInteracted] = useState(false)
-  const notificationAudio = React.useMemo(() => new Audio(notificationSound), [])
+  const notificationAudio = React.useMemo(
+    () => new Audio(notificationSound),
+    []
+  )
 
   const toggle = () => {
     setIsOpen(!isOpen)
@@ -160,7 +164,7 @@ const NotificationDropdown = () => {
         onClick={toggle}
         className="relative p-1.5 sm:p-2 text-gray-600 dark:!text-gray-300 hover:text-gray-700 dark:!hover:text-gray-100 transition-colors duration-200"
       >
-        <i className="bx bx-bell text-lg sm:text-xl" />
+        <BellIcon className="w-5 h-5 sm:w-6 sm:h-6" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-blue-100 dark:!bg-blue-900/30 text-[10px] sm:text-xs text-blue-600 dark:!text-blue-300 font-medium ring-1 ring-blue-200 dark:!ring-blue-700/50">
             {unreadCount}

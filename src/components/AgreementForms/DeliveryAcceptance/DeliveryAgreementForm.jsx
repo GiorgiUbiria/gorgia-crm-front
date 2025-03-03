@@ -2,6 +2,14 @@ import React, { useState } from "react"
 import classnames from "classnames"
 import { createAgreement as createDeliveryAgreement } from "services/deliveryAgreement"
 import { toast } from "store/zustand/toastStore"
+import {
+  BsBuilding,
+  BsFileEarmarkText,
+  BsChevronLeft,
+  BsChevronRight,
+  BsCheckCircle,
+  BsExclamationTriangle,
+} from "react-icons/bs"
 
 const DeliveryAgreementForm = ({ onSuccess }) => {
   const [activeTab, setActiveTab] = useState(1)
@@ -240,8 +248,8 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
         <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 dark:!bg-gray-700 -translate-y-1/2"></div>
         <div className="relative flex justify-between items-center">
           {[
-            { label: "იურიდიული ინფორმაცია", icon: "bx-building" },
-            { label: "ხელშეკრულების დეტალები", icon: "bx-file" },
+            { label: "იურიდიული ინფორმაცია", icon: <BsBuilding size={24} /> },
+            { label: "ხელშეკრულების დეტალები", icon: <BsFileEarmarkText size={24} /> },
           ].map((step, index) => (
             <div
               key={index}
@@ -272,7 +280,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
                   }
                 )}
               >
-                <i className={`bx ${step.icon} text-2xl`}></i>
+                {step.icon}
               </div>
               <div
                 className={classnames(
@@ -325,7 +333,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               />
               {errors.jursdictional_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.jursdictional_name}
                 </div>
               )}
@@ -356,7 +364,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               />
               {errors.jursdictional_address && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.jursdictional_address}
                 </div>
               )}
@@ -388,7 +396,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               />
               {errors.jursdictional_id_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.jursdictional_id_number}
                 </div>
               )}
@@ -419,7 +427,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               />
               {errors.director_full_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.director_full_name}
                 </div>
               )}
@@ -451,7 +459,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               />
               {errors.director_id_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.director_id_number}
                 </div>
               )}
@@ -488,7 +496,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               />
               {errors.agreement_date_of_issue && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.agreement_date_of_issue}
                 </div>
               )}
@@ -519,7 +527,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               />
               {errors.agreement_type && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.agreement_type}
                 </div>
               )}
@@ -550,7 +558,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               />
               {errors.action_act && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.action_act}
                 </div>
               )}
@@ -582,7 +590,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               />
               {errors.sum_cost && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.sum_cost}
                 </div>
               )}
@@ -621,7 +629,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
               </select>
               {errors.sum_cost_type && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.sum_cost_type}
                 </div>
               )}
@@ -657,7 +665,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
           onClick={() => toggleTab(activeTab - 1)}
           disabled={activeTab === 1}
         >
-          <i className="bx bx-chevron-left"></i>
+          <BsChevronLeft />
           წინა გვერდი
         </button>
 
@@ -667,7 +675,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
             onClick={handleSubmit}
           >
             დასრულება
-            <i className="bx bx-check-circle"></i>
+            <BsCheckCircle />
           </button>
         ) : (
           <button
@@ -683,7 +691,7 @@ const DeliveryAgreementForm = ({ onSuccess }) => {
             disabled={activeTab === 3}
           >
             შემდეგი გვერდი
-            <i className="bx bx-chevron-right"></i>
+            <BsChevronRight />
           </button>
         )}
       </div>

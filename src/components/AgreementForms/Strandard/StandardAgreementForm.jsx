@@ -2,6 +2,16 @@ import React, { useState, useCallback } from "react"
 import classnames from "classnames"
 import { createAgreement } from "services/agreement"
 import { toast } from "store/zustand/toastStore"
+import {
+  BsExclamationTriangle,
+  BsPlus,
+  BsPerson,
+  BsFileEarmarkText,
+  BsCurrencyDollar,
+  BsChevronLeft,
+  BsChevronRight,
+  BsCheckCircle,
+} from "react-icons/bs"
 
 const StandardAgreementForm = ({ onSuccess }) => {
   const [activeTab, setActiveTab] = useState(1)
@@ -485,9 +495,9 @@ const StandardAgreementForm = ({ onSuccess }) => {
         <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 dark:!bg-gray-700 -translate-y-1/2"></div>
         <div className="relative flex justify-between items-center">
           {[
-            { label: "ძირითადი ინფორმაცია", icon: "bx-user" },
-            { label: "ფინანსური დეტალები", icon: "bx-money" },
-            { label: "დამატებითი ინფორმაცია", icon: "bx-file" },
+            { label: "ძირითადი ინფორმაცია", icon: <BsPerson size={24} /> },
+            { label: "ფინანსური დეტალები", icon: <BsCurrencyDollar size={24}  /> },
+            { label: "დამატებითი ინფორმაცია", icon: <BsFileEarmarkText size={24} /> },
           ].map((step, index) => (
             <div
               key={index}
@@ -524,7 +534,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                   }
                 )}
               >
-                <i className={`bx ${step.icon} text-2xl`}></i>
+                {step.icon}
               </div>
               <div
                 className={classnames(
@@ -583,7 +593,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.contragent_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.contragent_name}
                 </div>
               )}
@@ -615,7 +625,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.contragent_id && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.contragent_id}
                 </div>
               )}
@@ -649,7 +659,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.contragent_address && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.contragent_address}
                 </div>
               )}
@@ -681,7 +691,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.contragent_phone_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.contragent_phone_number}
                 </div>
               )}
@@ -715,7 +725,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.contragent_email && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.contragent_email}
                 </div>
               )}
@@ -747,7 +757,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.bank_account && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.bank_account}
                 </div>
               )}
@@ -789,7 +799,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.contragent_director_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.contragent_director_name}
                 </div>
               )}
@@ -821,7 +831,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.contragent_director_phone_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.contragent_director_phone_number}
                 </div>
               )}
@@ -855,7 +865,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.conscription_term && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.conscription_term}
                 </div>
               )}
@@ -887,7 +897,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.product_delivery_address && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.product_delivery_address}
                 </div>
               )}
@@ -943,7 +953,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                 />
                 {errors.advance_payment_percentage && (
                   <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                    <i className="bx bx-error-circle"></i>
+                    <BsExclamationTriangle />
                     {errors.advance_payment_percentage}
                   </div>
                 )}
@@ -978,7 +988,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                 />
                 {errors.remaining_payment_percentage && (
                   <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                    <i className="bx bx-error-circle"></i>
+                    <BsExclamationTriangle />
                     {errors.remaining_payment_percentage}
                   </div>
                 )}
@@ -1015,7 +1025,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                 />
                 {errors.product_payment_term && (
                   <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                    <i className="bx bx-error-circle"></i>
+                    <BsExclamationTriangle />
                     {errors.product_payment_term}
                   </div>
                 )}
@@ -1058,7 +1068,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
               />
               {errors.contract_initiator_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.contract_initiator_name}
                 </div>
               )}
@@ -1075,7 +1085,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
                 onClick={handleAddProduct}
                 className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
               >
-                <i className="bx bx-plus"></i>
+                <BsPlus />
                 დამატება
               </button>
             </div>
@@ -1260,7 +1270,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
           onClick={() => toggleTab(activeTab - 1)}
           disabled={activeTab === 1}
         >
-          <i className="bx bx-chevron-left"></i>
+          <BsChevronLeft />
           წინა გვერდი
         </button>
 
@@ -1270,7 +1280,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
             onClick={handleSubmit}
           >
             დასრულება
-            <i className="bx bx-check-circle"></i>
+            <BsCheckCircle />
           </button>
         ) : (
           <button
@@ -1286,7 +1296,7 @@ const StandardAgreementForm = ({ onSuccess }) => {
             disabled={activeTab === 4}
           >
             შემდეგი გვერდი
-            <i className="bx bx-chevron-right"></i>
+            <BsChevronRight />
           </button>
         )}
       </div>
