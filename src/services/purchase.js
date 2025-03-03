@@ -205,3 +205,27 @@ export const updateProductReviewStatus = async (
     }
   )
 }
+
+export const uploadInvoice = async (purchaseId, file) => {
+  const formData = new FormData()
+  formData.append("invoice", file)
+
+  return defaultInstance.post(
+    `/api/internal-purchases/${purchaseId}/invoice`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  )
+}
+
+export const downloadInvoice = async purchaseId => {
+  return defaultInstance.get(
+    `/api/internal-purchases/${purchaseId}/invoice`,
+    {
+      responseType: "blob",
+    }
+  )
+}

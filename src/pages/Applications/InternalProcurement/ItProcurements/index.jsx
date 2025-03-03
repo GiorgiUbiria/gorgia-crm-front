@@ -92,8 +92,9 @@ const ItProcurements = () => {
     if (!selectedPurchase) return
 
     const data = {
-      review_comment: reviewComment || null,
+      review_comment: reviewComment || "განხილულია",
       file: attachmentFile,
+      review_status: "reviewed"
     }
 
     updatePurchaseReview(
@@ -320,7 +321,8 @@ const ItProcurements = () => {
       const canCompleteReview =
         row.status === "pending IT team review" &&
         (!row.products?.length ||
-          row.products?.every(p => p.review_status === "reviewed"))
+          row.products?.every(p => p.review_status === "reviewed")) &&
+        !row.has_products_attachment
 
       return (
         <div className="p-4 bg-white dark:!bg-gray-800">
@@ -352,7 +354,7 @@ const ItProcurements = () => {
                 {row.status === "pending IT team review" && (
                   <span className="text-sm text-gray-500">
                     <BiInfoCircle className="inline-block mr-1" />
-                    შეგიძლიათ განახლებული სია ატვირთოთ განხილვის დასრულებისას
+                    განახლებული სიის ატვირთვა ავტომატურად დაასრულებს განხილვას
                   </span>
                 )}
               </div>
@@ -373,6 +375,7 @@ const ItProcurements = () => {
           {row.products && row.products.length > 0 && (
             <>
               {row.status === "pending IT team review" &&
+                !row.has_products_attachment &&
                 !row.products.every(p => p.review_status === "reviewed") && (
                   <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700">
                     <div className="flex">

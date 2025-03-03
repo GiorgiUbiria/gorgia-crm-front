@@ -2,6 +2,15 @@ import React, { useState } from "react"
 import classnames from "classnames"
 import { createAgreement } from "services/serviceAgreement"
 import { toast } from "store/zustand/toastStore"
+import {
+  BsFileEarmarkText,
+  BsChevronLeft,
+  BsChevronRight,
+  BsCheckCircle,
+  BsExclamationTriangle,
+  BsPerson,
+  BsBank,
+} from "react-icons/bs"
 
 const ServiceAgreementForm = ({ onSuccess }) => {
   const [activeTab, setActiveTab] = useState(1)
@@ -321,9 +330,9 @@ const ServiceAgreementForm = ({ onSuccess }) => {
         <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 dark:!bg-gray-700 -translate-y-1/2"></div>
         <div className="relative flex justify-between items-center">
           {[
-            { label: "შემსრულებლის ინფორმაცია", icon: "bx-user" },
-            { label: "საბანკო დეტალები", icon: "bx-money" },
-            { label: "სერვისის დეტალები", icon: "bx-file" },
+            { label: "შემსრულებლის ინფორმაცია", icon: <BsPerson size={24} /> },
+            { label: "საბანკო დეტალები", icon: <BsBank size={24} /> },
+            { label: "სერვისის დეტალები", icon: <BsFileEarmarkText size={24} /> },
           ].map((step, index) => (
             <div
               key={index}
@@ -360,7 +369,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
                   }
                 )}
               >
-                <i className={`bx ${step.icon} text-2xl`}></i>
+                {step.icon}
               </div>
               <div
                 className={classnames(
@@ -415,7 +424,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_firm_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_firm_name}
                 </div>
               )}
@@ -447,7 +456,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_id_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_id_number}
                 </div>
               )}
@@ -478,7 +487,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_home_address && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_home_address}
                 </div>
               )}
@@ -509,7 +518,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_factual_address && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_factual_address}
                 </div>
               )}
@@ -540,7 +549,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_full_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_full_name}
                 </div>
               )}
@@ -571,7 +580,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_position && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_position}
                 </div>
               )}
@@ -609,7 +618,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_bank_account && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_bank_account}
                 </div>
               )}
@@ -640,7 +649,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_bank_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_bank_name}
                 </div>
               )}
@@ -672,7 +681,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_bank_swift && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_bank_swift}
                 </div>
               )}
@@ -703,7 +712,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.director_full_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.director_full_name}
                 </div>
               )}
@@ -735,7 +744,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.director_id_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.director_id_number}
                 </div>
               )}
@@ -773,7 +782,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.service_type && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.service_type}
                 </div>
               )}
@@ -804,7 +813,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.service_place && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.service_place}
                 </div>
               )}
@@ -836,7 +845,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.service_term && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.service_term}
                 </div>
               )}
@@ -869,7 +878,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.service_cost && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.service_cost}
                 </div>
               )}
@@ -900,7 +909,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.service_payment_details && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.service_payment_details}
                 </div>
               )}
@@ -931,7 +940,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
               />
               {errors.service_active_term && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.service_active_term}
                 </div>
               )}
@@ -944,7 +953,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
         <div className="flex justify-center">
           <div className="text-center max-w-lg">
             <div className="mb-4">
-              <i className="bx bx-check-circle text-6xl text-green-500"></i>
+              <BsCheckCircle className="text-6xl text-green-500" />
             </div>
             <h5 className="text-xl font-medium mb-2 text-gray-900 dark:!text-gray-100">
               ხელშეკრულება წარმატებით შეიქმნა!
@@ -969,7 +978,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
           onClick={() => toggleTab(activeTab - 1)}
           disabled={activeTab === 1}
         >
-          <i className="bx bx-chevron-left"></i>
+          <BsChevronLeft />
           წინა გვერდი
         </button>
 
@@ -979,7 +988,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
             onClick={handleSubmit}
           >
             დასრულება
-            <i className="bx bx-check-circle"></i>
+            <BsCheckCircle />
           </button>
         ) : (
           <button
@@ -995,7 +1004,7 @@ const ServiceAgreementForm = ({ onSuccess }) => {
             disabled={activeTab === 4}
           >
             შემდეგი გვერდი
-            <i className="bx bx-chevron-right"></i>
+            <BsChevronRight />
           </button>
         )}
       </div>

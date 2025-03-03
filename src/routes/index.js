@@ -49,6 +49,10 @@ import MarketingAgreementApprove from "pages/Agreements/Marketing/MarketingAgree
 import MarketingAgreementArchive from "pages/Agreements/Marketing/MarketingAgreementArchive"
 import MarketingAgreementUser from "pages/Agreements/Marketing/MarketingAgreementUser"
 
+import MarketingDeliveryAgreementArchive from "pages/Agreements/MarketingDelivery/DeliveryAgreementArchive"
+import MarketingDeliveryAgreementUser from "pages/Agreements/MarketingDelivery/DeliveryAgreementUser"
+import MarketingDeliveryAgreementApprove from "pages/Agreements/MarketingDelivery/DeliveryAgreementApprove"
+
 import ServiceAgreementApprove from "pages/Agreements/Service/ServiceAgreementApprove"
 import ServiceAgreementArchive from "pages/Agreements/Service/ServiceAgreementArchive"
 import ServiceAgreementUser from "pages/Agreements/Service/ServiceAgreementUser"
@@ -334,6 +338,31 @@ const legalRoutes = {
             myRequests: {
               path: "/legal/contracts/marketing/my-requests",
               component: withProtectedRoute(<MarketingAgreementUser />),
+            },
+          },
+        },
+        marketingDelivery: {
+          path: "/legal/contracts/marketing-delivery",
+          children: {
+            approve: {
+              path: "/legal/contracts/marketing-delivery/approve",
+              component: withProtectedRoute(
+                <MarketingDeliveryAgreementApprove />,
+                "role:admin|role:department_head"
+              ),
+            },
+            archive: {
+              path: "/legal/contracts/marketing-delivery/archive",
+              component: withProtectedRoute(
+                <MarketingDeliveryAgreementArchive />,
+                "role:admin|role:department_head|role:department_head_assistant"
+              ),
+            },
+            myRequests: {
+              path: "/legal/contracts/marketing-delivery/my-requests",
+              component: withProtectedRoute(
+                <MarketingDeliveryAgreementUser />
+              ),
             },
           },
         },

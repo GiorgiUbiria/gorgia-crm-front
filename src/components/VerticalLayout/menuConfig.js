@@ -334,6 +334,33 @@ const getMenuItems = can => {
           ],
         },
         {
+          key: "marketing-delivery",
+          label: "მარკეტინგული მიღება-ჩაბარების აქტი",
+          icon: LuFileCode,
+          submenu: [
+            {
+              to: "/legal/contracts/marketing-delivery/approve",
+              label: "ვიზირება",
+              icon: LuShieldCheck,
+              show: () => can("role:admin|role:department_head"),
+            },
+            {
+              to: "/legal/contracts/marketing-delivery/archive",
+              label: "არქივი",
+              icon: LuArchive,
+              show: () =>
+                can(
+                  "role:admin|role:department_head|role:department_head_assistant"
+                ),
+            },
+            {
+              to: "/legal/contracts/marketing-delivery/my-requests",
+              label: "გაგზავნილი",
+              icon: LuFileText,
+            },
+          ],
+        },
+        {
           key: "service",
           label: "მომსახურების ხელშეკრულება",
           icon: LuFileCode,
@@ -428,7 +455,6 @@ const getMenuItems = can => {
       to: "/tools/employee-contacts",
       icon: LuFilter,
       label: "საკომუნიკაციო ბაზა",
-      show: () => can("role:admin|department:8"),
     },
     {
       to: "/tools/people-counting",

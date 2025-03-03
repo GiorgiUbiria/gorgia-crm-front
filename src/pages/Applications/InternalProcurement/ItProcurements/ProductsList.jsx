@@ -17,15 +17,47 @@ const ProductsList = memo(({ purchase }) => {
     useUpdateProductReviewStatus()
   const { mutate: updatePurchaseReview, isLoading: isPurchaseReviewLoading } = useUpdatePurchaseReviewStatus()
 
+  const handleCompleteReview = useCallback(() => {
+    const comment = selectedFile
+      ? (reviewComment || "განახლებული პროდუქტების სია ატვირთულია")
+      : "განხილულია"
+
+    const data = {
+      review_comment: comment,
+      review_status: "reviewed"
+    }
+
+    if (selectedFile) {
+      data.file = selectedFile
+    }
+
+    updatePurchaseReview(
+      {
+        id: purchase.id,
+        data,
+      },
+      {
+        onSuccess: () => {
+          setIsReviewDialogOpen(false)
+          setSelectedFile(null)
+          setReviewComment("")
+        },
+        onError: err => {
+          console.error("Error completing review:", err)
+          alert(err.response?.data?.message || "შეცდომა განხილვის დასრულებისას")
+        },
+      }
+    )
+  }, [purchase.id, updatePurchaseReview, selectedFile, reviewComment])
+
   const handleReview = useCallback(
     (product, isQuickReview = false) => {
       const data = {
         review_comment: isQuickReview
-          ? isInStock
-            ? "პროდუქტი მარაგშია"
-            : "განხილულია IT გუნდის მიერ"
-          : reviewComment || "განხილულია IT გუნდის მიერ",
+          ? "განხილულია"
+          : reviewComment || "განხილულია",
         in_stock: isInStock,
+        review_status: "reviewed"
       }
 
       updateProductReview(
@@ -64,39 +96,37 @@ const ProductsList = memo(({ purchase }) => {
       isInStock,
       reviewComment,
       updateProductReview,
+      handleCompleteReview
     ]
   )
-
-  const handleCompleteReview = useCallback(() => {
-    const data = {
-      review_comment: reviewComment || "IT გუნდის განხილვა დასრულებულია",
-    }
-
-    if (selectedFile) {
-      data.file = selectedFile
-    }
-
-    updatePurchaseReview(
-      {
-        id: purchase.id,
-        data,
-      },
-      {
-        onSuccess: () => {
-          setIsReviewDialogOpen(false)
-          setSelectedFile(null)
-        },
-        onError: err => {
-          console.error("Error completing review:", err)
-          alert(err.response?.data?.message || "შეცდომა განხილვის დასრულებისას")
-        },
-      }
-    )
-  }, [purchase.id, updatePurchaseReview, selectedFile, reviewComment])
 
   const handleQuickReviewAll = useCallback(() => {
     const unreviewedProducts = purchase.products.filter(p => p.review_status !== "reviewed")
 
+    // If there are no unreviewed products, just update the purchase
+    if (unreviewedProducts.length === 0) {
+      updatePurchaseReview(
+        {
+          id: purchase.id,
+          data: {
+            review_comment: "განხილულია",
+            review_status: "reviewed"
+          },
+        },
+        {
+          onSuccess: () => {
+            // Success handling
+          },
+          onError: err => {
+            console.error("Error completing purchase review:", err)
+            alert("შეცდომა შესყიდვის განხილვის დასრულებისას")
+          },
+        }
+      )
+      return
+    }
+
+    // Otherwise, update all unreviewed products first
     const reviewPromises = unreviewedProducts.map(product =>
       new Promise((resolve, reject) => {
         updateProductReview(
@@ -104,8 +134,9 @@ const ProductsList = memo(({ purchase }) => {
             purchaseId: purchase.id,
             productId: product.id,
             data: {
-              review_comment: "განხილულია IT გუნდის მიერ",
+              review_comment: "განხილულია",
               in_stock: false,
+              review_status: "reviewed"
             },
           },
           {
@@ -118,13 +149,119 @@ const ProductsList = memo(({ purchase }) => {
 
     Promise.all(reviewPromises)
       .then(() => {
-        handleCompleteReview()
+        setReviewComment("განხილულია")
+        updatePurchaseReview(
+          {
+            id: purchase.id,
+            data: {
+              review_comment: "განხილულია",
+              review_status: "reviewed"
+            },
+          },
+          {
+            onSuccess: () => {
+              // Success handling
+            },
+            onError: err => {
+              console.error("Error completing purchase review:", err)
+              alert("შეცდომა შესყიდვის განხილვის დასრულებისას")
+            },
+          }
+        )
       })
       .catch(err => {
         console.error("Error during quick review:", err)
         alert("შეცდომა სწრაფი განხილვისას")
       })
-  }, [purchase, updateProductReview, handleCompleteReview])
+  }, [purchase, updateProductReview, updatePurchaseReview])
+
+  const handleFileUploadReview = useCallback(() => {
+    if (!selectedFile) return
+
+    // First update all products to have the comment "განხილულია ფაილში"
+    const unreviewedProducts = purchase.products.filter(p => p.review_status !== "reviewed")
+
+    // If there are no products or all products are already reviewed, just update the purchase
+    if (unreviewedProducts.length === 0) {
+      const data = {
+        review_comment: reviewComment || "განახლებული პროდუქტების სია ატვირთულია",
+        file: selectedFile,
+        review_status: "reviewed" // Explicitly set the review status to "reviewed"
+      }
+
+      updatePurchaseReview(
+        {
+          id: purchase.id,
+          data,
+        },
+        {
+          onSuccess: () => {
+            setIsReviewDialogOpen(false)
+            setSelectedFile(null)
+            setReviewComment("")
+          },
+          onError: err => {
+            console.error("Error completing review:", err)
+            alert(err.response?.data?.message || "შეცდომა განხილვის დასრულებისას")
+          },
+        }
+      )
+      return
+    }
+
+    // Otherwise, update all unreviewed products first
+    const reviewPromises = unreviewedProducts.map(product =>
+      new Promise((resolve, reject) => {
+        updateProductReview(
+          {
+            purchaseId: purchase.id,
+            productId: product.id,
+            data: {
+              review_comment: "განხილულია ფაილში",
+              in_stock: false,
+              review_status: "reviewed" // Explicitly set review_status for each product
+            },
+          },
+          {
+            onSuccess: resolve,
+            onError: reject,
+          }
+        )
+      })
+    )
+
+    // After all products are reviewed, complete the purchase review with the file
+    Promise.all(reviewPromises)
+      .then(() => {
+        const data = {
+          review_comment: reviewComment || "განახლებული პროდუქტების სია ატვირთულია",
+          file: selectedFile,
+          review_status: "reviewed" // Explicitly set the review status to "reviewed"
+        }
+
+        updatePurchaseReview(
+          {
+            id: purchase.id,
+            data,
+          },
+          {
+            onSuccess: () => {
+              setIsReviewDialogOpen(false)
+              setSelectedFile(null)
+              setReviewComment("")
+            },
+            onError: err => {
+              console.error("Error completing review:", err)
+              alert(err.response?.data?.message || "შეცდომა განხილვის დასრულებისას")
+            },
+          }
+        )
+      })
+      .catch(err => {
+        console.error("Error during file upload review:", err)
+        alert("შეცდომა ფაილის ატვირთვისას")
+      })
+  }, [purchase.id, purchase.products, selectedFile, reviewComment, updateProductReview, updatePurchaseReview])
 
   const getInStockLabel = (inStock) => {
     if (inStock === true) return "დიახ"
@@ -145,13 +282,17 @@ const ProductsList = memo(({ purchase }) => {
           <div className="flex gap-2">
             {purchase.has_products_attachment && (
               <button
-                onClick={() => setIsReviewDialogOpen(true)}
+                onClick={() => {
+                  setEditingProduct(null)
+                  setReviewComment("")
+                  setIsReviewDialogOpen(true)
+                }}
                 className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:!bg-blue-500 dark:!hover:bg-blue-600 transition-colors"
               >
                 ატვირთე განახლებული სია
               </button>
             )}
-            {purchase.products.length > 0 && (
+            {purchase.products.length > 0 && !purchase.has_products_attachment && (
               <button
                 onClick={handleQuickReviewAll}
                 className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:!bg-green-500 dark:!hover:bg-green-600 transition-colors"
@@ -224,30 +365,39 @@ const ProductsList = memo(({ purchase }) => {
                     </span>
                   </td>
                   <td className="px-4 py-2">
-                    {product.review_status !== "reviewed" && purchase.status === "pending IT team review" && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            setEditingProduct(product)
-                            setReviewComment("")
-                            setIsInStock(null)
-                            setIsReviewDialogOpen(true)
-                          }}
-                          className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:!bg-blue-500 dark:!hover:bg-blue-600 transition-colors"
-                        >
-                          განხილვა
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsInStock(false)
-                            handleReview(product, true)
-                          }}
-                          className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:!bg-green-500 dark:!hover:bg-green-600 transition-colors"
-                        >
-                          განხილულია
-                        </button>
-                      </div>
-                    )}
+                    {product.review_status !== "reviewed" &&
+                      purchase.status === "pending IT team review" &&
+                      !purchase.has_products_attachment && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingProduct(product)
+                              setReviewComment("")
+                              setIsInStock(null)
+                              setIsReviewDialogOpen(true)
+                            }}
+                            className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:!bg-blue-500 dark:!hover:bg-blue-600 transition-colors"
+                          >
+                            განხილვა
+                          </button>
+                          <button
+                            onClick={() => {
+                              setIsInStock(false)
+                              handleReview(product, true)
+                            }}
+                            className="inline-flex items-center px-2 py-1 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:!bg-green-500 dark:!hover:bg-green-600 transition-colors"
+                          >
+                            განხილულია
+                          </button>
+                        </div>
+                      )}
+                    {product.review_status !== "reviewed" &&
+                      purchase.status === "pending IT team review" &&
+                      purchase.has_products_attachment && (
+                        <div className="text-sm text-gray-500 italic">
+                          განხილვა მოხდება ფაილის ატვირთვით
+                        </div>
+                      )}
                   </td>
                 </tr>
               ))}
@@ -347,6 +497,10 @@ const ProductsList = memo(({ purchase }) => {
               <small className="text-gray-500 dark:!text-gray-400 mt-1 block">
                 მაქსიმალური ზომა: 10MB. დაშვებული ფორმატები: XLS, XLSX
               </small>
+              <small className="text-blue-600 dark:!text-blue-400 mt-2 block">
+                <BiInfoCircle className="inline-block mr-1" />
+                ფაილის ატვირთვა ავტომატურად დაასრულებს ყველა პროდუქტის და მთლიანი შესყიდვის განხილვას
+              </small>
             </div>
           )}
 
@@ -363,7 +517,15 @@ const ProductsList = memo(({ purchase }) => {
             />
             <DialogButton
               actionType="approve"
-              onClick={() => editingProduct ? handleReview(editingProduct) : handleCompleteReview()}
+              onClick={() => {
+                if (editingProduct) {
+                  handleReview(editingProduct)
+                } else if (selectedFile) {
+                  handleFileUploadReview()
+                } else {
+                  handleCompleteReview()
+                }
+              }}
               disabled={isProductReviewLoading || isPurchaseReviewLoading || (purchase.has_products_attachment && !editingProduct && !selectedFile)}
             />
           </div>

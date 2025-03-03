@@ -2,6 +2,15 @@ import React, { useState } from "react"
 import classnames from "classnames"
 import { createAgreement } from "services/marketingAgreement"
 import { toast } from "store/zustand/toastStore"
+import {
+  BsBank,
+  BsFileEarmarkText,
+  BsPerson,
+  BsChevronLeft,
+  BsChevronRight,
+  BsCheckCircle,
+  BsExclamationTriangle,
+} from "react-icons/bs"
 
 const MarketingAgreementForm = ({ onSuccess }) => {
   const [activeTab, setActiveTab] = useState(1)
@@ -361,9 +370,9 @@ const MarketingAgreementForm = ({ onSuccess }) => {
         <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 dark:!bg-gray-700 -translate-y-1/2"></div>
         <div className="relative flex justify-between items-center">
           {[
-            { label: "შემსრულებლის ინფორმაცია", icon: "bx-user" },
-            { label: "საბანკო დეტალები", icon: "bx-money" },
-            { label: "სერვისის დეტალები", icon: "bx-file" },
+            { label: "შემსრულებლის ინფორმაცია", icon: <BsPerson size={24} /> },
+            { label: "საბანკო დეტალები", icon: <BsBank size={24} /> },
+            { label: "სერვისის დეტალები", icon: <BsFileEarmarkText size={24} /> },
           ].map((step, index) => (
             <div
               key={index}
@@ -400,7 +409,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
                   }
                 )}
               >
-                <i className={`bx ${step.icon} text-2xl`}></i>
+                {step.icon}
               </div>
               <div
                 className={classnames(
@@ -455,7 +464,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_firm_name && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_firm_name}
                 </div>
               )}
@@ -487,7 +496,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_id_number && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_id_number}
                 </div>
               )}
@@ -518,7 +527,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_home_address && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_home_address}
                 </div>
               )}
@@ -549,7 +558,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_factual_address && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_factual_address}
                 </div>
               )}
@@ -580,7 +589,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_full_name && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_full_name}
                 </div>
               )}
@@ -611,7 +620,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_position && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_position}
                 </div>
               )}
@@ -649,7 +658,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_bank_account && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_bank_account}
                 </div>
               )}
@@ -680,7 +689,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_bank_name && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_bank_name}
                 </div>
               )}
@@ -712,7 +721,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.executor_bank_swift && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.executor_bank_swift}
                 </div>
               )}
@@ -743,7 +752,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.director_full_name && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.director_full_name}
                 </div>
               )}
@@ -775,7 +784,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.director_id_number && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.director_id_number}
                 </div>
               )}
@@ -813,7 +822,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.marketing_service_type && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.marketing_service_type}
                 </div>
               )}
@@ -844,7 +853,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.marketing_service_start_date && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.marketing_service_start_date}
                 </div>
               )}
@@ -878,7 +887,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.marketing_service_end_date && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.marketing_service_end_date}
                 </div>
               )}
@@ -911,7 +920,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.service_cost && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.service_cost}
                 </div>
               )}
@@ -942,7 +951,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.service_payment_details && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.service_payment_details}
                 </div>
               )}
@@ -973,7 +982,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
               />
               {errors.service_active_term && (
                 <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <i className="bx bx-error-circle"></i>
+                  <BsExclamationTriangle />
                   {errors.service_active_term}
                 </div>
               )}
@@ -994,7 +1003,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
           onClick={() => toggleTab(activeTab - 1)}
           disabled={activeTab === 1}
         >
-          <i className="bx bx-chevron-left"></i>
+          <BsChevronLeft />
           წინა გვერდი
         </button>
 
@@ -1004,7 +1013,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
             onClick={handleSubmit}
           >
             დასრულება
-            <i className="bx bx-check-circle"></i>
+            <BsCheckCircle />
           </button>
         ) : (
           <button
@@ -1019,7 +1028,7 @@ const MarketingAgreementForm = ({ onSuccess }) => {
             disabled={activeTab === 4}
           >
             შემდეგი გვერდი
-            <i className="bx bx-chevron-right"></i>
+            <BsChevronRight />
           </button>
         )}
       </div>

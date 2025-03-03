@@ -27,6 +27,7 @@ import {
   BiMessageAltX,
   BiLink,
   BiDownload,
+  BiUpload,
 } from "react-icons/bi"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import {
@@ -36,11 +37,14 @@ import {
 import {
   downloadPurchaseProduct,
   downloadPurchase,
+  downloadInvoice,
 } from "../../../../services/purchase"
 import { DownloadButton } from "../../../../components/CrmActionButtons/ActionButtons"
 import useAuth from "hooks/useAuth"
 import { useTheme } from "../../../../hooks/useTheme"
 import classNames from "classnames"
+import { toast } from "store/zustand/toastStore"
+
 
 const statusMap = {
   "pending department head": {
@@ -317,7 +321,41 @@ const ProcurementPageArchive = () => {
         window.URL.revokeObjectURL(url)
       } catch (error) {
         console.error("Error downloading file:", error)
-        alert("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
+        toast.error("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
+      }
+    }
+
+    const handleDownloadInvoice = async purchaseId => {
+      try {
+        const response = await downloadInvoice(purchaseId)
+
+        const contentDisposition = response.headers["content-disposition"]
+        let filename = `purchase_${purchaseId}_invoice`
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(
+            /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+          )
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, "")
+          }
+        }
+
+        const blob = new Blob([response.data], {
+          type: response.headers["content-type"] || "application/octet-stream",
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.setAttribute("download", filename)
+        document.body.appendChild(link)
+        link.click()
+
+        link.parentNode.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error("Error downloading invoice:", error)
+        toast.error("ხელშეკრულების ჩამოტვირთვა ვერ მოხერხდა")
       }
     }
 
@@ -419,6 +457,20 @@ const ProcurementPageArchive = () => {
           "N/A"
         ),
         icon: <BiDownload className="dark:!text-gray-300" />,
+      },
+      {
+        label: "ხელშეკრულება",
+        value: rowData.status === "completed" && rowData.invoice_attachment ? (
+          <button
+            onClick={() => handleDownloadInvoice(rowData.id)}
+            className="btn btn-link btn-sm p-0 text-primary dark:!text-primary-400"
+          >
+            ჩამოტვირთვა
+          </button>
+        ) : (
+          "N/A"
+        ),
+        icon: <BiUpload className="dark:!text-gray-300" />,
       },
     ]
 

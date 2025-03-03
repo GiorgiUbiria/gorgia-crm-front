@@ -1,37 +1,35 @@
 import React, { useState } from "react"
 import classnames from "classnames"
-import { createAgreement } from "services/localAgreement"
+import { createAgreement as createDeliveryAgreement } from "services/marketingDeliveryAgreement"
 import { toast } from "store/zustand/toastStore"
 import {
+  BsBuilding,
   BsFileEarmarkText,
+  BsInfoCircle,
   BsChevronLeft,
   BsChevronRight,
   BsCheckCircle,
-  BsPerson,
-  BsBank,
-  BsExclamationTriangle,
 } from "react-icons/bs"
 
-const LocalAgreementForm = ({ onSuccess }) => {
+const MarketingDeliveryAgreementForm = ({ onSuccess }) => {
   const [activeTab, setActiveTab] = useState(1)
   const [passedSteps, setPassedSteps] = useState([1])
   const [errors, setErrors] = useState({})
   const [formData, setFormData] = useState({
-    executor_firm_name: "",
-    executor_id_number: "",
-    executor_home_address: "",
-    executor_factual_address: "",
-    executor_full_name: "",
-    executor_position: "",
-    executor_bank_account: "",
-    executor_bank_name: "",
-    executor_bank_swift: "",
+    jursdictional_name: "",
+    jursdictional_address: "",
+    jursdictional_id_number: "",
+    agreement_date_of_issue: "",
+    agreement_type: "",
+    bank_account_number: "",
+    description: "",
+    responsible_person_full_name: "",
+    responsible_person_id_number: "00000000000",
+    sum_cost: "",
+    sum_cost_type: "",
+    file_path: "",
     director_full_name: "",
     director_id_number: "",
-    file_path: "",
-    agreement_automatic_renewal: false,
-    exclusivity: false,
-    exclusive_placement: "",
   })
 
   const handleInputChange = e => {
@@ -46,44 +44,48 @@ const LocalAgreementForm = ({ onSuccess }) => {
   const validateField = (field, value) => {
     let errorMsg = ""
 
-    if (value === undefined) return true
-
     switch (field) {
-      case "executor_firm_name":
-      case "executor_home_address":
-      case "executor_factual_address":
-      case "executor_full_name":
-      case "executor_position":
-      case "executor_bank_account":
-      case "executor_bank_name":
+      case "jursdictional_name":
+      case "jursdictional_address":
+      case "agreement_type":
+      case "description":
+      case "sum_cost_type":
+      case "bank_account_number":
+      case "responsible_person_full_name":
       case "director_full_name":
-        if (!value?.trim()) errorMsg = "ველი აუცილებელია"
+        if (!value) errorMsg = "ველი არ შეიძლება იყოს ცარიელი"
         else if (value.length > 255)
           errorMsg = "მაქსიმალური სიგრძეა 255 სიმბოლო"
         break
-      case "exclusive_placement":
-        if (formData.exclusivity && !value?.trim())
-          errorMsg = "ველი აუცილებელია"
-        else if (value?.length > 255)
-          errorMsg = "მაქსიმალური სიგრძეა 255 სიმბოლო"
-        break
-      case "executor_id_number":
+      case "jursdictional_id_number":
       case "director_id_number":
-        if (!value) errorMsg = "ველი აუცილებელია"
+        if (!value) errorMsg = "ველი არ შეიძლება იყოს ცარიელი"
         else if (value.length < 9 || value.length > 11)
           errorMsg = "უნდა შედგებოდეს 9-დან 11 სიმბოლომდე"
         break
-      case "executor_bank_swift":
-        if (!value) errorMsg = "ველი აუცილებელია"
-        else if (value.length !== 8) errorMsg = "უნდა შედგებოდეს 8 სიმბოლოსგან"
+      case "agreement_date_of_issue":
+        if (!value) errorMsg = "ველი არ შეიძლება იყოს ცარიელი"
+        else {
+          const date = new Date(value)
+          if (isNaN(date.getTime())) errorMsg = "უნდა იყოს ვალიდური თარიღი"
+        }
         break
-      case "agreement_active_term":
-        if (!value) errorMsg = "ველი აუცილებელია"
-        else if (new Date(value) <= new Date())
-          errorMsg = "თარიღი უნდა იყოს მომავალში"
+      case "sum_cost":
+        if (!value) errorMsg = "ველი არ შეიძლება იყოს ცარიელი"
+        else if (isNaN(value) || Number(value) < 0)
+          errorMsg = "უნდა იყოს ნლზე მეტი რიცხვი"
+        else {
+          const decimalPlaces = value.toString().split(".")[1]?.length || 0
+          if (decimalPlaces > 2)
+            errorMsg = "უნდა შედგებოდეს მაქსიმუმ 2 ათწილადი"
+        }
+        break
+      case "file_path":
+        if (value && value.length > 255)
+          errorMsg = "მაქსიმალური სიგრძეა 255 სიმბოლო"
         break
       default:
-        console.warn(`No validation rule for field: ${field}`)
+        console.warn(`ველს არ გააჩნია ვალიდაცია: ${field}`)
     }
 
     setErrors(prevErrors => ({
@@ -97,15 +99,6 @@ const LocalAgreementForm = ({ onSuccess }) => {
   const validateForm = () => {
     let isValid = true
     Object.keys(formData).forEach(field => {
-      if (field === "exclusive_placement" && !formData.exclusivity) {
-        return
-      }
-      if (field === "file_path") {
-        return
-      }
-      if (field === "agreement_automatic_renewal" || field === "exclusivity") {
-        return
-      }
       if (!validateField(field, formData[field])) {
         isValid = false
       }
@@ -127,57 +120,54 @@ const LocalAgreementForm = ({ onSuccess }) => {
     }
 
     toast.info("მიმდინარეობს დამუშავება...", "დამუშავება", {
-      duration: false,
+      duration: 2000,
+      size: "small",
     })
 
     const formDataToSend = new FormData()
 
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === "exclusive_placement") {
-        formDataToSend.append(
-          key,
-          formData.exclusivity ? value : "არ არის მითითებული"
-        )
-        return
-      }
-
-      if (value !== "" && value !== null && value !== undefined) {
-        if (key === "agreement_automatic_renewal" || key === "exclusivity") {
-          formDataToSend.append(key, value === true ? "1" : "0")
+    Object.keys(formData).forEach(key => {
+      if (
+        formData[key] !== "" &&
+        formData[key] !== null &&
+        formData[key] !== undefined
+      ) {
+        if (key === "sum_cost") {
+          formDataToSend.append(key, parseFloat(formData[key]).toFixed(2))
         } else {
-          formDataToSend.append(key, value)
+          formDataToSend.append(key, formData[key])
         }
       }
     })
 
+    formDataToSend.append("status", "pending")
+
     try {
-      const response = await createAgreement(formDataToSend)
+      const response = await createDeliveryAgreement(formDataToSend)
 
       if (response) {
-        toast.success("ხელშეკრულება წარმატებით შეიქმნა", "წარმატება", {
+        toast.success("მიღება-ჩაბარების აქტი წარმატებით შეიქმნა", "წარმატება", {
           duration: 2000,
           size: "small",
         })
         setFormData({
-          executor_firm_name: "",
-          executor_id_number: "",
-          executor_home_address: "",
-          executor_factual_address: "",
-          executor_full_name: "",
-          executor_position: "",
-          executor_bank_account: "",
-          executor_bank_name: "",
-          executor_bank_swift: "",
+          jursdictional_name: "",
+          jursdictional_address: "",
+          jursdictional_id_number: "",
+          agreement_date_of_issue: "",
+          agreement_type: "",
+          bank_account_number: "",
+          description: "",
+          responsible_person_full_name: "",
+          responsible_person_id_number: "00000000000",
+          sum_cost: "",
+          sum_cost_type: "",
+          file_path: "",
           director_full_name: "",
           director_id_number: "",
-          file_path: "",
-          agreement_active_term: "",
-          agreement_automatic_renewal: false,
-          exclusivity: false,
-          exclusive_placement: "",
         })
-        setActiveTab(4)
-        setPassedSteps(prevSteps => [...prevSteps, 4])
+        setActiveTab(3)
+        setPassedSteps(prevSteps => [...prevSteps, 3])
         setErrors({})
         onSuccess?.()
       }
@@ -205,35 +195,29 @@ const LocalAgreementForm = ({ onSuccess }) => {
             size: "small",
           })
           break
-        case 422: {
-          const validationErrors = error.response.data.errors
-          Object.keys(validationErrors).forEach(key => {
-            toast.error(validationErrors[key][0], "შეცდომა", {
-              duration: 2000,
-              size: "small",
+        case 422:
+          {
+            const validationErrors = error.response.data.errors
+            Object.keys(validationErrors).forEach(key => {
+              toast.error(validationErrors[key][0], "შეცდომა", {
+                duration: 2000,
+                size: "small",
+              })
             })
+          }
+          break
+        case 500:
+          console.log(error.response)
+          toast.error("სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით", "შეცდომა", {
+            duration: 2000,
+            size: "small",
           })
           break
-        }
-        case 500:
-          toast.error(
-            "სერვერის შეცდომა. გთხოვთ სცადოთ მოგვიანებით",
-            "შეცდომა",
-            {
-              duration: 2000,
-              size: "small",
-            }
-          )
-          break
         default:
-          toast.error(
-            "დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით",
-            "შეცდომა",
-            {
-              duration: 2000,
-              size: "small",
-            }
-          )
+          toast.error("დაფიქსირდა შეცდომა. გთხოვთ სცადოთ მოგვიანებით", "შეცდომა", {
+            duration: 2000,
+            size: "small",
+          })
       }
     } else if (error.request) {
       toast.error(
@@ -266,71 +250,15 @@ const LocalAgreementForm = ({ onSuccess }) => {
     }
   }
 
-  const hasStepErrors = stepNumber => {
-    const stepFields = {
-      1: [
-        "executor_firm_name",
-        "executor_id_number",
-        "executor_home_address",
-        "executor_factual_address",
-        "executor_full_name",
-        "executor_position",
-      ],
-      2: [
-        "executor_bank_account",
-        "executor_bank_name",
-        "executor_bank_swift",
-        "director_full_name",
-        "director_id_number",
-      ],
-      3: [
-        "agreement_active_term",
-        "exclusivity",
-        "exclusive_placement",
-        "agreement_automatic_renewal",
-      ],
-    }
-
-    return stepFields[stepNumber]?.some(field => errors[field])
-  }
-
-  const hasStepData = stepNumber => {
-    const stepFields = {
-      1: [
-        "executor_firm_name",
-        "executor_id_number",
-        "executor_home_address",
-        "executor_factual_address",
-        "executor_full_name",
-        "executor_position",
-      ],
-      2: [
-        "executor_bank_account",
-        "executor_bank_name",
-        "executor_bank_swift",
-        "director_full_name",
-        "director_id_number",
-      ],
-      3: [
-        "agreement_active_term",
-        "exclusivity",
-        "exclusive_placement",
-        "agreement_automatic_renewal",
-      ],
-    }
-
-    return stepFields[stepNumber]?.some(field => formData[field])
-  }
-
   return (
     <div className="p-4">
       <div className="relative mb-12">
         <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 dark:!bg-gray-700 -translate-y-1/2"></div>
         <div className="relative flex justify-between items-center">
           {[
-            { label: "შემსრულებლის ინფორმაცია", icon: <BsPerson size={24} /> },
-            { label: "საბანკო დეტალები", icon: <BsBank size={24} /> },
+            { label: "იურიდიული ინფორმაცია", icon: <BsBuilding size={24} /> },
             { label: "ხელშეკრულების დეტალები", icon: <BsFileEarmarkText size={24} /> },
+            { label: "დამატებითი ინფორმაცია", icon: <BsInfoCircle size={24} /> },
           ].map((step, index) => (
             <div
               key={index}
@@ -338,8 +266,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
                 "flex flex-col items-center relative z-10 transition-all duration-200",
                 {
                   "cursor-pointer": passedSteps.includes(index + 1),
-                  "cursor-not-allowed":
-                    !passedSteps.includes(index + 1) && !hasStepData(index + 1),
+                  "cursor-not-allowed": !passedSteps.includes(index + 1),
                 }
               )}
               onClick={() =>
@@ -354,14 +281,9 @@ const LocalAgreementForm = ({ onSuccess }) => {
                       activeTab === index + 1,
                     "bg-green-600 border-green-700 text-white":
                       passedSteps.includes(index + 1) &&
-                      !hasStepErrors(index + 1) &&
                       activeTab !== index + 1,
-                    "bg-red-600 border-red-700 text-white": hasStepErrors(
-                      index + 1
-                    ),
                     "bg-gray-200 border-gray-300 text-gray-500 dark:!bg-gray-700 dark:!border-gray-600 dark:!text-gray-400":
-                      !passedSteps.includes(index + 1) &&
-                      !hasStepData(index + 1),
+                      !passedSteps.includes(index + 1),
                     "shadow-lg": activeTab === index + 1,
                     "scale-110": activeTab === index + 1,
                   }
@@ -377,12 +299,10 @@ const LocalAgreementForm = ({ onSuccess }) => {
                       activeTab === index + 1,
                     "text-green-600 dark:!text-green-400":
                       passedSteps.includes(index + 1) &&
-                      !hasStepErrors(index + 1) &&
                       activeTab !== index + 1,
-                    "text-red-600 dark:!text-red-400": hasStepErrors(index + 1),
-                    "text-gray-500 dark:!text-gray-400":
-                      !passedSteps.includes(index + 1) &&
-                      !hasStepData(index + 1),
+                    "text-gray-500 dark:!text-gray-400": !passedSteps.includes(
+                      index + 1
+                    ),
                   }
                 )}
               >
@@ -398,289 +318,95 @@ const LocalAgreementForm = ({ onSuccess }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <label
-                htmlFor="executor_firm_name"
+                htmlFor="jursdictional_name"
                 className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
-                შემსრულებელი ფირმის დასახელება
+                იურიდიული დასახელება
               </label>
               <input
                 type="text"
-                id="executor_firm_name"
+                id="jursdictional_name"
                 className={classnames(
                   "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
                   {
                     "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.executor_firm_name,
+                      errors.jursdictional_name,
                     "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.executor_firm_name,
+                      !errors.jursdictional_name,
                     "dark:!bg-gray-800 dark:!text-white": true,
                   }
                 )}
-                value={formData.executor_firm_name}
+                value={formData.jursdictional_name}
                 onChange={handleInputChange}
-                placeholder="ჩაწერეთ ფირმის დასახელება..."
+                placeholder="ჩაწერეთ იურიდიული დასახელება..."
               />
-              {errors.executor_firm_name && (
+              {errors.jursdictional_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.executor_firm_name}
+                  <BsInfoCircle />
+                  {errors.jursdictional_name}
                 </div>
               )}
             </div>
             <div>
               <label
-                htmlFor="executor_id_number"
+                htmlFor="jursdictional_address"
                 className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
               >
-                საიდენტიფიკაციო ნომერი
+                იურიდიული მიამართი/ფაქტიური მისამართი
               </label>
               <input
                 type="text"
-                id="executor_id_number"
+                id="jursdictional_address"
                 className={classnames(
                   "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
                   {
                     "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.executor_id_number,
+                      errors.jursdictional_address,
                     "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.executor_id_number,
+                      !errors.jursdictional_address,
                     "dark:!bg-gray-800 dark:!text-white": true,
                   }
                 )}
-                value={formData.executor_id_number}
+                value={formData.jursdictional_address}
                 onChange={handleInputChange}
-                placeholder="ჩაწერეთ 11-ნიშნა საიდენტიფიკაციო ნომერი..."
+                placeholder="ჩაწერეთ იურიდიული/ფაქტიური მისამართი..."
+              />
+              {errors.jursdictional_address && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <BsInfoCircle />
+                  {errors.jursdictional_address}
+                </div>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="jursdictional_id_number"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                საიდენტიფიკაციო კოდი/პირადი ნომერი
+              </label>
+              <input
+                type="text"
+                id="jursdictional_id_number"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.jursdictional_id_number,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.jursdictional_id_number,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                value={formData.jursdictional_id_number}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ საიდენტიფიკაციო კოდი/პირადი ნომერი..."
                 maxLength={11}
               />
-              {errors.executor_id_number && (
+              {errors.jursdictional_id_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.executor_id_number}
-                </div>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="executor_home_address"
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
-              >
-                იურიდიული მისამართი
-              </label>
-              <input
-                type="text"
-                id="executor_home_address"
-                className={classnames(
-                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
-                  {
-                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.executor_home_address,
-                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.executor_home_address,
-                    "dark:!bg-gray-800 dark:!text-white": true,
-                  }
-                )}
-                value={formData.executor_home_address}
-                onChange={handleInputChange}
-                placeholder="ჩაწერეთ იურიდიული მისამართი..."
-              />
-              {errors.executor_home_address && (
-                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.executor_home_address}
-                </div>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="executor_factual_address"
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
-              >
-                ფაქტიური მისამართი
-              </label>
-              <input
-                type="text"
-                id="executor_factual_address"
-                className={classnames(
-                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
-                  {
-                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.executor_factual_address,
-                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.executor_factual_address,
-                    "dark:!bg-gray-800 dark:!text-white": true,
-                  }
-                )}
-                value={formData.executor_factual_address}
-                onChange={handleInputChange}
-                placeholder="ჩაწერეთ ფაქტიური მისამართი..."
-              />
-              {errors.executor_factual_address && (
-                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.executor_factual_address}
-                </div>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="executor_full_name"
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
-              >
-                შემსრლებლის სახელი და გვარი
-              </label>
-              <input
-                type="text"
-                id="executor_full_name"
-                className={classnames(
-                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
-                  {
-                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.executor_full_name,
-                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.executor_full_name,
-                    "dark:!bg-gray-800 dark:!text-white": true,
-                  }
-                )}
-                value={formData.executor_full_name}
-                onChange={handleInputChange}
-                placeholder="ჩაწერეთ სახელი და გვარი..."
-              />
-              {errors.executor_full_name && (
-                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.executor_full_name}
-                </div>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="executor_position"
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
-              >
-                შემსრულებლის თანამდებობა
-              </label>
-              <input
-                type="text"
-                id="executor_position"
-                className={classnames(
-                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
-                  {
-                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.executor_position,
-                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.executor_position,
-                    "dark:!bg-gray-800 dark:!text-white": true,
-                  }
-                )}
-                value={formData.executor_position}
-                onChange={handleInputChange}
-                placeholder="ჩაწერეთ თანამდებობა..."
-              />
-              {errors.executor_position && (
-                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.executor_position}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className={classnames("w-full", { hidden: activeTab !== 2 })}>
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="executor_bank_account"
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
-              >
-                საბანკო ანგარიშის ნომერი
-              </label>
-              <input
-                type="text"
-                id="executor_bank_account"
-                className={classnames(
-                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
-                  {
-                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.executor_bank_account,
-                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.executor_bank_account,
-                    "dark:!bg-gray-800 dark:!text-white": true,
-                  }
-                )}
-                value={formData.executor_bank_account}
-                onChange={handleInputChange}
-                placeholder="ჩაწერეთ საბანკო ანგარიშის ნომერი..."
-              />
-              {errors.executor_bank_account && (
-                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.executor_bank_account}
-                </div>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="executor_bank_name"
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
-              >
-                ბანკის დასახელება
-              </label>
-              <input
-                type="text"
-                id="executor_bank_name"
-                className={classnames(
-                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
-                  {
-                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.executor_bank_name,
-                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.executor_bank_name,
-                    "dark:!bg-gray-800 dark:!text-white": true,
-                  }
-                )}
-                value={formData.executor_bank_name}
-                onChange={handleInputChange}
-                placeholder="ჩაწერეთ ბანკის დასახელება..."
-              />
-              {errors.executor_bank_name && (
-                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.executor_bank_name}
-                </div>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="executor_bank_swift"
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
-              >
-                ბანკის კოდი
-              </label>
-              <input
-                type="text"
-                id="executor_bank_swift"
-                className={classnames(
-                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
-                  {
-                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.executor_bank_swift,
-                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.executor_bank_swift,
-                    "dark:!bg-gray-800 dark:!text-white": true,
-                  }
-                )}
-                value={formData.executor_bank_swift}
-                onChange={handleInputChange}
-                placeholder="მაგ. BAGAGE22"
-                maxLength={8}
-              />
-              {errors.executor_bank_swift && (
-                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.executor_bank_swift}
+                  <BsInfoCircle />
+                  {errors.jursdictional_id_number}
                 </div>
               )}
             </div>
@@ -710,7 +436,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
               />
               {errors.director_full_name && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
+                  <BsInfoCircle />
                   {errors.director_full_name}
                 </div>
               )}
@@ -737,13 +463,214 @@ const LocalAgreementForm = ({ onSuccess }) => {
                 )}
                 value={formData.director_id_number}
                 onChange={handleInputChange}
-                placeholder="ჩაწერეთ 11-ნიშნა პირადი ნომერი..."
+                placeholder="ჩაწერეთ დირექტორის ტირადი ნომერი..."
                 maxLength={11}
               />
               {errors.director_id_number && (
                 <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
+                  <BsInfoCircle />
                   {errors.director_id_number}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={classnames("w-full", { hidden: activeTab !== 2 })}>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="agreement_date_of_issue"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                ხელშეკრულების გაფორმების თარიღი
+              </label>
+              <input
+                type="date"
+                id="agreement_date_of_issue"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.agreement_date_of_issue,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.agreement_date_of_issue,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                value={formData.agreement_date_of_issue}
+                onChange={handleInputChange}
+              />
+              {errors.agreement_date_of_issue && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <BsInfoCircle />
+                  {errors.agreement_date_of_issue}
+                </div>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="agreement_type"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                ხელშეკრულების ტიპი
+              </label>
+              <input
+                type="text"
+                id="agreement_type"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.agreement_type,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.agreement_type,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                value={formData.agreement_type}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ ხელშეკრულების ტიპი..."
+              />
+              {errors.agreement_type && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <BsInfoCircle />
+                  {errors.agreement_type}
+                </div>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-xs text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                მიღება-ჩაბარების აქტით გათვალისწინებული ქმედება (მომსახურების გაწევა, შესრულებული სამუშაოს დეტალური აღწერა)
+              </label>
+              <input
+                type="text"
+                id="description"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.description,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.description,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ მოქმედების აქტი..."
+              />
+              {errors.description && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <BsInfoCircle />
+                  {errors.description}
+                </div>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="sum_cost"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                შესრულებული სამუშაოს ჯამური ღირებულება
+              </label>
+              <input
+                type="number"
+                id="sum_cost"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.sum_cost,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.sum_cost,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                value={formData.sum_cost}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ თანხის ოდენობა..."
+                step="0.01"
+              />
+              {errors.sum_cost && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <BsInfoCircle />
+                  {errors.sum_cost}
+                </div>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="sum_cost_type"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                ღირებულების შამადგენლობა
+              </label>
+              <select
+                id="sum_cost_type"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.sum_cost_type,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.sum_cost_type,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                value={formData.sum_cost_type}
+                onChange={handleInputChange}
+              >
+                <option value="">აირჩიეთ ღირებულების შამადგენლობა...</option>
+                <option value="დღგ-ს ჩათვლით">დღგ-ს ჩათვლით</option>
+                <option value="დღგ-ს გარეშე">დღგ-ს გარეშე</option>
+                <option value="ყველანაირი გადასახადის ჩათვლით">
+                  ყველანაირი გადასახადის ჩათვლით
+                </option>
+                <option value="ყველანაირი გადასახადის გარეშე">
+                  ყველანაირი გადასახადის გარეშე
+                </option>
+              </select>
+              {errors.sum_cost_type && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <BsInfoCircle />
+                  {errors.sum_cost_type}
+                </div>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="bank_account_number"
+                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+              >
+                საბანკო რეკვიზიტები
+              </label>
+              <input
+                type="text"
+                id="bank_account_number"
+                className={classnames(
+                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                  {
+                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                      errors.bank_account_number,
+                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                      !errors.bank_account_number,
+                    "dark:!bg-gray-800 dark:!text-white": true,
+                  }
+                )}
+                value={formData.bank_account_number}
+                onChange={handleInputChange}
+                placeholder="ჩაწერეთ საბანკო რეკვიზიტები..."
+              />
+              {errors.bank_account_number && (
+                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                  <BsInfoCircle />
+                  {errors.bank_account_number}
                 </div>
               )}
             </div>
@@ -753,115 +680,38 @@ const LocalAgreementForm = ({ onSuccess }) => {
 
       <div className={classnames("w-full", { hidden: activeTab !== 3 })}>
         <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="agreement_active_term"
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
-              >
-                ხელშეკრულების აქტიური ვადა
-              </label>
-              <input
-                type="date"
-                id="agreement_active_term"
-                className={classnames(
-                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
-                  {
-                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.agreement_active_term,
-                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.agreement_active_term,
-                    "dark:!bg-gray-800 dark:!text-white": true,
-                  }
-                )}
-                value={formData.agreement_active_term}
-                onChange={handleInputChange}
-                min={new Date().toISOString().split("T")[0]}
-              />
-              {errors.agreement_active_term && (
-                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.agreement_active_term}
-                </div>
+
+          <div>
+            <label
+              htmlFor="responsible_person_full_name"
+              className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
+            >
+              მიღება-ჩაბარების აქტის დამზადების ინიციატორის უშუალო ხელმძღვანელი: (სახელი/გვარი)
+            </label>
+            <input
+              type="text"
+              id="responsible_person_full_name"
+              className={classnames(
+                "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
+                {
+                  "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
+                    errors.responsible_person_full_name,
+                  "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
+                    !errors.responsible_person_full_name,
+                  "dark:!bg-gray-800 dark:!text-white": true,
+                }
               )}
-            </div>
-            <div>
-              <div className="form-check mb-3">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="agreement_automatic_renewal"
-                  checked={formData.agreement_automatic_renewal}
-                  onChange={e =>
-                    handleInputChange({
-                      target: {
-                        id: "agreement_automatic_renewal",
-                        value: e.target.checked,
-                      },
-                    })
-                  }
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="agreement_automatic_renewal"
-                >
-                  ავტომატური განახლება
-                </label>
+              value={formData.responsible_person_full_name}
+              onChange={handleInputChange}
+              placeholder="ჩაწერეთ მიღება-ჩაბარების აქტის დამზადების ინიციატორის უშუალო ხელმძღვანელი..."
+            />
+            {errors.responsible_person_full_name && (
+              <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
+                <BsInfoCircle />
+                {errors.responsible_person_full_name}
               </div>
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="exclusivity"
-                  checked={formData.exclusivity}
-                  onChange={e =>
-                    handleInputChange({
-                      target: {
-                        id: "exclusivity",
-                        value: e.target.checked,
-                      },
-                    })
-                  }
-                />
-                <label className="form-check-label" htmlFor="exclusivity">
-                  ექსკლუზიურობა
-                </label>
-              </div>
-            </div>
+            )}
           </div>
-          {formData.exclusivity && (
-            <div className="mt-6">
-              <label
-                htmlFor="exclusive_placement"
-                className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1"
-              >
-                ექსკლუზიური განთავსების დეტალები
-              </label>
-              <input
-                type="text"
-                id="exclusive_placement"
-                className={classnames(
-                  "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-colors duration-200",
-                  {
-                    "border-red-300 focus:border-red-300 focus:ring-red-200 dark:!border-red-700 dark:!focus:border-red-700 dark:!focus:ring-red-900":
-                      errors.exclusive_placement,
-                    "border-gray-300 focus:border-blue-300 focus:ring-blue-200 dark:!border-gray-600 dark:!focus:border-blue-500 dark:!focus:ring-blue-900":
-                      !errors.exclusive_placement,
-                    "dark:!bg-gray-800 dark:!text-white": true,
-                  }
-                )}
-                value={formData.exclusive_placement}
-                onChange={handleInputChange}
-                placeholder="ჩაწერეთ ექსკლუზიური განთავსების დეტალები..."
-              />
-              {errors.exclusive_placement && (
-                <div className="mt-1 text-sm text-red-600 dark:!text-red-400 flex items-center gap-1">
-                  <BsExclamationTriangle />
-                  {errors.exclusive_placement}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
@@ -869,7 +719,7 @@ const LocalAgreementForm = ({ onSuccess }) => {
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="mb-4">
-              <i className="mdi mdi-check-circle-outline text-success display-4" />
+              <BsCheckCircle className="text-success" size={48} />
             </div>
             <div>
               <h5>შეკვეთა წარმატებით დასრულდა!</h5>
@@ -910,12 +760,12 @@ const LocalAgreementForm = ({ onSuccess }) => {
               "px-4 py-2 rounded-md flex items-center gap-2 transition-all duration-200",
               {
                 "bg-blue-600 text-white hover:bg-blue-700 dark:!bg-blue-700 dark:!hover:bg-blue-600":
-                  activeTab !== 4,
-                invisible: activeTab === 4,
+                  activeTab !== 3,
+                invisible: activeTab === 3,
               }
             )}
             onClick={() => toggleTab(activeTab + 1)}
-            disabled={activeTab === 4}
+            disabled={activeTab === 3}
           >
             შემდეგი გვერდი
             <BsChevronRight />
@@ -926,4 +776,4 @@ const LocalAgreementForm = ({ onSuccess }) => {
   )
 }
 
-export default LocalAgreementForm
+export default MarketingDeliveryAgreementForm

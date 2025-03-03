@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import { Card, CardBody } from "reactstrap"
 import {
   BiTime,
@@ -25,14 +25,18 @@ import {
   BiMessageAltX,
   BiDownload,
   BiLink,
+  BiUpload,
 } from "react-icons/bi"
 import MuiTable from "../../../../components/Mui/MuiTable"
 import { useGetCurrentUserPurchases } from "../../../../queries/purchase"
 import {
   downloadPurchaseProduct,
   downloadPurchase,
+  uploadInvoice,
+  downloadInvoice,
 } from "../../../../services/purchase"
 import { DownloadButton } from "../../../../components/CrmActionButtons/ActionButtons"
+import { toast } from "store/zustand/toastStore"
 
 const statusMap = {
   "pending department head": {
@@ -72,8 +76,9 @@ const categoryGeorgianMap = {
 
 const UserProcurements = () => {
   document.title = "ჩემი შესყიდვები | Gorgia LLC"
+  const [uploadingPurchaseId, setUploadingPurchaseId] = useState(null)
 
-  const { data: purchaseData, isLoading } = useGetCurrentUserPurchases()
+  const { data: purchaseData, isLoading, refetch } = useGetCurrentUserPurchases()
 
   const columns = useMemo(
     () => [
@@ -258,7 +263,63 @@ const UserProcurements = () => {
         window.URL.revokeObjectURL(url)
       } catch (error) {
         console.error("Error downloading file:", error)
-        alert("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
+        toast.error("ფაილის ჩამოტვირთვა ვერ მოხერხდა")
+      }
+    }
+
+    const handleDownloadInvoice = async purchaseId => {
+      try {
+        const response = await downloadInvoice(purchaseId)
+
+        const contentDisposition = response.headers["content-disposition"]
+        let filename = `purchase_${purchaseId}_invoice`
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(
+            /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+          )
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, "")
+          }
+        }
+
+        const blob = new Blob([response.data], {
+          type: response.headers["content-type"] || "application/octet-stream",
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.setAttribute("download", filename)
+        document.body.appendChild(link)
+        link.click()
+
+        link.parentNode.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error("Error downloading invoice:", error)
+        toast.error("ხელშეკრულების ჩამოტვირთვა ვერ მოხერხდა")
+      }
+    }
+
+    const handleUploadInvoice = async (purchaseId, file) => {
+      try {
+        setUploadingPurchaseId(purchaseId)
+        await uploadInvoice(purchaseId, file)
+        toast.success("ხელშეკრულება წარმატებით აიტვირთა")
+        // Refetch the data instead of page refresh
+        await refetch()
+      } catch (error) {
+        console.error("Error uploading invoice:", error)
+        toast.error(error.response?.data?.message || "ხელშეკრულების ატვირთვა ვერ მოხერხდა")
+      } finally {
+        setUploadingPurchaseId(null)
+      }
+    }
+
+    const handleFileChange = (event, purchaseId) => {
+      const file = event.target.files[0]
+      if (file) {
+        handleUploadInvoice(purchaseId, file)
       }
     }
 
@@ -360,6 +421,39 @@ const UserProcurements = () => {
           "N/A"
         ),
         icon: <BiDownload />,
+      },
+      {
+        label: "ხელშეკრულება",
+        value: rowData.status === "completed" ? (
+          <div className="d-flex align-items-center gap-2">
+            {rowData.invoice_attachment ? (
+              <button
+                onClick={() => handleDownloadInvoice(rowData.id)}
+                className="btn btn-link btn-sm p-0 text-primary"
+              >
+                ჩამოტვირთვა
+              </button>
+            ) : (
+              <label className="btn btn-link btn-sm p-0 text-primary mb-0" style={{ cursor: "pointer" }}>
+                <input
+                  type="file"
+                  className="d-none"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => handleFileChange(e, rowData.id)}
+                  disabled={uploadingPurchaseId === rowData.id}
+                />
+                {uploadingPurchaseId === rowData.id ? (
+                  <span>იტვირთება...</span>
+                ) : (
+                  <span>ატვირთვა</span>
+                )}
+              </label>
+            )}
+          </div>
+        ) : (
+          "N/A"
+        ),
+        icon: <BiUpload />,
       },
     ]
 

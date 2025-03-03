@@ -62,6 +62,12 @@ const defaultFilters = {
   year: "",
 }
 
+// Georgian month names
+const georgianMonths = [
+  "იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი",
+  "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი"
+];
+
 const PeopleCounting = () => {
   const { isAdmin, user } = useAuth()
   const [view, setView] = useState("table")
@@ -70,6 +76,8 @@ const PeopleCounting = () => {
   const [filters, setFilters] = useState(defaultFilters)
   const [selectedCity, setSelectedCity] = useState("")
   const [selectedBranch, setSelectedBranch] = useState("")
+  const [isDateRangeSelected, setIsDateRangeSelected] = useState(false)
+  const [isMonthYearSelected, setIsMonthYearSelected] = useState(false)
 
   const form = useForm({
     defaultValues: defaultFilters,
@@ -105,6 +113,54 @@ const PeopleCounting = () => {
       form.setFieldValue("entrance", "")
     }
   }, [selectedBranch, form])
+
+  // Effect to handle date range and month/year mutual exclusivity
+  useEffect(() => {
+    const dateFrom = form.getFieldValue("date_from")
+    const dateTo = form.getFieldValue("date_to")
+    const month = form.getFieldValue("month")
+    const year = form.getFieldValue("year")
+
+    const hasDateRange = Boolean(dateFrom || dateTo)
+    const hasMonthYear = Boolean(month || year)
+
+    setIsDateRangeSelected(hasDateRange)
+    setIsMonthYearSelected(hasMonthYear)
+
+    // Clear conflicting filters
+    if (hasDateRange && hasMonthYear) {
+      if (dateFrom || dateTo) {
+        // User just selected date range, clear month/year
+        form.setFieldValue("month", "")
+        form.setFieldValue("year", "")
+        setIsMonthYearSelected(false)
+      } else if (month || year) {
+        // User just selected month/year, clear date range
+        form.setFieldValue("date_from", "")
+        form.setFieldValue("date_to", "")
+        setIsDateRangeSelected(false)
+      }
+    }
+  }, [form])
+
+  // Add a listener for form reset
+  useEffect(() => {
+    const unsubscribe = form.store.subscribe(state => {
+      // Check if form has been reset (all values are empty)
+      const values = state?.values;
+
+      if (!values) return; // Add safety check for undefined values
+
+      const allEmpty = Object.values(values).every(val => !val);
+
+      if (allEmpty) {
+        setIsDateRangeSelected(false);
+        setIsMonthYearSelected(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [form.store]);
 
   const totalVisitors = useMemo(() => {
     if (!peopleCountingData?.data) return 0
@@ -274,14 +330,32 @@ const PeopleCounting = () => {
             <form.Field name="date_from">
               {field => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 flex items-center">
                     თარიღიდან
+                    <span className="ml-1 relative group">
+                      <span className="cursor-help text-gray-400 hover:text-gray-600">ℹ️</span>
+                      <span className="hidden group-hover:block absolute left-0 top-full mt-1 w-48 p-2 bg-gray-800 text-white text-xs rounded z-10">
+                        ფილტრაცია კონკრეტული თარიღიდან. გამორიცხავს თვისა და წლის ფილტრებს.
+                      </span>
+                    </span>
                   </label>
                   <input
                     type="date"
                     value={field.state.value}
-                    onChange={e => field.handleChange(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                    onChange={e => {
+                      field.handleChange(e.target.value)
+                      if (e.target.value) {
+                        // Clear month/year when date range is used
+                        form.setFieldValue("month", "")
+                        form.setFieldValue("year", "")
+                        setIsDateRangeSelected(true)
+                        setIsMonthYearSelected(false)
+                      } else if (!form.getFieldValue("date_to")) {
+                        setIsDateRangeSelected(false)
+                      }
+                    }}
+                    disabled={isMonthYearSelected}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               )}
@@ -290,14 +364,32 @@ const PeopleCounting = () => {
             <form.Field name="date_to">
               {field => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 flex items-center">
                     თარიღამდე
+                    <span className="ml-1 relative group">
+                      <span className="cursor-help text-gray-400 hover:text-gray-600">ℹ️</span>
+                      <span className="hidden group-hover:block absolute left-0 top-full mt-1 w-48 p-2 bg-gray-800 text-white text-xs rounded z-10">
+                        ფილტრაცია კონკრეტულ თარიღამდე. გამორიცხავს თვისა და წლის ფილტრებს.
+                      </span>
+                    </span>
                   </label>
                   <input
                     type="date"
                     value={field.state.value}
-                    onChange={e => field.handleChange(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                    onChange={e => {
+                      field.handleChange(e.target.value)
+                      if (e.target.value) {
+                        // Clear month/year when date range is used
+                        form.setFieldValue("month", "")
+                        form.setFieldValue("year", "")
+                        setIsDateRangeSelected(true)
+                        setIsMonthYearSelected(false)
+                      } else if (!form.getFieldValue("date_from")) {
+                        setIsDateRangeSelected(false)
+                      }
+                    }}
+                    disabled={isMonthYearSelected}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               )}
@@ -306,18 +398,36 @@ const PeopleCounting = () => {
             <form.Field name="month">
               {field => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 flex items-center">
                     თვე
+                    <span className="ml-1 relative group">
+                      <span className="cursor-help text-gray-400 hover:text-gray-600">ℹ️</span>
+                      <span className="hidden group-hover:block absolute left-0 top-full mt-1 w-48 p-2 bg-gray-800 text-white text-xs rounded z-10">
+                        ფილტრაცია თვის მიხედვით. გამორიცხავს თარიღის დიაპაზონის ფილტრებს.
+                      </span>
+                    </span>
                   </label>
                   <select
                     value={field.state.value}
-                    onChange={e => field.handleChange(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                    onChange={e => {
+                      field.handleChange(e.target.value)
+                      if (e.target.value) {
+                        // Clear date range when month/year is used
+                        form.setFieldValue("date_from", "")
+                        form.setFieldValue("date_to", "")
+                        setIsMonthYearSelected(true)
+                        setIsDateRangeSelected(false)
+                      } else if (!form.getFieldValue("year")) {
+                        setIsMonthYearSelected(false)
+                      }
+                    }}
+                    disabled={isDateRangeSelected}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">ყველა</option>
                     {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
                       <option key={month} value={month}>
-                        {month}
+                        {georgianMonths[month - 1]}
                       </option>
                     ))}
                   </select>
@@ -328,13 +438,31 @@ const PeopleCounting = () => {
             <form.Field name="year">
               {field => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 flex items-center">
                     წელი
+                    <span className="ml-1 relative group">
+                      <span className="cursor-help text-gray-400 hover:text-gray-600">ℹ️</span>
+                      <span className="hidden group-hover:block absolute left-0 top-full mt-1 w-48 p-2 bg-gray-800 text-white text-xs rounded z-10">
+                        ფილტრაცია წლის მიხედვით. გამორიცხავს თარიღის დიაპაზონის ფილტრებს.
+                      </span>
+                    </span>
                   </label>
                   <select
                     value={field.state.value}
-                    onChange={e => field.handleChange(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white"
+                    onChange={e => {
+                      field.handleChange(e.target.value)
+                      if (e.target.value) {
+                        // Clear date range when month/year is used
+                        form.setFieldValue("date_from", "")
+                        form.setFieldValue("date_to", "")
+                        setIsMonthYearSelected(true)
+                        setIsDateRangeSelected(false)
+                      } else if (!form.getFieldValue("month")) {
+                        setIsMonthYearSelected(false)
+                      }
+                    }}
+                    disabled={isDateRangeSelected}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:!border-gray-600 dark:!bg-gray-700 dark:!text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">ყველა</option>
                     {Array.from(
@@ -353,8 +481,14 @@ const PeopleCounting = () => {
             <form.Field name="city">
               {field => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 flex items-center">
                     ქალაქი
+                    <span className="ml-1 relative group">
+                      <span className="cursor-help text-gray-400 hover:text-gray-600">ℹ️</span>
+                      <span className="hidden group-hover:block absolute left-0 top-full mt-1 w-48 p-2 bg-gray-800 text-white text-xs rounded z-10">
+                        ფილტრაცია ქალაქის მიხედვით. აუცილებელია ფილიალის ასარჩევად.
+                      </span>
+                    </span>
                   </label>
                   <select
                     value={field.state.value}
@@ -382,8 +516,14 @@ const PeopleCounting = () => {
             <form.Field name="branch">
               {field => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 flex items-center">
                     ფილიალი
+                    <span className="ml-1 relative group">
+                      <span className="cursor-help text-gray-400 hover:text-gray-600">ℹ️</span>
+                      <span className="hidden group-hover:block absolute left-0 top-full mt-1 w-48 p-2 bg-gray-800 text-white text-xs rounded z-10">
+                        ფილტრაცია ფილიალის მიხედვით. ჯერ აირჩიეთ ქალაქი.
+                      </span>
+                    </span>
                   </label>
                   <select
                     value={field.state.value}
@@ -410,8 +550,14 @@ const PeopleCounting = () => {
             <form.Field name="entrance">
               {field => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 flex items-center">
                     შესასვლელი
+                    <span className="ml-1 relative group">
+                      <span className="cursor-help text-gray-400 hover:text-gray-600">ℹ️</span>
+                      <span className="hidden group-hover:block absolute left-0 top-full mt-1 w-48 p-2 bg-gray-800 text-white text-xs rounded z-10">
+                        ფილტრაცია შესასვლელის მიხედვით. ჯერ აირჩიეთ ფილიალი.
+                      </span>
+                    </span>
                   </label>
                   <select
                     value={field.state.value}
@@ -433,8 +579,14 @@ const PeopleCounting = () => {
             <form.Field name="report_type">
               {field => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:!text-gray-300 mb-1 flex items-center">
                     რეპორტის ტიპი
+                    <span className="ml-1 relative group">
+                      <span className="cursor-help text-gray-400 hover:text-gray-600">ℹ️</span>
+                      <span className="hidden group-hover:block absolute left-0 top-full mt-1 w-48 p-2 bg-gray-800 text-white text-xs rounded z-10">
+                        ფილტრაცია რეპორტის ტიპის მიხედვით (თვის ან კვირის).
+                      </span>
+                    </span>
                   </label>
                   <select
                     value={field.state.value}
@@ -455,6 +607,10 @@ const PeopleCounting = () => {
                 onClick={() => {
                   setFilters(defaultFilters)
                   form.reset(defaultFilters)
+                  setIsDateRangeSelected(false)
+                  setIsMonthYearSelected(false)
+                  setSelectedCity("")
+                  setSelectedBranch("")
                 }}
                 className="px-4 py-2 bg-gray-200 dark:!bg-gray-700 text-gray-700 dark:!text-gray-200 rounded-md hover:bg-gray-300 dark:!hover:bg-gray-600"
               >

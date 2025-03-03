@@ -2,6 +2,7 @@ import React, { useState } from "react"
 
 import StandardAgreementForm from "../../../components/AgreementForms/Strandard/StandardAgreementForm"
 import DeliveryAgreementForm from "../../../components/AgreementForms/DeliveryAcceptance/DeliveryAgreementForm"
+import MarketingDeliveryAgreementForm from "../../../components/AgreementForms/MarketingDeliveryAcceptance/MarketingDeliveryAgreementForm"
 import MarketingAgreementForm from "../../../components/AgreementForms/Marketing/MarketingAgreementForm"
 import ServiceAgreementForm from "../../../components/AgreementForms/Service/ServiceAgreementForm"
 import LocalAgreementForm from "../../../components/AgreementForms/Local/LocalAgreementForm"
@@ -12,6 +13,7 @@ const AGREEMENT_TYPES = {
   MARKETING: "marketing",
   SERVICE: "service",
   LOCAL: "local",
+  MARKETING_DELIVERY: "marketing_delivery",
 }
 
 const AgreementRequest = () => {
@@ -32,6 +34,8 @@ const AgreementRequest = () => {
         return <ServiceAgreementForm />
       case AGREEMENT_TYPES.LOCAL:
         return <LocalAgreementForm />
+      case AGREEMENT_TYPES.MARKETING_DELIVERY:
+        return <MarketingDeliveryAgreementForm />
       default:
         return <StandardAgreementForm />
     }
@@ -75,6 +79,9 @@ const AgreementRequest = () => {
                       </option>
                       <option value={AGREEMENT_TYPES.LOCAL}>
                         ადგილობრივი შესყიდვის ხელშეკრულება
+                      </option>
+                      <option value={AGREEMENT_TYPES.MARKETING_DELIVERY}>
+                        მარკეტინგული მიღება-ჩაბარების აქტი
                       </option>
                     </select>
                   </div>

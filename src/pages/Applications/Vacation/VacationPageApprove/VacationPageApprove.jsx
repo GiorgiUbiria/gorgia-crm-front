@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import {
   Row,
   Col,
@@ -224,6 +224,17 @@ const VacationPageApprove = () => {
   const { data: vacationsData, isLoading: vacationsLoading } = useVacations({
     enabled: isAdmin(),
   })
+
+  // Debug logs
+  useEffect(() => {
+    if (isDepartmentHead() || isDepartmentHeadAssistant()) {
+      console.log("Department Head Data:", departmentVacationData);
+    }
+    if (isAdmin()) {
+      console.log("Admin Data:", vacationsData);
+    }
+  }, [departmentVacationData, vacationsData, isDepartmentHead, isDepartmentHeadAssistant, isAdmin]);
+
   const { mutate: updateStatus } = useUpdateVacationStatus()
 
   const [rejectionModal, setRejectionModal] = useState(false)
@@ -327,6 +338,8 @@ const VacationPageApprove = () => {
     }
   }
 
+  console.log(departmentVacationData)
+
   const columns = useMemo(
     () => [
       {
@@ -383,22 +396,22 @@ const VacationPageApprove = () => {
                   row.original.status === "pending"
                     ? "#fff3e0"
                     : row.original.status === "rejected"
-                    ? "#ffebee"
-                    : row.original.status === "approved"
-                    ? "#e8f5e9"
-                    : row.original.status === "cancelled"
-                    ? "#f5f5f5"
-                    : "#f5f5f5",
+                      ? "#ffebee"
+                      : row.original.status === "approved"
+                        ? "#e8f5e9"
+                        : row.original.status === "cancelled"
+                          ? "#f5f5f5"
+                          : "#f5f5f5",
                 color:
                   row.original.status === "pending"
                     ? "#e65100"
                     : row.original.status === "rejected"
-                    ? "#c62828"
-                    : row.original.status === "approved"
-                    ? "#2e7d32"
-                    : row.original.status === "cancelled"
-                    ? "#6c757d"
-                    : "#757575",
+                      ? "#c62828"
+                      : row.original.status === "approved"
+                        ? "#2e7d32"
+                        : row.original.status === "cancelled"
+                          ? "#6c757d"
+                          : "#757575",
               }}
             >
               <i
@@ -447,9 +460,11 @@ const VacationPageApprove = () => {
     if (!departmentVacationData?.data?.data && !vacationsData?.data?.data)
       return []
     const vacations =
-      isAdmin() || isDepartmentHead() || isDepartmentHeadAssistant()
+      isAdmin()
         ? vacationsData?.data?.data
-        : departmentVacationData?.data?.data
+        : (isDepartmentHead() || isDepartmentHeadAssistant())
+          ? departmentVacationData?.data?.data
+          : []
 
     if (!vacations) return []
     return vacations.map(vacation => ({
@@ -466,16 +481,14 @@ const VacationPageApprove = () => {
         ? TYPE_MAPPING[vacation.type] || vacation.type
         : "უცნობი",
       requested_by: vacation.user
-        ? `${vacation.user?.name || ""} ${
-            vacation.user?.sur_name || ""
+        ? `${vacation.user?.name || ""} ${vacation.user?.sur_name || ""
           }`.trim() || "უცნობი"
         : "უცნობი",
       requested_at: vacation.created_at
         ? new Date(vacation.created_at).toLocaleDateString("ka-GE")
         : "-",
-      requested_for: `${vacation.employee_name || ""} | ${
-        vacation.position || ""
-      } | ${vacation.department || ""}`,
+      requested_for: `${vacation.employee_name || ""} | ${vacation.position || ""
+        } | ${vacation.department || ""}`,
       expanded: {
         holiday_days: {
           is_monday: vacation.is_monday || null,
@@ -492,9 +505,8 @@ const VacationPageApprove = () => {
         },
         review: {
           reviewed_by: vacation.reviewed_by
-            ? `${vacation.reviewed_by?.name || ""} ${
-                vacation.reviewed_by?.sur_name || ""
-              }`
+            ? `${vacation.reviewed_by?.name || ""} ${vacation.reviewed_by?.sur_name || ""
+            }`
             : "ჯერ არ არის განხილული",
           reviewed_at: vacation?.reviewed_at
             ? new Date(vacation.reviewed_at).toLocaleDateString("ka-GE")
@@ -542,7 +554,7 @@ const VacationPageApprove = () => {
       return Boolean(vacationsData?.data?.data)
     }
     if (isDepartmentHead() || isDepartmentHeadAssistant()) {
-      return Boolean(departmentVacationData?.data)
+      return Boolean(departmentVacationData?.data?.data)
     }
     return false
   }, [
@@ -663,7 +675,7 @@ const VacationPageApprove = () => {
         isOpen={cancellationModal}
         toggle={() => setCancellationModal(false)}
         vacationId={selectedVacation}
-        onSuccess={() => {}}
+        onSuccess={() => { }}
       />
     </>
   )
